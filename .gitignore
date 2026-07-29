@@ -38,3 +38,9 @@ src/xastir_udp_client
 callpass
 online-maps/
 OSM_tiled_*.geo
+config/language-*.sys
+scripts/get-BOMdata
+scripts/get-NWSdata
+scripts/get-fcc-rac.pl
+scripts/icontable.pl
+src/compiledate.c
