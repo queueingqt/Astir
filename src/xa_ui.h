@@ -39,6 +39,21 @@ typedef struct
   // window -- so nothing is passed here.  That is what makes it a callback
   // rather than a wrapper.
   void (*busy)(void);
+
+  // Make pending drawing visible now, instead of waiting for the front end to
+  // return to its event loop.  Called from the map drivers around slow work --
+  // a tile download, a long shapefile -- so the status message and the partly
+  // drawn map do not sit invisible until the load finishes.
+  //
+  // Distinct from status() on purpose: status() runs ~45 times per redraw and
+  // has to stay cheap, so it must not force a repaint.  Flushing is the
+  // deliberate, occasional case.
+  void (*flush)(void);
+
+  // Report something wrong that is not worth aborting for.  One caller: a map
+  // file whose point count overflows the fixed vertex buffer, which is then
+  // clamped and drawn anyway.
+  void (*warn)(const char *text);
 } xa_ui_callbacks;
 
 // Install the front end's implementations.  Passing NULL, or leaving a member
@@ -49,5 +64,7 @@ void xa_ui_set_callbacks(const xa_ui_callbacks *cb);
 void xa_ui_status(const char *text);
 void xa_ui_pump_events(void);
 void xa_ui_busy(void);
+void xa_ui_flush(void);
+void xa_ui_warn(const char *text);
 
 #endif // XA_UI_H

@@ -1241,7 +1241,7 @@ void draw_OSM_tiles (Widget w,
   xastir_snprintf(map_it, sizeof(map_it), "%s",
                   langcode ("BBARSTA050")); // Downloading tiles...
   xa_ui_status(map_it);
-  XmUpdateDisplay(text);
+  xa_ui_flush();
 
   // make sure all the map directories exist
   mkOSMmapDirs(tileRootDir, tiles.startx, tiles.endx, osm_zl);
@@ -1264,7 +1264,7 @@ void draw_OSM_tiles (Widget w,
         xastir_snprintf(map_it, sizeof(map_it), langcode("BBARSTA051"),
                         tileCnt, numTiles);  // Downloading tile %ls of %ls
         xa_ui_status(map_it);
-        XmUpdateDisplay(text);
+        xa_ui_flush();
       }
 
       DLM_queue_tile(serverURL, tilex, tiley,
@@ -1329,7 +1329,7 @@ void draw_OSM_tiles (Widget w,
     xastir_snprintf(map_it, sizeof(map_it), "%s",
                     langcode ("BBARSTA049")); // Reading tiles...
     xa_ui_status(map_it);
-    XmUpdateDisplay(text);
+    xa_ui_flush();
 
     tile_info = CloneImageInfo((ImageInfo *)NULL);
 
@@ -1510,7 +1510,7 @@ void draw_OSM_map (Widget w,
                   langcode ("BBARSTA028"),
                   short_filenm);
   xa_ui_status(map_it);       // Loading ...
-  XmUpdateDisplay(text);
+  xa_ui_flush();
 
   // Check whether we're indexing or drawing the map
   if ( (destination_pixmap == INDEX_CHECK_TIMESTAMPS)

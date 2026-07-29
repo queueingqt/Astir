@@ -6373,7 +6373,7 @@ void draw_map (Widget w, char *dir, char *filenm, alert_entry *alert,
   }
 
   xa_perf_begin(XA_ZONE_MAP_XMUPDATE);
-  XmUpdateDisplay (XtParent (da));
+  xa_ui_flush();
   xa_perf_end(XA_ZONE_MAP_XMUPDATE);
 }  // End of draw_map()
 
@@ -9544,7 +9544,7 @@ void load_maps (Widget w)
                 fprintf(stderr,"Load maps -%s\n", mapname);
               }
 
-              XmUpdateDisplay (da);
+              xa_ui_flush();
             }
           }
         }

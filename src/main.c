@@ -4056,6 +4056,20 @@ static void motif_ui_busy(void)
   busy_cursor(appshell);
 }
 
+// XmUpdateDisplay processes pending exposures for a whole display; its manual
+// says the argument "specifies any widget or gadget".  The seven core call
+// sites this replaced passed three different widgets -- text, da, XtParent(da)
+// -- and were all doing the same thing.  appshell is as good as any.
+static void motif_ui_flush(void)
+{
+  XmUpdateDisplay(appshell);
+}
+
+static void motif_ui_warn(const char *text)
+{
+  XtAppWarning(app_context, (String)text);
+}
+
 void xa_ui_register_motif(void)
 {
   // Zero-initialised, not member-by-member into an uninitialised local.  A
@@ -4068,6 +4082,8 @@ void xa_ui_register_motif(void)
   cb.status = motif_ui_status;
   cb.pump_events = motif_ui_pump_events;
   cb.busy = motif_ui_busy;
+  cb.flush = motif_ui_flush;
+  cb.warn = motif_ui_warn;
   xa_ui_set_callbacks(&cb);
 }
 

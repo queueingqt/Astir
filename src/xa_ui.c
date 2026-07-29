@@ -57,3 +57,21 @@ void xa_ui_busy(void)
     ui.busy();
   }
 }
+
+
+void xa_ui_flush(void)
+{
+  if (ui.flush != NULL)
+  {
+    ui.flush();
+  }
+}
+
+
+void xa_ui_warn(const char *text)
+{
+  if (ui.warn != NULL && text != NULL)
+  {
+    ui.warn(text);
+  }
+}

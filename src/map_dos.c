@@ -121,7 +121,7 @@ void map_plot (Widget w, long max_x, long max_y, long x_long_cord,
   if (npoints > MAX_MAP_POINTS)
   {
     xastir_snprintf(warning, sizeof(warning), "Warning line point count overflow: map_plot\b\n");
-    XtAppWarning (app_context, warning);
+    xa_ui_warn(warning);
     npoints = MAX_MAP_POINTS;
   }
 
@@ -302,7 +302,7 @@ void map_plot (Widget w, long max_x, long max_y, long x_long_cord,
         if (redraw_check > 1000)
         {
           redraw_check = 0;
-          XmUpdateDisplay (XtParent (da));
+          xa_ui_flush();
         }
         redraw_check++;
       }
