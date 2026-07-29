@@ -582,8 +582,8 @@ void draw_geo_image_map (Widget w,
 
   unsigned long c_x_min,  c_y_min;// top left coordinates of map inside screen
   //  unsigned long c_y_max;          // bottom right coordinates of map inside screen
-  double c_x;                     // Xastir coordinates 1/100 sec, 0 = 180°W
-  double c_y;                     // Xastir coordinates 1/100 sec, 0 =  90°N
+  double c_x;                     // Xastir coordinates 1/100 sec, 0 = 180Â°W
+  double c_y;                     // Xastir coordinates 1/100 sec, 0 =  90Â°N
   double c_y_a;                   // coordinates correction for Transverse Mercator
 
   long map_y_0;                   // map pixel pointer prior to TM adjustment

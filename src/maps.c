@@ -1827,12 +1827,12 @@ void draw_complete_lat_lon_grid(Widget w)
 // is used.
 //
 // For MGRS and UTM-Special grid only:
-// UTM Zone 32 has been widened to 9° (at the expense of zone 31)
-// between latitudes 56° and 64° (band V) to accommodate southwest
-// Norway. Thus zone 32 extends westwards to 3°E in the North Sea.
-// Similarly, between 72° and 84° (band X), zones 33 and 35 have
-// been widened to 12° to accommodate Svalbard. To compensate for
-// these 12° wide zones, zones 31 and 37 are widened to 9° and zones
+// UTM Zone 32 has been widened to 9Â° (at the expense of zone 31)
+// between latitudes 56Â° and 64Â° (band V) to accommodate southwest
+// Norway. Thus zone 32 extends westwards to 3Â°E in the North Sea.
+// Similarly, between 72Â° and 84Â° (band X), zones 33 and 35 have
+// been widened to 12Â° to accommodate Svalbard. To compensate for
+// these 12Â° wide zones, zones 31 and 37 are widened to 9Â° and zones
 // 32, 34, and 36 are eliminated. Thus the W and E boundaries of
 // zones are 31: 0 - 9 E, 33: 9 - 21 E, 35: 21 - 33 E and 37: 33 -
 // 42 E.

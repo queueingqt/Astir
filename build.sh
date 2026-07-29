@@ -22,6 +22,22 @@ MODE="${1:-inc}"
 export CFLAGS="-O2 -g -fno-omit-frame-pointer"
 export CXXFLAGS="$CFLAGS"
 
+# Guard against a silent-failure trap that already cost a session's time:
+# maps.c, map_geo.c and map_WMS.c used to be ISO-8859.  Under a UTF-8 locale
+# GNU grep classifies such a file as binary and prints NOTHING while exiting 1
+# -- no warning -- so a search for a symbol that is present reports nothing at
+# all.  Editing them through a UTF-8 tool also silently re-encodes their
+# non-ASCII bytes.  Warn loudly if one reappears.
+bad_encoding=""
+for f in src/*.c src/*.h; do
+  iconv -f UTF-8 -t UTF-8 "$f" >/dev/null 2>&1 || bad_encoding="$bad_encoding $f"
+done
+if [ -n "$bad_encoding" ]; then
+  echo "WARNING: not valid UTF-8:$bad_encoding" >&2
+  echo "         grep will silently find nothing in these files." >&2
+  echo "         Search them with LC_ALL=C, edit them on bytes, or convert." >&2
+fi
+
 if [ "$MODE" = "clean" ]; then
   make clean >/dev/null 2>&1 || true
   MODE=full

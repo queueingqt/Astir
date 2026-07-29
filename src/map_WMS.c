@@ -151,8 +151,8 @@ void draw_WMS_map (Widget w,
   long tp_c_dx, tp_c_dy;          // tiepoint coordinate differences
   unsigned long c_x_min,  c_y_min;// top left coordinates of map inside screen
 //  unsigned long c_y_max;          // bottom right coordinates of map inside screen
-  double c_x;                     // Xastir coordinates 1/100 sec, 0 = 180°W
-  double c_y;                     // Xastir coordinates 1/100 sec, 0 =  90°N
+  double c_x;                     // Xastir coordinates 1/100 sec, 0 = 180Â°W
+  double c_y;                     // Xastir coordinates 1/100 sec, 0 =  90Â°N
 
   long map_y_0;                   // map pixel pointer prior to TM adjustment
   long map_x, map_y;              // map pixel pointers, DNN: this was a float, chg to long
