@@ -82,6 +82,8 @@
 #include "sound.h"
 #include "log_utils.h"
 
+#include "xa_settings.h"
+
 // Must be last include file
 #include "leak_detection.h"
 
@@ -11112,9 +11114,9 @@ int data_add(int type,
     // announce new station with sound file or speech synthesis
     if (new_station && !wait_to_redraw)     // && !is_my_call(p_station->call_sign,1) // ???
     {
-      if (sound_play_new_station)
+      if (xa_sound[XA_SOUND_NEW_STATION].enabled)
       {
-        play_sound(sound_command,sound_new_station);
+        play_sound(sound_command,xa_sound[XA_SOUND_NEW_STATION].file);
       }
 
 #ifdef HAVE_FESTIVAL
@@ -11166,14 +11168,14 @@ int data_add(int type,
                                p_station->coord_lon,
                                p_station->call_sign);
 
-        if (sound_play_prox_message)
+        if (xa_sound[XA_SOUND_PROX].enabled)
         {
           xastir_snprintf(station_id, sizeof(station_id),
                           "%s < %.3f %s",p_station->call_sign,
                           distance,
                           english_units?langcode("UNIOP00004"):langcode("UNIOP00005"));
           statusline(station_id,0);
-          play_sound(sound_command,sound_prox_message);
+          play_sound(sound_command,xa_sound[XA_SOUND_PROX].file);
           /*fprintf(stderr,"%s> PROX distance %f\n",p_station->call_sign, distance);*/
         }
       }
@@ -11216,13 +11218,13 @@ int data_add(int type,
       }
 #endif  // HAVE_FESTIVAL
       /* FG really should check the path before we do this and add setup for these ranges */
-      if (sound_play_band_open_message && from == DATA_VIA_TNC && !(p_station->flag & ST_3RD_PT) &&
+      if (xa_sound[XA_SOUND_BAND_OPEN].enabled && from == DATA_VIA_TNC && !(p_station->flag & ST_3RD_PT) &&
           (distance > atof(bando_min)) && (distance < atof(bando_max)))
       {
         xastir_snprintf(station_id, sizeof(station_id), "%s %s %.1f %s",p_station->call_sign, langcode("UMBNDO0001"),
                         distance, english_units?langcode("UNIOP00004"):langcode("UNIOP00005"));
         statusline(station_id,0);
-        play_sound(sound_command,sound_band_open_message);
+        play_sound(sound_command,xa_sound[XA_SOUND_BAND_OPEN].file);
         /*fprintf(stderr,"%s> BO distance %f\n",p_station->call_sign, distance);*/
       }
 #ifdef HAVE_FESTIVAL
@@ -11324,9 +11326,9 @@ int data_add(int type,
 
 // Some tweaks have been added to the generic SmartBeaconing(tm) algorithm,
 // but are current labeled as experimental and commented out:  1) We do
-// a posit as soon as we first cross below the sb_low_speed_limit, and
-// 2) We do a posit as soon as we cross above the sb_low_speed_limit if
-// we haven't done a posit for sb_turn_time seconds.  These tweaks are
+// a posit as soon as we first cross below the xa_sb.low_speed_limit, and
+// 2) We do a posit as soon as we cross above the xa_sb.low_speed_limit if
+// we haven't done a posit for xa_sb.turn_time seconds.  These tweaks are
 // intended to help show that the mobile station has stopped (so that
 // dead-reckoning doesn't keep it moving across the map on other
 // people's displays) and to more quickly show that the station is
@@ -11334,38 +11336,38 @@ int data_add(int type,
 // perhaps).
 //
 // It's possible that these new tweaks won't work well for the case
-// where a station is traveling near the speed of sb_low_speed_limit.
+// where a station is traveling near the speed of xa_sb.low_speed_limit.
 // In this case they'll generate a posit each time they go below it and
 // every time they go above it if they haven't done a posit in
-// sb_turn_time seconds.  This could result in a lot of posits very
+// xa_sb.turn_time seconds.  This could result in a lot of posits very
 // quickly.  We may need to add yet another limit just above the
-// sb_low_speed_limit for hysteresis, and not posit until we cross above
+// xa_sb.low_speed_limit for hysteresis, and not posit until we cross above
 // that new limit.
 //
 // Several special SmartBeaconing(tm) parameters come into play here:
 //
-// sb_turn_min          Minimum degrees at which corner pegging will
+// xa_sb.turn_min          Minimum degrees at which corner pegging will
 //                      occur.  The next parameter affects this for
 //                      lower speeds.
 //
-// sb_turn_slope        Fudget factor for making turns less sensitive at
+// xa_sb.turn_slope        Fudget factor for making turns less sensitive at
 //                      lower speeds.  No real units on this one.
 //                      It ends up being non-linear over the speed
 //                      range the way the original SmartBeaconing(tm)
 //                      algorithm works.
 //
-// sb_turn_time         Dead-time before/after a corner peg beacon.
+// xa_sb.turn_time         Dead-time before/after a corner peg beacon.
 //                      Units are in seconds.
 //
-// sb_posit_fast        Fast posit rate, used if >= sb_high_speed_limit.
+// xa_sb.posit_fast        Fast posit rate, used if >= xa_sb.high_speed_limit.
 //                      Units are in seconds.
 //
-// sb_posit_slow        Slow posit rate, used if <= sb_low_speed_limit.
+// xa_sb.posit_slow        Slow posit rate, used if <= xa_sb.low_speed_limit.
 //                      Units are in minutes.
 //
-// sb_low_speed_limit   Low speed limit, units are in Mph.
+// xa_sb.low_speed_limit   Low speed limit, units are in Mph.
 //
-// sb_high_speed_limit  High speed limit, units are in Mph.
+// xa_sb.high_speed_limit  High speed limit, units are in Mph.
 //
 //
 //  Input: Course in degrees
@@ -11374,18 +11376,18 @@ int data_add(int type,
 // Output: May force beacons by setting posit_next_time to various
 //         values.
 //
-// Modify: sb_POSIT_rate
-//         sb_current_heading
-//         sb_last_heading
+// Modify: xa_sb.posit_rate
+//         xa_sb.current_heading
+//         xa_sb.last_heading
 //         posit_next_time
 //
 //
 // With the defaults compiled into the code, here are the
 // turn_thresholds for a few speeds:
 //
-// Example: sb_turn_min = 20
-//          sb_turn_slope = 25
-//          sb_high_speed_limit = 60
+// Example: xa_sb.turn_min = 20
+//          xa_sb.turn_slope = 25
+//          xa_sb.high_speed_limit = 60
 //
 //      > 60mph  20 degrees
 //        50mph  25 degrees
@@ -11417,7 +11419,7 @@ void compute_smart_beacon(char *current_course, char *current_speed)
 
   // Don't compute SmartBeaconing(tm) parameters or force any beacons
   // if we're not in that mode!
-  if (!smart_beaconing)
+  if (!xa_sb.enabled)
   {
     return;
   }
@@ -11431,7 +11433,7 @@ void compute_smart_beacon(char *current_course, char *current_speed)
 
   // Check for the low speed threshold, set to slow posit rate if
   // we're going slow.
-  if (speed <= sb_low_speed_limit)
+  if (speed <= xa_sb.low_speed_limit)
   {
     //fprintf(stderr,"Slow speed\n");
 
@@ -11444,7 +11446,7 @@ void compute_smart_beacon(char *current_course, char *current_speed)
     // threshold though.  We really need a slow-speed rate and a
     // stop rate, with some distance between them, in order to
     // have some hysteresis for these posits.
-    //        if (sb_POSIT_rate != (sb_posit_slow * 60) ) { // Previous rate was _not_ the slow rate
+    //        if (xa_sb.posit_rate != (xa_sb.posit_slow * 60) ) { // Previous rate was _not_ the slow rate
     //            beacon_now++; // Force a posit right away
     //            //fprintf(stderr,"Stopping, POSIT!\n");
     //        }
@@ -11452,7 +11454,7 @@ void compute_smart_beacon(char *current_course, char *current_speed)
 
 
     // Set to slow posit rate
-    sb_POSIT_rate = sb_posit_slow * 60; // Convert to seconds
+    xa_sb.posit_rate = xa_sb.posit_slow * 60; // Convert to seconds
   }
   else    // We're moving faster than the low speed limit
   {
@@ -11463,8 +11465,8 @@ void compute_smart_beacon(char *current_course, char *current_speed)
     // Check to see if we're just starting to move.  Again, we
     // probably need yet-another-speed-limit here to provide
     // some hysteresis.
-    //        if ( (secs_since_beacon > sb_turn_time)    // Haven't beaconed for a bit
-    //                && (sb_POSIT_rate == (sb_posit_slow * 60) ) ) { // Last rate was the slow rate
+    //        if ( (secs_since_beacon > xa_sb.turn_time)    // Haven't beaconed for a bit
+    //                && (xa_sb.posit_rate == (xa_sb.posit_slow * 60) ) ) { // Last rate was the slow rate
     //            beacon_now++; // Force a posit right away
     //            //fprintf(stderr,"Starting to move, POSIT!\n");
     //        }
@@ -11472,21 +11474,21 @@ void compute_smart_beacon(char *current_course, char *current_speed)
 
 
     // Start with turn_min degrees as the threshold
-    turn_threshold = sb_turn_min;
+    turn_threshold = xa_sb.turn_min;
 
     // Adjust rate according to speed
-    if (speed > sb_high_speed_limit)    // We're above the high limit
+    if (speed > xa_sb.high_speed_limit)    // We're above the high limit
     {
-      sb_POSIT_rate = sb_posit_fast;
+      xa_sb.posit_rate = xa_sb.posit_fast;
       //fprintf(stderr,"Setting fast rate\n");
     }
     else    // We're between the high/low limits.  Set a between rate
     {
-      sb_POSIT_rate = (sb_posit_fast * sb_high_speed_limit) / speed;
+      xa_sb.posit_rate = (xa_sb.posit_fast * xa_sb.high_speed_limit) / speed;
       //fprintf(stderr,"Setting medium rate\n");
 
       // Adjust turn threshold according to speed
-      turn_threshold += (int)( (sb_turn_slope * 10) / speed);
+      turn_threshold += (int)( (xa_sb.turn_slope * 10) / speed);
     }
 
     // Force a maximum turn threshold of 80 degrees (still too
@@ -11497,16 +11499,16 @@ void compute_smart_beacon(char *current_course, char *current_speed)
     }
 
     // Check to see if we've written anything into
-    // sb_last_heading variable yet.  If not, write the current
+    // xa_sb.last_heading variable yet.  If not, write the current
     // course into it.
-    if (sb_last_heading == -1)
+    if (xa_sb.last_heading == -1)
     {
-      sb_last_heading = course;
+      xa_sb.last_heading = course;
     }
 
     // Corner-pegging.  Note that we don't corner-peg if we're
     // below the low-speed threshold.
-    heading_change_since_beacon = abs(course - sb_last_heading);
+    heading_change_since_beacon = abs(course - xa_sb.last_heading);
     if (heading_change_since_beacon > 180)
     {
       heading_change_since_beacon = 360 - heading_change_since_beacon;
@@ -11515,12 +11517,12 @@ void compute_smart_beacon(char *current_course, char *current_speed)
     //fprintf(stderr,"course change:%d\n",heading_change_since_beacon);
 
     if ( (heading_change_since_beacon > turn_threshold)
-         && (secs_since_beacon > sb_turn_time) )
+         && (secs_since_beacon > xa_sb.turn_time) )
     {
       beacon_now++;   // Force a posit right away
 
       //fprintf(stderr,"Corner, POSIT!\tOld:%d\tNew:%d\tDifference:%d\tSpeed: %d\tTurn Threshold:%d\n",
-      //    sb_last_heading,
+      //    xa_sb.last_heading,
       //    course,
       //    heading_change_since_beacon,
       //    speed,
@@ -11530,7 +11532,7 @@ void compute_smart_beacon(char *current_course, char *current_speed)
 
     // EXPERIMENTAL
     ////////////////////////////////////////////////////////////////////
-    // If we haven't beaconed for a bit (3 * sb_turn_time?), and
+    // If we haven't beaconed for a bit (3 * xa_sb.turn_time?), and
     // just completed a turn, check to see if our heading has
     // stabilized yet.  If so, beacon the latest heading.  We'll
     // have to save another variable which says whether the last
@@ -11550,9 +11552,9 @@ void compute_smart_beacon(char *current_course, char *current_speed)
   // Check to see whether we've sped up sufficiently for the
   // posit_next_time variable to be too far out.  If so, shorten
   // that interval to match the current speed.
-  if ( (posit_next_time - curr_sec) > sb_POSIT_rate)
+  if ( (posit_next_time - curr_sec) > xa_sb.posit_rate)
   {
-    posit_next_time = curr_sec + sb_POSIT_rate;
+    posit_next_time = curr_sec + xa_sb.posit_rate;
   }
 
 
@@ -11565,11 +11567,11 @@ void compute_smart_beacon(char *current_course, char *current_speed)
   // speed?  Probably not.  It'll get modified at the next beacon
   // time, which will happen quickly.
 
-  // Save course for use later.  It gets put into sb_last_heading
+  // Save course for use later.  It gets put into xa_sb.last_heading
   // in UpdateTime() if a beacon occurs.  We then use it above to
   // determine the course deviation since the last time we
   // beaconed.
-  sb_current_heading = course;
+  xa_sb.current_heading = course;
 }
 
 
@@ -14051,9 +14053,9 @@ int decode_message(char *call,char *path,char *message,char from,int port,int th
 
       //update_messages(1); // Force an update
 
-      if (sound_play_new_message)
+      if (xa_sound[XA_SOUND_NEW_MESSAGE].enabled)
       {
-        play_sound(sound_command,sound_new_message);
+        play_sound(sound_command,xa_sound[XA_SOUND_NEW_MESSAGE].file);
       }
 
 #ifdef HAVE_FESTIVAL
@@ -14259,9 +14261,9 @@ int decode_message(char *call,char *path,char *message,char from,int port,int th
 
       //update_messages(1); // Force an update
 
-      if (sound_play_new_message)
+      if (xa_sound[XA_SOUND_NEW_MESSAGE].enabled)
       {
-        play_sound(sound_command,sound_new_message);
+        play_sound(sound_command,xa_sound[XA_SOUND_NEW_MESSAGE].file);
       }
 
 #ifdef HAVE_FESTIVAL
@@ -14739,9 +14741,9 @@ int decode_UI_message(char *call,char *path,char *message,char from,int port,int
     if (last_ack_sent != (time_t)-1l)
     {
 
-      if (sound_play_new_message)
+      if (xa_sound[XA_SOUND_NEW_MESSAGE].enabled)
       {
-        play_sound(sound_command,sound_new_message);
+        play_sound(sound_command,xa_sound[XA_SOUND_NEW_MESSAGE].file);
       }
 
       // Only send an ack or autoresponse once per 30 seconds
@@ -17036,13 +17038,13 @@ void search_tracked_station(DataRow **p_tracked)
           fprintf(stderr," tracked station is near %s!\n",curr->call_sign);
         }
 
-        if (sound_play_prox_message)
+        if (xa_sound[XA_SOUND_PROX].enabled)
         {
           sprintf(station_id,"%s < %.3f %s from %s",t->call_sign, distance,
                   english_units?langcode("UNIOP00004"):langcode("UNIOP00005"),
                   curr->call_sign);
           statusline(station_id,0);
-          play_sound(sound_command,sound_prox_message);
+          play_sound(sound_command,xa_sound[XA_SOUND_PROX].file);
         }
 #ifdef HAVE_FESTIVAL
         if (festival_speak_tracked_proximity_alert)

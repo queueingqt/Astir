@@ -54,6 +54,8 @@
 #include "ambiguity_utils.h"
 #include "cad_objects.h"
 
+#include "xa_settings.h"
+
 // Must be last include file
 #include "leak_detection.h"
 
@@ -1085,14 +1087,14 @@ void save_data(void)
 
     store_int (fout, "COMPRESSED_OBJECTS_ITEMS", transmit_compressed_objects_items);
 
-    store_int (fout, "SMART_BEACONING", smart_beaconing);
-    store_int (fout, "SB_TURN_MIN", sb_turn_min);
-    store_int (fout, "SB_TURN_SLOPE", sb_turn_slope);
-    store_int (fout, "SB_TURN_TIME", sb_turn_time);
-    store_int (fout, "SB_POSIT_FAST", sb_posit_fast);
-    store_int (fout, "SB_POSIT_SLOW", sb_posit_slow);
-    store_int (fout, "SB_LOW_SPEED_LIMIT", sb_low_speed_limit);
-    store_int (fout, "SB_HIGH_SPEED_LIMIT", sb_high_speed_limit);
+    store_int (fout, "SMART_BEACONING", xa_sb.enabled);
+    store_int (fout, "SB_TURN_MIN", xa_sb.turn_min);
+    store_int (fout, "SB_TURN_SLOPE", xa_sb.turn_slope);
+    store_int (fout, "SB_TURN_TIME", xa_sb.turn_time);
+    store_int (fout, "SB_POSIT_FAST", xa_sb.posit_fast);
+    store_int (fout, "SB_POSIT_SLOW", xa_sb.posit_slow);
+    store_int (fout, "SB_LOW_SPEED_LIMIT", xa_sb.low_speed_limit);
+    store_int (fout, "SB_HIGH_SPEED_LIMIT", xa_sb.high_speed_limit);
 
     store_int (fout, "POP_UP_NEW_BULLETINS", pop_up_new_bulletins);
     store_int (fout, "VIEW_ZERO_DISTANCE_BULLETINS", view_zero_distance_bulletins);
@@ -1114,21 +1116,21 @@ void save_data(void)
     /* Audio Alarms */
     store_string (fout, "SOUND_COMMAND", sound_command);
 
-    store_int (fout, "SOUND_PLAY_ONS", sound_play_new_station);
-    store_string (fout, "SOUND_ONS_FILE", sound_new_station);
-    store_int (fout, "SOUND_PLAY_ONM", sound_play_new_message);
-    store_string (fout, "SOUND_ONM_FILE", sound_new_message);
+    store_int (fout, "SOUND_PLAY_ONS", xa_sound[XA_SOUND_NEW_STATION].enabled);
+    store_string (fout, "SOUND_ONS_FILE", xa_sound[XA_SOUND_NEW_STATION].file);
+    store_int (fout, "SOUND_PLAY_ONM", xa_sound[XA_SOUND_NEW_MESSAGE].enabled);
+    store_string (fout, "SOUND_ONM_FILE", xa_sound[XA_SOUND_NEW_MESSAGE].file);
 
-    store_int (fout, "SOUND_PLAY_PROX", sound_play_prox_message);
-    store_string (fout, "SOUND_PROX_FILE", sound_prox_message);
+    store_int (fout, "SOUND_PLAY_PROX", xa_sound[XA_SOUND_PROX].enabled);
+    store_string (fout, "SOUND_PROX_FILE", xa_sound[XA_SOUND_PROX].file);
     store_string (fout, "PROX_MIN", prox_min);
     store_string (fout, "PROX_MAX", prox_max);
-    store_int (fout, "SOUND_PLAY_BAND", sound_play_band_open_message);
-    store_string (fout, "SOUND_BAND_FILE", sound_band_open_message);
+    store_int (fout, "SOUND_PLAY_BAND", xa_sound[XA_SOUND_BAND_OPEN].enabled);
+    store_string (fout, "SOUND_BAND_FILE", xa_sound[XA_SOUND_BAND_OPEN].file);
     store_string (fout, "BANDO_MIN", bando_min);
     store_string (fout, "BANDO_MAX", bando_max);
-    store_int (fout, "SOUND_PLAY_WX_ALERT", sound_play_wx_alert_message);
-    store_string (fout, "SOUND_WX_ALERT_FILE", sound_wx_alert_message);
+    store_int (fout, "SOUND_PLAY_WX_ALERT", xa_sound[XA_SOUND_WX_ALERT].enabled);
+    store_string (fout, "SOUND_WX_ALERT_FILE", xa_sound[XA_SOUND_WX_ALERT].file);
 
 #ifdef HAVE_FESTIVAL
     /* Festival speech settings */
@@ -2431,14 +2433,14 @@ void load_data_or_default(void)
   /* compressed objects/items transmit */
   transmit_compressed_objects_items = get_int ("COMPRESSED_OBJECTS_ITEMS", 0,1,0);
 
-  smart_beaconing = get_int ("SMART_BEACONING", 0,1,1);
-  sb_turn_min = get_int ("SB_TURN_MIN", 1,360,20);
-  sb_turn_slope = get_int ("SB_TURN_SLOPE", 0,360,25);
-  sb_turn_time = get_int ("SB_TURN_TIME", 0,3600,5);
-  sb_posit_fast = get_int ("SB_POSIT_FAST", 1,1440,60);
-  sb_posit_slow = get_int ("SB_POSIT_SLOW", 1,1440,30);
-  sb_low_speed_limit = get_int ("SB_LOW_SPEED_LIMIT", 0,999,2);
-  sb_high_speed_limit = get_int ("SB_HIGH_SPEED_LIMIT", 0,999,60);
+  xa_sb.enabled = get_int ("SMART_BEACONING", 0,1,1);
+  xa_sb.turn_min = get_int ("SB_TURN_MIN", 1,360,20);
+  xa_sb.turn_slope = get_int ("SB_TURN_SLOPE", 0,360,25);
+  xa_sb.turn_time = get_int ("SB_TURN_TIME", 0,3600,5);
+  xa_sb.posit_fast = get_int ("SB_POSIT_FAST", 1,1440,60);
+  xa_sb.posit_slow = get_int ("SB_POSIT_SLOW", 1,1440,30);
+  xa_sb.low_speed_limit = get_int ("SB_LOW_SPEED_LIMIT", 0,999,2);
+  xa_sb.high_speed_limit = get_int ("SB_HIGH_SPEED_LIMIT", 0,999,60);
 
   pop_up_new_bulletins = get_int ("POP_UP_NEW_BULLETINS", 0,1,1);
   view_zero_distance_bulletins = get_int ("VIEW_ZERO_DISTANCE_BULLETINS", 0,1,1);
@@ -2453,33 +2455,33 @@ void load_data_or_default(void)
                     sizeof(sound_command),
                     "play");
 
-  sound_play_new_station = get_int ("SOUND_PLAY_ONS", 0,1,0);
+  xa_sound[XA_SOUND_NEW_STATION].enabled = get_int ("SOUND_PLAY_ONS", 0,1,0);
 
-  if (!get_string ("SOUND_ONS_FILE", sound_new_station, sizeof(sound_new_station))
-      || sound_new_station[0] == '\0')
+  if (!get_string ("SOUND_ONS_FILE", xa_sound[XA_SOUND_NEW_STATION].file, sizeof(xa_sound[XA_SOUND_NEW_STATION].file))
+      || xa_sound[XA_SOUND_NEW_STATION].file[0] == '\0')
   {
-    xastir_snprintf(sound_new_station,
-                    sizeof(sound_new_station),
+    xastir_snprintf(xa_sound[XA_SOUND_NEW_STATION].file,
+                    sizeof(xa_sound[XA_SOUND_NEW_STATION].file),
                     "newstation.wav");
   }
 
-  sound_play_new_message = get_int ("SOUND_PLAY_ONM", 0,1,0);
+  xa_sound[XA_SOUND_NEW_MESSAGE].enabled = get_int ("SOUND_PLAY_ONM", 0,1,0);
 
-  if (!get_string ("SOUND_ONM_FILE", sound_new_message, sizeof(sound_new_message))
-      || sound_new_message[0] == '\0')
+  if (!get_string ("SOUND_ONM_FILE", xa_sound[XA_SOUND_NEW_MESSAGE].file, sizeof(xa_sound[XA_SOUND_NEW_MESSAGE].file))
+      || xa_sound[XA_SOUND_NEW_MESSAGE].file[0] == '\0')
   {
-    xastir_snprintf(sound_new_message,
-                    sizeof(sound_new_message),
+    xastir_snprintf(xa_sound[XA_SOUND_NEW_MESSAGE].file,
+                    sizeof(xa_sound[XA_SOUND_NEW_MESSAGE].file),
                     "newmessage.wav");
   }
 
-  sound_play_prox_message = get_int ("SOUND_PLAY_PROX", 0,1,0);
+  xa_sound[XA_SOUND_PROX].enabled = get_int ("SOUND_PLAY_PROX", 0,1,0);
 
-  if (!get_string ("SOUND_PROX_FILE", sound_prox_message, sizeof(sound_prox_message))
-      || sound_prox_message[0] == '\0')
+  if (!get_string ("SOUND_PROX_FILE", xa_sound[XA_SOUND_PROX].file, sizeof(xa_sound[XA_SOUND_PROX].file))
+      || xa_sound[XA_SOUND_PROX].file[0] == '\0')
   {
-    xastir_snprintf(sound_prox_message,
-                    sizeof(sound_prox_message),
+    xastir_snprintf(xa_sound[XA_SOUND_PROX].file,
+                    sizeof(xa_sound[XA_SOUND_PROX].file),
                     "proxwarn.wav");
   }
 
@@ -2499,13 +2501,13 @@ void load_data_or_default(void)
                     "10");
   }
 
-  sound_play_band_open_message = get_int ("SOUND_PLAY_BAND", 0,1,0);
+  xa_sound[XA_SOUND_BAND_OPEN].enabled = get_int ("SOUND_PLAY_BAND", 0,1,0);
 
-  if (!get_string ("SOUND_BAND_FILE", sound_band_open_message, sizeof(sound_band_open_message))
-      || sound_band_open_message[0] == '\0')
+  if (!get_string ("SOUND_BAND_FILE", xa_sound[XA_SOUND_BAND_OPEN].file, sizeof(xa_sound[XA_SOUND_BAND_OPEN].file))
+      || xa_sound[XA_SOUND_BAND_OPEN].file[0] == '\0')
   {
-    xastir_snprintf(sound_band_open_message,
-                    sizeof(sound_band_open_message),
+    xastir_snprintf(xa_sound[XA_SOUND_BAND_OPEN].file,
+                    sizeof(xa_sound[XA_SOUND_BAND_OPEN].file),
                     "bandopen.wav");
   }
 
@@ -2525,13 +2527,13 @@ void load_data_or_default(void)
                     "2000");
   }
 
-  sound_play_wx_alert_message = get_int ("SOUND_PLAY_WX_ALERT", 0,1,0);
+  xa_sound[XA_SOUND_WX_ALERT].enabled = get_int ("SOUND_PLAY_WX_ALERT", 0,1,0);
 
-  if (!get_string ("SOUND_WX_ALERT_FILE", sound_wx_alert_message, sizeof(sound_wx_alert_message))
-      || sound_wx_alert_message[0] == '\0')
+  if (!get_string ("SOUND_WX_ALERT_FILE", xa_sound[XA_SOUND_WX_ALERT].file, sizeof(xa_sound[XA_SOUND_WX_ALERT].file))
+      || xa_sound[XA_SOUND_WX_ALERT].file[0] == '\0')
   {
-    xastir_snprintf(sound_wx_alert_message,
-                    sizeof(sound_wx_alert_message),
+    xastir_snprintf(xa_sound[XA_SOUND_WX_ALERT].file,
+                    sizeof(xa_sound[XA_SOUND_WX_ALERT].file),
                     "thunder.wav");
   }
 

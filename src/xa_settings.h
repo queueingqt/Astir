@@ -59,17 +59,6 @@ extern int redraw_on_new_data;  // Station redraw request
 extern time_t POSIT_rate;  // Posit TX rate timer
 extern time_t OBJECT_rate;  // Object/Item TX rate timer
 extern time_t update_DR_rate;  // How often to call draw_symbols if DR enabled
-extern int smart_beaconing;  // Master enable/disable for SmartBeaconing(tm) mode
-extern int sb_POSIT_rate;  // Computed SmartBeaconing(tm) posit rate (secs)
-extern int sb_last_heading;  // Heading at time of last posit
-extern int sb_current_heading;  // Most recent heading parsed from GPS sentence
-extern int sb_turn_min;  // Min threshold for corner pegging (degrees)
-extern int sb_turn_slope;  // Threshold slope for corner pegging (degrees/mph)
-extern int sb_turn_time;  // Time between other beacon & turn beacon (secs)
-extern int sb_posit_fast;  // Fast beacon rate (secs)
-extern int sb_posit_slow;  // Slow beacon rate (mins)
-extern int sb_low_speed_limit;  // Speed below which SmartBeaconing(tm) is disabled &
-extern int sb_high_speed_limit;  // Speed above which we'll beacon at the
 extern int net_map_timeout;
 extern int trail_segment_time;  // Segment missing if above this time (mins)
 extern int trail_segment_distance;  // Segment missing if greater distance
@@ -108,19 +97,50 @@ extern char LOGFILE_MESSAGE[400];
 extern char LOGFILE_WX[400];
 extern char LOGFILE_WX_ALERT[400];
 extern char sound_command[90];
-extern int sound_play_new_station;
-extern char sound_new_station[90];
-extern int sound_play_new_message;
-extern char sound_new_message[90];
-extern int sound_play_prox_message;
-extern char sound_prox_message[90];
 extern char prox_min[30];
 extern char prox_max[30];
-extern int sound_play_band_open_message;
-extern char sound_band_open_message[90];
 extern char bando_min[30];
 extern char bando_max[30];
-extern int sound_play_wx_alert_message;
-extern char sound_wx_alert_message[90];
+
+// SmartBeaconing(tm) settings and runtime state.  Was eleven separate sb_*
+// globals; they are one subsystem and are now one struct.
+typedef struct
+{
+  int enabled;
+  int posit_fast;         // secs
+  int posit_slow;         // mins
+  int low_speed_limit;
+  int high_speed_limit;
+  int turn_min;           // degrees
+  int turn_slope;         // degrees/mph
+  int turn_time;          // secs
+  // Runtime state rather than configuration:
+  int posit_rate;         // computed posit rate (secs)
+  int current_heading;
+  int last_heading;
+} xa_smart_beacon_t;
+
+extern xa_smart_beacon_t xa_sb;
+
+// Sounds were five pairs of parallel globals -- a play-this flag and a
+// filename each.  One table indexed by the event removes the duplication and
+// makes adding an event a one-line change.
+typedef enum
+{
+  XA_SOUND_NEW_STATION = 0,
+  XA_SOUND_NEW_MESSAGE,
+  XA_SOUND_PROX,
+  XA_SOUND_BAND_OPEN,
+  XA_SOUND_WX_ALERT,
+  XA_SOUND_COUNT
+} xa_sound_event_t;
+
+typedef struct
+{
+  int  enabled;
+  char file[90];
+} xa_sound_cfg_t;
+
+extern xa_sound_cfg_t xa_sound[XA_SOUND_COUNT];
 
 #endif // XA_SETTINGS_H

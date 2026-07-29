@@ -43,17 +43,6 @@ int redraw_on_new_data;         // Station redraw request
 time_t POSIT_rate;              // Posit TX rate timer
 time_t OBJECT_rate;             // Object/Item TX rate timer
 time_t update_DR_rate;          // How often to call draw_symbols if DR enabled
-int smart_beaconing;            // Master enable/disable for SmartBeaconing(tm) mode
-int sb_POSIT_rate = 30 * 60;    // Computed SmartBeaconing(tm) posit rate (secs)
-int sb_last_heading = -1;       // Heading at time of last posit
-int sb_current_heading = -1;    // Most recent heading parsed from GPS sentence
-int sb_turn_min = 20;           // Min threshold for corner pegging (degrees)
-int sb_turn_slope = 25;         // Threshold slope for corner pegging (degrees/mph)
-int sb_turn_time = 5;           // Time between other beacon & turn beacon (secs)
-int sb_posit_fast = 90;         // Fast beacon rate (secs)
-int sb_posit_slow = 30;         // Slow beacon rate (mins)
-int sb_low_speed_limit = 2;     // Speed below which SmartBeaconing(tm) is disabled &
-int sb_high_speed_limit = 60;   // Speed above which we'll beacon at the
 int net_map_timeout = 120;
 int trail_segment_time;         // Segment missing if above this time (mins)
 int trail_segment_distance;     // Segment missing if greater distance
@@ -92,17 +81,28 @@ char LOGFILE_MESSAGE[400];
 char LOGFILE_WX[400];
 char LOGFILE_WX_ALERT[400];
 char sound_command[90];
-int  sound_play_new_station;
-char sound_new_station[90];
-int  sound_play_new_message;
-char sound_new_message[90];
-int  sound_play_prox_message;
-char sound_prox_message[90];
 char prox_min[30];
 char prox_max[30];
-int  sound_play_band_open_message;
-char sound_band_open_message[90];
 char bando_min[30];
 char bando_max[30];
-int  sound_play_wx_alert_message;
-char sound_wx_alert_message[90];
+
+// SmartBeaconing(tm): eleven parallel sb_* scalars collapsed into one struct.
+// The first eight are configuration; the last three are runtime state, kept
+// together because they belong to the same subsystem.
+xa_smart_beacon_t xa_sb =
+{
+  .enabled          = 0,
+  .posit_fast       = 90,       // secs
+  .posit_slow       = 30,       // mins
+  .low_speed_limit  = 2,        // below this, SmartBeaconing is disabled
+  .high_speed_limit = 60,
+  .turn_min         = 20,       // degrees
+  .turn_slope       = 25,       // degrees/mph
+  .turn_time        = 5,        // secs between other beacon and turn beacon
+  .posit_rate       = 30 * 60,  // computed posit rate (secs)
+  .current_heading  = -1,
+  .last_heading     = -1,
+};
+
+// Five {play?, filename} pairs collapsed into one table indexed by event.
+xa_sound_cfg_t xa_sound[XA_SOUND_COUNT];

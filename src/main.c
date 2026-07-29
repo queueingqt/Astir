@@ -968,7 +968,7 @@ int pending_ID_message = 0;     // Variable turning on/off this function
 
 
 // SmartBeaconing(tm) stuff.  If enabled, POSIT_rate won't be used
-// for timing posits. sb_POSIT_rate computed via SmartBeaconing(tm)
+// for timing posits. xa_sb.posit_rate computed via SmartBeaconing(tm)
 // will be used instead.
 // we'll beacon at the POSIT_slow rate (mph)
 // POSIT_fast rate (mph)
@@ -1144,7 +1144,7 @@ void Smart_Beacon_change_data(Widget widget, XtPointer clientData, XtPointer cal
     char *str_ptr1;
     int i;
 
-    smart_beaconing = (int)XmToggleButtonGetState(smart_beacon_enable);
+    xa_sb.enabled = (int)XmToggleButtonGetState(smart_beacon_enable);
 
     str_ptr1 = XmTextGetString(sb_hi_rate_data);
     i = atoi(str_ptr1);
@@ -1152,7 +1152,7 @@ void Smart_Beacon_change_data(Widget widget, XtPointer clientData, XtPointer cal
     {
       i = 90;
     }
-    sb_posit_fast = i;
+    xa_sb.posit_fast = i;
     // Free the space.
     XtFree(str_ptr1);
 
@@ -1172,7 +1172,7 @@ void Smart_Beacon_change_data(Widget widget, XtPointer clientData, XtPointer cal
     {
       i = 60;
     }
-    sb_high_speed_limit = i;
+    xa_sb.high_speed_limit = i;
     // Free the space.
     XtFree(str_ptr1);
 
@@ -1182,7 +1182,7 @@ void Smart_Beacon_change_data(Widget widget, XtPointer clientData, XtPointer cal
     {
       i = 30;
     }
-    sb_posit_slow = i;
+    xa_sb.posit_slow = i;
     // Free the space.
     XtFree(str_ptr1);
 
@@ -1202,7 +1202,7 @@ void Smart_Beacon_change_data(Widget widget, XtPointer clientData, XtPointer cal
     {
       i = 2;
     }
-    sb_low_speed_limit = i;
+    xa_sb.low_speed_limit = i;
     // Free the space.
     XtFree(str_ptr1);
 
@@ -1212,7 +1212,7 @@ void Smart_Beacon_change_data(Widget widget, XtPointer clientData, XtPointer cal
     {
       i = 20;
     }
-    sb_turn_min = i;
+    xa_sb.turn_min = i;
     // Free the space.
     XtFree(str_ptr1);
 
@@ -1222,7 +1222,7 @@ void Smart_Beacon_change_data(Widget widget, XtPointer clientData, XtPointer cal
     {
       i = 25;
     }
-    sb_turn_slope = i;
+    xa_sb.turn_slope = i;
     // Free the space.
     XtFree(str_ptr1);
 
@@ -1232,7 +1232,7 @@ void Smart_Beacon_change_data(Widget widget, XtPointer clientData, XtPointer cal
     {
       i = 5;
     }
-    sb_turn_time = i;
+    xa_sb.turn_time = i;
     // Free the space.
     XtFree(str_ptr1);
 
@@ -1688,7 +1688,7 @@ void Smart_Beacon(Widget w, XtPointer UNUSED(clientData), XtPointer callData)
   if (smart_beacon_dialog != NULL)
   {
 
-    if(smart_beaconing)
+    if(xa_sb.enabled)
     {
       XmToggleButtonSetState(smart_beacon_enable,TRUE,FALSE);
     }
@@ -1697,7 +1697,7 @@ void Smart_Beacon(Widget w, XtPointer UNUSED(clientData), XtPointer callData)
       XmToggleButtonSetState(smart_beacon_enable,FALSE,FALSE);
     }
 
-    xastir_snprintf(temp_string, sizeof(temp_string), "%d", sb_posit_fast);
+    xastir_snprintf(temp_string, sizeof(temp_string), "%d", xa_sb.posit_fast);
     XmTextSetString(sb_hi_rate_data, temp_string);
 
     switch (english_units)
@@ -1706,7 +1706,7 @@ void Smart_Beacon(Widget w, XtPointer UNUSED(clientData), XtPointer callData)
         xastir_snprintf(temp_string,
                         sizeof(temp_string),
                         "%d",
-                        (int)((sb_high_speed_limit * 1.6094) + 0.5) );
+                        (int)((xa_sb.high_speed_limit * 1.6094) + 0.5) );
         break;
       case 1: // English
       case 2: // Nautical
@@ -1714,12 +1714,12 @@ void Smart_Beacon(Widget w, XtPointer UNUSED(clientData), XtPointer callData)
         xastir_snprintf(temp_string,
                         sizeof(temp_string),
                         "%d",
-                        sb_high_speed_limit);
+                        xa_sb.high_speed_limit);
         break;
     }
     XmTextSetString(sb_hi_mph_data, temp_string);
 
-    xastir_snprintf(temp_string, sizeof(temp_string), "%d", sb_posit_slow);
+    xastir_snprintf(temp_string, sizeof(temp_string), "%d", xa_sb.posit_slow);
     XmTextSetString(sb_lo_rate_data, temp_string);
 
     switch (english_units)
@@ -1728,7 +1728,7 @@ void Smart_Beacon(Widget w, XtPointer UNUSED(clientData), XtPointer callData)
         xastir_snprintf(temp_string,
                         sizeof(temp_string),
                         "%d",
-                        (int)((sb_low_speed_limit * 1.6094) + 0.5) );
+                        (int)((xa_sb.low_speed_limit * 1.6094) + 0.5) );
         break;
       case 1: // English
       case 2: // Nautical
@@ -1736,18 +1736,18 @@ void Smart_Beacon(Widget w, XtPointer UNUSED(clientData), XtPointer callData)
         xastir_snprintf(temp_string,
                         sizeof(temp_string),
                         "%d",
-                        sb_low_speed_limit);
+                        xa_sb.low_speed_limit);
         break;
     }
     XmTextSetString(sb_lo_mph_data, temp_string);
 
-    xastir_snprintf(temp_string, sizeof(temp_string), "%d", sb_turn_min);
+    xastir_snprintf(temp_string, sizeof(temp_string), "%d", xa_sb.turn_min);
     XmTextSetString(sb_min_turn_data, temp_string);
 
-    xastir_snprintf(temp_string, sizeof(temp_string), "%d", sb_turn_slope);
+    xastir_snprintf(temp_string, sizeof(temp_string), "%d", xa_sb.turn_slope);
     XmTextSetString(sb_turn_slope_data, temp_string);
 
-    xastir_snprintf(temp_string, sizeof(temp_string), "%d", sb_turn_time);
+    xastir_snprintf(temp_string, sizeof(temp_string), "%d", xa_sb.turn_time);
     XmTextSetString(sb_wait_time_data, temp_string);
   }
 }
@@ -12854,9 +12854,9 @@ void UpdateTime( XtPointer clientData, XtIntervalId UNUSED(id) )
           // count of active alerts. Sound alarm if new alerts are displayed.
           if ((temp_alert_count = alert_on_screen()) > last_alert_on_screen)
           {
-            if (sound_play_wx_alert_message)
+            if (xa_sound[XA_SOUND_WX_ALERT].enabled)
             {
-              play_sound(sound_command, sound_wx_alert_message);
+              play_sound(sound_command, xa_sound[XA_SOUND_WX_ALERT].file);
             }
 #ifdef HAVE_FESTIVAL
             if (festival_speak_new_weather_alert)
@@ -13262,12 +13262,12 @@ void UpdateTime( XtPointer clientData, XtIntervalId UNUSED(id) )
 
         posit_last_time = current_time;
 
-        if (smart_beaconing)
+        if (xa_sb.enabled)
         {
           // Schedule next computed posit time based on
           // speed/turns, etc.
-          posit_next_time = posit_last_time + sb_POSIT_rate;
-          sb_last_heading = sb_current_heading;
+          posit_next_time = posit_last_time + xa_sb.posit_rate;
+          xa_sb.last_heading = xa_sb.current_heading;
           //fprintf(stderr,"Sending Posit\n");
         }
         else
@@ -26499,31 +26499,31 @@ void Configure_audio_alarm_change_data(Widget widget, XtPointer clientData, XtPo
   (void)remove_trailing_spaces(sound_command);
 
   temp_ptr = XmTextFieldGetString(audio_alarm_config_play_ons_data);
-  xastir_snprintf(sound_new_station,
-                  sizeof(sound_new_station),
+  xastir_snprintf(xa_sound[XA_SOUND_NEW_STATION].file,
+                  sizeof(xa_sound[XA_SOUND_NEW_STATION].file),
                   "%s",
                   temp_ptr);
   XtFree(temp_ptr);
 
-  (void)remove_trailing_spaces(sound_new_station);
+  (void)remove_trailing_spaces(xa_sound[XA_SOUND_NEW_STATION].file);
 
   temp_ptr = XmTextFieldGetString(audio_alarm_config_play_onm_data);
-  xastir_snprintf(sound_new_message,
-                  sizeof(sound_new_message),
+  xastir_snprintf(xa_sound[XA_SOUND_NEW_MESSAGE].file,
+                  sizeof(xa_sound[XA_SOUND_NEW_MESSAGE].file),
                   "%s",
                   temp_ptr);
   XtFree(temp_ptr);
 
-  (void)remove_trailing_spaces(sound_new_message);
+  (void)remove_trailing_spaces(xa_sound[XA_SOUND_NEW_MESSAGE].file);
 
   temp_ptr = XmTextFieldGetString(audio_alarm_config_play_onpx_data);
-  xastir_snprintf(sound_prox_message,
-                  sizeof(sound_prox_message),
+  xastir_snprintf(xa_sound[XA_SOUND_PROX].file,
+                  sizeof(xa_sound[XA_SOUND_PROX].file),
                   "%s",
                   temp_ptr);
   XtFree(temp_ptr);
 
-  (void)remove_trailing_spaces(sound_prox_message);
+  (void)remove_trailing_spaces(xa_sound[XA_SOUND_PROX].file);
 
   temp_ptr = XmTextFieldGetString(prox_min_data);
   xastir_snprintf(prox_min,
@@ -26544,13 +26544,13 @@ void Configure_audio_alarm_change_data(Widget widget, XtPointer clientData, XtPo
   (void)remove_trailing_spaces(prox_max);
 
   temp_ptr = XmTextFieldGetString(audio_alarm_config_play_onbo_data);
-  xastir_snprintf(sound_band_open_message,
-                  sizeof(sound_band_open_message),
+  xastir_snprintf(xa_sound[XA_SOUND_BAND_OPEN].file,
+                  sizeof(xa_sound[XA_SOUND_BAND_OPEN].file),
                   "%s",
                   temp_ptr);
   XtFree(temp_ptr);
 
-  (void)remove_trailing_spaces(sound_band_open_message);
+  (void)remove_trailing_spaces(xa_sound[XA_SOUND_BAND_OPEN].file);
 
   temp_ptr = XmTextFieldGetString(bando_min_data);
   xastir_snprintf(bando_min,
@@ -26571,57 +26571,57 @@ void Configure_audio_alarm_change_data(Widget widget, XtPointer clientData, XtPo
   (void)remove_trailing_spaces(bando_max);
 
   temp_ptr = XmTextFieldGetString(audio_alarm_config_wx_alert_data);
-  xastir_snprintf(sound_wx_alert_message,
-                  sizeof(sound_wx_alert_message),
+  xastir_snprintf(xa_sound[XA_SOUND_WX_ALERT].file,
+                  sizeof(xa_sound[XA_SOUND_WX_ALERT].file),
                   "%s",
                   temp_ptr);
   XtFree(temp_ptr);
 
-  (void)remove_trailing_spaces(sound_wx_alert_message);
+  (void)remove_trailing_spaces(xa_sound[XA_SOUND_WX_ALERT].file);
 
   if(XmToggleButtonGetState(audio_alarm_config_play_on_new_station))
   {
-    sound_play_new_station=1;
+    xa_sound[XA_SOUND_NEW_STATION].enabled=1;
   }
   else
   {
-    sound_play_new_station=0;
+    xa_sound[XA_SOUND_NEW_STATION].enabled=0;
   }
 
   if(XmToggleButtonGetState(audio_alarm_config_play_on_new_message))
   {
-    sound_play_new_message=1;
+    xa_sound[XA_SOUND_NEW_MESSAGE].enabled=1;
   }
   else
   {
-    sound_play_new_message=0;
+    xa_sound[XA_SOUND_NEW_MESSAGE].enabled=0;
   }
 
   if(XmToggleButtonGetState(audio_alarm_config_play_on_prox))
   {
-    sound_play_prox_message=1;
+    xa_sound[XA_SOUND_PROX].enabled=1;
   }
   else
   {
-    sound_play_prox_message=0;
+    xa_sound[XA_SOUND_PROX].enabled=0;
   }
 
   if(XmToggleButtonGetState(audio_alarm_config_play_on_bando))
   {
-    sound_play_band_open_message=1;
+    xa_sound[XA_SOUND_BAND_OPEN].enabled=1;
   }
   else
   {
-    sound_play_band_open_message=0;
+    xa_sound[XA_SOUND_BAND_OPEN].enabled=0;
   }
 
   if(XmToggleButtonGetState(audio_alarm_config_play_on_wx_alert))
   {
-    sound_play_wx_alert_message=1;
+    xa_sound[XA_SOUND_WX_ALERT].enabled=1;
   }
   else
   {
-    sound_play_wx_alert_message=0;
+    xa_sound[XA_SOUND_WX_ALERT].enabled=0;
   }
 
   Configure_audio_alarm_destroy_shell(widget,clientData,callData);
@@ -27214,17 +27214,17 @@ void Configure_audio_alarms( Widget UNUSED(w), XtPointer UNUSED(clientData), XtP
                             (XtPointer)configure_audio_alarm_dialog);
 
     XmTextFieldSetString(audio_alarm_config_play_data,sound_command);
-    XmTextFieldSetString(audio_alarm_config_play_ons_data,sound_new_station);
-    XmTextFieldSetString(audio_alarm_config_play_onm_data,sound_new_message);
-    XmTextFieldSetString(audio_alarm_config_play_onpx_data,sound_prox_message);
+    XmTextFieldSetString(audio_alarm_config_play_ons_data,xa_sound[XA_SOUND_NEW_STATION].file);
+    XmTextFieldSetString(audio_alarm_config_play_onm_data,xa_sound[XA_SOUND_NEW_MESSAGE].file);
+    XmTextFieldSetString(audio_alarm_config_play_onpx_data,xa_sound[XA_SOUND_PROX].file);
     XmTextFieldSetString(prox_min_data,prox_min);
     XmTextFieldSetString(prox_max_data,prox_max);
-    XmTextFieldSetString(audio_alarm_config_play_onbo_data,sound_band_open_message);
+    XmTextFieldSetString(audio_alarm_config_play_onbo_data,xa_sound[XA_SOUND_BAND_OPEN].file);
     XmTextFieldSetString(bando_min_data,bando_min);
     XmTextFieldSetString(bando_max_data,bando_max);
-    XmTextFieldSetString(audio_alarm_config_wx_alert_data, sound_wx_alert_message);
+    XmTextFieldSetString(audio_alarm_config_wx_alert_data, xa_sound[XA_SOUND_WX_ALERT].file);
 
-    if(sound_play_new_station)
+    if(xa_sound[XA_SOUND_NEW_STATION].enabled)
     {
       XmToggleButtonSetState(audio_alarm_config_play_on_new_station,TRUE,FALSE);
     }
@@ -27233,7 +27233,7 @@ void Configure_audio_alarms( Widget UNUSED(w), XtPointer UNUSED(clientData), XtP
       XmToggleButtonSetState(audio_alarm_config_play_on_new_station,FALSE,FALSE);
     }
 
-    if(sound_play_new_message)
+    if(xa_sound[XA_SOUND_NEW_MESSAGE].enabled)
     {
       XmToggleButtonSetState(audio_alarm_config_play_on_new_message,TRUE,FALSE);
     }
@@ -27242,7 +27242,7 @@ void Configure_audio_alarms( Widget UNUSED(w), XtPointer UNUSED(clientData), XtP
       XmToggleButtonSetState(audio_alarm_config_play_on_new_message,FALSE,FALSE);
     }
 
-    if(sound_play_prox_message)
+    if(xa_sound[XA_SOUND_PROX].enabled)
     {
       XmToggleButtonSetState(audio_alarm_config_play_on_prox,TRUE,FALSE);
     }
@@ -27251,7 +27251,7 @@ void Configure_audio_alarms( Widget UNUSED(w), XtPointer UNUSED(clientData), XtP
       XmToggleButtonSetState(audio_alarm_config_play_on_prox,FALSE,FALSE);
     }
 
-    if(sound_play_band_open_message)
+    if(xa_sound[XA_SOUND_BAND_OPEN].enabled)
     {
       XmToggleButtonSetState(audio_alarm_config_play_on_bando,TRUE,FALSE);
     }
@@ -27260,7 +27260,7 @@ void Configure_audio_alarms( Widget UNUSED(w), XtPointer UNUSED(clientData), XtP
       XmToggleButtonSetState(audio_alarm_config_play_on_bando,FALSE,FALSE);
     }
 
-    if (sound_play_wx_alert_message)
+    if (xa_sound[XA_SOUND_WX_ALERT].enabled)
     {
       XmToggleButtonSetState(audio_alarm_config_play_on_wx_alert, TRUE, FALSE);
     }
