@@ -4049,11 +4049,25 @@ static void motif_ui_pump_events(void)
   HandlePendingEvents(app_context);
 }
 
+// Every core caller passed appshell, so the choice of widget was never the
+// core's -- it belongs here with the rest of the Motif shell.
+static void motif_ui_busy(void)
+{
+  busy_cursor(appshell);
+}
+
 void xa_ui_register_motif(void)
 {
-  xa_ui_callbacks cb;
+  // Zero-initialised, not member-by-member into an uninitialised local.  A
+  // member this function forgets to set is then a NULL the dispatcher skips,
+  // rather than an indeterminate pointer it calls.  That matters more as the
+  // table grows: the omission is silent either way, but only one of the two
+  // outcomes is a crash in whatever core code happened to make the call.
+  xa_ui_callbacks cb = { 0 };
+
   cb.status = motif_ui_status;
   cb.pump_events = motif_ui_pump_events;
+  cb.busy = motif_ui_busy;
   xa_ui_set_callbacks(&cb);
 }
 

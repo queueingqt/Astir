@@ -131,7 +131,7 @@ int forked_getaddrinfo(const char *hostname, const char *servname, const struct 
     fprintf(stderr,"Start Host lookup\n");
   }
 
-  busy_cursor(appshell);
+  xa_ui_busy();
 
   if (debug_level & 1024)
   {

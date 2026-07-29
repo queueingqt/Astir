@@ -3522,7 +3522,7 @@ int net_init(int port)
       fprintf(stderr,"Error creating net_connect thread, port %d\n",port);
     }
 
-    busy_cursor(appshell);
+    xa_ui_busy();
     wait_time = sec_now() + NETWORK_WAITTIME;  // Set ending time for wait
     wait_on_connect = 1;
     while (wait_on_connect && (sec_now() < wait_time))

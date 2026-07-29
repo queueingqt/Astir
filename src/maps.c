@@ -4310,7 +4310,7 @@ static void Print_window( Widget widget, XtPointer UNUSED(clientData), XtPointer
                   "%s/print.ps",
                   temp_base_dir);
 
-  busy_cursor(appshell);  // Show a busy cursor while we're doing all of this
+  xa_ui_busy();           // Show a busy cursor while we're doing all of this
 
   // Get rid of the Print dialog
   Print_postscript_destroy_shell(widget, print_postscript_dialog, NULL );
@@ -4504,7 +4504,7 @@ static void Print_preview( Widget widget, XtPointer UNUSED(clientData), XtPointe
                   "%s/print.ps",
                   temp_base_dir);
 
-  busy_cursor(appshell);  // Show a busy cursor while we're doing all of this
+  xa_ui_busy();           // Show a busy cursor while we're doing all of this
 
   // Get rid of the Print Properties dialog if it exists
   Print_properties_destroy_shell(widget, print_properties_dialog, NULL );

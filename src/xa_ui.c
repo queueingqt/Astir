@@ -13,15 +13,17 @@
 
 #include "xa_ui.h"
 
-static xa_ui_callbacks ui = { NULL, NULL };
+// { 0 } rather than a member-per-line list, here and below, so that adding a
+// callback cannot leave one of them behind holding a stale pointer.
+static xa_ui_callbacks ui = { 0 };
 
 
 void xa_ui_set_callbacks(const xa_ui_callbacks *cb)
 {
   if (cb == NULL)
   {
-    ui.status = NULL;
-    ui.pump_events = NULL;
+    static const xa_ui_callbacks none = { 0 };
+    ui = none;
     return;
   }
   ui = *cb;
@@ -44,5 +46,14 @@ void xa_ui_pump_events(void)
   if (ui.pump_events != NULL)
   {
     ui.pump_events();
+  }
+}
+
+
+void xa_ui_busy(void)
+{
+  if (ui.busy != NULL)
+  {
+    ui.busy();
   }
 }

@@ -50,6 +50,8 @@
 
 #include "xa_draw.h"
 
+#include "xa_ui.h"
+
 // Must be last include file
 #include "leak_detection.h"
 
@@ -2299,7 +2301,7 @@ void load_pixmap_symbol_file(char *filename, int reloading)
   char pixels[400];
   char orient;
 
-  busy_cursor(appshell);
+  xa_ui_busy();
   symbols_loaded = 0;
   table_char = '\0';
   symbol_char = '\0';

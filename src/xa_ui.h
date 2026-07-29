@@ -29,6 +29,16 @@ typedef struct
   // zoom can interrupt a slow redraw -- see interrupt_drawing_now.  It is the
   // reason core objects referenced the Xt application context at all.
   void (*pump_events)(void);
+
+  // Say that something slow has started, so the front end can show whatever
+  // it uses for that.  There is no matching "not busy": the Motif shell
+  // clears the cursor from an idle work procedure, and a front end that
+  // wanted an explicit end would need a different shape than this.
+  //
+  // Core callers never chose a widget -- all five sites passed the main
+  // window -- so nothing is passed here.  That is what makes it a callback
+  // rather than a wrapper.
+  void (*busy)(void);
 } xa_ui_callbacks;
 
 // Install the front end's implementations.  Passing NULL, or leaving a member
@@ -38,5 +48,6 @@ void xa_ui_set_callbacks(const xa_ui_callbacks *cb);
 // Core-side entry point.  Safe to call before any front end has registered.
 void xa_ui_status(const char *text);
 void xa_ui_pump_events(void);
+void xa_ui_busy(void);
 
 #endif // XA_UI_H
