@@ -4090,6 +4090,42 @@ static void motif_ui_redraw(void)
   redraw_symbols(da);
 }
 
+// These take char* rather than const char*; none of them writes through the
+// pointer, and changing eleven GUI signatures is a separate cleanup.
+static void motif_ui_popup(const char *banner, const char *message)
+{
+  popup_message((char *)banner, (char *)message);
+}
+
+static void motif_ui_popup_always(const char *banner, const char *message)
+{
+  popup_message_always((char *)banner, (char *)message);
+}
+
+static void motif_ui_interfaces_changed(void)
+{
+  update_interface_list();
+}
+
+static void motif_ui_wx_data_changed(void)
+{
+  fill_wx_data();
+}
+
+static void motif_ui_bulletin_added(const char *call_sign, const char *from_call,
+                                    const char *data, const char *seq,
+                                    char type, char from)
+{
+  bulletin_data_add((char *)call_sign, (char *)from_call, (char *)data,
+                    (char *)seq, type, from);
+}
+
+static void motif_ui_message_logged(char from, const char *call_sign,
+                                    const char *from_call, const char *message)
+{
+  all_messages(from, (char *)call_sign, (char *)from_call, (char *)message);
+}
+
 void xa_ui_register_motif(void)
 {
   // Zero-initialised, not member-by-member into an uninitialised local.  A
@@ -4107,6 +4143,12 @@ void xa_ui_register_motif(void)
   cb.free_label = motif_ui_free_label;
   cb.open_message_window = motif_ui_open_message_window;
   cb.redraw = motif_ui_redraw;
+  cb.popup = motif_ui_popup;
+  cb.popup_always = motif_ui_popup_always;
+  cb.interfaces_changed = motif_ui_interfaces_changed;
+  cb.wx_data_changed = motif_ui_wx_data_changed;
+  cb.bulletin_added = motif_ui_bulletin_added;
+  cb.message_logged = motif_ui_message_logged;
   xa_ui_set_callbacks(&cb);
 }
 

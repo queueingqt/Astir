@@ -1320,7 +1320,7 @@ int get_open_device(void)
 
   if (found == -1)
   {
-    popup_message(langcode("POPEM00004"),langcode("POPEM00017"));
+    xa_ui_popup(langcode("POPEM00004"),langcode("POPEM00017"));
   }
 
   return(found);
@@ -1639,7 +1639,7 @@ int my_ax25_aton_arglist(char *call[], struct full_sockaddr_ax25 *sax)
     }
     if (ax25_aton_entry(bp, addrp) == -1)
     {
-      popup_message("Bad callsign!", bp);
+      xa_ui_popup("Bad callsign!", bp);
       return -1;
     }
     if (n >= 1 && star)
@@ -1712,27 +1712,27 @@ int ui_connect( int port, char *to[])
   {
     xastir_snprintf(temp, sizeof(temp), langcode("POPEM00005"),
                     port_data[port].device_name);
-    popup_message(langcode("POPEM00004"),temp);
+    xa_ui_popup(langcode("POPEM00004"),temp);
     return -1;
   }
   if (ax25_aton_entry(portcall, axbind.fsa_digipeater[0].ax25_call) == -1)
   {
     xastir_snprintf(temp, sizeof(temp), langcode("POPEM00006"),
                     port_data[port].device_name);
-    popup_message(langcode("POPEM00004"), temp);
+    xa_ui_popup(langcode("POPEM00004"), temp);
     return -1;
   }
 
   if (ax25_aton_entry(port_data[port].ui_call, axbind.fsa_ax25.sax25_call.ax25_call) == -1)
   {
     xastir_snprintf(temp, sizeof(temp), langcode("POPEM00007"), port_data[port].ui_call);
-    popup_message(langcode("POPEM00004"),temp);
+    xa_ui_popup(langcode("POPEM00004"),temp);
     return -1;
   }
 
   if (my_ax25_aton_arglist(to, &axconnect) == -1)
   {
-    popup_message(langcode("POPEM00004"),langcode("POPEM00008"));
+    xa_ui_popup(langcode("POPEM00004"),langcode("POPEM00008"));
     return -1;
   }
 
@@ -1743,7 +1743,7 @@ int ui_connect( int port, char *to[])
   if ((s = socket(AF_AX25, SOCK_DGRAM, 0)) < 0)
   {
     xastir_snprintf(temp, sizeof(temp), langcode("POPEM00009"), strerror(errno));
-    popup_message(langcode("POPEM00004"),temp);
+    xa_ui_popup(langcode("POPEM00004"),temp);
     return -1;
   }
 
@@ -1755,7 +1755,7 @@ int ui_connect( int port, char *to[])
   {
     DISABLE_SETUID_PRIVILEGE;
     xastir_snprintf(temp, sizeof(temp), langcode("POPEM00010"), strerror(errno));
-    popup_message(langcode("POPEM00004"),temp);
+    xa_ui_popup(langcode("POPEM00004"),temp);
     return -1;
   }
   DISABLE_SETUID_PRIVILEGE;
@@ -1787,7 +1787,7 @@ int ui_connect( int port, char *to[])
   if (connect(s, (struct sockaddr *)&axconnect, addrlen) != 0)
   {
     xastir_snprintf(temp, sizeof(temp), langcode("POPEM00011"), strerror(errno));
-    popup_message(langcode("POPEM00004"),temp);
+    xa_ui_popup(langcode("POPEM00004"),temp);
     return -1;
   }
 
@@ -1922,7 +1922,7 @@ static void data_out_ax25(int port, unsigned char *string)
 
           if ((port_data[port].channel2 = ui_connect(port,to)) < 0)
           {
-            popup_message(langcode("POPEM00004"),langcode("POPEM00012"));
+            xa_ui_popup(langcode("POPEM00004"),langcode("POPEM00012"));
             port_data[port].errors++;
           }
           else      // Port re-opened and re-configured
@@ -2300,7 +2300,7 @@ int ax25_init(int port)
   port_data[port].status = DEVICE_DOWN;
 
   // Show the latest status in the interface control dialog
-  update_interface_list();
+  xa_ui_interfaces_changed();
 
 #ifdef HAVE_LIBAX25
   if (ax25_ports_loaded == 0)
@@ -2309,7 +2309,7 @@ int ax25_init(int port)
     if (ax25_config_load_ports() == 0)
     {
       fprintf(stderr, "ERROR: problem with axports file\n");
-      popup_message(langcode("POPEM00004"),langcode("POPEM00013"));
+      xa_ui_popup(langcode("POPEM00004"),langcode("POPEM00013"));
 
       if (end_critical_section(&port_data_lock, "interface.c:ax25_init(2)" ) > 0)
       {
@@ -2328,7 +2328,7 @@ int ax25_init(int port)
     {
       xastir_snprintf(temp, sizeof(temp), langcode("POPEM00014"),
                       port_data[port].device_name);
-      popup_message(langcode("POPEM00004"),temp);
+      xa_ui_popup(langcode("POPEM00004"),temp);
 
       if (end_critical_section(&port_data_lock, "interface.c:ax25_init(3)" ) > 0)
       {
@@ -2369,11 +2369,11 @@ int ax25_init(int port)
   port_data[port].status = DEVICE_UP;
 
   // Show the latest status in the interface control dialog
-  update_interface_list();
+  xa_ui_interfaces_changed();
 
 #else /* HAVE_LIBAX25 */
   fprintf(stderr,"AX.25 support not compiled into Xastir!\n");
-  popup_message(langcode("POPEM00004"),langcode("POPEM00021"));
+  xa_ui_popup(langcode("POPEM00004"),langcode("POPEM00021"));
 #endif /* HAVE_LIBAX25 */
   if (end_critical_section(&port_data_lock, "interface.c:ax25_init(5)" ) > 0)
   {
@@ -2703,7 +2703,7 @@ int serial_detach(int port)
       ok = 1;
 
       // Show the latest status in the interface control dialog
-      update_interface_list();
+      xa_ui_interfaces_changed();
     }
     else
     {
@@ -2717,7 +2717,7 @@ int serial_detach(int port)
       port_data[port].active = DEVICE_NOT_IN_USE;
 
       // Show the latest status in the interface control dialog
-      update_interface_list();
+      xa_ui_interfaces_changed();
     }
 
     // Delete lockfile
@@ -2806,7 +2806,7 @@ int serial_init (int port)
   port_data[port].status = DEVICE_DOWN;
 
   // Show the latest status in the interface control dialog
-  update_interface_list();
+  xa_ui_interfaces_changed();
 
 
   // Check whether we have a port with the same device already
@@ -3240,7 +3240,7 @@ int serial_init (int port)
   port_data[port].status = DEVICE_UP;
 
   // Show the latest status in the interface control dialog
-  update_interface_list();
+  xa_ui_interfaces_changed();
 
   if (end_critical_section(&port_data_lock, "interface.c:serial_init(12)" ) > 0)
   {
@@ -3359,7 +3359,7 @@ static void* net_connect_thread(void *arg)
     ok = 1;
 
     // Show the latest status in the interface control dialog
-    update_interface_list();
+    xa_ui_interfaces_changed();
   }
   else      /* net connection failed */
   {
@@ -3371,7 +3371,7 @@ static void* net_connect_thread(void *arg)
     port_data[port].status = DEVICE_ERROR;
 
     // Show the latest status in the interface control dialog
-    update_interface_list();
+    xa_ui_interfaces_changed();
 
     usleep(100000); // 100ms
     // Note:  Old comments note that it is essential not to shut down
@@ -3454,7 +3454,7 @@ int net_init(int port)
   port_data[port].status = DEVICE_DOWN;
 
   // Show the latest status in the interface control dialog
-  update_interface_list();
+  xa_ui_interfaces_changed();
 
   ok = -1;
 
@@ -3606,7 +3606,7 @@ int net_init(int port)
       }
 
       // Show the latest status in the interface control dialog
-      update_interface_list();
+      xa_ui_interfaces_changed();
     }
     if (begin_critical_section(&connect_lock, "interface.c:net_init(8)" ) > 0)
     {
@@ -3665,7 +3665,7 @@ int net_init(int port)
     }
 
     // Show the latest status in the interface control dialog
-    update_interface_list();
+    xa_ui_interfaces_changed();
 
     ok = 0;
   }
@@ -3680,7 +3680,7 @@ int net_init(int port)
     }
 
     // Show the latest status in the interface control dialog
-    update_interface_list();
+    xa_ui_interfaces_changed();
   }
 
   if (end_critical_section(&port_data_lock, "interface.c:net_init(10)" ) > 0)
@@ -3795,7 +3795,7 @@ int net_detach(int port)
   port_data[port].active = DEVICE_NOT_IN_USE;
 
   // Show the latest status in the interface control dialog
-  update_interface_list();
+  xa_ui_interfaces_changed();
 
   if (end_critical_section(&port_data_lock, "interface.c:net_detach(2)" ) > 0)
   {
@@ -4929,7 +4929,7 @@ void port_read(int port)
             }
 
             // Show the latest status in the interface control dialog
-            update_interface_list();
+            xa_ui_interfaces_changed();
 
           }
           else
@@ -4952,7 +4952,7 @@ void port_read(int port)
 
               // Show the latest status in the
               // interface control dialog
-              update_interface_list();
+              xa_ui_interfaces_changed();
 
               if (debug_level & 2)
               {
@@ -5224,7 +5224,7 @@ void port_write(int port)
                 }
               }
               // Show the latest status in the interface control dialog
-              update_interface_list();
+              xa_ui_interfaces_changed();
             }
             if (serial_char_pacing > 0)
             {
@@ -5311,7 +5311,7 @@ void port_write(int port)
                 }
               }
               // Show the latest status in the interface control dialog
-              update_interface_list();
+              xa_ui_interfaces_changed();
             }
             break;
 
@@ -5498,7 +5498,7 @@ void clear_port_data(int port, int clear_more)
   port_data[port].status = DEVICE_DOWN;
 
   // Show the latest status in the interface control dialog
-  update_interface_list();
+  xa_ui_interfaces_changed();
 
   port_data[port].device_name[0] = '\0';
   port_data[port].device_host_name[0] = '\0';
@@ -5879,7 +5879,7 @@ int del_device(int port)
       port_data[port].active = DEVICE_NOT_IN_USE;
       /* clear port status */
       port_data[port].active = DEVICE_DOWN;
-      update_interface_list();
+      xa_ui_interfaces_changed();
       fprintf(stderr,"Closed connection to database on device %d\n",port);
       break;
 #endif /* HAVE_DB */
@@ -6037,7 +6037,7 @@ int add_device_by_ioparam(int port_avail, ioparam *device)
           port_data[port_avail].status = DEVICE_ERROR;
         }
         // Show the latest status in the interface control dialog
-        update_interface_list();
+        xa_ui_interfaces_changed();
         if (ok == 1)
         {
           /* if connected save top of call list */
@@ -6602,7 +6602,7 @@ int add_device(int port_avail,int dev_type,char *dev_nm,char *passwd,int dev_sck
     if (ok == -1)
     {
       xastir_snprintf(temp, sizeof(temp), langcode("POPEM00015"), port_avail);
-      popup_message(langcode("POPEM00004"),temp);
+      xa_ui_popup(langcode("POPEM00004"),temp);
       port_avail = -1;
     }
     else
@@ -6610,14 +6610,14 @@ int add_device(int port_avail,int dev_type,char *dev_nm,char *passwd,int dev_sck
       if (ok == 0)
       {
         xastir_snprintf(temp, sizeof(temp), langcode("POPEM00016"), port_avail);
-        popup_message(langcode("POPEM00004"),temp);
+        xa_ui_popup(langcode("POPEM00004"),temp);
         port_avail = -1;
       }
     }
   }
   else
   {
-    popup_message(langcode("POPEM00004"),langcode("POPEM00017"));
+    xa_ui_popup(langcode("POPEM00004"),langcode("POPEM00017"));
   }
 
   return(port_avail);
@@ -6967,7 +6967,7 @@ void check_ports(void)
             port_data[i].status = DEVICE_ERROR; // No activity, so force a shutdown
 
             // Show the latest status in the interface control dialog
-            update_interface_list();
+            xa_ui_interfaces_changed();
 
 
             // If the below statement is enabled, it causes an immediate reconnect
@@ -7148,7 +7148,7 @@ unsigned char *select_unproto_path(int port)
     //
     if(check_unproto_path(unproto_path_txt))
     {
-      popup_message_always(langcode("WPUPCFT045"),
+      xa_ui_popup_always(langcode("WPUPCFT045"),
                            langcode("WPUPCFT043"));
     }
   }
@@ -7222,7 +7222,7 @@ void output_my_aprs_data(void)
       //
       // "Warning"
       // "Global transmit is DISABLED.  Emergency beacons are NOT going out!"
-      popup_message_always( langcode("POPEM00035"),
+      xa_ui_popup_always( langcode("POPEM00035"),
                             langcode("POPEM00047") );
     }
     return;
@@ -7903,7 +7903,7 @@ void output_my_aprs_data(void)
       //
       // "Emergency Beacon Mode"
       // "EMERGENCY BEACON MODE, transmitting every 60 seconds!"
-      popup_message_always( langcode("POPEM00048"),
+      xa_ui_popup_always( langcode("POPEM00048"),
                             langcode("POPEM00049") );
     }
 
@@ -7916,7 +7916,7 @@ void output_my_aprs_data(void)
       //
       // "Warning"
       // "Interfaces or posits/transmits DISABLED.  Emergency beacons are NOT going out!"
-      popup_message_always( langcode("POPEM00035"),
+      xa_ui_popup_always( langcode("POPEM00035"),
                             langcode("POPEM00050") );
     }
   }
@@ -8167,7 +8167,7 @@ void output_my_data(char *message, int incoming_port, int type, int loopback_onl
             // still allow the transmit.
             if(check_unproto_path(devices[port].unproto_igate))
             {
-              popup_message_always(langcode("WPUPCFT046"),
+              xa_ui_popup_always(langcode("WPUPCFT046"),
                                    langcode("WPUPCFT043"));
             }
 
@@ -8372,7 +8372,7 @@ void output_my_data(char *message, int incoming_port, int type, int loopback_onl
             // still allow the transmit.
             if(check_unproto_path(devices[port].unproto_igate))
             {
-              popup_message_always(langcode("WPUPCFT046"),
+              xa_ui_popup_always(langcode("WPUPCFT046"),
                                    langcode("WPUPCFT043"));
             }
 

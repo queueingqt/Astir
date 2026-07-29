@@ -1479,8 +1479,8 @@ void check_and_transmit_messages(time_t time)
             xastir_snprintf(temp,sizeof(temp),"To: %s, Msg: %s",
                             message_pool[i].to_call_sign,
                             message_pool[i].message_line);
-            //popup_message(langcode("POPEM00004"),langcode("POPEM00017"));
-            popup_message( "Retries Exceeded!", temp );
+            //xa_ui_popup(langcode("POPEM00004"),langcode("POPEM00017"));
+            xa_ui_popup( "Retries Exceeded!", temp );
 
             // Fake the system out: We're pretending
             // that we got an ACK back from it so that

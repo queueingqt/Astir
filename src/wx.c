@@ -3890,7 +3890,7 @@ void wx_decode(unsigned char *wx_line, int data_length, int port)
           /* redraw now */
           //redraw_on_new_data=2;
           redraw_on_new_data=1;
-          fill_wx_data();
+          xa_ui_wx_data_changed();
         }
         else
         {

@@ -1287,14 +1287,14 @@ int pop_locate_place( Widget UNUSED(w),
   if (stat(file, &file_status) < 0)
   {
     // "Can't open file"
-    popup_message( langcode("POPEM00028"), filename_in );
+    xa_ui_popup( langcode("POPEM00028"), filename_in );
     return(0);
   }
   // Check for regular file
   if (!S_ISREG(file_status.st_mode))
   {
     // "Can't open file"
-    popup_message( langcode("POPEM00028"), filename_in );
+    xa_ui_popup( langcode("POPEM00028"), filename_in );
     return(0);
   }
   // Attempt to open the file
@@ -1302,7 +1302,7 @@ int pop_locate_place( Widget UNUSED(w),
   if (f == NULL)
   {
     // "Can't open file"
-    popup_message_always( langcode("POPEM00028"), filename_in );
+    xa_ui_popup_always( langcode("POPEM00028"), filename_in );
     return(0);
   }
 
@@ -1596,7 +1596,7 @@ int pop_locate_place( Widget UNUSED(w),
 
 // This one pops up the names of whatever we found.
 // "Found It!"
-//popup_message_always( langcode("POPEM00029"), name );
+//xa_ui_popup_always( langcode("POPEM00029"), name );
 
           if (strlen(latitude) < 7)
           {

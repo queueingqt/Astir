@@ -4287,7 +4287,7 @@ static void Print_window( Widget widget, XtPointer UNUSED(clientData), XtPointer
 
 #ifdef NO_XPM
 //    fprintf(stderr,"XPM or ImageMagick support not compiled into Xastir!\n");
-  popup_message_always(langcode("POPEM00035"),
+  xa_ui_popup_always(langcode("POPEM00035"),
                        "XPM or ImageMagick support not compiled into Xastir! Cannot Print!");
 #else   // NO_XPM
 
@@ -4339,7 +4339,7 @@ static void Print_window( Widget widget, XtPointer UNUSED(clientData), XtPointer
   {
     fprintf(stderr,"ERROR writing %s: %s\n", xpm_filename,
             XpmGetErrorString(xpmretval));
-    popup_message_always(langcode("POPEM00035"),
+    xa_ui_popup_always(langcode("POPEM00035"),
                          "Error writing xpm image file! Cannot Print!");
     return;
   }
@@ -4387,7 +4387,7 @@ static void Print_window( Widget widget, XtPointer UNUSED(clientData), XtPointer
     if ( system( command ) != 0 )
     {
 //            fprintf(stderr,"\n\nPrint: Couldn't convert from XPM to PS!\n\n\n");
-      popup_message_always(langcode("POPEM00035"),
+      xa_ui_popup_always(langcode("POPEM00035"),
                            "Couldn't convert from XPM to PS!");
       return;
     }
@@ -4428,7 +4428,7 @@ static void Print_window( Widget widget, XtPointer UNUSED(clientData), XtPointer
     if (printer_program[0] == '\0')
     {
 //            fprintf(stderr,"\n\nPrint: No print program defined!\n\n\n");
-      popup_message_always(langcode("POPEM00035"),
+      xa_ui_popup_always(langcode("POPEM00035"),
                            "No print program defined!");
       return;
     }
@@ -4436,7 +4436,7 @@ static void Print_window( Widget widget, XtPointer UNUSED(clientData), XtPointer
     if ( system( command ) != 0 )
     {
 //            fprintf(stderr,"\n\nPrint: Couldn't send to the printer!\n\n\n");
-      popup_message_always(langcode("POPEM00035"),
+      xa_ui_popup_always(langcode("POPEM00035"),
                            "Couldn't send to the printer!");
       return;
     }
@@ -4474,7 +4474,7 @@ static void Print_preview( Widget widget, XtPointer UNUSED(clientData), XtPointe
 
 #ifdef NO_XPM
 //    fprintf(stderr,"XPM or ImageMagick support not compiled into Xastir!\n");
-  popup_message_always(langcode("POPEM00035"),
+  xa_ui_popup_always(langcode("POPEM00035"),
                        "XPM or ImageMagick support not compiled into Xastir! Cannot Print!");
 #else   // NO_GRAPHICS
 
@@ -4533,7 +4533,7 @@ static void Print_preview( Widget widget, XtPointer UNUSED(clientData), XtPointe
   {
     fprintf(stderr,"ERROR writing %s: %s\n", xpm_filename,
             XpmGetErrorString(xpmretval));
-    popup_message_always(langcode("POPEM00035"),
+    xa_ui_popup_always(langcode("POPEM00035"),
                          "Error writing XPM file!");
     return;
   }
@@ -4708,7 +4708,7 @@ static void Print_preview( Widget widget, XtPointer UNUSED(clientData), XtPointe
     if ( system( command ) != 0 )
     {
 //            fprintf(stderr,"\n\nPrint: Couldn't convert from XPM to PS!\n\n\n");
-      popup_message_always(langcode("POPEM00035"),
+      xa_ui_popup_always(langcode("POPEM00035"),
                            "Couldn't convert from XPM to PS!");
       return;
     }
@@ -4752,7 +4752,7 @@ static void Print_preview( Widget widget, XtPointer UNUSED(clientData), XtPointe
     if (previewer_program[0] == '\0')
     {
 //            fprintf(stderr,"\n\nPrint: No print previewer defined!\n\n\n");
-      popup_message_always(langcode("POPEM00035"),
+      xa_ui_popup_always(langcode("POPEM00035"),
                            "No print previewer defined!");
       return;
     }
@@ -4760,7 +4760,7 @@ static void Print_preview( Widget widget, XtPointer UNUSED(clientData), XtPointe
     if ( system( command ) != 0 )
     {
 //            fprintf(stderr,"\n\nPrint: Couldn't bring up the postscript viewer!\n\n\n");
-      popup_message_always(langcode("POPEM00035"),
+      xa_ui_popup_always(langcode("POPEM00035"),
                            "Couldn't bring up the viewer!");
       return;
     }

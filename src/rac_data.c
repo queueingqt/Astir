@@ -425,7 +425,7 @@ int search_rac_data(char *callsign, rac_record *data)
   {
 
     // "Callsign Search", "Callsign Not Found!"
-    popup_message_always(langcode("STIFCC0101"),
+    xa_ui_popup_always(langcode("STIFCC0101"),
                          langcode("STIFCC0102") );
   }
 

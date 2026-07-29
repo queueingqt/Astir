@@ -79,6 +79,38 @@ typedef struct
   // Not the same as flush(), which makes already-issued drawing visible.  This
   // one re-runs the drawing.
   void (*redraw)(void);
+
+  /* ---- things happened that a view of them should know about ---------- */
+
+  // Show an error or notice to the user.  If no front end is registered these
+  // fall back to timestamped stderr, which is exactly what a build without
+  // HAVE_ERROR_POPUPS already does -- so a headless run keeps its diagnostics
+  // instead of dropping them.
+  //
+  // popup_always is for messages the front end should not suppress by its own
+  // policy.  Both respect disable_all_popups, which is a core setting and is
+  // checked before dispatch.
+  void (*popup)(const char *banner, const char *message);
+  void (*popup_always)(const char *banner, const char *message);
+
+  // The interface table changed -- a port opened, closed, or changed state.
+  // Anything displaying devices[] should re-read it.  Called from ~20 places
+  // in interface.c.
+  void (*interfaces_changed)(void);
+
+  // New decoded weather data is available.
+  void (*wx_data_changed)(void);
+
+  // A bulletin arrived.  Passed through as received; the front end copies what
+  // it keeps.
+  void (*bulletin_added)(const char *call_sign, const char *from_call,
+                         const char *data, const char *seq,
+                         char type, char from);
+
+  // A message was sent or received and should go in whatever log the front end
+  // keeps.  `from` distinguishes the direction, as in the original.
+  void (*message_logged)(char from, const char *call_sign,
+                         const char *from_call, const char *message);
 } xa_ui_callbacks;
 
 // Install the front end's implementations.  Passing NULL, or leaving a member
@@ -94,5 +126,14 @@ void xa_ui_warn(const char *text);
 void xa_ui_free_label(void *label);
 void xa_ui_open_message_window(const char *to_call);
 void xa_ui_redraw(void);
+void xa_ui_popup(const char *banner, const char *message);
+void xa_ui_popup_always(const char *banner, const char *message);
+void xa_ui_interfaces_changed(void);
+void xa_ui_wx_data_changed(void);
+void xa_ui_bulletin_added(const char *call_sign, const char *from_call,
+                          const char *data, const char *seq,
+                          char type, char from);
+void xa_ui_message_logged(char from, const char *call_sign,
+                          const char *from_call, const char *message);
 
 #endif // XA_UI_H

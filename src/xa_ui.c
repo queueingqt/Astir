@@ -10,7 +10,10 @@
 #endif
 
 #include <stddef.h>
+#include <stdio.h>
 
+#include "util.h"         // get_timestamp
+#include "xa_settings.h"  // disable_all_popups
 #include "xa_ui.h"
 
 // { 0 } rather than a member-per-line list, here and below, so that adding a
@@ -100,5 +103,90 @@ void xa_ui_redraw(void)
   if (ui.redraw != NULL)
   {
     ui.redraw();
+  }
+}
+
+
+// The fallback when nothing is registered.  Not new behaviour: this is what
+// popup_message() does in any build without HAVE_ERROR_POPUPS, which is the
+// default.  Having it here means a headless run still reports its errors.
+static void popup_to_stderr(const char *banner, const char *message)
+{
+  char timestring[110];
+
+  get_timestamp(timestring);
+  fprintf(stderr, "%s:\n\t%s  %s\n\n", timestring, banner, message);
+}
+
+
+void xa_ui_popup(const char *banner, const char *message)
+{
+  if (banner == NULL || message == NULL || disable_all_popups)
+  {
+    return;
+  }
+  if (ui.popup != NULL)
+  {
+    ui.popup(banner, message);
+  }
+  else
+  {
+    popup_to_stderr(banner, message);
+  }
+}
+
+
+void xa_ui_popup_always(const char *banner, const char *message)
+{
+  if (banner == NULL || message == NULL || disable_all_popups)
+  {
+    return;
+  }
+  if (ui.popup_always != NULL)
+  {
+    ui.popup_always(banner, message);
+  }
+  else
+  {
+    popup_to_stderr(banner, message);
+  }
+}
+
+
+void xa_ui_interfaces_changed(void)
+{
+  if (ui.interfaces_changed != NULL)
+  {
+    ui.interfaces_changed();
+  }
+}
+
+
+void xa_ui_wx_data_changed(void)
+{
+  if (ui.wx_data_changed != NULL)
+  {
+    ui.wx_data_changed();
+  }
+}
+
+
+void xa_ui_bulletin_added(const char *call_sign, const char *from_call,
+                          const char *data, const char *seq,
+                          char type, char from)
+{
+  if (ui.bulletin_added != NULL)
+  {
+    ui.bulletin_added(call_sign, from_call, data, seq, type, from);
+  }
+}
+
+
+void xa_ui_message_logged(char from, const char *call_sign,
+                          const char *from_call, const char *message)
+{
+  if (ui.message_logged != NULL)
+  {
+    ui.message_logged(from, call_sign, from_call, message);
   }
 }

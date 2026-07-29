@@ -2359,7 +2359,7 @@ void load_pixmap_symbol_file(char *filename, int reloading)
   else
   {
     fprintf(stderr,"Error opening symbol file %s\n",filen);
-    popup_message("Error opening symbol file","Error opening symbol file");
+    xa_ui_popup("Error opening symbol file","Error opening symbol file");
   }
 
   if (f != NULL)

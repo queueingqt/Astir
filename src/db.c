@@ -1512,7 +1512,7 @@ time_t msg_data_add(char *call_sign, char *from_call, char *data,
   /* display messages */
   if (type == MESSAGE_MESSAGE)
   {
-    all_messages(from,call_sign,from_call,data);
+    xa_ui_message_logged(from,call_sign,from_call,data);
   }
 
   // Check for my callsign (including SSID).  If found, update any
@@ -12687,7 +12687,7 @@ int decode_Mic_E(char *call_sign,char *path,char *info,char from,int port,int th
                               "%s  %s",
                               timestring,
                               temp2);
-              popup_message_always(call_sign, temp3);
+              xa_ui_popup_always(call_sign, temp3);
             }
           }
         }
@@ -13147,7 +13147,7 @@ int process_query( char *call_sign, char * UNUSED(path), char *message,char from
 int process_status( char * UNUSED(call_sign), char * UNUSED(path), char * UNUSED(message), char UNUSED(from), int UNUSED(port), int UNUSED(third_party) )
 {
 
-  //    popup_message(langcode("POPEM00018"),message);  // What is it ???
+  //    xa_ui_popup(langcode("POPEM00018"),message);  // What is it ???
   return(1);
 }
 
@@ -13986,7 +13986,7 @@ int decode_message(char *call,char *path,char *message,char from,int port,int th
   if (!done && strncmp(addr,"BLN",3) == 0)                         // Bulletin
   {
     // fprintf(stderr,"found BLN: |%s| |%s|\n",addr,message);
-    bulletin_data_add(addr,call,message,"",MESSAGE_BULLETIN,from);
+    xa_ui_bulletin_added(addr,call,message,"",MESSAGE_BULLETIN,from);
     done = 1;
   }
   if (debug_level & 1)
@@ -14598,14 +14598,14 @@ int decode_message(char *call,char *path,char *message,char from,int port,int th
 
       // We no longer wish to have both popups and the Send
       // Group Message dialogs come up for every query
-      // response, so we use popup_message() here instead of
-      // popup_message_always() so that by default we'll see
+      // response, so we use xa_ui_popup() here instead of
+      // xa_ui_popup_always() so that by default we'll see
       // the below message in STDERR.  If --with-errorpopups
       // has been configured in, we'll get a popup as well.
       // Send Group Message dialogs work well for multi-line
       // query responses, so we'll leave it that way.
       //
-      popup_message(langcode("POPEM00018"),message);
+      xa_ui_popup(langcode("POPEM00018"),message);
 
       // Check for Reply/Ack.  APRS+ sends an AA: response back
       // for auto-reply, with an embedded free-ride Ack.
@@ -16671,7 +16671,7 @@ int decode_ax25_line(char *line, char from, int port, int dbadd)
               // whether the packet is or is not a
               // real emergency.
               //
-              popup_message_always(langcode("POPEM00036"), backup);
+              xa_ui_popup_always(langcode("POPEM00036"), backup);
 
               // Bring up another dialog with the
               // callsign plus distance/bearing to the
@@ -16691,7 +16691,7 @@ int decode_ax25_line(char *line, char from, int port, int dbadd)
                               "%s  %s",
                               timestring,
                               temp2);
-              popup_message_always(call_sign, temp3);
+              xa_ui_popup_always(call_sign, temp3);
 
             }
           }

@@ -577,7 +577,7 @@ int search_fcc_data_appl(char *callsign, FccAppl *data)
               {
 
                 // "Callsign Search", "Callsign Not Found!"
-                popup_message_always(langcode("STIFCC0101"),
+                xa_ui_popup_always(langcode("STIFCC0101"),
                                      langcode("STIFCC0102") );
 
                 //fprintf(stderr,"%c%c\t%c%c\n",temp[0],temp[1],line[pos],line[pos+1]);
