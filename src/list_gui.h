@@ -41,7 +41,6 @@ extern int list_size_w[];
 /* from list_gui.c */
 extern void list_gui_init(void);
 extern void update_station_scroll_list(void);
-extern int stations_types(int type);
 extern void Station_List_fill(int type, int new_offset);
 
 #endif  // __XASTIR_LIST_GUI_H

@@ -421,61 +421,10 @@ void init_station_lists(void)
 
 
 // check if there is at least one station of a specific type      now used only in db.c
-int stations_types(int type)
-{
-  int st;
-  DataRow *p_station;
-
-  st=0;
-  for (p_station=n_first; p_station != NULL; p_station=p_station->n_next)
-  {
-    if ((p_station->flag & ST_ACTIVE) != 0)        // ignore deleted objects
-    {
-      switch (type)
-      {
-        case 0:         // all stations list
-        case 4:         // last stations
-          st++;
-          break;
-        case 1:         // mobile stations list
-          if (p_station->newest_trackpoint != NULL)
-          {
-            st++;
-          }
-          break;
-        case 2:         // WX stations list
-          if (p_station->weather_data != NULL)
-          {
-            st++;
-          }
-          break;
-        case 3:         // local stations list
-          if ((p_station->flag & ST_VIATNC) != 0)
-          {
-            st++;
-          }
-          break;
-        case 5:         // Object/Item list
-          if ( ((p_station->flag & ST_OBJECT) != 0) ||
-               ((p_station->flag & ST_ITEM) != 0) )
-          {
-            st++;
-          }
-          break;
-        default:
-          break;
-      }
-    }
-  }
-  if (st==0)
-  {
-    st=1;
-  }
-  return(st);
-}
 
 
-
+// stations_types() moved to db.c: it walks the station list and touches no
+// widget.  It was here because the list dialog displays the counts.
 
 
 void station_list_destroy_shell( Widget UNUSED(widget), XtPointer clientData, XtPointer UNUSED(callData) )

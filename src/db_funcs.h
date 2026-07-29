@@ -129,6 +129,7 @@ extern int st_direct_timeout;   // Interval that ST_DIRECT flag stays set
 extern int station_count;       // Count of stations in the database
 extern int station_count_save;  // Old copy of the above
 extern DataRow *n_first;  // pointer to first element in name ordered station
+extern int stations_types(int type);  // count of active stations in a category
 // list
 extern DataRow *n_last;   // pointer to last element in name ordered station
 // list

@@ -12667,7 +12667,7 @@ int decode_Mic_E(char *call_sign,char *path,char *info,char from,int port,int th
                               "%s",
                               call_sign);
 
-              Locate_station( (Widget)NULL, (XtPointer)NULL, (XtPointer)1 );
+              xa_ui_locate_station(1);
 
               // Bring up another dialog with the
               // callsign plus distance/bearing to the
@@ -14108,7 +14108,7 @@ int decode_message(char *call,char *path,char *message,char from,int port,int th
 
       // Attempt to snag a custom path out of the Send Message
       // dialog, if set.  If not set, path will contain '\0';
-      get_send_message_path(call, path, MAX_LINE_SIZE+1);
+      xa_ui_send_message_path(call, path, MAX_LINE_SIZE+1);
       //fprintf(stderr,"Path: %s\n", path);
 
 
@@ -16661,9 +16661,7 @@ int decode_ax25_line(char *line, char from, int port, int dbadd)
                               "%s",
                               call_sign);
 
-              Locate_station( (Widget)NULL,
-                              (XtPointer)NULL,
-                              (XtPointer)1 );
+              xa_ui_locate_station(1);
 
               // Bring up an additional popup dialog
               // that shows the entire packet, so the
@@ -17485,4 +17483,63 @@ void upd_echo(char *path)
     }
     substr(echo_digis[i],path+j,len);
   }
+}
+
+
+
+// Moved from list_gui.c.  A count of active stations of a given category;
+// it walks n_first and has no toolkit reference in it at all.  The station
+// list dialog is only one consumer -- db.c itself uses it for the IGATE
+// status string.
+int stations_types(int type)
+{
+  int st;
+  DataRow *p_station;
+
+  st=0;
+  for (p_station=n_first; p_station != NULL; p_station=p_station->n_next)
+  {
+    if ((p_station->flag & ST_ACTIVE) != 0)        // ignore deleted objects
+    {
+      switch (type)
+      {
+        case 0:         // all stations list
+        case 4:         // last stations
+          st++;
+          break;
+        case 1:         // mobile stations list
+          if (p_station->newest_trackpoint != NULL)
+          {
+            st++;
+          }
+          break;
+        case 2:         // WX stations list
+          if (p_station->weather_data != NULL)
+          {
+            st++;
+          }
+          break;
+        case 3:         // local stations list
+          if ((p_station->flag & ST_VIATNC) != 0)
+          {
+            st++;
+          }
+          break;
+        case 5:         // Object/Item list
+          if ( ((p_station->flag & ST_OBJECT) != 0) ||
+               ((p_station->flag & ST_ITEM) != 0) )
+          {
+            st++;
+          }
+          break;
+        default:
+          break;
+      }
+    }
+  }
+  if (st==0)
+  {
+    st=1;
+  }
+  return(st);
 }

@@ -190,3 +190,29 @@ void xa_ui_message_logged(char from, const char *call_sign,
     ui.message_logged(from, call_sign, from_call, message);
   }
 }
+
+
+void xa_ui_locate_station(int emergency)
+{
+  if (ui.locate_station != NULL)
+  {
+    ui.locate_station(emergency);
+  }
+}
+
+
+void xa_ui_send_message_path(const char *callsign, char *path, int path_size)
+{
+  if (path == NULL || path_size <= 0)
+  {
+    return;
+  }
+  // Empty means "no answer", which is what the front end also returns when no
+  // open window matches.  Set it first so an unregistered front end and an
+  // unmatched callsign look the same to the caller.
+  path[0] = '\0';
+  if (ui.send_message_path != NULL && callsign != NULL)
+  {
+    ui.send_message_path(callsign, path, path_size);
+  }
+}

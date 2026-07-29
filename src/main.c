@@ -4126,6 +4126,17 @@ static void motif_ui_message_logged(char from, const char *call_sign,
   all_messages(from, (char *)call_sign, (char *)from_call, (char *)message);
 }
 
+static void motif_ui_locate_station(int emergency)
+{
+  Locate_station((Widget)NULL, (XtPointer)NULL, INT_TO_XTPOINTER(emergency));
+}
+
+static void motif_ui_send_message_path(const char *callsign, char *path,
+                                       int path_size)
+{
+  get_send_message_path((char *)callsign, path, path_size);
+}
+
 void xa_ui_register_motif(void)
 {
   // Zero-initialised, not member-by-member into an uninitialised local.  A
@@ -4149,6 +4160,8 @@ void xa_ui_register_motif(void)
   cb.wx_data_changed = motif_ui_wx_data_changed;
   cb.bulletin_added = motif_ui_bulletin_added;
   cb.message_logged = motif_ui_message_logged;
+  cb.locate_station = motif_ui_locate_station;
+  cb.send_message_path = motif_ui_send_message_path;
   xa_ui_set_callbacks(&cb);
 }
 

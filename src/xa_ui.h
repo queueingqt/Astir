@@ -111,6 +111,23 @@ typedef struct
   // keeps.  `from` distinguishes the direction, as in the original.
   void (*message_logged)(char from, const char *call_sign,
                          const char *from_call, const char *message);
+
+  // Open the locate-station window.  emergency non-zero for the emergency
+  // variant, which is the only way the core ever calls it -- an EMERGENCY
+  // beacon arriving is the trigger.
+  void (*locate_station)(int emergency);
+
+  /* ---- and one question in the other direction --------------------------- */
+
+  // What path should a message to this station take?  The answer lives in the
+  // open send-message windows, so only the front end can answer it.  Writes at
+  // most path_size bytes and leaves path empty if it does not know.
+  //
+  // The only callback here that reads front-end state rather than telling it
+  // something.  A front end with no message windows can leave it NULL, and the
+  // core falls back to its default path exactly as it does today when no window
+  // matches the callsign.
+  void (*send_message_path)(const char *callsign, char *path, int path_size);
 } xa_ui_callbacks;
 
 // Install the front end's implementations.  Passing NULL, or leaving a member
@@ -135,5 +152,7 @@ void xa_ui_bulletin_added(const char *call_sign, const char *from_call,
                           char type, char from);
 void xa_ui_message_logged(char from, const char *call_sign,
                           const char *from_call, const char *message);
+void xa_ui_locate_station(int emergency);
+void xa_ui_send_message_path(const char *callsign, char *path, int path_size);
 
 #endif // XA_UI_H

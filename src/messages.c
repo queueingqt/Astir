@@ -1253,7 +1253,7 @@ void check_delayed_transmit_queue(int curr_sec)
       // path instead and reset all of the queued message
       // paths to this station to this new path.
       //
-      get_send_message_path(ptr->to_call_sign,
+      xa_ui_send_message_path(ptr->to_call_sign,
                             new_path,
                             sizeof(new_path));
 
@@ -1400,7 +1400,7 @@ void check_and_transmit_messages(time_t time)
             // reset all of the queued message paths to
             // this station to this new path.
             //
-            get_send_message_path(to_call,
+            xa_ui_send_message_path(to_call,
                                   new_path,
                                   sizeof(new_path));
 
