@@ -150,6 +150,8 @@
 
 #endif // HAVE_MAGICK
 
+#include "xa_draw.h"
+
 // Must be last include file
 #include "leak_detection.h"
 
@@ -645,16 +647,7 @@ static void draw_image(
     if (interrupt_drawing_now)
     {
       // Update to screen
-      (void)XCopyArea(XtDisplay(da),
-                      pixmap,
-                      XtWindow(da),
-                      gc,
-                      0,
-                      0,
-                      (unsigned int)screen_width,
-                      (unsigned int)screen_height,
-                      0,
-                      0);
+      xa_present_full(pixmap);
       return;
     }
 
@@ -1451,16 +1444,7 @@ void draw_OSM_tiles (Widget w,
   {
     // map draw was interrupted
     // Update to screen
-    (void)XCopyArea(XtDisplay(da),
-                    pixmap,
-                    XtWindow(da),
-                    gc,
-                    0,
-                    0,
-                    (unsigned int)screen_width,
-                    (unsigned int)screen_height,
-                    0,
-                    0);
+    xa_present_full(pixmap);
   }
 
   /*
@@ -1666,16 +1650,7 @@ void draw_OSM_map (Widget w,
   if (interrupt_drawing_now)
   {
     // Update to screen
-    (void)XCopyArea(XtDisplay(da),
-                    pixmap,
-                    XtWindow(da),
-                    gc,
-                    0,
-                    0,
-                    (unsigned int)screen_width,
-                    (unsigned int)screen_height,
-                    0,
-                    0);
+    xa_present_full(pixmap);
     return;
   }
 

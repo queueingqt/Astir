@@ -137,6 +137,8 @@
   #undef XASTIR_PACKAGE_VERSION
 #endif // HAVE_MAGICK
 
+#include "xa_draw.h"
+
 // Must be last include file
 #include "leak_detection.h"
 
@@ -1722,16 +1724,7 @@ void draw_geo_image_map (Widget w,
   if (interrupt_drawing_now)
   {
     // Update to screen
-    (void)XCopyArea(XtDisplay(da),
-                    pixmap,
-                    XtWindow(da),
-                    gc,
-                    0,
-                    0,
-                    (unsigned int)screen_width,
-                    (unsigned int)screen_height,
-                    0,
-                    0);
+    xa_present_full(pixmap);
     return;
   }
 
@@ -1792,16 +1785,7 @@ void draw_geo_image_map (Widget w,
   if (interrupt_drawing_now)
   {
     // Update to screen
-    (void)XCopyArea(XtDisplay(da),
-                    pixmap,
-                    XtWindow(da),
-                    gc,
-                    0,
-                    0,
-                    (unsigned int)screen_width,
-                    (unsigned int)screen_height,
-                    0,
-                    0);
+    xa_present_full(pixmap);
     return;
   }
 
@@ -1963,16 +1947,7 @@ void draw_geo_image_map (Widget w,
   if (interrupt_drawing_now)
   {
     // Update to screen
-    (void)XCopyArea(XtDisplay(da),
-                    pixmap,
-                    XtWindow(da),
-                    gc,
-                    0,
-                    0,
-                    (unsigned int)screen_width,
-                    (unsigned int)screen_height,
-                    0,
-                    0);
+    xa_present_full(pixmap);
     return;
   }
 
@@ -2014,16 +1989,7 @@ void draw_geo_image_map (Widget w,
   if (interrupt_drawing_now)
   {
     // Update to screen
-    (void)XCopyArea(XtDisplay(da),
-                    pixmap,
-                    XtWindow(da),
-                    gc,
-                    0,
-                    0,
-                    (unsigned int)screen_width,
-                    (unsigned int)screen_height,
-                    0,
-                    0);
+    xa_present_full(pixmap);
     if (image_info)
     {
       DestroyImageInfo(image_info);
@@ -2523,16 +2489,7 @@ void draw_geo_image_map (Widget w,
   if (interrupt_drawing_now)
   {
     // Update to screen
-    (void)XCopyArea(XtDisplay(da),
-                    pixmap,
-                    XtWindow(da),
-                    gc,
-                    0,
-                    0,
-                    (unsigned int)screen_width,
-                    (unsigned int)screen_height,
-                    0,
-                    0);
+    xa_present_full(pixmap);
     return;
   }
 
@@ -2584,16 +2541,7 @@ void draw_geo_image_map (Widget w,
       XDestroyImage (xi);
     }
     // Update to screen
-    (void)XCopyArea(XtDisplay(da),
-                    pixmap,
-                    XtWindow(da),
-                    gc,
-                    0,
-                    0,
-                    (unsigned int)screen_width,
-                    (unsigned int)screen_height,
-                    0,
-                    0);
+    xa_present_full(pixmap);
     return;
   }
 

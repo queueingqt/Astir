@@ -40,6 +40,8 @@
 #include "mutex_utils.h"
 #include "snprintf.h"
 
+#include "xa_draw.h"
+
 // Must be last include file
 #include "leak_detection.h"
 
@@ -397,16 +399,7 @@ void popup_ID_message(char * UNUSED(banner), char *message)
 
     // Write it to the screen.  Symbols/tracks will disappear during
     // this short interval time.
-    (void)XCopyArea(XtDisplay(da),
-                    pixmap_alerts,
-                    XtWindow(da),
-                    gc,
-                    0,
-                    0,
-                    (unsigned int)screen_width,
-                    (unsigned int)screen_height,
-                    0,
-                    0);
+    xa_present_full(pixmap_alerts);
   }
   else    // ATV Screen ID is not enabled
   {

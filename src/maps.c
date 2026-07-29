@@ -126,6 +126,8 @@
 #include "timer_utils.h"
 #include "mgrs_utils.h"
 
+#include "xa_draw.h"
+
 // Must be last include file
 #include "leak_detection.h"
 
@@ -9420,32 +9422,14 @@ void load_auto_maps (Widget w, char * UNUSED(dir) )
     if (interrupt_drawing_now)
     {
       // Update to screen
-      (void)XCopyArea(XtDisplay(da),
-                      pixmap,
-                      XtWindow(da),
-                      gc,
-                      0,
-                      0,
-                      (unsigned int)screen_width,
-                      (unsigned int)screen_height,
-                      0,
-                      0);
+      xa_present_full(pixmap);
       return;
     }
 
     if (disable_all_maps)
     {
       // Update to screen
-      (void)XCopyArea(XtDisplay(da),
-                      pixmap,
-                      XtWindow(da),
-                      gc,
-                      0,
-                      0,
-                      (unsigned int)screen_width,
-                      (unsigned int)screen_height,
-                      0,
-                      0);
+      xa_present_full(pixmap);
       return;
     }
 
@@ -9519,16 +9503,7 @@ void load_maps (Widget w)
   if (interrupt_drawing_now)
   {
     // Update to screen
-    (void)XCopyArea(XtDisplay(da),
-                    pixmap,
-                    XtWindow(da),
-                    gc,
-                    0,
-                    0,
-                    (unsigned int)screen_width,
-                    (unsigned int)screen_height,
-                    0,
-                    0);
+    xa_present_full(pixmap);
     return;
   }
 
@@ -9705,32 +9680,14 @@ void load_maps (Widget w)
     {
       statusline(" ",1);      // delete status line
       // Update to screen
-      (void)XCopyArea(XtDisplay(da),
-                      pixmap,
-                      XtWindow(da),
-                      gc,
-                      0,
-                      0,
-                      (unsigned int)screen_width,
-                      (unsigned int)screen_height,
-                      0,
-                      0);
+      xa_present_full(pixmap);
       return;
     }
 
     if (disable_all_maps)
     {
       // Update to screen
-      (void)XCopyArea(XtDisplay(da),
-                      pixmap,
-                      XtWindow(da),
-                      gc,
-                      0,
-                      0,
-                      (unsigned int)screen_width,
-                      (unsigned int)screen_height,
-                      0,
-                      0);
+      xa_present_full(pixmap);
       return;
     }
 

@@ -84,6 +84,8 @@ extern int mag;
 
 #include "geo_normalize.h"
 
+#include "xa_draw.h"
+
 // Must be last include file
 #include "leak_detection.h"
 
@@ -1244,16 +1246,7 @@ void draw_geotiff_image_map (Widget w,
     GTIFFree (gtif);
     XTIFFClose (tif);
     // Update to screen
-    (void)XCopyArea(XtDisplay(da),
-                    pixmap,
-                    XtWindow(da),
-                    gc,
-                    0,
-                    0,
-                    (unsigned int)screen_width,
-                    (unsigned int)screen_height,
-                    0,
-                    0);
+    xa_present_full(pixmap);
     return;
   }
 
@@ -1428,16 +1421,7 @@ void draw_geotiff_image_map (Widget w,
       GTIFFree (gtif);
       XTIFFClose (tif);
       // Update to screen
-      (void)XCopyArea(XtDisplay(da),
-                      pixmap,
-                      XtWindow(da),
-                      gc,
-                      0,
-                      0,
-                      (unsigned int)screen_width,
-                      (unsigned int)screen_height,
-                      0,
-                      0);
+      xa_present_full(pixmap);
       return;
     }
 

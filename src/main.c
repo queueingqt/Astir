@@ -161,6 +161,8 @@ char *xastir_version=VERSION;
 #include <X11/cursorfont.h>
 #include <Xm/ComboBox.h>
 
+#include "xa_draw.h"
+
 // Must be last include file
 #include "leak_detection.h"
 
@@ -12948,16 +12950,7 @@ void UpdateTime( XtPointer clientData, XtIntervalId UNUSED(id) )
           if (!pending_ID_message)
           {
             refresh_image(da);  // Much faster than create_image.
-            (void)XCopyArea(XtDisplay(da),
-                            pixmap_final,
-                            XtWindow(da),
-                            gc,
-                            0,
-                            0,
-                            (unsigned int)screen_width,
-                            (unsigned int)screen_height,
-                            0,
-                            0);
+            xa_present_full(pixmap_final);
 
             // We just refreshed the screen, so don't
             // try to erase any zoom-in boxes via XOR.
@@ -14802,16 +14795,7 @@ void new_image(Widget da)
       return;
     }
 
-    (void)XCopyArea(XtDisplay(da),
-                    pixmap_final,
-                    XtWindow(da),
-                    gc,
-                    0,
-                    0,
-                    (unsigned int)screen_width,
-                    (unsigned int)screen_height,
-                    0,
-                    0);
+    xa_present_full(pixmap_final);
 
     // We just refreshed the screen, so don't try to erase any
     // zoom-in boxes via XOR.
@@ -16138,16 +16122,7 @@ void Grid_toggle( Widget UNUSED(w), XtPointer clientData, XtPointer callData)
   }
 
   redraw_symbols(da);
-  (void)XCopyArea(XtDisplay(da),
-                  pixmap_final,
-                  XtWindow(da),
-                  gc,
-                  0,
-                  0,
-                  (unsigned int)screen_width,
-                  (unsigned int)screen_height,
-                  0,
-                  0);
+  xa_present_full(pixmap_final);
 }
 
 
@@ -16538,16 +16513,7 @@ void Map_station_label( Widget UNUSED(w), XtPointer clientData, XtPointer UNUSED
       sel4_switch(letter_style,map_station_label3,map_station_label2,map_station_label1,map_station_label0);
     }
     redraw_symbols(da);
-    (void)XCopyArea(XtDisplay(da),
-                    pixmap_final,
-                    XtWindow(da),
-                    gc,
-                    0,
-                    0,
-                    (unsigned int)screen_width,
-                    (unsigned int)screen_height,
-                    0,
-                    0);
+    xa_present_full(pixmap_final);
   }
 }
 
@@ -16566,30 +16532,12 @@ void Map_icon_outline( Widget UNUSED(w), XtPointer clientData, XtPointer UNUSED(
     icon_outline_style = style;
     sel4_switch(icon_outline_style,map_icon_outline3,map_icon_outline2,map_icon_outline1,map_icon_outline0);
     redraw_symbols(da);
-    (void)XCopyArea(XtDisplay(da),
-                    pixmap_final,
-                    XtWindow(da),
-                    gc,
-                    0,
-                    0,
-                    (unsigned int)screen_width,
-                    (unsigned int)screen_height,
-                    0,
-                    0);
+    xa_present_full(pixmap_final);
   }
   statusline( langcode("BBARSTA046"), 1);   // Reloading symbols...
   load_pixmap_symbol_file("symbols.dat", 1);
   redraw_symbols(da);
-  (void)XCopyArea(XtDisplay(da),
-                  pixmap_final,
-                  XtWindow(da),
-                  gc,
-                  0,
-                  0,
-                  (unsigned int)screen_width,
-                  (unsigned int)screen_height,
-                  0,
-                  0);
+  xa_present_full(pixmap_final);
 }
 
 
@@ -16613,16 +16561,7 @@ void  Map_wx_alerts_toggle( Widget UNUSED(widget), XtPointer clientData, XtPoint
   if (display_up)
   {
     refresh_image(da);
-    (void)XCopyArea(XtDisplay(da),
-                    pixmap_final,
-                    XtWindow(da),
-                    gc,
-                    0,
-                    0,
-                    (unsigned int)screen_width,
-                    (unsigned int)screen_height,
-                    0,
-                    0);
+    xa_present_full(pixmap_final);
   }
 }
 

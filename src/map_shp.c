@@ -101,6 +101,8 @@
 #include <rtree/index.h>
 #include "shp_hash.h"
 
+#include "xa_draw.h"
+
 // Must be last include file
 #include "leak_detection.h"
 
@@ -1190,16 +1192,7 @@ void draw_shapefile_map (Widget w,
     DBFClose( hDBF );   // Clean up open file descriptors
     SHPClose( hSHP );
     // Update to screen
-    (void)XCopyArea(XtDisplay(da),
-                    pixmap,
-                    XtWindow(da),
-                    gc,
-                    0,
-                    0,
-                    (unsigned int)screen_width,
-                    (unsigned int)screen_height,
-                    0,
-                    0);
+    xa_present_full(pixmap);
 
     free_dbfawk_infos(fld_info, sig_info);
 
@@ -1294,16 +1287,7 @@ void draw_shapefile_map (Widget w,
         DBFClose( hDBF );   // Clean up open file descriptors
         SHPClose( hSHP );
         // Update to screen
-        (void)XCopyArea(XtDisplay(da),
-                        pixmap,
-                        XtWindow(da),
-                        gc,
-                        0,
-                        0,
-                        (unsigned int)screen_width,
-                        (unsigned int)screen_height,
-                        0,
-                        0);
+        xa_present_full(pixmap);
         free_dbfawk_infos(fld_info, sig_info);
         return;
       }

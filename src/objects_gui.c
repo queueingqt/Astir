@@ -52,6 +52,8 @@
 #include "object_utils.h"
 #include "dr_utils.h"
 
+#include "xa_draw.h"
+
 // Must be last include file
 #include "leak_detection.h"
 
@@ -452,16 +454,7 @@ void Object_change_data_set(Widget widget, XtPointer clientData, XtPointer UNUSE
     // Getting a segfault here on a Move operation, so just
     // comment it out.  A redraw will occur shortly anyway.
     //redraw_symbols(da);
-    (void)XCopyArea(XtDisplay(da),
-                    pixmap_final,
-                    XtWindow(da),
-                    gc,
-                    0,
-                    0,
-                    (unsigned int)screen_width,
-                    (unsigned int)screen_height,
-                    0,
-                    0);
+    xa_present_full(pixmap_final);
   }
   else
   {
@@ -517,16 +510,7 @@ void Item_change_data_set(Widget widget, XtPointer clientData, XtPointer UNUSED(
     // Getting a segfault here on a Move operation, so just
     // comment it out.  A redraw will occur shortly anyway.
     //redraw_symbols(da);
-    (void)XCopyArea(XtDisplay(da),
-                    pixmap_final,
-                    XtWindow(da),
-                    gc,
-                    0,
-                    0,
-                    (unsigned int)screen_width,
-                    (unsigned int)screen_height,
-                    0,
-                    0);
+    xa_present_full(pixmap_final);
   }
   else
   {

@@ -68,6 +68,8 @@
 #include "color.h"
 #include "xa_config.h"
 
+#include "xa_draw.h"
+
 // Must be last include file
 #include "leak_detection.h"
 
@@ -177,16 +179,7 @@ void draw_gnis_map (Widget w,
   if (interrupt_drawing_now)
   {
     // Update to screen
-    (void)XCopyArea(XtDisplay(da),
-                    pixmap,
-                    XtWindow(da),
-                    gc,
-                    0,
-                    0,
-                    (unsigned int)screen_width,
-                    (unsigned int)screen_height,
-                    0,
-                    0);
+    xa_present_full(pixmap);
     return;
   }
 
@@ -236,16 +229,7 @@ void draw_gnis_map (Widget w,
         {
           (void)fclose (f);
           // Update to screen
-          (void)XCopyArea(XtDisplay(da),
-                          pixmap,
-                          XtWindow(da),
-                          gc,
-                          0,
-                          0,
-                          (unsigned int)screen_width,
-                          (unsigned int)screen_height,
-                          0,
-                          0);
+          xa_present_full(pixmap);
           return;
         }
       }
