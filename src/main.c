@@ -12586,6 +12586,28 @@ static int last_alert_on_screen = -1;
 // triggers xa_perf_report_totals().
 // ---------------------------------------------------------------------------
 static void quit(int sig);
+
+// Zoom-and-hold helper for visual A/B captures (XASTIR_ZOOMOUT=<n>).
+// Performs n zoom-out steps after startup and then stops, leaving the map on
+// screen so a screenshot can be taken at a known scale.  Unlike the benchmark
+// driver it never quits.
+static int xa_zoomout_left = 0;
+
+static void xa_zoomout_tick( XtPointer clientData, XtIntervalId *UNUSED(id) )
+{
+  Widget w = (Widget)clientData;
+
+  if (xa_zoomout_left <= 0)
+  {
+    fprintf(stderr, "[zoomout] holding at final scale\n");
+    return;
+  }
+  xa_zoomout_left--;
+  fprintf(stderr, "[zoomout] step, %d remaining\n", xa_zoomout_left);
+  Zoom_out_no_pan(w, NULL, NULL);
+  (void)XtAppAddTimeOut(app_context, 8000, xa_zoomout_tick, clientData);
+}
+
 static int xa_bench_step_num = 0;
 
 static void xa_bench_tick( XtPointer clientData, XtIntervalId *UNUSED(id) )
@@ -31021,6 +31043,13 @@ int main(int argc, char *argv[], char *envp[])
       // Update the logging indicator
       Set_Log_Indicator();
 
+
+      if (getenv("XASTIR_ZOOMOUT"))
+      {
+        xa_zoomout_left = atoi(getenv("XASTIR_ZOOMOUT"));
+        fprintf(stderr, "[zoomout] %d steps requested\n", xa_zoomout_left);
+        (void)XtAppAddTimeOut(app_context, 6000, xa_zoomout_tick, (XtPointer)da);
+      }
 
       if (getenv("XASTIR_BENCH"))
       {

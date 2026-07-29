@@ -608,6 +608,70 @@ static awk_rule dbfawk_default_rules[] =
 #define dbfawk_default_nrules (sizeof(dbfawk_default_rules)/sizeof(dbfawk_default_rules[0]))
 static dbfawk_sig_info *dbfawk_default_sig = NULL;
 
+
+// ---------------------------------------------------------------------------
+// Level-of-detail: is this shape too small to be visible at the current scale?
+//
+// Measured 2026-07-28: dbfawk_parse_record() accounted for 62% of frame time,
+// because it runs for every *visible* shape -- and at state scale essentially
+// every road in a county is "visible", 432,081 of them in one frame.  The
+// styling it computes (including display_level, which decides whether to draw
+// at all) is only knowable after running it, so the work cannot be avoided by
+// looking at the result.
+//
+// It can be avoided by looking at the geometry.  A shape whose bounding box
+// spans less than about a pixel in both directions cannot render as anything
+// but a dot, so skipping it costs nothing visible and saves the dbfawk run,
+// the coordinate transform and the draw.
+//
+// Only applied to shapes with more than one vertex, so point layers (which
+// legitimately have a zero-size bounding box) are never skipped.
+//
+// scale_x / scale_y are 1/100 second per pixel; shape bounds are degrees.
+// degrees -> 1/100 sec is  * 3600 * 100.
+// ---------------------------------------------------------------------------
+#define XA_LOD_DEG_TO_XASTIR 360000.0
+
+static double xa_lod_threshold_px(void)
+{
+  static double px = -1.0;
+  if (px < 0.0)
+  {
+    const char *e = getenv("XASTIR_LOD_PX");
+    px = (e && *e) ? atof(e) : 1.0;
+    if (px < 0.0)
+    {
+      px = 0.0;
+    }
+  }
+  return px;
+}
+
+static int xa_lod_subpixel(SHPObject *object)
+{
+  double thr, w_px, h_px;
+
+  if (object == NULL || object->nVertices < 2)
+  {
+    return 0;
+  }
+  thr = xa_lod_threshold_px();
+  if (thr <= 0.0 || scale_x <= 0 || scale_y <= 0)
+  {
+    return 0;
+  }
+
+  w_px = (object->dfXMax - object->dfXMin) * XA_LOD_DEG_TO_XASTIR / (double)scale_x;
+  h_px = (object->dfYMax - object->dfYMin) * XA_LOD_DEG_TO_XASTIR / (double)scale_y;
+
+  if (w_px < thr && h_px < thr)
+  {
+    xa_perf_count(XA_CNT_SHAPES_SKIPPED, 1);
+    return 1;
+  }
+  return 0;
+}
+
 void draw_shapefile_map (Widget w,
                          char *dir,
                          char *filenm,
@@ -1175,7 +1239,8 @@ void draw_shapefile_map (Widget w,
     if ( map_visible_lat_lon( object->dfYMin,   // Bottom
                               object->dfYMax,   // Top
                               object->dfXMin,   // Left
-                              object->dfXMax) )     // Right
+                              object->dfXMax)       // Right
+         && !xa_lod_subpixel(object) )
     {
 
       int jj;
