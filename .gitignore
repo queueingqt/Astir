@@ -47,3 +47,5 @@ scripts/get-NWSdata
 scripts/get-fcc-rac.pl
 scripts/icontable.pl
 src/compiledate.c
+tests/atconfig
+tests/atlocal
