@@ -32,8 +32,9 @@ static const char *zone_name[XA_ZONE_COUNT] =
 {
   "create_image", "refresh_image", "shp_open", "shp_index",
   "shp_read", "shp_transform", "shp_draw",
-  "load_maps", "map_one", "dbfawk", "dbfawk_setup", "alert_maps",
-  "display_file", "draw_grid"
+  "load_maps", "map_one", "dbfawk", "dbfawk_setup", "rtree_build",
+  "rtree_read", "rtree_insert",
+  "alert_maps", "display_file", "draw_grid"
 };
 
 static const char *counter_name[XA_CNT_COUNT] =

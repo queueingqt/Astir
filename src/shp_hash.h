@@ -27,7 +27,7 @@ typedef struct _shpinfo
 
 void init_shp_hash(int clobber);
 void add_shp_to_hash(char *filename,SHPHandle sHP);
-void build_rtree(struct Node **root, SHPHandle sHP);
+void build_rtree(struct Node **root, SHPHandle sHP, const char *shp_path);
 void destroy_shp_hash(void);
 void empty_shpinfo(shpinfo *si);
 void destroy_shpinfo(shpinfo *si);

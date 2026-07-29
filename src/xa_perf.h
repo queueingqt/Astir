@@ -32,6 +32,9 @@ typedef enum
   XA_ZONE_MAP_ONE,            // one draw_shapefile_map() call, end to end
   XA_ZONE_DBFAWK,             // dbfawk signature match + rule evaluation
   XA_ZONE_DBFAWK_SETUP,       // per-file: sig lookup, symtab, awk compile
+  XA_ZONE_RTREE_BUILD,        // build_rtree(): one-time index construction
+  XA_ZONE_RTREE_READ,         //   ...of which: reading shape extents
+  XA_ZONE_RTREE_INSERT,       //   ...of which: RTree insertion
   XA_ZONE_ALERT_MAPS,         // load_alert_maps()
   XA_ZONE_DISPLAY_FILE,       // display_file(): stations, symbols, trails
   XA_ZONE_DRAW_GRID,          // draw_grid()

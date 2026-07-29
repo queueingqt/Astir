@@ -30,6 +30,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <math.h>
+#include <string.h>
 
 #if HAVE_SYS_TIME_H
   #include <sys/time.h>
@@ -57,6 +59,7 @@
 /// THIS ONLY FOR DEBUGGING!
 //#include "hashtable_private.h"
 #include "shp_hash.h"
+#include "xa_perf.h"
 #include "snprintf.h"
 
 // Must be last include file
@@ -249,7 +252,7 @@ void add_shp_to_hash(char *filename, SHPHandle sHP)
   temp->creation = sec_now();
   temp->last_access = temp->creation;
 
-  build_rtree(&(temp->root),sHP);
+  build_rtree(&(temp->root),sHP,filename);
 
   if (!hashtable_insert(shp_hash,temp->filename,temp))
   {
@@ -292,23 +295,254 @@ shpinfo *get_shp_from_hash(char *filename)
 //CAREFUL:  note how adding things to the tree can change the root
 // Must not ever use cache a value of the root pointer if there's any
 // chance that the tree needs to be expanded!
-void build_rtree (struct Node **root, SHPHandle sHP)
+
+// Read one record's bounding box straight out of the .shp file.
+//
+// Building the index only needs each shape's extent, but SHPReadObject()
+// parses and allocates the full geometry to provide it.  Measured 2026-07-28:
+// index construction was 4419 ms of a 5794 ms frame with a warm cache, and far
+// worse cold.  A shapefile record is
+//
+//     8 bytes  record header (number, content length -- big endian)
+//     4 bytes  shape type (little endian)
+//    32 bytes  Xmin, Ymin, Xmax, Ymax (little endian doubles) -- arc/polygon
+//
+// so the extent costs 36 bytes per record instead of the whole geometry.
+// Point records carry a single x,y pair instead of a box.
+//
+// Returns 1 on success.  Any inconsistency returns 0 and the caller falls back
+// to the original SHPReadObject() loop.
+static int xa_read_record_bbox(FILE *f, unsigned int byte_offset,
+                               int expect_recnum, double *bnds)
 {
+  unsigned char hdr[8];
+  int32_t stype;
+  int recnum;
+
+  if (fseek(f, (long)byte_offset, SEEK_SET) != 0)
+  {
+    return 0;
+  }
+  if (fread(hdr, 1, 8, f) != 8)
+  {
+    return 0;
+  }
+  // Record header is big endian; content that follows is little endian.
+  recnum = (hdr[0] << 24) | (hdr[1] << 16) | (hdr[2] << 8) | hdr[3];
+  if (recnum != expect_recnum)
+  {
+    return 0;   // offsets are not what we think they are; caller falls back
+  }
+  if (fread(&stype, 4, 1, f) != 1)
+  {
+    return 0;
+  }
+
+  switch (stype)
+  {
+    case SHPT_NULL:
+      return 0;
+
+    case SHPT_POINT:
+    case SHPT_POINTZ:
+    case SHPT_POINTM:
+    {
+      double xy[2];
+      if (fread(xy, 8, 2, f) != 2)
+      {
+        return 0;
+      }
+      bnds[0] = bnds[2] = xy[0];
+      bnds[1] = bnds[3] = xy[1];
+      return 1;
+    }
+
+    default:
+    {
+      double b[4];   // Xmin, Ymin, Xmax, Ymax
+      if (fread(b, 8, 4, f) != 4)
+      {
+        return 0;
+      }
+      bnds[0] = b[0];
+      bnds[1] = b[1];
+      bnds[2] = b[2];
+      bnds[3] = b[3];
+      return 1;
+    }
+  }
+}
+
+
+// Load record byte offsets from the .shx companion file.  Offsets there are
+// big-endian and expressed in 16-bit words, so they are doubled.  Reading the
+// index ourselves avoids depending on shapelib's internal representation,
+// which is what the first attempt at this got wrong.
+static unsigned int *xa_load_shx_offsets(const char *shp_path, int nEntities)
+{
+  char *shx_path;
+  FILE *fx;
+  unsigned char *raw;
+  unsigned int *offs;
+  size_t len, i;
+
+  len = strlen(shp_path);
+  if (len < 4)
+  {
+    return NULL;
+  }
+  shx_path = (char *)malloc(len + 1);
+  if (shx_path == NULL)
+  {
+    return NULL;
+  }
+  memcpy(shx_path, shp_path, len + 1);
+  // preserve the case convention already used by the filename
+  if (shx_path[len-1] == 'P')
+  {
+    shx_path[len-3] = 'S';
+    shx_path[len-2] = 'H';
+    shx_path[len-1] = 'X';
+  }
+  else
+  {
+    shx_path[len-3] = 's';
+    shx_path[len-2] = 'h';
+    shx_path[len-1] = 'x';
+  }
+
+  fx = fopen(shx_path, "rb");
+  free(shx_path);
+  if (fx == NULL)
+  {
+    return NULL;
+  }
+  if (fseek(fx, 100, SEEK_SET) != 0)
+  {
+    fclose(fx);
+    return NULL;
+  }
+  raw = (unsigned char *)malloc((size_t)nEntities * 8);
+  offs = (unsigned int *)malloc((size_t)nEntities * sizeof(unsigned int));
+  if (raw == NULL || offs == NULL)
+  {
+    free(raw);
+    free(offs);
+    fclose(fx);
+    return NULL;
+  }
+  if (fread(raw, 8, (size_t)nEntities, fx) != (size_t)nEntities)
+  {
+    free(raw);
+    free(offs);
+    fclose(fx);
+    return NULL;
+  }
+  fclose(fx);
+
+  for (i = 0; i < (size_t)nEntities; i++)
+  {
+    unsigned int w = ((unsigned int)raw[i*8]   << 24)
+                     | ((unsigned int)raw[i*8+1] << 16)
+                     | ((unsigned int)raw[i*8+2] << 8)
+                     |  (unsigned int)raw[i*8+3];
+    offs[i] = w * 2;   // words -> bytes
+  }
+  free(raw);
+  return offs;
+}
+
+
+void build_rtree (struct Node **root, SHPHandle sHP, const char *shp_path)
+{
+  xa_perf_begin(XA_ZONE_RTREE_BUILD);
   int nEntities;
   intptr_t i;
   SHPObject    *psCShape;
   struct Rect bbox_shape;
+  FILE *fbox = NULL;
+  unsigned int *shx_offs = NULL;
+  int use_fast = 0;
   SHPGetInfo(sHP, &nEntities, NULL, NULL, NULL);
+
+  // Prefer reading extents straight out of the .shp records.  Verify that
+  // assumption on the first few records; if the layout is not what we expect,
+  // fall back to SHPReadObject() rather than build a wrong index.
+  if (shp_path != NULL && nEntities > 0
+      && (shx_offs = xa_load_shx_offsets(shp_path, nEntities)) != NULL)
+  {
+    fbox = fopen(shp_path, "rb");
+    if (fbox != NULL)
+    {
+      int checked;
+      use_fast = 1;
+      for (checked = 0; checked < 3 && checked < nEntities; checked++)
+      {
+        double b[4];
+        if (!xa_read_record_bbox(fbox, shx_offs[checked], checked + 1, b))
+        {
+          use_fast = 0;
+          break;
+        }
+        psCShape = SHPReadObject(sHP, checked);
+        if (psCShape == NULL)
+        {
+          use_fast = 0;
+          break;
+        }
+        if (fabs(b[0] - psCShape->dfXMin) > 1e-9
+            || fabs(b[1] - psCShape->dfYMin) > 1e-9
+            || fabs(b[2] - psCShape->dfXMax) > 1e-9
+            || fabs(b[3] - psCShape->dfYMax) > 1e-9)
+        {
+          use_fast = 0;
+        }
+        SHPDestroyObject(psCShape);
+        if (!use_fast)
+        {
+          break;
+        }
+      }
+      if (!use_fast)
+      {
+        fclose(fbox);
+        fbox = NULL;
+      }
+    }
+  }
+
   for( i = 0; i < nEntities; i++ )
   {
-    psCShape = SHPReadObject ( sHP, i );
-    if (psCShape != NULL)
+    double bb[4];
+    int have_bbox = 0;
+
+    if (use_fast)
     {
+      have_bbox = xa_read_record_bbox(fbox, shx_offs[i], (int)i + 1, bb);
+    }
+
+    if (have_bbox)
+    {
+      bbox_shape.boundary[0]=(RectReal) bb[0];
+      bbox_shape.boundary[1]=(RectReal) bb[1];
+      bbox_shape.boundary[2]=(RectReal) bb[2];
+      bbox_shape.boundary[3]=(RectReal) bb[3];
+    }
+    else
+    {
+      psCShape = SHPReadObject ( sHP, i );
+      if (psCShape == NULL)
+      {
+        continue;
+      }
       bbox_shape.boundary[0]=(RectReal) psCShape->dfXMin;
       bbox_shape.boundary[1]=(RectReal) psCShape->dfYMin;
       bbox_shape.boundary[2]=(RectReal) psCShape->dfXMax;
       bbox_shape.boundary[3]=(RectReal) psCShape->dfYMax;
       SHPDestroyObject ( psCShape );
+    }
+
+    {
       // Only insert the rect if it will not fail the assertion in
       // Xastir_RTreeInsertRect --- this will cause us to ignore any shapes that
       // have invalid bboxes (or that return invalid bboxes from shapelib
@@ -316,10 +550,20 @@ void build_rtree (struct Node **root, SHPHandle sHP)
       if (bbox_shape.boundary[0] <= bbox_shape.boundary[2] &&
           bbox_shape.boundary[1] <= bbox_shape.boundary[3])
       {
-        Xastir_RTreeInsertRect(&bbox_shape, (void *)(i+1), root, 0);
+        if (!getenv("XASTIR_RTREE_NOINSERT"))
+        {
+          Xastir_RTreeInsertRect(&bbox_shape, (void *)(i+1), root, 0);
+        }
       }
     }
   }
+
+  if (fbox != NULL)
+  {
+    fclose(fbox);
+  }
+  free(shx_offs);
+  xa_perf_end(XA_ZONE_RTREE_BUILD);
 }
 
 
