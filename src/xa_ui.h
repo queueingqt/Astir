@@ -23,6 +23,12 @@ typedef struct
   // interfaces and the station database -- roughly 45 sites.  May be called
   // very frequently during a redraw, so an implementation should be cheap.
   void (*status)(const char *text);
+
+  // Give the front end a chance to process pending input.  The map drawing
+  // code calls this every 64 shapes and between map files so that a pan or
+  // zoom can interrupt a slow redraw -- see interrupt_drawing_now.  It is the
+  // reason core objects referenced the Xt application context at all.
+  void (*pump_events)(void);
 } xa_ui_callbacks;
 
 // Install the front end's implementations.  Passing NULL, or leaving a member
@@ -31,5 +37,6 @@ void xa_ui_set_callbacks(const xa_ui_callbacks *cb);
 
 // Core-side entry point.  Safe to call before any front end has registered.
 void xa_ui_status(const char *text);
+void xa_ui_pump_events(void);
 
 #endif // XA_UI_H

@@ -645,7 +645,7 @@ static void draw_image(
   for (image_row = 0; image_row < image->rows; image_row++)
   {
 
-    HandlePendingEvents(app_context);
+    xa_ui_pump_events();
     if (interrupt_drawing_now)
     {
       // Update to screen
@@ -928,7 +928,7 @@ static void render_OSM_image_pixels(
   for (map_image_row = map_y_min; (map_image_row <= map_y_max); map_image_row++)
   {
 
-    HandlePendingEvents(app_context);
+    xa_ui_pump_events();
     if (interrupt_drawing_now)
     {
       // Caller owns ximg; we just return without flushing —
@@ -1648,7 +1648,7 @@ void draw_OSM_map (Widget w,
     fprintf(stderr,"ftp or http file: %s\n", fileimg);
   }
 
-  HandlePendingEvents(app_context);
+  xa_ui_pump_events();
   if (interrupt_drawing_now)
   {
     // Update to screen

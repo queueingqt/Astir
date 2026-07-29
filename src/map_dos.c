@@ -748,7 +748,7 @@ void draw_dos_map(Widget w,
     return; // Done indexing this file
   }
 
-  HandlePendingEvents(app_context);
+  xa_ui_pump_events();
   if (interrupt_drawing_now)
   {
     (void)fclose(f);
@@ -795,7 +795,7 @@ void draw_dos_map(Widget w,
   for (count = 0l; count < total_vector_points && !feof (f) && !dos_labels; count++)
   {
 
-    HandlePendingEvents(app_context);
+    xa_ui_pump_events();
     if (interrupt_drawing_now)
     {
       (void)fclose(f);
@@ -1231,7 +1231,7 @@ process:
   if (map_labels)
   {
 
-    HandlePendingEvents(app_context);
+    xa_ui_pump_events();
     if (interrupt_drawing_now)
     {
       (void)fclose(f);

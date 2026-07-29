@@ -8956,7 +8956,7 @@ void load_alert_maps (Widget w, char *dir)
   while (iterator != NULL && temp)
   {
 
-    HandlePendingEvents(app_context);
+    xa_ui_pump_events();
     if (interrupt_drawing_now)
     {
 #ifndef USING_LIBGC
@@ -9257,7 +9257,7 @@ void load_auto_maps (Widget w, char * UNUSED(dir) )
   map_index_record *current = map_index_head;
   map_draw_flags mdf;
 
-  HandlePendingEvents(app_context);
+  xa_ui_pump_events();
   if (interrupt_drawing_now)
   {
     return;
@@ -9319,7 +9319,7 @@ void load_auto_maps (Widget w, char * UNUSED(dir) )
   while  (current != NULL)
   {
 
-    HandlePendingEvents(app_context);
+    xa_ui_pump_events();
     if (interrupt_drawing_now)
     {
       // Update to screen
@@ -9400,7 +9400,7 @@ void load_maps (Widget w)
     fprintf(stderr,"Load maps start\n");
   }
 
-  HandlePendingEvents(app_context);
+  xa_ui_pump_events();
   if (interrupt_drawing_now)
   {
     // Update to screen
@@ -9576,7 +9576,7 @@ void load_maps (Widget w)
   while  (current != NULL)
   {
 
-    HandlePendingEvents(app_context);
+    xa_ui_pump_events();
     if (interrupt_drawing_now)
     {
       xa_ui_status(" ");      // delete status line

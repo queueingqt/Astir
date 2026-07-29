@@ -70,6 +70,8 @@
 
 #include "xa_draw.h"
 
+#include "xa_ui.h"
+
 // Must be last include file
 #include "leak_detection.h"
 
@@ -175,7 +177,7 @@ void draw_gnis_map (Widget w,
   statusline(status_text,0);       // Loading/Indexing ...
 
 
-  HandlePendingEvents(app_context);
+  xa_ui_pump_events();
   if (interrupt_drawing_now)
   {
     // Update to screen
@@ -224,7 +226,7 @@ void draw_gnis_map (Widget w,
         // Check whether map drawing should be interrupted.
         // Check every 16 lines.
         //
-        HandlePendingEvents(app_context);
+        xa_ui_pump_events();
         if (interrupt_drawing_now)
         {
           (void)fclose (f);

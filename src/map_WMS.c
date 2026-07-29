@@ -124,6 +124,8 @@
 
 #include "xa_draw.h"
 
+#include "xa_ui.h"
+
 // Must be last include file
 #include "leak_detection.h"
 
@@ -463,7 +465,7 @@ void draw_WMS_map (Widget w,
 
     unlink( local_filename );
 
-    HandlePendingEvents(app_context);
+    xa_ui_pump_events();
     if (interrupt_drawing_now)
     {
       // Update to screen
@@ -916,7 +918,7 @@ void draw_WMS_map (Widget w,
   for (map_y_0 = map_y_min, c_y = (double)c_y_min; (map_y_0 <= map_y_max); map_y_0++, c_y += map_c_dy)
   {
 
-    HandlePendingEvents(app_context);
+    xa_ui_pump_events();
     if (interrupt_drawing_now)
     {
       if (image)

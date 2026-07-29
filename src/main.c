@@ -4044,10 +4044,16 @@ static void motif_ui_status(const char *text)
   statusline((char *)text, 1);
 }
 
+static void motif_ui_pump_events(void)
+{
+  HandlePendingEvents(app_context);
+}
+
 void xa_ui_register_motif(void)
 {
   xa_ui_callbacks cb;
   cb.status = motif_ui_status;
+  cb.pump_events = motif_ui_pump_events;
   xa_ui_set_callbacks(&cb);
 }
 

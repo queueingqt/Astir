@@ -1242,7 +1242,7 @@ void draw_geotiff_image_map (Widget w,
   }
 
 
-  HandlePendingEvents(app_context);
+  xa_ui_pump_events();
   if (interrupt_drawing_now)
   {
     GTIFFree (gtif);
@@ -1417,7 +1417,7 @@ void draw_geotiff_image_map (Widget w,
      * datum-shifted values to plot the points in Xastir.
      */
 
-    HandlePendingEvents(app_context);
+    xa_ui_pump_events();
     if (interrupt_drawing_now)
     {
       GTIFFree (gtif);
@@ -1514,7 +1514,7 @@ void draw_geotiff_image_map (Widget w,
       fprintf(stderr,"Problem in translating\n");
     }
 
-    HandlePendingEvents(app_context);
+    xa_ui_pump_events();
     if (interrupt_drawing_now)
     {
       GTIFFree (gtif);
@@ -1609,7 +1609,7 @@ void draw_geotiff_image_map (Widget w,
       fprintf(stderr,"Problem in translating\n");
     }
 
-    HandlePendingEvents(app_context);
+    xa_ui_pump_events();
     if (interrupt_drawing_now)
     {
       GTIFFree (gtif);
@@ -1704,7 +1704,7 @@ void draw_geotiff_image_map (Widget w,
       fprintf(stderr,"Problem in translating\n");
     }
 
-    HandlePendingEvents(app_context);
+    xa_ui_pump_events();
     if (interrupt_drawing_now)
     {
       GTIFFree (gtif);
@@ -1818,7 +1818,7 @@ void draw_geotiff_image_map (Widget w,
     SE_y = height - 1;
   }
 
-  HandlePendingEvents(app_context);
+  xa_ui_pump_events();
   if (interrupt_drawing_now)
   {
     GTIFFree (gtif);
@@ -2012,7 +2012,7 @@ void draw_geotiff_image_map (Widget w,
     }
   }
 
-  HandlePendingEvents(app_context);
+  xa_ui_pump_events();
   if (interrupt_drawing_now)
   {
     GTIFFree (gtif);
@@ -2609,7 +2609,7 @@ void draw_geotiff_image_map (Widget w,
   view_top_minus_pixel_height = (unsigned long)(view_min_y - steph);
 
 
-  HandlePendingEvents(app_context);
+  xa_ui_pump_events();
   if (interrupt_drawing_now)
   {
     if (imageMemory)
@@ -2654,7 +2654,7 @@ void draw_geotiff_image_map (Widget w,
     int skip = 0;
 
 
-    HandlePendingEvents(app_context);
+    xa_ui_pump_events();
     if (interrupt_drawing_now)
     {
       if (imageMemory)

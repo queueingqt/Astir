@@ -154,7 +154,7 @@ int check_interrupt(
   Widget *da, Pixmap *pixmap,
   GC *gc, unsigned long screen_width, unsigned long screen_height)
 {
-  HandlePendingEvents(app_context);
+  xa_ui_pump_events();
   if (interrupt_drawing_now)
   {
 #ifdef HAVE_MAGICK
@@ -1713,7 +1713,7 @@ void draw_geo_image_map (Widget w,
     return; // Done indexing this file
   }
 
-  HandlePendingEvents(app_context);
+  xa_ui_pump_events();
   if (interrupt_drawing_now)
   {
     // Update to screen
@@ -1774,7 +1774,7 @@ void draw_geo_image_map (Widget w,
   atb.valuemask = 0;
 #endif  // NO_XPM
 
-  HandlePendingEvents(app_context);
+  xa_ui_pump_events();
   if (interrupt_drawing_now)
   {
     // Update to screen
@@ -1936,7 +1936,7 @@ void draw_geo_image_map (Widget w,
 
   //fprintf(stderr,"File = %s\n",file);
 
-  HandlePendingEvents(app_context);
+  xa_ui_pump_events();
   if (interrupt_drawing_now)
   {
     // Update to screen
@@ -1978,7 +1978,7 @@ void draw_geo_image_map (Widget w,
   }
   (void)fclose (f);
 
-  HandlePendingEvents(app_context);
+  xa_ui_pump_events();
   if (interrupt_drawing_now)
   {
     // Update to screen
@@ -2478,7 +2478,7 @@ void draw_geo_image_map (Widget w,
   // XPM library instead, but only if we HAVE XPM.
 
 #ifndef NO_XPM
-  HandlePendingEvents(app_context);
+  xa_ui_pump_events();
   if (interrupt_drawing_now)
   {
     // Update to screen
@@ -2526,7 +2526,7 @@ void draw_geo_image_map (Widget w,
             (int) (map_c_dy / scale_y));
   }
 
-  HandlePendingEvents(app_context);
+  xa_ui_pump_events();
   if (interrupt_drawing_now)
   {
     if (xi)

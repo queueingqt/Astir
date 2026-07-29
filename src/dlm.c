@@ -48,6 +48,8 @@
 
 #include "dlm.h"
 
+#include "xa_ui.h"
+
 // Must be last include file
 #include "leak_detection.h"
 
@@ -784,7 +786,7 @@ static void *DLM_transfer_thread(void * UNUSED(arg) )
         end_critical_section(&DLM_state_lock, "DLM_transfer_thread set quit");
       }
 #ifndef DLM_QUEUE_THREADED
-      HandlePendingEvents(app_context);
+      xa_ui_pump_events();
       if (interrupt_drawing_now)
       {
         begin_critical_section(&DLM_state_lock, "DLM_transfer_thread interrupt quit");

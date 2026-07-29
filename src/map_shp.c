@@ -1188,7 +1188,7 @@ void draw_shapefile_map (Widget w,
 
 
 
-  HandlePendingEvents(app_context);
+  xa_ui_pump_events();
   if (interrupt_drawing_now)
   {
     DBFClose( hDBF );   // Clean up open file descriptors
@@ -1283,7 +1283,7 @@ void draw_shapefile_map (Widget w,
     if ( (RTree_hitarray_index % 64) == 0 )
     {
 
-      HandlePendingEvents(app_context);
+      xa_ui_pump_events();
       if (interrupt_drawing_now)
       {
         DBFClose( hDBF );   // Clean up open file descriptors

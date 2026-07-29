@@ -13,7 +13,7 @@
 
 #include "xa_ui.h"
 
-static xa_ui_callbacks ui = { NULL };
+static xa_ui_callbacks ui = { NULL, NULL };
 
 
 void xa_ui_set_callbacks(const xa_ui_callbacks *cb)
@@ -21,6 +21,7 @@ void xa_ui_set_callbacks(const xa_ui_callbacks *cb)
   if (cb == NULL)
   {
     ui.status = NULL;
+    ui.pump_events = NULL;
     return;
   }
   ui = *cb;
@@ -34,5 +35,14 @@ void xa_ui_status(const char *text)
   if (ui.status != NULL && text != NULL)
   {
     ui.status(text);
+  }
+}
+
+
+void xa_ui_pump_events(void)
+{
+  if (ui.pump_events != NULL)
+  {
+    ui.pump_events();
   }
 }
