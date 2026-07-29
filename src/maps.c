@@ -1017,7 +1017,7 @@ int clip2d_screen(unsigned int *x0, unsigned int *y0, unsigned int *x1, unsigned
 //
 // Input point is in the Xastir coordinate system.
 //
-void draw_point(Widget w,
+void draw_point(
                 unsigned long x1,
                 unsigned long y1,
                 GC gc,
@@ -1102,7 +1102,7 @@ void draw_point_ll(Widget w,
                                 y1);
 
   // Call the draw routine above.
-  draw_point(w, x1L, y1L, gc, which_pixmap, skip_duplicates);
+  draw_point(x1L, y1L, gc, which_pixmap, skip_duplicates);
 }
 
 
@@ -1116,7 +1116,7 @@ void draw_point_ll(Widget w,
 //
 // Input points are in the Xastir coordinate system.
 //
-void draw_vector(Widget w,
+void draw_vector(
                  unsigned long x1,
                  unsigned long y1,
                  unsigned long x2,
@@ -1177,7 +1177,7 @@ void draw_vector(Widget w,
 //
 // Input points are in lat/long coordinates.
 //
-void draw_vector_ll(Widget w,
+void draw_vector_ll(
                     float y1,   // lat1
                     float x1,   // long1
                     float y2,   // lat2
@@ -1854,18 +1854,18 @@ void draw_major_utm_mgrs_grid(Widget w)
 
   for (ii = -180; ii < 0; ii += 6)
   {
-    draw_vector_ll(w, -80.0,  (float)ii, 84.0,  (float)ii, gc_tint, pixmap_final, 0);
+    draw_vector_ll(-80.0,  (float)ii, 84.0,  (float)ii, gc_tint, pixmap_final, 0);
   }
   for (ii = 42; ii <= 180; ii += 6)
   {
-    draw_vector_ll(w, -80.0,  (float)ii, 84.0,  (float)ii, gc_tint, pixmap_final, 0);
+    draw_vector_ll(-80.0,  (float)ii, 84.0,  (float)ii, gc_tint, pixmap_final, 0);
   }
 
   // Draw the short vertical vectors in the polar regions
-  draw_vector_ll(w, -90.0, -180.0, -80.0, -180.0, gc_tint, pixmap_final, 0);
-  draw_vector_ll(w, -90.0,  180.0, -80.0,  180.0, gc_tint, pixmap_final, 0);
-  draw_vector_ll(w,  84.0, -180.0,  90.0, -180.0, gc_tint, pixmap_final, 0);
-  draw_vector_ll(w,  84.0,  180.0,  90.0,  180.0, gc_tint, pixmap_final, 0);
+  draw_vector_ll(-90.0, -180.0, -80.0, -180.0, gc_tint, pixmap_final, 0);
+  draw_vector_ll(-90.0,  180.0, -80.0,  180.0, gc_tint, pixmap_final, 0);
+  draw_vector_ll(84.0, -180.0,  90.0, -180.0, gc_tint, pixmap_final, 0);
+  draw_vector_ll(84.0,  180.0,  90.0,  180.0, gc_tint, pixmap_final, 0);
 
   if (coordinate_system == USE_UTM_SPECIAL
       || coordinate_system == USE_MGRS)
@@ -1874,27 +1874,27 @@ void draw_major_utm_mgrs_grid(Widget w)
     // areas.
 
     // Draw the partial vectors from 80S to the irregular region
-    draw_vector_ll(w, -80.0,    6.0,  56.0,    6.0, gc_tint, pixmap_final, 0);
-    draw_vector_ll(w, -80.0,   12.0,  72.0,   12.0, gc_tint, pixmap_final, 0);
-    draw_vector_ll(w, -80.0,   18.0,  72.0,   18.0, gc_tint, pixmap_final, 0);
-    draw_vector_ll(w, -80.0,   24.0,  72.0,   24.0, gc_tint, pixmap_final, 0);
-    draw_vector_ll(w, -80.0,   30.0,  72.0,   30.0, gc_tint, pixmap_final, 0);
-    draw_vector_ll(w, -80.0,   36.0,  72.0,   36.0, gc_tint, pixmap_final, 0);
+    draw_vector_ll(-80.0,    6.0,  56.0,    6.0, gc_tint, pixmap_final, 0);
+    draw_vector_ll(-80.0,   12.0,  72.0,   12.0, gc_tint, pixmap_final, 0);
+    draw_vector_ll(-80.0,   18.0,  72.0,   18.0, gc_tint, pixmap_final, 0);
+    draw_vector_ll(-80.0,   24.0,  72.0,   24.0, gc_tint, pixmap_final, 0);
+    draw_vector_ll(-80.0,   30.0,  72.0,   30.0, gc_tint, pixmap_final, 0);
+    draw_vector_ll(-80.0,   36.0,  72.0,   36.0, gc_tint, pixmap_final, 0);
 
     // Draw the short vertical vectors in the irregular region
-    draw_vector_ll(w,  56.0,    3.0,  64.0,    3.0, gc_tint, pixmap_final, 0);
-    draw_vector_ll(w,  64.0,    6.0,  72.0,    6.0, gc_tint, pixmap_final, 0);
-    draw_vector_ll(w,  72.0,    9.0,  84.0,    9.0, gc_tint, pixmap_final, 0);
-    draw_vector_ll(w,  72.0,   21.0,  84.0,   21.0, gc_tint, pixmap_final, 0);
-    draw_vector_ll(w,  72.0,   33.0,  84.0,   33.0, gc_tint, pixmap_final, 0);
+    draw_vector_ll(56.0,    3.0,  64.0,    3.0, gc_tint, pixmap_final, 0);
+    draw_vector_ll(64.0,    6.0,  72.0,    6.0, gc_tint, pixmap_final, 0);
+    draw_vector_ll(72.0,    9.0,  84.0,    9.0, gc_tint, pixmap_final, 0);
+    draw_vector_ll(72.0,   21.0,  84.0,   21.0, gc_tint, pixmap_final, 0);
+    draw_vector_ll(72.0,   33.0,  84.0,   33.0, gc_tint, pixmap_final, 0);
 
     // Draw the short vertical vectors above the irregular region
-    draw_vector_ll(w,  84.0,    6.0,  84.0,    6.0, gc_tint, pixmap_final, 0);
-    draw_vector_ll(w,  84.0,   12.0,  84.0,   12.0, gc_tint, pixmap_final, 0);
-    draw_vector_ll(w,  84.0,   18.0,  84.0,   18.0, gc_tint, pixmap_final, 0);
-    draw_vector_ll(w,  84.0,   24.0,  84.0,   24.0, gc_tint, pixmap_final, 0);
-    draw_vector_ll(w,  84.0,   30.0,  84.0,   30.0, gc_tint, pixmap_final, 0);
-    draw_vector_ll(w,  84.0,   36.0,  84.0,   36.0, gc_tint, pixmap_final, 0);
+    draw_vector_ll(84.0,    6.0,  84.0,    6.0, gc_tint, pixmap_final, 0);
+    draw_vector_ll(84.0,   12.0,  84.0,   12.0, gc_tint, pixmap_final, 0);
+    draw_vector_ll(84.0,   18.0,  84.0,   18.0, gc_tint, pixmap_final, 0);
+    draw_vector_ll(84.0,   24.0,  84.0,   24.0, gc_tint, pixmap_final, 0);
+    draw_vector_ll(84.0,   30.0,  84.0,   30.0, gc_tint, pixmap_final, 0);
+    draw_vector_ll(84.0,   36.0,  84.0,   36.0, gc_tint, pixmap_final, 0);
   }
   else
   {
@@ -1902,7 +1902,7 @@ void draw_major_utm_mgrs_grid(Widget w)
     // grid.
     for (ii = 6; ii < 42; ii += 6)
     {
-      draw_vector_ll(w, -80.0,  (float)ii, 84.0,  (float)ii, gc_tint, pixmap_final, 0);
+      draw_vector_ll(-80.0,  (float)ii, 84.0,  (float)ii, gc_tint, pixmap_final, 0);
     }
   }
 
@@ -1912,32 +1912,32 @@ void draw_major_utm_mgrs_grid(Widget w)
   // Draw the 8 degree spaced lines, except for the equator
   for (ii = -80; ii < 0; ii += 8)
   {
-    draw_vector_ll(w, (float)ii, -180.0, (float)ii, 180.0, gc_tint, pixmap_final, 0);
+    draw_vector_ll((float)ii, -180.0, (float)ii, 180.0, gc_tint, pixmap_final, 0);
   }
   // Draw the 8 degree spaced lines
   for (ii = 8; ii <= 72; ii += 8)
   {
-    draw_vector_ll(w, (float)ii, -180.0, (float)ii, 180.0, gc_tint, pixmap_final, 0);
+    draw_vector_ll((float)ii, -180.0, (float)ii, 180.0, gc_tint, pixmap_final, 0);
   }
 
   // Draw the one 12 degree spaced line
-  draw_vector_ll(w, 84.0, -180.0, 84.0, 180.0, gc_tint, pixmap_final, 0);
+  draw_vector_ll(84.0, -180.0, 84.0, 180.0, gc_tint, pixmap_final, 0);
 
   // Draw the pole lines
-  draw_vector_ll(w, -90.0, -180.0, -90.0, 180.0, gc_tint, pixmap_final, 0);
-  draw_vector_ll(w,  90.0, -180.0,  90.0, 180.0, gc_tint, pixmap_final, 0);
+  draw_vector_ll(-90.0, -180.0, -90.0, 180.0, gc_tint, pixmap_final, 0);
+  draw_vector_ll(90.0, -180.0,  90.0, 180.0, gc_tint, pixmap_final, 0);
 
   // Set to solid line for the equator.  Make it extra wide as
   // well.
   xa_pen_line(gc_tint, 3, XA_LINE_SOLID, XA_CAP_BUTT, XA_JOIN_MITER);
 
   // Draw the equator as a solid line
-  draw_vector_ll(w, 0.0, -180.0, 0.0, 180.0, gc_tint, pixmap_final, 0);
+  draw_vector_ll(0.0, -180.0, 0.0, 180.0, gc_tint, pixmap_final, 0);
 
   xa_pen_line(gc_tint, 2, XA_LINE_SOLID, XA_CAP_BUTT, XA_JOIN_MITER);
 
   // Draw the prime meridian in the same manner
-  draw_vector_ll(w, -80.0, 0.0, 84.0, 0.0, gc_tint, pixmap_final, 0);
+  draw_vector_ll(-80.0, 0.0, 84.0, 0.0, gc_tint, pixmap_final, 0);
 
   // add metadata and labels
   if (draw_labeled_grid_border==TRUE && scale_x > 3000)
@@ -2261,7 +2261,7 @@ void actually_draw_utm_minor_grid(Widget w)
                             sizeof(grid_label),
                             "%s",
                             zone_str2);
-            //draw_nice_string(w,pixmap_final,0,
+            //draw_nice_string(pixmap_final,0,
             //    border_width+2,
             //    (2*border_width)+2,
             //    grid_label,
@@ -2299,7 +2299,7 @@ void actually_draw_utm_minor_grid(Widget w)
                             sizeof(grid_label),
                             "%s",
                             zone_str2);
-            //draw_nice_string(w,pixmap_final,0,
+            //draw_nice_string(pixmap_final,0,
             //    screen_width - (border_width * 3) ,
             //    (2*border_width)+2,
             //    grid_label,
@@ -2366,7 +2366,7 @@ void actually_draw_utm_minor_grid(Widget w)
                                              sizeof(grid_label),colors[easting_color],grid_label,FONT_BORDER,
                                              pixmap_final,
                                              outline_border_labels, colors[outline_border_labels_color]);
-          //draw_nice_string(w,pixmap_final,0,
+          //draw_nice_string(pixmap_final,0,
           //    xx2,
           //    screen_height - 2,
           //    grid_label,
@@ -2389,7 +2389,7 @@ void actually_draw_utm_minor_grid(Widget w)
                                              sizeof(grid_label),colors[easting_color],grid_label,FONT_BORDER,
                                              pixmap_final,
                                              outline_border_labels, colors[outline_border_labels_color]);
-          //draw_nice_string(w,pixmap_final,0,
+          //draw_nice_string(pixmap_final,0,
           //    1,
           //    screen_height - 2,
           //    grid_label,
@@ -2477,7 +2477,7 @@ void actually_draw_utm_minor_grid(Widget w)
                         sizeof(top_label),
                         langcode("MDATA001"),
                         grid_label,grid_label1,utm_grid_spacing_m,metadata_datum);
-        //draw_nice_string(w,pixmap_final,0,
+        //draw_nice_string(pixmap_final,0,
         //    border_width+2,
         //    border_width-2,
         //    top_label,
@@ -2600,7 +2600,7 @@ void actually_draw_utm_minor_grid(Widget w)
               }
               // draw each number at the bottom of the screen just to the right of the
               // relevant grid line at its location at the bottom of the screen
-              //draw_nice_string(w,pixmap_final,0,
+              //draw_nice_string(pixmap_final,0,
               //    utm_grid.zone[Zone].col[i].points[bottom_point].x+1,
               //    screen_height-2,
               //    grid_label,
@@ -3490,8 +3490,8 @@ void draw_grid(Widget w)
 
     int ret_code;
 
-//draw_vector_ll(w, -5.0, -5.0,  5.0,  5.0, gc_tint, pixmap_final, 0);
-//draw_vector_ll(w,  5.0,  5.0, -5.0, -5.0, gc_tint, pixmap_final, 0);
+//draw_vector_ll(-5.0, -5.0,  5.0,  5.0, gc_tint, pixmap_final, 0);
+//draw_vector_ll(5.0,  5.0, -5.0, -5.0, gc_tint, pixmap_final, 0);
 
     // Draw major UTM/MGRS zones
     draw_major_utm_mgrs_grid(w);

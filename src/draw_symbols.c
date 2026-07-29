@@ -101,7 +101,7 @@ void clear_symbol_data(void)
  *  Modified to take into account the font metrics - N7IPB
  *  4/8/2016
  */
-void draw_nice_string(Widget w, Pixmap where, int style, long x, long y, char *text, int bgcolor, int fgcolor, int length)
+void draw_nice_string(Pixmap where, int style, long x, long y, char *text, int bgcolor, int fgcolor, int length)
 {
   if (x > screen_width || x < 0 || y > screen_height || y < 0)
     return;
@@ -137,7 +137,7 @@ void draw_nice_string(Widget w, Pixmap where, int style, long x, long y, char *t
 
       case 2:
         /* black box - box drawn by caller via XFillRectangle, just draw text */
-        xa_pen_color(gc, GetPixelByName(w, "black"));
+        xa_pen_color(gc, xa_color_by_name("black"));
         xa_fill_rect(where, gc, x, y - (font_height - font_height/4), text_w, font_height);
         xa_draw_text_styled(where, x, y, 0.0f, text, fontspec,
                                colors[fgcolor], 0, 0, XA_ALIGN_NONE);
@@ -199,13 +199,13 @@ void draw_nice_string(Widget w, Pixmap where, int style, long x, long y, char *t
         break;
       case 1:
         xa_pen_color(gc, colors[0xff]);
-        xa_fill_rect(where, gc, x, y-(font_height-(font_height/4)), get_text_width(w,text), font_height);
+        xa_fill_rect(where, gc, x, y-(font_height-(font_height/4)), get_text_width(text), font_height);
         xa_pen_color(gc, colors[bgcolor]);
         xa_draw_string(where, gc, x+(font_height/10), y+(font_width/8), text, length);
         break;
       case 2:
-        xa_pen_color(gc, GetPixelByName(w,"black"));
-        xa_fill_rect(where, gc, x, y-(font_height-(font_height/4)), get_text_width(w,text), font_height);
+        xa_pen_color(gc, xa_color_by_name("black"));
+        xa_fill_rect(where, gc, x, y-(font_height-(font_height/4)), get_text_width(text), font_height);
         break;
       case 3:
       default:
@@ -269,8 +269,7 @@ void draw_WP_line(DataRow *p_station,
                   int ambiguity_flag,
                   long ambiguity_coord_lon,
                   long ambiguity_coord_lat,
-                  Pixmap where,
-                  Widget UNUSED(w) )
+                  Pixmap where)
 {
   DataRow *transmitting_station = NULL;
   int my_course;
@@ -543,10 +542,10 @@ void draw_precision_rectangle(long x_long,
         y2 = y_lat - lat_precision;
       }
 
-      draw_vector(da, x_long, y_lat, x_long, y2, gc, where, 0); // x_long constant
-      draw_vector(da, x_long, y2, x2, y2, gc, where, 0); // y2 constant
-      draw_vector(da, x2, y2, x2, y_lat, gc, where, 0); // x2 constant
-      draw_vector(da, x2, y_lat, x_long, y_lat, gc, where, 0); // y_lat constant
+      draw_vector(x_long, y_lat, x_long, y2, gc, where, 0); // x_long constant
+      draw_vector(x_long, y2, x2, y2, gc, where, 0); // y2 constant
+      draw_vector(x2, y2, x2, y_lat, gc, where, 0); // x2 constant
+      draw_vector(x2, y_lat, x_long, y_lat, gc, where, 0); // y_lat constant
     }
   }
 }
@@ -1603,14 +1602,14 @@ void draw_bearing(long x_long, long y_lat, char *course,
     if (draw_beamwidth)
     {
       xa_pen_color(gc, colors[0x4a]); // red2
-      draw_vector(da, x_long, y_lat, x_long2, y_lat2, gc, where, 0);
-      draw_vector(da, x_long, y_lat, x_long3, y_lat3, gc, where, 0);
+      draw_vector(x_long, y_lat, x_long2, y_lat2, gc, where, 0);
+      draw_vector(x_long, y_lat, x_long3, y_lat3, gc, where, 0);
     }
 
     if (draw_bearing)
     {
       xa_pen_color(gc, colors[0x44]); // red3
-      draw_vector(da, x_long, y_lat, x_long4, y_lat4, gc, where, 0);
+      draw_vector(x_long, y_lat, x_long4, y_lat4, gc, where, 0);
     }
   }
 
@@ -1749,20 +1748,20 @@ void draw_ambiguity(long x_long, long y_lat, char amb, long *amb_x_long, long *a
   xa_pen_line(gc, 2, XA_LINE_ON_OFF_DASH, XA_CAP_BUTT, XA_JOIN_MITER);
 
   // Top line of rectangle
-  draw_vector(da,left,top,right,top,gc,pixmap_final, 0);
+  draw_vector(left,top,right,top,gc,pixmap_final, 0);
 
   // Bottom line of rectangle
-  draw_vector(da,left,bottom,right,bottom,gc,pixmap_final, 1);
+  draw_vector(left,bottom,right,bottom,gc,pixmap_final, 1);
 
   // Left line of rectangle
-  draw_vector(da,left,top,left,bottom,gc,pixmap_final, 1);
+  draw_vector(left,top,left,bottom,gc,pixmap_final, 1);
 
   // Right line of rectangle
-  draw_vector(da,right,top,right,bottom,gc,pixmap_final, 1);
+  draw_vector(right,top,right,bottom,gc,pixmap_final, 1);
 
   // Diagonal lines
-  draw_vector(da,left,top,right,bottom,gc,pixmap_final, 1);
-  draw_vector(da,right,top,left,bottom,gc,pixmap_final, 1);
+  draw_vector(left,top,right,bottom,gc,pixmap_final, 1);
+  draw_vector(right,top,left,bottom,gc,pixmap_final, 1);
 }
 
 
@@ -2554,7 +2553,7 @@ int nosym_index = -1;
 
 // Look through our symbol table for a match.
 //
-void symbol(Widget w, int ghost, char symbol_table, char symbol_id, char symbol_overlay, Pixmap where,
+void symbol(int ghost, char symbol_table, char symbol_id, char symbol_overlay, Pixmap where,
             int mask, long x_offset, long y_offset, char orient)
 {
   int i;
@@ -2747,7 +2746,7 @@ void symbol(Widget w, int ghost, char symbol_table, char symbol_id, char symbol_
 
 // Calculate the width in pixels of the actual text
 // This helps us take into account proportional or non-proportional fonts
-long get_text_width(Widget w,char *text)
+long get_text_width(char *text)
 {
 #ifdef HAVE_CAIRO
   return (long)xa_text_width(text, rotated_label_fontname[FONT_STATION]);
@@ -2759,7 +2758,7 @@ long get_text_width(Widget w,char *text)
 
 
 // Speed is in converted units by this point (kph or mph)
-void draw_symbol(Widget w, char symbol_table, char symbol_id, char symbol_overlay,
+void draw_symbol(char symbol_table, char symbol_id, char symbol_overlay,
                  long x_long,long y_lat, char *callsign_text, char *alt_text, char *course_text,
                  char *speed_text, char *my_distance, char *my_course, char *wx_temp,
                  char* wx_wind, time_t sec_heard, int temp_show_last_heard, Pixmap where,
@@ -2825,7 +2824,7 @@ void draw_symbol(Widget w, char symbol_table, char symbol_id, char symbol_overla
 
       if (Display_.symbol)
       {
-        symbol(w,ghost,symbol_table,symbol_id,symbol_overlay,where,1,x_offset,y_offset,orient);
+        symbol(ghost,symbol_table,symbol_id,symbol_overlay,where,1,x_offset,y_offset,orient);
       }
 
       posyr = font_height;      // align symbols vertically centered to the right
@@ -2860,7 +2859,7 @@ void draw_symbol(Widget w, char symbol_table, char symbol_id, char symbol_overla
       {
         x_offset=((x_long-NW_corner_longitude)/scale_x)+13;
         y_offset=((y_lat -NW_corner_latitude) /scale_y)+posyr;
-        draw_nice_string(w,where,letter_style,x_offset,y_offset,alt_text,0x08,0x48,length);
+        draw_nice_string(where,letter_style,x_offset,y_offset,alt_text,0x08,0x48,length);
         posyr += font_height;
       }
 
@@ -2869,7 +2868,7 @@ void draw_symbol(Widget w, char symbol_table, char symbol_id, char symbol_overla
       {
         x_offset=((x_long-NW_corner_longitude)/scale_x)+13;
         y_offset=((y_lat -NW_corner_latitude) /scale_y)+posyr;
-        draw_nice_string(w,where,letter_style,x_offset,y_offset,callsign_text,0x08,0x0f,length);
+        draw_nice_string(where,letter_style,x_offset,y_offset,callsign_text,0x08,0x0f,length);
         posyr += font_height;
       }
 
@@ -2878,7 +2877,7 @@ void draw_symbol(Widget w, char symbol_table, char symbol_id, char symbol_overla
       {
         x_offset=((x_long-NW_corner_longitude)/scale_x)+13;
         y_offset=((y_lat -NW_corner_latitude) /scale_y)+posyr;
-        draw_nice_string(w,where,letter_style,x_offset,y_offset,speed_text,0x08,0x4a,length);
+        draw_nice_string(where,letter_style,x_offset,y_offset,speed_text,0x08,0x4a,length);
         posyr += font_height;
       }
 
@@ -2887,7 +2886,7 @@ void draw_symbol(Widget w, char symbol_table, char symbol_id, char symbol_overla
       {
         x_offset=((x_long-NW_corner_longitude)/scale_x)+13;
         y_offset=((y_lat -NW_corner_latitude) /scale_y)+posyr;
-        draw_nice_string(w,where,letter_style,x_offset,y_offset,course_text,0x08,0x52,length);
+        draw_nice_string(where,letter_style,x_offset,y_offset,course_text,0x08,0x52,length);
         posyr += font_height;
       }
 
@@ -2896,7 +2895,7 @@ void draw_symbol(Widget w, char symbol_table, char symbol_id, char symbol_overla
       {
         x_offset=((x_long-NW_corner_longitude)/scale_x)+13;
         y_offset=((y_lat -NW_corner_latitude) /scale_y)+posyr;
-        draw_nice_string(w,where,letter_style,x_offset,y_offset,signpost,0x08,0x0f,length);
+        draw_nice_string(where,letter_style,x_offset,y_offset,signpost,0x08,0x0f,length);
         posyr += font_height;
       }
 
@@ -2916,21 +2915,21 @@ void draw_symbol(Widget w, char symbol_table, char symbol_id, char symbol_overla
       }
 
       length=(int)strlen(my_distance);
-      txt_width=get_text_width(w,my_distance);
+      txt_width=get_text_width(my_distance);
       if ( (!ghost || Select_.old_data) && length>0)
       {
         x_offset=(((x_long-NW_corner_longitude)/scale_x)-(txt_width+9));
         y_offset=((y_lat  -NW_corner_latitude) /scale_y)+posyl;
-        draw_nice_string(w,where,letter_style,x_offset,y_offset,my_distance,0x08,0x0f,length);
+        draw_nice_string(where,letter_style,x_offset,y_offset,my_distance,0x08,0x0f,length);
         posyl += font_height;
       }
       length=(int)strlen(my_course);
-      txt_width=get_text_width(w,my_course);
+      txt_width=get_text_width(my_course);
       if ( (!ghost || Select_.old_data) && length>0)
       {
         x_offset=(((x_long-NW_corner_longitude)/scale_x)-(txt_width+9));
         y_offset=((y_lat  -NW_corner_latitude) /scale_y)+posyl;
-        draw_nice_string(w,where,letter_style,x_offset,y_offset,my_course,0x08,0x0f,length);
+        draw_nice_string(where,letter_style,x_offset,y_offset,my_course,0x08,0x0f,length);
         posyl += font_height;
       }
       if ( (!ghost || Select_.old_data) && temp_show_last_heard)
@@ -2994,10 +2993,10 @@ void draw_symbol(Widget w, char symbol_table, char symbol_id, char symbol_overla
         }
 
         length = strlen(age);
-        txt_width = get_text_width(w,age);
+        txt_width = get_text_width(age);
         x_offset=(((x_long-NW_corner_longitude)/scale_x)-(txt_width)-9);
         y_offset=((y_lat  -NW_corner_latitude) /scale_y)+posyl;
-        draw_nice_string(w,where,letter_style,x_offset,y_offset,age,0x08,fgcolor,length);
+        draw_nice_string(where,letter_style,x_offset,y_offset,age,0x08,fgcolor,length);
         posyl += font_height;
       }
 
@@ -3014,22 +3013,22 @@ void draw_symbol(Widget w, char symbol_table, char symbol_id, char symbol_overla
       }
 
       length=(int)strlen(wx_temp);
-      txt_width = get_text_width(w,wx_temp);
+      txt_width = get_text_width(wx_temp);
       if ( (!ghost || Select_.old_data) && length>0)
       {
         x_offset=((x_long-NW_corner_longitude)/scale_x)-(txt_width/2);
         y_offset=((y_lat -NW_corner_latitude) /scale_y)+posyr;
-        draw_nice_string(w,where,letter_style,x_offset,y_offset,wx_temp,0x08,0x40,length);
+        draw_nice_string(where,letter_style,x_offset,y_offset,wx_temp,0x08,0x40,length);
         posyr += font_height;
       }
 
       length=(int)strlen(wx_wind);
-      txt_width = get_text_width(w,wx_wind);
+      txt_width = get_text_width(wx_wind);
       if ( (!ghost || Select_.old_data) && length>0)
       {
         x_offset=((x_long-NW_corner_longitude)/scale_x)-(txt_width/2);
         y_offset=((y_lat -NW_corner_latitude) /scale_y)+posyr;
-        draw_nice_string(w,where,letter_style,x_offset,y_offset,wx_wind,0x08,0x40,length);
+        draw_nice_string(where,letter_style,x_offset,y_offset,wx_wind,0x08,0x40,length);
       }
 
       if (gauge_data != NULL)
@@ -3046,12 +3045,12 @@ void draw_symbol(Widget w, char symbol_table, char symbol_id, char symbol_overla
         }
 
         length=(int)strlen(gauge_data);
-        txt_width=get_text_width(w,gauge_data);
+        txt_width=get_text_width(gauge_data);
         if ( (!ghost || Select_.old_data) && length>0)
         {
           x_offset=((x_long-NW_corner_longitude)/scale_x)-(txt_width/2);
           y_offset=((y_lat -NW_corner_latitude) /scale_y)+posyr;
-          draw_nice_string(w,where,letter_style,x_offset,y_offset,gauge_data,0x08,0x0f,length);
+          draw_nice_string(where,letter_style,x_offset,y_offset,gauge_data,0x08,0x0f,length);
         }
       }
     }
@@ -3260,7 +3259,7 @@ void draw_multipoints(long UNUSED(x_long), long UNUSED(y_lat), int numpoints, lo
           for (i = 0; i < numpoints-1; i++)
           {
 //                        (void)XDrawLines(XtDisplay(da), where, gc, xpoints, numpoints+1, CoordModeOrigin);
-            draw_vector(da, mypoints[i][0],
+            draw_vector(mypoints[i][0],
                         mypoints[i][1],
                         mypoints[i+1][0],
                         mypoints[i+1][1],
@@ -3271,7 +3270,7 @@ void draw_multipoints(long UNUSED(x_long), long UNUSED(y_lat), int numpoints, lo
             skip_duplicates = 1;
           }
           // Close the polygon
-          draw_vector(da,
+          draw_vector(
                       mypoints[i][0],
                       mypoints[i][1],
                       mypoints[0][0],
@@ -3288,7 +3287,7 @@ void draw_multipoints(long UNUSED(x_long), long UNUSED(y_lat), int numpoints, lo
           for (i = 0; i < numpoints-1; i++)
           {
 //                        (void)XDrawLines(XtDisplay(da), where, gc, xpoints, numpoints+1, CoordModeOrigin);
-            draw_vector(da, mypoints[i][0],
+            draw_vector(mypoints[i][0],
                         mypoints[i][1],
                         mypoints[i+1][0],
                         mypoints[i+1][1],
@@ -3299,7 +3298,7 @@ void draw_multipoints(long UNUSED(x_long), long UNUSED(y_lat), int numpoints, lo
             skip_duplicates = 1;
           }
           // Close the polygon
-          draw_vector(da,
+          draw_vector(
                       mypoints[i][0],
                       mypoints[i][1],
                       mypoints[0][0],
@@ -3319,7 +3318,7 @@ void draw_multipoints(long UNUSED(x_long), long UNUSED(y_lat), int numpoints, lo
           for (i = 0; i < numpoints-1; i++)
           {
 //                        (void)XDrawLines(XtDisplay(da), where, gc, xpoints, numpoints, CoordModeOrigin);
-            draw_vector(da, mypoints[i][0],
+            draw_vector(mypoints[i][0],
                         mypoints[i][1],
                         mypoints[i+1][0],
                         mypoints[i+1][1],
@@ -3345,8 +3344,7 @@ void draw_multipoints(long UNUSED(x_long), long UNUSED(y_lat), int numpoints, lo
 // Function to draw dead-reckoning symbols.
 //
 void draw_deadreckoning_features(DataRow *p_station,
-                                 Pixmap where,
-                                 Widget w)
+                                 Pixmap where)
 {
   double my_course;
   long x_long, y_lat;
@@ -3529,7 +3527,7 @@ void draw_deadreckoning_features(DataRow *p_station,
     // maintaining the same slope.  This behavior is _much_
     // better than the XDrawLine above though!
     //
-    draw_vector(w,
+    draw_vector(
                 x_long,
                 y_lat,
                 x_long2,
@@ -3546,7 +3544,7 @@ void draw_deadreckoning_features(DataRow *p_station,
   if (Display_.dr_symbol && ghosted_symbol_on_screen)
   {
 
-    draw_symbol(w,
+    draw_symbol(
                 p_station->aprs_symbol.aprs_type,
                 p_station->aprs_symbol.aprs_symbol,
                 p_station->aprs_symbol.special_overlay,

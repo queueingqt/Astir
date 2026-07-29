@@ -517,7 +517,7 @@ static void goto_location(struct geocode_result *result, int mark_location)
     }
 
     // Set map position
-    set_map_position(geocoder_dialog, coord_lat, coord_lon);
+    set_map_position(coord_lat, coord_lon);
 }
 
 

@@ -1492,7 +1492,7 @@ void draw_shapefile_map (Widget w,
               }
               // Fine-tuned the location here so that the middle of
               // the symbol would be at the proper pixel.
-              symbol(w, 0, symbol_table, symbol_id, symbol_over, pixmap, 1, x-10, y-10, ' ');
+              symbol(0, symbol_table, symbol_id, symbol_over, pixmap, 1, x-10, y-10, ' ');
 
               // Labeling of points done here
               // Fine-tuned this string so that it is to the right of
@@ -1500,7 +1500,7 @@ void draw_shapefile_map (Widget w,
               if (map_labels && !skip_label)
               {
                 utf8_to_latin1_inplace(temp);
-                draw_nice_string(w, pixmap, 0, x+10, y+5, (char*)temp, 0xf, 0x10, strlen(temp));
+                draw_nice_string(pixmap, 0, x+10, y+5, (char*)temp, 0xf, 0x10, strlen(temp));
               }
             }
           }

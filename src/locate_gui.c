@@ -599,7 +599,7 @@ void Locate_place_chooser_select(Widget widget,
     {
 
       // Center the map at the chosen location
-      set_map_position(widget,
+      set_map_position(
                        match_array_lat[index-1],
                        match_array_long[index-1]);
 

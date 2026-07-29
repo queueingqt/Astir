@@ -735,12 +735,12 @@ void Station_List_fill(int type, int new_offset)
         // Blank out the icon first
         XtVaSetValues(SL_da[type][row],XmNlabelPixmap, blank_icon,NULL);
         XtManageChild(SL_da[type][row]);
-        symbol(SL_da[type][row],0,'~','$','\0',SL_icon[type][row],0,0,0,' ');
+        symbol(0,'~','$','\0',SL_icon[type][row],0,0,0,' ');
         XtVaSetValues(SL_da[type][row],XmNlabelPixmap, SL_icon[type][row],NULL);
         XtManageChild(SL_da[type][row]);
 
         // Now redraw it
-        symbol(SL_da[type][row],ghost,p_station->aprs_symbol.aprs_type,
+        symbol(ghost,p_station->aprs_symbol.aprs_type,
                p_station->aprs_symbol.aprs_symbol,
                p_station->aprs_symbol.special_overlay,SL_icon[type][row],ghost,0,0,' ');
 
@@ -1157,7 +1157,7 @@ void Station_List_fill(int type, int new_offset)
       {
         XtVaSetValues(SL_da[type][row],XmNlabelPixmap, blank_icon,NULL);
         XtManageChild(SL_da[type][row]);
-        symbol(SL_da[type][row],0,'~','$','\0',SL_icon[type][row],0,0,0,' ');
+        symbol(0,'~','$','\0',SL_icon[type][row],0,0,0,' ');
         XtVaSetValues(SL_da[type][row],XmNlabelPixmap, SL_icon[type][row],NULL);
         XtManageChild(SL_da[type][row]);
 

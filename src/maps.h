@@ -113,7 +113,7 @@ typedef struct
   unsigned long y_lat;
 } tiepoint;
 
-void draw_point(Widget w,
+void draw_point(
                 unsigned long x1,
                 unsigned long y1,
                 GC gc,
@@ -127,7 +127,7 @@ void draw_point_ll(Widget w,
                    Pixmap which_pixmap,
                    int skip_duplicates);
 
-void draw_vector(Widget w,
+void draw_vector(
                  unsigned long x1,
                  unsigned long y1,
                  unsigned long x2,
@@ -136,7 +136,7 @@ void draw_vector(Widget w,
                  Pixmap which_pixmap,
                  int skip_duplicates);
 
-void draw_vector_ll(Widget w,
+void draw_vector_ll(
                     float y1,
                     float x1,
                     float y2,

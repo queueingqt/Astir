@@ -232,7 +232,7 @@ void draw_ruler_text(Widget w, char * text, long ofs)
     y = y - 15;
     x = x - 10;
   }
-  draw_nice_string(w,pixmap_final,letter_style,x,y,text,0x10,0x20,len);
+  draw_nice_string(pixmap_final,letter_style,x,y,text,0x10,0x20,len);
 }
 
 
@@ -465,12 +465,12 @@ void draw_range_scale(Widget w)
   {
     border_offset = get_rotated_label_text_length_pixels(w, "0", FONT_BORDER) + 3;
     // don't draw range scale right on top of labeled border, move into map
-    draw_nice_string(w,pixmap_final,letter_style,x_screen+border_offset,y_screen-border_offset-3,text,0x10,0x20,len);
+    draw_nice_string(pixmap_final,letter_style,x_screen+border_offset,y_screen-border_offset-3,text,0x10,0x20,len);
   }
   else
   {
     // draw range scale in lower left corder of map
-    draw_nice_string(w,pixmap_final,letter_style,x_screen,y_screen,text,0x10,0x20,len);
+    draw_nice_string(pixmap_final,letter_style,x_screen,y_screen,text,0x10,0x20,len);
   }
 
 }
@@ -742,7 +742,7 @@ void display_file(Widget w)
                     p_station->call_sign,
                     (long)(now - temp_sec_heard) );
           }
-          draw_trail(w,p_station,1);
+          draw_trail(p_station,1);
         }
         else
         {
@@ -753,7 +753,7 @@ void display_file(Widget w)
                     p_station->call_sign,
                     (long)(now - temp_sec_heard) );
           }
-          draw_trail(w,p_station,0);
+          draw_trail(p_station,0);
         }
       }
       else
@@ -781,7 +781,7 @@ void display_file(Widget w)
     // This routine will also update the
     // currently_selected_stations variable, if we're
     // updating all of the stations at once.
-    display_station(w,p_station,0);
+    display_station(p_station,0);
 
     p_station = p_station->t_newer;  // next station
   }
@@ -805,7 +805,7 @@ void display_file(Widget w)
     offset = 25 * scale_y;
 
     // Make a big 'X'
-    draw_vector(w,
+    draw_vector(
                 destination_coord_lon-offset,  // x1
                 destination_coord_lat-offset,  // y1
                 destination_coord_lon+offset,  // x2
@@ -814,7 +814,7 @@ void display_file(Widget w)
                 pixmap_final,
                 0);
 
-    draw_vector(w,
+    draw_vector(
                 destination_coord_lon+offset,  // x1
                 destination_coord_lat-offset,  // y1
                 destination_coord_lon-offset,  // x2
@@ -3153,7 +3153,7 @@ void Station_data(Widget w, XtPointer clientData, XtPointer calldata)
 
     icon = xa_surface_create(20, 20, XA_DEPTH_CANVAS);
 
-    symbol(db_station_info,0,p_station->aprs_symbol.aprs_type,
+    symbol(0,p_station->aprs_symbol.aprs_type,
            p_station->aprs_symbol.aprs_symbol,
            p_station->aprs_symbol.special_overlay,icon,0,0,0,' ');
 
@@ -3849,7 +3849,7 @@ int locate_station(Widget w, char *call, int follow_case, int get_match, int cen
       if (center_map || !position_on_inner_screen(p_station->coord_lat,p_station->coord_lon))
         // only change map if really necessary
       {
-        set_map_position(w, p_station->coord_lat, p_station->coord_lon);
+        set_map_position(p_station->coord_lat, p_station->coord_lon);
       }
       return(1);                  // we found it
     }

@@ -127,7 +127,7 @@ int  extract_bearing_NRQ(char *info, char *bearing, char *nrq);
 
 int skip_dupe_checking;
 int  tracked_stations = 0;       // A count variable used in debug code only
-void track_station(Widget w, char *call_tracked, DataRow *p_station);
+void track_station(char *call_tracked, DataRow *p_station);
 
 int  new_message_data;
 time_t last_message_remove;     // last time we did a check for message removing
@@ -171,7 +171,7 @@ float emergency_range = 280.0;  // Default is 4hrs @ 70mph distance
 
 CADRow *CAD_list_head = NULL;   // pointer to first element in CAD objects list
 
-void draw_trail(Widget w, DataRow *fill, int solid);
+void draw_trail(DataRow *fill, int solid);
 void export_trail(DataRow *p_station);          // export trail of one or all stations to xastir export file
 //void export_trail_as_kml(DataRow *p_station);   // export trail of one or all stations to kml file
 
@@ -10865,7 +10865,7 @@ int data_add(int type,
         {
           if (!altnet || is_altnet(p_station) )
           {
-            display_station(da,p_station,1);
+            display_station(p_station,1);
             screen_update = 1;  // ???
           }
         }
@@ -11033,7 +11033,7 @@ int data_add(int type,
 
           if (track_station_on == 1)          // maybe we are tracking a station
           {
-            track_station(da,tracking_station_call,p_station);
+            track_station(tracking_station_call,p_station);
           }
         } // moving...
 
@@ -11049,7 +11049,7 @@ int data_add(int type,
               fprintf(stderr,"Adding Solid Trail for %s\n",
                       p_station->call_sign);
             }
-            draw_trail(da,p_station,1);         // update trail
+            draw_trail(p_station,1);         // update trail
             screen_update = 1;
           }
           else if (debug_level & 256)
@@ -11064,7 +11064,7 @@ int data_add(int type,
           {
             if (ok_to_display)
             {
-              display_station(da,p_station,1);// update symbol
+              display_station(p_station,1);// update symbol
               screen_update = 1;
             }
           }
@@ -11757,12 +11757,12 @@ void my_station_gps_change(char *pos_long, char *pos_lat, char *course, char *sp
     fprintf(stderr,"Adding Solid Trail for %s\n",
             p_station->call_sign);
   }
-  draw_trail(da,p_station,1);         // update trail
-  display_station(da,p_station,1);    // update symbol
+  draw_trail(p_station,1);         // update trail
+  display_station(p_station,1);    // update symbol
 
   if (track_station_on == 1)          // maybe we are tracking ourselves?
   {
-    track_station(da,tracking_station_call,p_station);
+    track_station(tracking_station_call,p_station);
   }
 
   // We parsed a good GPS string, so allow beaconing to proceed

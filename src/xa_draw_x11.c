@@ -434,6 +434,18 @@ int xa_text_height(const char *fontspec)
 }
 
 
+xa_color xa_color_by_name(const char *name)
+{
+  // GetPixelByName() takes a Widget only to reach XtDisplay().  The canvas
+  // serves, and it is the widget every caller was passing anyway.
+  if (name == NULL || da == (Widget)NULL)
+  {
+    return (xa_color)0;
+  }
+  return (xa_color)GetPixelByName(da, (char *)name);
+}
+
+
 void xa_color_rgb(xa_color c, unsigned short *r, unsigned short *g,
                   unsigned short *b)
 {

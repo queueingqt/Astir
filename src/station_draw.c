@@ -92,7 +92,7 @@
  *  Change map position if necessary while tracking a station
  *      we call it with defined station call and position
  */
-void track_station(Widget w, char * UNUSED(call_tracked), DataRow *p_station)
+void track_station(char * UNUSED(call_tracked), DataRow *p_station)
 {
   long x_ofs, y_ofs;
   long new_lat, new_lon;
@@ -115,7 +115,7 @@ void track_station(Widget w, char * UNUSED(call_tracked), DataRow *p_station)
         new_lon += x_ofs/2;
       }
 
-      set_map_position(w, new_lat, new_lon);      // center map to new position
+      set_map_position(new_lat, new_lon);      // center map to new position
 
     }
     search_tracked_station(&p_station);
@@ -131,7 +131,7 @@ void track_station(Widget w, char * UNUSED(call_tracked), DataRow *p_station)
  *  start/end of each new track segment.
  *
  */
-void draw_trail(Widget w, DataRow *fill, int solid)
+void draw_trail(DataRow *fill, int solid)
 {
   char short_dashed[2]  = {(char)1,(char)5};
   char medium_dashed[2] = {(char)5,(char)5};
@@ -211,7 +211,7 @@ void draw_trail(Widget w, DataRow *fill, int solid)
         // draw trail segment
         //
         xa_pen_color(gc, col_trail);
-        draw_vector(da,
+        draw_vector(
                     lon0,
                     lat0,
                     lon1,
@@ -223,7 +223,7 @@ void draw_trail(Widget w, DataRow *fill, int solid)
         // draw position point itself
         //
         xa_pen_color(gc, col_dot);
-        draw_point(w,
+        draw_point(
                    lon0,
                    lat0,
                    gc,
@@ -255,7 +255,7 @@ void draw_trail(Widget w, DataRow *fill, int solid)
           if (ptr != fill->newest_trackpoint)
           {
 
-            draw_nice_string(da,
+            draw_nice_string(
                              pixmap_final,
                              letter_style,
                              lon0_screen+10,
@@ -270,7 +270,7 @@ void draw_trail(Widget w, DataRow *fill, int solid)
                 && lat0_screen != lat1_screen)
             {
 
-              draw_nice_string(da,
+              draw_nice_string(
                                pixmap_final,
                                letter_style,
                                lon1_screen+10,
@@ -305,7 +305,7 @@ void draw_trail(Widget w, DataRow *fill, int solid)
 // If current course/speed/altitude are absent, we check the last
 // track point to try to snag those numbers.
 //
-void display_station(Widget w, DataRow *p_station, int single)
+void display_station(DataRow *p_station, int single)
 {
   char temp_altitude[20];
   char temp_course[20];
@@ -734,8 +734,7 @@ void display_station(Widget w, DataRow *p_station, int single)
     {
 
       draw_deadreckoning_features(p_station,
-                                  drawing_target,
-                                  w);
+                                  drawing_target);
     }
   }
 
@@ -1041,7 +1040,7 @@ void display_station(Widget w, DataRow *p_station, int single)
     }
   }
 
-  draw_symbol(w,
+  draw_symbol(
               p_station->aprs_symbol.aprs_type,
               p_station->aprs_symbol.aprs_symbol,
               p_station->aprs_symbol.special_overlay,
@@ -1076,8 +1075,7 @@ void display_station(Widget w, DataRow *p_station, int single)
                  ambiguity_flag,
                  ambiguity_coord_lon,
                  ambiguity_coord_lat,
-                 drawing_target,
-                 w);
+                 drawing_target);
   }
 
   // Draw other points associated with the station, if any.
@@ -1181,7 +1179,7 @@ void display_station(Widget w, DataRow *p_station, int single)
 /*
  *  Center map to new position
  */
-void set_map_position(Widget UNUSED(w), long lat, long lon)
+void set_map_position(long lat, long lon)
 {
   // see also map_pos() in location.c
 

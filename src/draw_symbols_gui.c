@@ -331,7 +331,7 @@ void Select_symbol( Widget UNUSED(w), XtPointer UNUSED(clientData), XtPointer UN
                                    XmNfontList, fontlist1,
                                    NULL);
 
-      symbol(b1,0,'/',(char)i,' ',select_icons[i-33],0,0,0,' ');  // create icon
+      symbol(0,'/',(char)i,' ',select_icons[i-33],0,0,0,' ');  // create icon
 
       // Here we send back the ascii number of the symbol.  We need to keep it within
       // the range of short int's.
@@ -358,7 +358,7 @@ void Select_symbol( Widget UNUSED(w), XtPointer UNUSED(clientData), XtPointer UN
                                    XmNfontList, fontlist1,
                                    NULL);
 
-      symbol(b1,0,'\\',(char)i-94,' ',select_icons[i-33],0,0,0,' ');  // create icon
+      symbol(0,'\\',(char)i-94,' ',select_icons[i-33],0,0,0,' ');  // create icon
 
       // Here we send back the ascii number of the symbol negated.  We need to keep it
       // within the range of short int's.

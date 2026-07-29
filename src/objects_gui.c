@@ -754,7 +754,7 @@ void updateObjectPictureCallback(Widget UNUSED(w), XtPointer UNUSED(clientData),
       overlay = ' ';
     }
   }
-  symbol(object_icon,0,table,symb,overlay,Ob_icon,0,0,0,' ');         // create icon
+  symbol(0,table,symb,overlay,Ob_icon,0,0,0,' ');         // create icon
 
   XtVaSetValues(object_icon,XmNlabelPixmap,Ob_icon,NULL);             // draw new icon
   XtManageChild(object_icon);

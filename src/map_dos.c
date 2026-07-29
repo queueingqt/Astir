@@ -1348,7 +1348,7 @@ process:
                   {
                     // NOTE: 0x21 is the first color for the area object or "DOS" colors
                     draw_label_text (w, x+10, y+5, label_length,colors[0x21 + symbol_color],label_text);
-                    symbol(w,0,symbol_table,symbol_id,' ',pixmap,1,x-10,y-10,' ');
+                    symbol(0,symbol_table,symbol_id,' ',pixmap,1,x-10,y-10,' ');
                   }
                   else
                   {
@@ -1652,7 +1652,7 @@ process:
 
           // NOTE: 0x21 is the first color for the area object or "DOS" colors
           draw_label_text (w, x+10, y+5, strlen(label_text),colors[0x21 + label_text_color],label_text);
-          symbol(w,0,label_symbol_del,label_symbol_char,' ',pixmap,1,x-10,y-10,' ');
+          symbol(0,label_symbol_del,label_symbol_char,' ',pixmap,1,x-10,y-10,' ');
 
           if (debug_level & 512)
             fprintf(stderr,"Windows map, embedded object: %c %c %c %s\n",

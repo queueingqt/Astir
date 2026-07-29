@@ -1140,8 +1140,8 @@ FINISH:
 
             if (ok == 1)    // If ok to draw it
             {
-              symbol(w, 0, symbol_table, symbol_id, symbol_over, pixmap, 1, x-10, y-10, ' ');
-              draw_nice_string(w, pixmap, 0, x+10, y+5, (char*)name, 0xf, 0x10, strlen(name));
+              symbol(0, symbol_table, symbol_id, symbol_over, pixmap, 1, x-10, y-10, ' ');
+              draw_nice_string(pixmap, 0, x+10, y+5, (char*)name, 0xf, 0x10, strlen(name));
             }
 
           }
@@ -1659,7 +1659,7 @@ int gnis_locate_place( Widget UNUSED(w),
           coord_lon = convert_lon_s2l(long_str);
 
 
-//set_map_position(w, coord_lat, coord_lon);
+//set_map_position(coord_lat, coord_lon);
 
           // Fill in the array values with what we just
           // found, increment the counter.

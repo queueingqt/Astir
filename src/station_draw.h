@@ -25,9 +25,9 @@
 
 #include "database.h"           // DataRow
 
-void display_station(Widget w, DataRow *p_station, int single);
-void draw_trail(Widget w, DataRow *fill, int solid);
-void track_station(Widget w, char *call_tracked, DataRow *p_station);
-void set_map_position(Widget w, long lat, long lon);
+void display_station(DataRow *p_station, int single);
+void draw_trail(DataRow *fill, int solid);
+void track_station(char *call_tracked, DataRow *p_station);
+void set_map_position(long lat, long lon);
 
 #endif // XASTIR_STATION_DRAW_H

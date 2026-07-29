@@ -9987,11 +9987,11 @@ void interface_status(Widget w)
       {
         opt='\0';
       }
-      symbol(w,0,'~',s,opt,XtWindow(iface_da),0,(i*10),0,' ');
+      symbol(0,'~',s,opt,XtWindow(iface_da),0,(i*10),0,' ');
     }
     else
     {
-      symbol(w,0,'~','#','\0',XtWindow(iface_da),0,(i*10),0,' ');
+      symbol(0,'~','#','\0',XtWindow(iface_da),0,(i*10),0,' ');
     }
   }
 

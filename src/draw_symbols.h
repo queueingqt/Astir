@@ -43,18 +43,18 @@ typedef struct
 
 extern SymbolData symbol_data[];
 
-extern void draw_nice_string(Widget w, Pixmap where, int style, long x, long y, char *text, int bgcolor, int fgcolor, int length);
+extern void draw_nice_string(Pixmap where, int style, long x, long y, char *text, int bgcolor, int fgcolor, int length);
 extern void clear_symbol_data(void);
 extern void read_symbol_from_file(FILE *f, char *pixels, char table_char);
 extern void load_pixmap_symbol_file(char *filename, int reloading);
 extern void insert_symbol(char table, char symbol, char *pixel, int deg, char orient, int reloading);
 extern char symbol_orient(char *course);
-extern void symbol(Widget w, int ghost,char symbol_table, char symbol_id, char symbol_overlay, Pixmap where, int mask, long x_offset, long y_offset, char rotate);
-long get_text_width(Widget w,char *text);
+extern void symbol(int ghost,char symbol_table, char symbol_id, char symbol_overlay, Pixmap where, int mask, long x_offset, long y_offset, char rotate);
+long get_text_width(char *text);
 
-extern void draw_WP_line(DataRow *p_station, int ambiguity_flag, long ambiguity_coord_lon, long ambiguity_coord_lat, Pixmap where, Widget w);
+extern void draw_WP_line(DataRow *p_station, int ambiguity_flag, long ambiguity_coord_lon, long ambiguity_coord_lat, Pixmap where);
 
-extern void draw_symbol(Widget w, char symbol_table, char symbol_id, char symbol_overlay, long x_lon, long y_lat,char *callsign_text, char *alt_text, char *course_text, char *speed_text, char *my_distance, char *my_course, char *wx_temp, char* wx_wind, time_t sec_heard, int temp_show_last_heard, Pixmap where, char rotate, char area_type, char *signpost, char *gauge_data, int bump_count );
+extern void draw_symbol(char symbol_table, char symbol_id, char symbol_overlay, long x_lon, long y_lat,char *callsign_text, char *alt_text, char *course_text, char *speed_text, char *my_distance, char *my_course, char *wx_temp, char* wx_wind, time_t sec_heard, int temp_show_last_heard, Pixmap where, char rotate, char area_type, char *signpost, char *gauge_data, int bump_count );
 
 extern void draw_pod_circle(long x_long, long y_lat, double range, int color, Pixmap where, int sec_heard);
 extern void draw_precision_rectangle(long x_long, long y_lat, double range, unsigned int lat_precision, unsigned int lon_precision, int color, Pixmap where);
@@ -71,7 +71,7 @@ extern int symbol_change_requested_from;
 extern Widget select_symbol_dialog;
 extern void Select_symbol_destroy_shell( Widget widget, XtPointer clientData, XtPointer callData);
 extern void draw_symbols_init(void);
-extern void draw_deadreckoning_features(DataRow *p_station, Pixmap where, Widget w);
+extern void draw_deadreckoning_features(DataRow *p_station, Pixmap where);
 
 #endif  // __XASTIR_DRAW_SYMBOLS_H
 

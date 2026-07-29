@@ -15372,7 +15372,7 @@ void Go_Home( Widget w, XtPointer UNUSED(clientData), XtPointer UNUSED(callData)
   {
     if (search_station_name(&p_station,my_callsign,1))
     {
-      set_map_position(w, p_station->coord_lat, p_station->coord_lon);
+      set_map_position(p_station->coord_lat, p_station->coord_lon);
     }
   }
 }
@@ -28045,7 +28045,7 @@ void updateSymbolPictureCallback( Widget UNUSED(w), XtPointer UNUSED(clientData)
     table   = '\\';
     overlay = group;
   }
-  symbol(station_config_icon,0,table,symb,overlay,CS_icon,0,0,0,' ');         // create icon
+  symbol(0,table,symb,overlay,CS_icon,0,0,0,' ');         // create icon
 
   XtVaSetValues(station_config_icon,XmNlabelPixmap,CS_icon,NULL);             // draw new icon
   XtManageChild(station_config_icon);

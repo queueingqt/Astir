@@ -248,6 +248,17 @@ int xa_text_height(const char *fontspec);
 void xa_color_rgb(xa_color c, unsigned short *r, unsigned short *g,
                   unsigned short *b);
 
+/*
+ * Look up a colour by name ("black", "MistyRose").
+ *
+ * The last thing keeping a Widget in the station-drawing signatures.  After the
+ * font work, display_station -> draw_symbol -> draw_nice_string threaded a
+ * Widget down three levels for one GetPixelByName(w, name), which wanted it only
+ * for XtDisplay(w).  With this the chain drops the parameter and db.c stops
+ * referencing the drawing area -- the last symbol the core needed from main.o.
+ */
+xa_color xa_color_by_name(const char *name);
+
 
 /* ---- surfaces --------------------------------------------------------- */
 

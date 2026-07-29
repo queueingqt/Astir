@@ -1137,7 +1137,7 @@ void Draw_All_CAD_Objects(Widget w)
             // Draw Label
             // 0x08 is background color
             // 0x40 is foreground color (yellow)
-            draw_nice_string(w,pixmap_final,letter_style,x_offset,y_offset,object_ptr->label,0x08,0x40,strlen(object_ptr->label));
+            draw_nice_string(pixmap_final,letter_style,x_offset,y_offset,object_ptr->label,0x08,0x40,strlen(object_ptr->label));
 
             x_offset=x_offset+12;
             y_offset=y_offset+15;
@@ -1146,14 +1146,14 @@ void Draw_All_CAD_Objects(Widget w)
           if (CAD_show_raw_probability==TRUE)
           {
             // draw probability
-            draw_nice_string(w,pixmap_final,letter_style,x_offset,y_offset,probability_string,0x08,0x40,strlen(probability_string));
+            draw_nice_string(pixmap_final,letter_style,x_offset,y_offset,probability_string,0x08,0x40,strlen(probability_string));
             y_offset=y_offset+15;
           }
 
           if ((CAD_show_comment==TRUE) & ((int)strlen(object_ptr->comment)>0))
           {
             // draw comment
-            draw_nice_string(w,pixmap_final,letter_style,x_offset,y_offset,object_ptr->comment,0x08,0x40,strlen(object_ptr->comment));
+            draw_nice_string(pixmap_final,letter_style,x_offset,y_offset,object_ptr->comment,0x08,0x40,strlen(object_ptr->comment));
             y_offset=y_offset+15;
           }
 
@@ -1162,7 +1162,7 @@ void Draw_All_CAD_Objects(Widget w)
           {
             area = object_ptr->computed_area;
             Format_area_for_output(&area, area_description, sizeof_area_description);
-            draw_nice_string(w,pixmap_final,letter_style,x_offset,y_offset,area_description,0x08,0x40,strlen(area_description));
+            draw_nice_string(pixmap_final,letter_style,x_offset,y_offset,area_description,0x08,0x40,strlen(area_description));
             y_offset=y_offset+15;
           }
 
@@ -1214,7 +1214,7 @@ void Draw_All_CAD_Objects(Widget w)
         if (vertice->next != NULL)
         {
           // Use the draw_vector function from maps.c
-          draw_vector(w,
+          draw_vector(
                       vertice->longitude,
                       vertice->latitude,
                       vertice->next->longitude,
