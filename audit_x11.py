@@ -44,7 +44,7 @@ GUI_FILES = {
     "main.c", "db_gui.c", "interface_gui.c", "list_gui.c", "locate_gui.c",
     "location_gui.c", "popup_gui.c", "objects_gui.c", "bulletin_gui.c",
     "geocoder_gui.c", "messages_gui.c", "track_gui.c", "view_message_gui.c",
-    "cad_objects_gui.c", "draw_symbols_gui.c",
+    "cad_objects_gui.c", "draw_symbols_gui.c", "maps_gui.c",
     "wx_gui.c", "xa_config_gui.c", "map_gui.c",
 }
 

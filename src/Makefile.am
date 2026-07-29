@@ -50,6 +50,7 @@ XASTIR_SRC = \
     log_utils.c log_utils.h \
     main.c main.h \
     maps.c maps.h \
+    maps_gui.c \
     xa_perf.c xa_perf.h \
     xa_draw.h xa_draw_x11.c \
     xa_state.c xa_state.h \

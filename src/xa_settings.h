@@ -276,4 +276,16 @@ extern double cvt_dm2len;  // from decimeter
 extern double cvt_hm2len;  // from hectometer
 extern int pending_ID_message;  // Variable turning on/off this function
 
+
+// Moved out of maps.c, where these lived only because the dialog
+// that edits them does.  Definitions unchanged.
+extern int print_rotated;
+extern int print_auto_rotation;
+extern int print_auto_scale;
+extern int print_in_monochrome;
+extern int print_invert;  // Reverses black/white
+extern char printer_program[MAX_FILENAME+1];
+extern char previewer_program[MAX_FILENAME+1];
+extern int snapshot_interval;
+
 #endif // XA_SETTINGS_H

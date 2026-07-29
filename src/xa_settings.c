@@ -267,3 +267,14 @@ char un_spd[4+1];   // mph / km/h   (..kn)
 double cvt_dm2len;  // from decimeter
 double cvt_hm2len;  // from hectometer
 int pending_ID_message = 0;     // Variable turning on/off this function
+
+
+// Moved verbatim from maps.c.
+int   print_rotated = 0;
+int   print_auto_rotation = 0;
+int   print_auto_scale = 0;
+int   print_in_monochrome = 0;
+int   print_invert = 0;                 // Reverses black/white
+char printer_program[MAX_FILENAME+1];
+char previewer_program[MAX_FILENAME+1];
+int snapshot_interval = 0;
