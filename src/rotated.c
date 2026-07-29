@@ -48,6 +48,8 @@
 
 #include "xastir.h"
 
+#include "xa_draw.h"
+
 // Must be last include file
 #include "leak_detection.h"
 
@@ -556,16 +558,15 @@ static int XRotPaintAlignedString( Display *dpy, XFontStruct *font, float angle,
     empty_stipple=XCreatePixmap(dpy, drawable, 1, 1, 1);
 
     depth_one_gc=XCreateGC(dpy, empty_stipple, 0, 0);
-    XSetForeground(dpy, depth_one_gc, 0);
-    XFillRectangle(dpy, empty_stipple, depth_one_gc, 0, 0, 2, 2);
+    xa_pen_color(depth_one_gc, 0);
+    xa_fill_rect(empty_stipple, depth_one_gc, 0, 0, 2, 2);
 
-    XSetStipple(dpy, my_gc, empty_stipple);
-    XSetFillStyle(dpy, my_gc, FillOpaqueStippled);
+    xa_pen_stipple(my_gc, empty_stipple);
+    xa_pen_fill_style(my_gc, XA_FILL_OPAQUE_STIPPLED);
 
     if (item->nl >= 1)
     {
-      XFillPolygon(dpy, drawable, my_gc, xpoints, 4*item->nl, Nonconvex,
-                   CoordModeOrigin);
+      xa_fill_polygon(drawable, my_gc, (xa_point *)xpoints, 4*item->nl, XA_SHAPE_NONCONVEX, XA_COORD_ORIGIN);
     }
     else
     {
@@ -577,7 +578,7 @@ static int XRotPaintAlignedString( Display *dpy, XFontStruct *font, float angle,
     /* free our resources */
     free((char *)xpoints);
     XFreeGC(dpy, depth_one_gc);
-    XFreePixmap(dpy, empty_stipple);
+    xa_surface_destroy(empty_stipple);
   }
 
   /* where should top left corner of bitmap go ? */
@@ -609,13 +610,12 @@ static int XRotPaintAlignedString( Display *dpy, XFontStruct *font, float angle,
         /* opaque stipple: draw rotated text in background colour */
         if(values.fill_style==FillOpaqueStippled)
         {
-          XSetForeground(dpy, my_gc, values.background);
-          XSetFillStyle(dpy, my_gc, FillStippled);
-          XSetStipple(dpy, my_gc, item->bitmap);
-          XSetTSOrigin(dpy, my_gc, xp, yp);
-          XFillRectangle(dpy, drawable, my_gc, xp, yp,
-                         item->cols_out, item->rows_out);
-          XSetForeground(dpy, my_gc, values.foreground);
+          xa_pen_color(my_gc, values.background);
+          xa_pen_fill_style(my_gc, XA_FILL_STIPPLED);
+          xa_pen_stipple(my_gc, item->bitmap);
+          xa_pen_ts_origin(my_gc, xp, yp);
+          xa_fill_rect(drawable, my_gc, xp, yp, item->cols_out, item->rows_out);
+          xa_pen_color(my_gc, values.foreground);
         }
 
         /* this will merge the rotated text and the user's stipple */
@@ -624,43 +624,40 @@ static int XRotPaintAlignedString( Display *dpy, XFontStruct *font, float angle,
 
         /* create a GC */
         depth_one_gc=XCreateGC(dpy, new_bitmap, 0, 0);
-        XSetForeground(dpy, depth_one_gc, 1);
-        XSetBackground(dpy, depth_one_gc, 0);
+        xa_pen_color(depth_one_gc, 1);
+        xa_pen_bg(depth_one_gc, 0);
 
         /* set the relative stipple origin */
-        XSetTSOrigin(dpy, depth_one_gc,
-                     values.ts_x_origin-xp, values.ts_y_origin-yp);
+        xa_pen_ts_origin(depth_one_gc, values.ts_x_origin-xp, values.ts_y_origin-yp);
 
         /* fill the whole bitmap with the user's stipple */
-        XSetStipple(dpy, depth_one_gc, values.stipple);
-        XSetFillStyle(dpy, depth_one_gc, FillOpaqueStippled);
-        XFillRectangle(dpy, new_bitmap, depth_one_gc,
-                       0, 0, item->cols_out, item->rows_out);
+        xa_pen_stipple(depth_one_gc, values.stipple);
+        xa_pen_fill_style(depth_one_gc, XA_FILL_OPAQUE_STIPPLED);
+        xa_fill_rect(new_bitmap, depth_one_gc, 0, 0, item->cols_out, item->rows_out);
 
         /* set stipple origin back to normal */
-        XSetTSOrigin(dpy, depth_one_gc, 0, 0);
+        xa_pen_ts_origin(depth_one_gc, 0, 0);
 
         /* this will contain an inverse copy of the rotated text */
         inverse=XCreatePixmap(dpy, drawable,
                               item->cols_out, item->rows_out, 1);
 
         /* invert text */
-        XSetFillStyle(dpy, depth_one_gc, FillSolid);
-        XSetFunction(dpy, depth_one_gc, GXcopyInverted);
+        xa_pen_fill_style(depth_one_gc, XA_FILL_SOLID);
+        xa_pen_function(depth_one_gc, GXcopyInverted);
         XCopyArea(dpy, item->bitmap, inverse, depth_one_gc,
                   0, 0, item->cols_out, item->rows_out, 0, 0);
 
         /* now delete user's stipple everywhere EXCEPT on text */
-        XSetForeground(dpy, depth_one_gc, 0);
-        XSetBackground(dpy, depth_one_gc, 1);
-        XSetStipple(dpy, depth_one_gc, inverse);
-        XSetFillStyle(dpy, depth_one_gc, FillStippled);
-        XSetFunction(dpy, depth_one_gc, GXcopy);
-        XFillRectangle(dpy, new_bitmap, depth_one_gc,
-                       0, 0, item->cols_out, item->rows_out);
+        xa_pen_color(depth_one_gc, 0);
+        xa_pen_bg(depth_one_gc, 1);
+        xa_pen_stipple(depth_one_gc, inverse);
+        xa_pen_fill_style(depth_one_gc, XA_FILL_STIPPLED);
+        xa_pen_function(depth_one_gc, XA_FUNC_COPY);
+        xa_fill_rect(new_bitmap, depth_one_gc, 0, 0, item->cols_out, item->rows_out);
 
         /* free resources */
-        XFreePixmap(dpy, inverse);
+        xa_surface_destroy(inverse);
         XFreeGC(dpy, depth_one_gc);
 
         /* this is the new bitmap */
@@ -671,11 +668,10 @@ static int XRotPaintAlignedString( Display *dpy, XFontStruct *font, float angle,
 #endif /*X11R3*/
 
   /* paint text using stipple technique */
-  XSetFillStyle(dpy, my_gc, FillStippled);
-  XSetStipple(dpy, my_gc, bitmap_to_paint);
-  XSetTSOrigin(dpy, my_gc, xp, yp);
-  XFillRectangle(dpy, drawable, my_gc, xp, yp,
-                 item->cols_out, item->rows_out);
+  xa_pen_fill_style(my_gc, XA_FILL_STIPPLED);
+  xa_pen_stipple(my_gc, bitmap_to_paint);
+  xa_pen_ts_origin(my_gc, xp, yp);
+  xa_fill_rect(drawable, my_gc, xp, yp, item->cols_out, item->rows_out);
 
   /* free our resources */
   XFreeGC(dpy, my_gc);
@@ -683,11 +679,11 @@ static int XRotPaintAlignedString( Display *dpy, XFontStruct *font, float angle,
   /* stippled bitmap no longer needed */
   if(bitmap_to_paint!=item->bitmap)
   {
-    XFreePixmap(dpy, bitmap_to_paint);
+    xa_surface_destroy(bitmap_to_paint);
   }
 
 #ifdef CACHE_XIMAGES
-  XFreePixmap(dpy, item->bitmap);
+  xa_surface_destroy(item->bitmap);
 #endif /*CACHE_XIMAGES*/
 
   /* if item isn't cached, destroy it completely */
@@ -802,7 +798,7 @@ static int XRotDrawHorizontalString( Display *dpy, XFontStruct *font, Drawable d
     /* draw string onto bitmap */
     if(!bg)
     {
-      XDrawString(dpy, drawable, my_gc, xp, yp, str3, strlen(str3));
+      xa_draw_string(drawable, my_gc, xp, yp, str3, strlen(str3));
     }
     else
     {
@@ -983,8 +979,8 @@ static RotatedTextItem *XRotRetrieveFromCache( Display *dpy, XFontStruct *font, 
 
     /* depth one gc */
     depth_one_gc=XCreateGC(dpy, item->bitmap, NULL, 0);
-    XSetBackground(dpy, depth_one_gc, 0);
-    XSetForeground(dpy, depth_one_gc, 1);
+    xa_pen_bg(depth_one_gc, 0);
+    xa_pen_color(depth_one_gc, 1);
 
     /* make the text bitmap from XImage */
     XPutImage(dpy, item->bitmap, depth_one_gc, item->ximage, 0, 0, 0, 0,
@@ -1109,14 +1105,13 @@ static RotatedTextItem *XRotCreateTextItem( Display *dpy, XFontStruct *font, flo
 
   /* create a GC for the bitmap */
   font_gc=XCreateGC(dpy, canvas, 0, 0);
-  XSetBackground(dpy, font_gc, 0);
+  xa_pen_bg(font_gc, 0);
   XSetFont(dpy, font_gc, font->fid);
 
   /* make sure the bitmap is blank */
-  XSetForeground(dpy, font_gc, 0);
-  XFillRectangle(dpy, canvas, font_gc, 0, 0,
-                 item->cols_in+1, item->rows_in+1);
-  XSetForeground(dpy, font_gc, 1);
+  xa_pen_color(font_gc, 0);
+  xa_fill_rect(canvas, font_gc, 0, 0, item->cols_in+1, item->rows_in+1);
+  xa_pen_color(font_gc, 1);
 
   /* pre-calculate sin and cos */
   sin_angle=sin(angle);
@@ -1174,7 +1169,7 @@ static RotatedTextItem *XRotCreateTextItem( Display *dpy, XFontStruct *font, flo
     }
 
     /* draw string onto bitmap */
-    XDrawString(dpy, canvas, font_gc, xp, yp, str3, strlen(str3));
+    xa_draw_string(canvas, font_gc, xp, yp, str3, strlen(str3));
 
     /* keep a note of corner positions of this string */
     item->corners_x[ic]=((float)xp-(float)item->cols_in/2)*style.magnify;
@@ -1403,7 +1398,7 @@ static RotatedTextItem *XRotCreateTextItem( Display *dpy, XFontStruct *font, flo
 #endif /*CACHE_BITMAPS*/
 
   XFreeGC(dpy, font_gc);
-  XFreePixmap(dpy, canvas);
+  xa_surface_destroy(canvas);
 
   return item;
 }
@@ -1547,7 +1542,7 @@ static void XRotFreeTextItem( Display *dpy, RotatedTextItem *item)
   free((char *)item->corners_y);
 
 #ifdef CACHE_BITMAPS
-  XFreePixmap(dpy, item->bitmap);
+  xa_surface_destroy(item->bitmap);
 #else   // CACHE_BITMAPS
   XDestroyImage(item->ximage);
 #endif /* CACHE_BITMAPS */

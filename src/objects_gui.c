@@ -200,8 +200,8 @@ void Object_destroy_shell( Widget widget, XtPointer clientData, XtPointer callDa
 {
   Widget shell = (Widget) clientData;
   XtPopdown(shell);
-  (void)XFreePixmap(XtDisplay(appshell),Ob_icon0);
-  (void)XFreePixmap(XtDisplay(appshell),Ob_icon);
+  xa_surface_destroy(Ob_icon0);
+  xa_surface_destroy(Ob_icon);
   XtDestroyWidget(shell);
   object_dialog = (Widget)NULL;
 

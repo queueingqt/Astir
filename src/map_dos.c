@@ -215,7 +215,7 @@ void map_plot (Widget w, long max_x, long max_y, long x_long_cord,
 
           // Here's where we draw filled areas using fill_color.
 
-          (void)XSetForeground (XtDisplay (w), gc, colors[(int)fill_color]);
+          xa_pen_color(gc, colors[(int)fill_color]);
 
           switch (destination_pixmap)
           {
@@ -227,13 +227,7 @@ void map_plot (Widget w, long max_x, long max_y, long x_long_cord,
 
                 if (npoints >= 3)
                 {
-                  (void)XFillPolygon(XtDisplay(w),
-                                     pixmap,
-                                     gc,
-                                     points,
-                                     npoints,
-                                     Nonconvex,
-                                     CoordModeOrigin);
+                  xa_fill_polygon(pixmap, gc, (xa_point *)points, npoints, XA_SHAPE_NONCONVEX, XA_COORD_ORIGIN);
                 }
                 else
                 {
@@ -253,13 +247,7 @@ void map_plot (Widget w, long max_x, long max_y, long x_long_cord,
 
               if (npoints >= 3)
               {
-                (void)XFillPolygon(XtDisplay(w),
-                                   pixmap_final,
-                                   gc,
-                                   points,
-                                   npoints,
-                                   Nonconvex,
-                                   CoordModeOrigin);
+                xa_fill_polygon(pixmap_final, gc, (xa_point *)points, npoints, XA_SHAPE_NONCONVEX, XA_COORD_ORIGIN);
               }
               else
               {
@@ -275,40 +263,30 @@ void map_plot (Widget w, long max_x, long max_y, long x_long_cord,
         }
         if (line_behavior & 0x01)
         {
-          (void)XSetLineAttributes (XtDisplay (w), gc, 2, LineSolid, CapButt,JoinMiter);
+          xa_pen_line(gc, 2, XA_LINE_SOLID, XA_CAP_BUTT, XA_JOIN_MITER);
         }
         else
         {
-          (void)XSetLineAttributes (XtDisplay (w), gc, 1, LineSolid, CapButt,JoinMiter);
+          xa_pen_line(gc, 1, XA_LINE_SOLID, XA_CAP_BUTT, XA_JOIN_MITER);
         }
 
         if (color == (unsigned char)0x56)
         {
-          (void)XSetLineAttributes (XtDisplay (w), gc, 10, LineSolid, CapButt,JoinMiter);
+          xa_pen_line(gc, 10, XA_LINE_SOLID, XA_CAP_BUTT, XA_JOIN_MITER);
         }
 
         // Set the color for drawing lines/borders
-        (void)XSetForeground (XtDisplay (w), gc, colors[(int)last_color]);
+        xa_pen_color(gc, colors[(int)last_color]);
 
         switch (destination_pixmap)
         {
 
           case DRAW_TO_PIXMAP_FINAL:
-            (void)XDrawLines (XtDisplay (w),
-                              pixmap_final,
-                              gc,
-                              points,
-                              l16(npoints),
-                              CoordModeOrigin);
+            xa_draw_lines(pixmap_final, gc, (xa_point *)points, l16(npoints), XA_COORD_ORIGIN);
             break;
 
           case DRAW_TO_PIXMAP:
-            (void)XDrawLines (XtDisplay (w),
-                              pixmap,
-                              gc,
-                              points,
-                              l16(npoints),
-                              CoordModeOrigin);
+            xa_draw_lines(pixmap, gc, (xa_point *)points, l16(npoints), XA_COORD_ORIGIN);
             break;
 
           case DRAW_TO_PIXMAP_ALERTS:
@@ -801,7 +779,7 @@ void draw_dos_map(Widget w,
     fprintf(stderr,"in Boundary %s\n", map_it);
   }
 
-  (void)XSetLineAttributes (XtDisplay (w), gc, line_width, LineSolid, CapButt,JoinMiter);
+  xa_pen_line(gc, line_width, XA_LINE_SOLID, XA_CAP_BUTT, XA_JOIN_MITER);
 
   /* read vectors */
   max_x = screen_width  + MAX_OUTBOUND;
@@ -1242,9 +1220,9 @@ process:
               draw_filled);
   }
 
-  (void)XSetForeground (XtDisplay (w), gc, colors[20]);
+  xa_pen_color(gc, colors[20]);
   line_width = 2;
-  (void)XSetLineAttributes (XtDisplay (w), gc, line_width, LineSolid, CapButt,JoinMiter);
+  xa_pen_line(gc, line_width, XA_LINE_SOLID, XA_CAP_BUTT, XA_JOIN_MITER);
 
 
   // Here is the map label section of the code for both DOS & Windows-type maps

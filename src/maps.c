@@ -1079,11 +1079,7 @@ void draw_point(Widget w,
 
   // XDrawPoint uses 16-bit unsigned integers
   // (shorts).  Make sure we stay within the limits.
-  (void)XDrawPoint(XtDisplay(w),
-                   which_pixmap,
-                   gc,
-                   l16(x1i),
-                   l16(y1i));
+  xa_draw_point(which_pixmap, gc, l16(x1i), l16(y1i));
 
   last_x1i = x1i;
   last_y1i = y1i;
@@ -1182,13 +1178,7 @@ void draw_vector(Widget w,
   // clip2d_long() should make sure of this anyway as it clips
   // lines to fit the window.
   //
-  (void)XDrawLine(XtDisplay(w),
-                  which_pixmap,
-                  gc,
-                  l16(x1i),
-                  l16(y1i),
-                  l16(x2i),
-                  l16(y2i));
+  xa_draw_line(which_pixmap, gc, l16(x1i), l16(y1i), l16(x2i), l16(y2i));
 
   last_x1i = x1i;
   last_x2i = x2i;
@@ -1270,13 +1260,7 @@ void draw_vector_ll(Widget w,
   // clip2d() should make sure of this anyway as it clips lines to
   // fit the window.
   //
-  (void)XDrawLine(XtDisplay(w),
-                  which_pixmap,
-                  gc,
-                  l16(x1i),
-                  l16(y1i),
-                  l16(x2i),
-                  l16(y2i));
+  xa_draw_line(which_pixmap, gc, l16(x1i), l16(y1i), l16(x2i), l16(y2i));
 
   last_x1i = x1i;
   last_x2i = x2i;
@@ -1593,50 +1577,28 @@ void draw_complete_lat_lon_grid(Widget w)
 
     if ((coord%(648000*100)) == 0)
     {
-      (void)XSetLineAttributes (XtDisplay (w),
-                                gc_tint,
-                                1,
-                                LineSolid,
-                                CapButt,
-                                JoinMiter);
-      (void)XDrawLine (XtDisplay (w),
-                       pixmap_final,
-                       gc_tint,
-                       l16(x),
-                       l16(y1),
-                       l16(x),
-                       l16(y2));
-      (void)XSetLineAttributes (XtDisplay (w),
-                                gc_tint,
-                                1,
-                                LineOnOffDash,
-                                CapButt,
-                                JoinMiter);
+      xa_pen_line(gc_tint, 1, XA_LINE_SOLID, XA_CAP_BUTT, XA_JOIN_MITER);
+      xa_draw_line(pixmap_final, gc_tint, l16(x), l16(y1), l16(x), l16(y2));
+      xa_pen_line(gc_tint, 1, XA_LINE_ON_OFF_DASH, XA_CAP_BUTT, XA_JOIN_MITER);
       continue;   // Go to next iteration of for loop
     }
     else if ((coord%(72000*100)) == 0)
     {
       dash[0] = dash[1] = 8;
-      (void)XSetDashes (XtDisplay (w), gc_tint, 0, dash, 2);
+      xa_pen_dashes(gc_tint, 0, dash, 2);
     }
     else if ((coord%(7200*100)) == 0)
     {
       dash[0] = dash[1] = 4;
-      (void)XSetDashes (XtDisplay (w), gc_tint, 0, dash, 2);
+      xa_pen_dashes(gc_tint, 0, dash, 2);
     }
     else if ((coord%(300*100)) == 0)
     {
       dash[0] = dash[1] = 2;
-      (void)XSetDashes (XtDisplay (w), gc_tint, 0, dash, 2);
+      xa_pen_dashes(gc_tint, 0, dash, 2);
     }
 
-    (void)XDrawLine (XtDisplay (w),
-                     pixmap_final,
-                     gc_tint,
-                     l16(x),
-                     l16(y1),
-                     l16(x),
-                     l16(y2));
+    xa_draw_line(pixmap_final, gc_tint, l16(x), l16(y1), l16(x), l16(y2));
 
     if (draw_labeled_grid_border==TRUE)
     {
@@ -1704,50 +1666,28 @@ void draw_complete_lat_lon_grid(Widget w)
 
     if ((coord%(324000*100)) == 0)
     {
-      (void)XSetLineAttributes (XtDisplay (w),
-                                gc_tint,
-                                1,
-                                LineSolid,
-                                CapButt,
-                                JoinMiter);
-      (void)XDrawLine (XtDisplay (w),
-                       pixmap_final,
-                       gc_tint,
-                       l16(x1),
-                       l16(y),
-                       l16(x2),
-                       l16(y));
-      (void)XSetLineAttributes (XtDisplay (w),
-                                gc_tint,
-                                1,
-                                LineOnOffDash,
-                                CapButt,
-                                JoinMiter);
+      xa_pen_line(gc_tint, 1, XA_LINE_SOLID, XA_CAP_BUTT, XA_JOIN_MITER);
+      xa_draw_line(pixmap_final, gc_tint, l16(x1), l16(y), l16(x2), l16(y));
+      xa_pen_line(gc_tint, 1, XA_LINE_ON_OFF_DASH, XA_CAP_BUTT, XA_JOIN_MITER);
       continue;   // Go to next iteration of for loop
     }
     else if ((coord%(36000*100)) == 0)
     {
       dash[0] = dash[1] = 8;
-      (void)XSetDashes (XtDisplay (w), gc_tint, 4, dash, 2);
+      xa_pen_dashes(gc_tint, 4, dash, 2);
     }
     else if ((coord%(3600*100)) == 0)
     {
       dash[0] = dash[1] = 4;
-      (void)XSetDashes (XtDisplay (w), gc_tint, 2, dash, 2);
+      xa_pen_dashes(gc_tint, 2, dash, 2);
     }
     else if ((coord%(150*100)) == 0)
     {
       dash[0] = dash[1] = 2;
-      (void)XSetDashes (XtDisplay (w), gc_tint, 1, dash, 2);
+      xa_pen_dashes(gc_tint, 1, dash, 2);
     }
 
-    (void)XDrawLine (XtDisplay (w),
-                     pixmap_final,
-                     gc_tint,
-                     l16(x1),
-                     l16(y),
-                     l16(x2),
-                     l16(y));
+    xa_draw_line(pixmap_final, gc_tint, l16(x1), l16(y), l16(x2), l16(y));
 
     if (draw_labeled_grid_border==TRUE)
     {
@@ -2008,12 +1948,12 @@ void draw_major_utm_mgrs_grid(Widget w)
 
   // Set to solid line for the equator.  Make it extra wide as
   // well.
-  (void)XSetLineAttributes (XtDisplay (w), gc_tint, 3, LineSolid, CapButt,JoinMiter);
+  xa_pen_line(gc_tint, 3, XA_LINE_SOLID, XA_CAP_BUTT, XA_JOIN_MITER);
 
   // Draw the equator as a solid line
   draw_vector_ll(w, 0.0, -180.0, 0.0, 180.0, gc_tint, pixmap_final, 0);
 
-  (void)XSetLineAttributes (XtDisplay (w), gc_tint, 2, LineSolid, CapButt,JoinMiter);
+  xa_pen_line(gc_tint, 2, XA_LINE_SOLID, XA_CAP_BUTT, XA_JOIN_MITER);
 
   // Draw the prime meridian in the same manner
   draw_vector_ll(w, -80.0, 0.0, 84.0, 0.0, gc_tint, pixmap_final, 0);
@@ -2166,7 +2106,7 @@ void draw_major_utm_mgrs_grid(Widget w)
 
   // Set the line width and style in the GC to 1 pixel wide for
   // drawing the smaller grid
-  (void)XSetLineAttributes (XtDisplay (w), gc_tint, 1, LineOnOffDash, CapButt,JoinMiter);
+  xa_pen_line(gc_tint, 1, XA_LINE_ON_OFF_DASH, XA_CAP_BUTT, XA_JOIN_MITER);
 
 //fprintf(stderr,"draw_major_utm_mgrs_grid end\n");
 
@@ -2233,7 +2173,7 @@ void actually_draw_utm_minor_grid(Widget w)
   // OLD: Draw grid in dashed white lines.
   // NEW: Tint the lines as they go along, making them appear
   // no matter what color is underneath.
-  (void)XSetForeground(XtDisplay(w), gc_tint, colors[0x27]);
+  xa_pen_color(gc_tint, colors[0x27]);
 
   // Note:  npoints can be negative here!  Make sure our code
   // checks for that.  Initially npoints was an unsigned int.
@@ -2272,12 +2212,7 @@ void actually_draw_utm_minor_grid(Widget w)
         // extra lines, due to bugs in X11.  We do that
         // checking above with xx and yy.
         //
-        (void)XDrawLines(XtDisplay(w),
-                         pixmap_final,
-                         gc_tint,
-                         utm_grid.zone[Zone].col[ii].points,
-                         l16(utm_grid.zone[Zone].col[ii].npoints),
-                         CoordModeOrigin);
+        xa_draw_lines(pixmap_final, gc_tint, (xa_point *)utm_grid.zone[Zone].col[ii].points, l16(utm_grid.zone[Zone].col[ii].npoints), XA_COORD_ORIGIN);
       }
     }
 
@@ -2292,12 +2227,7 @@ void actually_draw_utm_minor_grid(Widget w)
         // extra lines, due to bugs in X11.  We do that
         // checking above with xx and yy.
         //
-        (void)XDrawLines(XtDisplay(w),
-                         pixmap_final,
-                         gc_tint,
-                         utm_grid.zone[Zone].row[ii].points,
-                         l16(utm_grid.zone[Zone].row[ii].npoints),
-                         CoordModeOrigin);
+        xa_draw_lines(pixmap_final, gc_tint, (xa_point *)utm_grid.zone[Zone].row[ii].points, l16(utm_grid.zone[Zone].row[ii].npoints), XA_COORD_ORIGIN);
       }
     }
 
@@ -3558,50 +3488,19 @@ void draw_grid(Widget w)
     border_width = get_border_width(w);
     half = border_width/2;
     // draw a white border around the map.
-    (void)XSetLineAttributes(XtDisplay(w),
-                             gc,
-                             border_width,
-                             LineSolid,
-                             CapRound,
-                             JoinRound);
-    (void)XSetForeground(XtDisplay(w),
-                         gc,
-                         colors[border_foreground_color]);         // white
-    (void)XDrawLine(XtDisplay(w),
-                    pixmap_final,
-                    gc,
-                    0,
-                    l16(half),
-                    l16(screen_width),
-                    l16(half));
-    (void)XDrawLine(XtDisplay(w),
-                    pixmap_final,
-                    gc,
-                    l16(half),
-                    0,
-                    l16(half),
-                    l16(screen_height));
-    (void)XDrawLine(XtDisplay(w),
-                    pixmap_final,
-                    gc,
-                    0,
-                    l16(screen_height-half),
-                    l16(screen_width),
-                    l16(screen_height-half));
-    (void)XDrawLine(XtDisplay(w),
-                    pixmap_final,
-                    gc,
-                    l16(screen_width-half),
-                    0,
-                    l16(screen_width-half),
-                    l16(screen_height));
+    xa_pen_line(gc, border_width, XA_LINE_SOLID, XA_CAP_ROUND, XA_JOIN_ROUND);
+    xa_pen_color(gc, colors[border_foreground_color]);         // white
+    xa_draw_line(pixmap_final, gc, 0, l16(half), l16(screen_width), l16(half));
+    xa_draw_line(pixmap_final, gc, l16(half), 0, l16(half), l16(screen_height));
+    xa_draw_line(pixmap_final, gc, 0, l16(screen_height-half), l16(screen_width), l16(screen_height-half));
+    xa_draw_line(pixmap_final, gc, l16(screen_width-half), 0, l16(screen_width-half), l16(screen_height));
   }
 
   // Set the line width in the GC to 2 pixels wide for the larger
   // UTM grid and the complete Lat/Long grid.
-  (void)XSetLineAttributes (XtDisplay (w), gc_tint, 2, LineOnOffDash, CapButt,JoinMiter);
-  (void)XSetForeground (XtDisplay (w), gc_tint, colors[0x27]);
-  (void)XSetFunction (XtDisplay (da), gc_tint, GXxor);
+  xa_pen_line(gc_tint, 2, XA_LINE_ON_OFF_DASH, XA_CAP_BUTT, XA_JOIN_MITER);
+  xa_pen_color(gc_tint, colors[0x27]);
+  xa_pen_function(gc_tint, XA_FUNC_XOR);
 
   if (coordinate_system == USE_UTM
       || coordinate_system == USE_UTM_SPECIAL
@@ -3934,8 +3833,8 @@ void draw_label_text (Widget w, int x, int y, int label_length, int color, char 
   //(void)XSetForeground (XtDisplay (w), gc, colors[0x0ff]);
   //(void)XFillRectangle (XtDisplay (w), pixmap, gc, x - 1, (y - 10),(label_length * 6) + 2, 11);
 
-  (void)XSetForeground (XtDisplay (w), gc, color);
-  (void)XDrawString (XtDisplay (w), pixmap, gc, x, y, label_text, label_length);
+  xa_pen_color(gc, color);
+  xa_draw_string(pixmap, gc, x, y, label_text, label_length);
 }
 
 
@@ -4051,7 +3950,7 @@ static void draw_rotated_label_text_common (Widget w, float my_rotation, int x, 
 
     if (draw_outline)
     {
-      (void)XSetForeground(XtDisplay(w),gc,outline_bg_color);
+      xa_pen_color(gc, outline_bg_color);
       for (x_outline=-1; x_outline<2; x_outline++)
       {
         for (y_outline=-1; y_outline<2; y_outline++)
@@ -4069,7 +3968,7 @@ static void draw_rotated_label_text_common (Widget w, float my_rotation, int x, 
       }
     }
 
-    (void)XSetForeground (XtDisplay (w), gc, color);
+    xa_pen_color(gc, color);
     (void)XRotDrawAlignedString(XtDisplay (w),
                                 rotated_label_font[fontsize],
                                 my_rotation,

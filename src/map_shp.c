@@ -1127,7 +1127,7 @@ void draw_shapefile_map (Widget w,
 
   // Set a default line width for all maps.  This will most likely
   // be modified for particular maps in later code.
-  (void)XSetLineAttributes(XtDisplay(w), gc, 0, LineSolid, CapButt,JoinMiter);
+  xa_pen_line(gc, 0, XA_LINE_SOLID, XA_CAP_BUTT, XA_JOIN_MITER);
 
   if (weather_alert_flag)
   {
@@ -1138,18 +1138,18 @@ void draw_shapefile_map (Widget w,
 
     // This GC is used for weather alerts (writing to the
     // pixmap: pixmap_alerts)
-    (void)XSetForeground (XtDisplay (w), gc_tint, colors[(int)alert_color]);
+    xa_pen_color(gc_tint, colors[(int)alert_color]);
 
     // GXcopy used here because we have been using stippling for
     // weather alerts since commit 88d579
-    (void)XSetFunction(XtDisplay(w), gc_tint, GXcopy);
+    xa_pen_function(gc_tint, XA_FUNC_COPY);
 
     // Get a pixmap that will be used to shade this alert area
     get_alert_xbm_path(xbm_path, sizeof(xbm_path), alert);
 
     // set the stipple GC to the pattern we found in the alert xbm
-    (void)XSetLineAttributes(XtDisplay(w), gc_tint, 0, LineSolid, CapButt,JoinMiter);
-    XFreePixmap(XtDisplay(w), pixmap_wx_stipple);
+    xa_pen_line(gc_tint, 0, XA_LINE_SOLID, XA_CAP_BUTT, XA_JOIN_MITER);
+    xa_surface_destroy(pixmap_wx_stipple);
     ret_val = XReadBitmapFile(XtDisplay(w),
                               DefaultRootWindow(XtDisplay(w)),
                               xbm_path,
@@ -1176,7 +1176,7 @@ void draw_shapefile_map (Widget w,
       // We successfully loaded the bitmap, so set the stipple
       // properly to use it.  Skip this part if we were
       // unsuccessful at loading the bitmap.
-      (void)XSetStipple(XtDisplay(w), gc_tint, pixmap_wx_stipple);
+      xa_pen_stipple(gc_tint, pixmap_wx_stipple);
     }
 
   } /* ...end if (weather_alert_flag) */
@@ -1395,7 +1395,7 @@ void draw_shapefile_map (Widget w,
           fprintf(stderr,"label_color=%d\n",label_color);
         }
         /* set attributes */
-        (void)XSetForeground(XtDisplay(w), gc, colors[color]);
+        xa_pen_color(gc, colors[color]);
 
 
         // Let the user decide whether to make the map
@@ -1513,8 +1513,7 @@ void draw_shapefile_map (Widget w,
           // viewport.
 
           // Default in case we forget to set the line width later:
-          (void)XSetLineAttributes (XtDisplay (w), gc, 0,
-                                    LineSolid, CapButt,JoinMiter);
+          xa_pen_line(gc, 0, XA_LINE_SOLID, XA_CAP_BUTT, XA_JOIN_MITER);
 
 
           // gps files in the GPS directory are treated specially to
@@ -1579,9 +1578,7 @@ void draw_shapefile_map (Widget w,
                                       (gps_flag)?3:((lanes)?lanes:1),
                                       (gps_flag)?LineOnOffDash:pattern);
               xa_perf_begin(XA_ZONE_SHP_DRAW);
-              (void)XDrawLines(XtDisplay(w), pixmap, gc,
-                               points, l16(numXPoints),
-                               CoordModeOrigin);
+              xa_draw_lines(pixmap, gc, (xa_point *)points, l16(numXPoints), XA_COORD_ORIGIN);
               xa_perf_end(XA_ZONE_SHP_DRAW);
               xa_perf_count(XA_CNT_DRAW_CALLS, 1);
 
@@ -1779,7 +1776,7 @@ void draw_shapefile_map (Widget w,
           // At the moment, draw_filled_polygon *does* reset it, and
           // draw_wx_polygon only frobs gc_tint, but it doesn't hurt to
           // make sure.
-          XSetFillStyle(XtDisplay(w), gc, FillSolid);
+          xa_pen_fill_style(gc, XA_FILL_SOLID);
 
           if ( (strlen(name) != 0)
                && map_labels
@@ -1864,7 +1861,7 @@ void draw_shapefile_map (Widget w,
   }
 
   // Set fill style back to defaults
-  XSetFillStyle(XtDisplay(w), gc, FillSolid);
+  xa_pen_fill_style(gc, XA_FILL_SOLID);
 }
 // End of draw_shapefile_map()
 
@@ -2615,11 +2612,8 @@ void add_label_to_label_hash(label_string **label_hash, const char *label_text)
 // line color and label color.  Consolidate that in one spot.
 void set_shpt_arc_attributes(Widget w, int color, int lanes, int pattern)
 {
-  (void)XSetForeground(XtDisplay(w), gc, colors[color]);
-  (void)XSetLineAttributes(XtDisplay (w), gc,
-                           (lanes)?lanes:1,
-                           pattern,
-                           CapButt,JoinMiter);
+  xa_pen_color(gc, colors[color]);
+  xa_pen_line(gc, (lanes)?lanes:1, pattern, XA_CAP_BUTT, XA_JOIN_MITER);
 }
 
 
@@ -2629,7 +2623,7 @@ void set_shpt_arc_attributes(Widget w, int color, int lanes, int pattern)
 void set_shpt_polygon_fill_stipple(Widget w, int fill_style, int fill_stipple,
                                int draw_filled)
 {
-  (void)XSetFillStyle(XtDisplay(w), gc, fill_style);
+  xa_pen_fill_style(gc, fill_style);
 
   if (draw_filled != 0 && fill_style == FillStippled)
   {
@@ -2638,16 +2632,13 @@ void set_shpt_polygon_fill_stipple(Widget w, int fill_style, int fill_stipple,
     switch (fill_stipple)
     {
       case 0:
-        (void)XSetStipple(XtDisplay(w), gc,
-                          pixmap_13pct_stipple);
+        xa_pen_stipple(gc, pixmap_13pct_stipple);
         break;
       case 1:
-        (void)XSetStipple(XtDisplay(w), gc,
-                          pixmap_25pct_stipple);
+        xa_pen_stipple(gc, pixmap_25pct_stipple);
         break;
       default:
-        (void)XSetStipple(XtDisplay(w), gc,
-                          pixmap_25pct_stipple);
+        xa_pen_stipple(gc, pixmap_25pct_stipple);
         break;
     }
   }
@@ -3071,15 +3062,12 @@ int clip_x_y_pair(long *x, long *y, long x_min, long x_max, long y_min, long y_m
 void draw_polygon_boundary_dashed(Widget w, int color, XPoint *points,
                                   int numPoints)
 {
-  (void)XSetForeground(XtDisplay(w), gc, colors[color]);
-  (void)XSetLineAttributes (XtDisplay (w), gc, 0, LineOnOffDash, CapButt,
-                            JoinMiter);
-  (void)XDrawLines(XtDisplay(w), pixmap, gc, points, l16(numPoints),
-                   CoordModeOrigin);
+  xa_pen_color(gc, colors[color]);
+  xa_pen_line(gc, 0, XA_LINE_ON_OFF_DASH, XA_CAP_BUTT, XA_JOIN_MITER);
+  xa_draw_lines(pixmap, gc, (xa_point *)points, l16(numPoints), XA_COORD_ORIGIN);
 
   // reset back to solid
-  (void)XSetLineAttributes (XtDisplay (w), gc, 0, LineSolid,
-                            CapButt, JoinMiter);
+  xa_pen_line(gc, 0, XA_LINE_SOLID, XA_CAP_BUTT, XA_JOIN_MITER);
 }
 
 
@@ -3100,16 +3088,14 @@ void draw_filled_polygon(Widget w, GC theGC, XPoint *points, int numPoints,
                          int color, int fill_color, int lanes, int pattern,
                          int do_the_fill)
 {
-  (void)XSetLineAttributes(XtDisplay(w), theGC, (lanes)?lanes:1,
-                           pattern, CapButt, JoinMiter);
-  (void)XSetForeground(XtDisplay(w), gc, colors[color]);
+  xa_pen_line(theGC, (lanes)?lanes:1, pattern, XA_CAP_BUTT, XA_JOIN_MITER);
+  xa_pen_color(gc, colors[color]);
   if (do_the_fill)
   {
-    (void)XSetForeground(XtDisplay(w), theGC, colors[fill_color]);
+    xa_pen_color(theGC, colors[fill_color]);
     if (numPoints >3)
     {
-      (void)XFillPolygon(XtDisplay(w), pixmap, theGC, points, numPoints,
-                         Nonconvex, CoordModeOrigin);
+      xa_fill_polygon(pixmap, theGC, (xa_point *)points, numPoints, XA_SHAPE_NONCONVEX, XA_COORD_ORIGIN);
     }
     else
     {
@@ -3118,10 +3104,9 @@ void draw_filled_polygon(Widget w, GC theGC, XPoint *points, int numPoints,
   }
 
   // Draw the border
-  (void)XSetForeground(XtDisplay(w), gc, colors[color]);
-  (void)XSetFillStyle(XtDisplay(w), gc, FillSolid);
-  (void)XDrawLines(XtDisplay(w), pixmap, gc, points, l16(numPoints),
-                   CoordModeOrigin);
+  xa_pen_color(gc, colors[color]);
+  xa_pen_fill_style(gc, XA_FILL_SOLID);
+  xa_draw_lines(pixmap, gc, (xa_point *)points, l16(numPoints), XA_COORD_ORIGIN);
 }
 
 
@@ -3132,12 +3117,11 @@ void draw_filled_polygon(Widget w, GC theGC, XPoint *points, int numPoints,
 // set.  So we have a second polygon drawing routine.
 void draw_wx_polygon(Widget w, XPoint *points, int numPoints)
 {
-  (void)XSetFillStyle(XtDisplay(w), gc_tint, FillStippled);
+  xa_pen_fill_style(gc_tint, XA_FILL_STIPPLED);
 
   if (numPoints >= 3)
   {
-    (void)XFillPolygon(XtDisplay(w), pixmap_alerts, gc_tint, points, numPoints,
-                       Nonconvex, CoordModeOrigin);
+    xa_fill_polygon(pixmap_alerts, gc_tint, (xa_point *)points, numPoints, XA_SHAPE_NONCONVEX, XA_COORD_ORIGIN);
   }
   else
   {
@@ -3146,9 +3130,8 @@ void draw_wx_polygon(Widget w, XPoint *points, int numPoints)
             numPoints);
   }
 
-  (void)XSetFillStyle(XtDisplay(w), gc_tint, FillSolid);
-  (void)XDrawLines(XtDisplay(w), pixmap_alerts, gc_tint,
-                   points, l16(numPoints), CoordModeOrigin);
+  xa_pen_fill_style(gc_tint, XA_FILL_SOLID);
+  xa_draw_lines(pixmap_alerts, gc_tint, (xa_point *)points, l16(numPoints), XA_COORD_ORIGIN);
 }
 
 

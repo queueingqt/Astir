@@ -338,15 +338,9 @@ void popup_ID_message(char * UNUSED(banner), char *message)
 
     // Fill the pixmap with grey so that the black ID text will
     // be seen.
-    (void)XSetForeground(XtDisplay(da),gc,MY_BG_COLOR); // Not a mistake!
-    (void)XSetBackground(XtDisplay(da),gc,MY_BG_COLOR);
-    (void)XFillRectangle(XtDisplay(appshell),
-                         pixmap_alerts,
-                         gc,
-                         0,
-                         0,
-                         (unsigned int)screen_width,
-                         (unsigned int)screen_height);
+    xa_pen_color(gc, MY_BG_COLOR); // Not a mistake!
+    xa_pen_bg(gc, MY_BG_COLOR);
+    xa_fill_rect(pixmap_alerts, gc, 0, 0, (unsigned int)screen_width, (unsigned int)screen_height);
 
     /* load font */
     if(!id_font)
@@ -362,7 +356,7 @@ void popup_ID_message(char * UNUSED(banner), char *message)
       }
     }
 
-    (void)XSetForeground (XtDisplay(da), gc, colors[0x08]);
+    xa_pen_color(gc, colors[0x08]);
 
     //fprintf(stderr,"%0.1f\t%s\n",my_rotation,label_text);
 

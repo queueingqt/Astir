@@ -666,7 +666,7 @@ static void draw_image(
         {
           continue;
         }
-        XSetForeground(XtDisplay(w), gc, my_colors[(int)index_pack[l]].pixel);
+        xa_pen_color(gc, my_colors[(int)index_pack[l]].pixel);
       }
       else
       {
@@ -699,11 +699,11 @@ static void draw_image(
                         my_colors[0].green * raster_map_intensity,
                         my_colors[0].blue * raster_map_intensity,
                         &my_colors[0].pixel);
-        XSetForeground(XtDisplay(w), gc, my_colors[0].pixel);
+        xa_pen_color(gc, my_colors[0].pixel);
       }
       // write the pixel from the map image to the
       // screen.
-      (void)XFillRectangle (XtDisplay (w),pixmap,gc,scr_x,scr_y,1,1);
+      xa_fill_rect(pixmap, gc, scr_x, scr_y, 1, 1);
     } // loop over map pixel columns
   } // loop over map pixel rows
 
@@ -1044,8 +1044,8 @@ static void render_OSM_image_pixels(
             else
             {
               // Fallback: per-pixel X11 calls (slow but always available)
-              XSetForeground(XtDisplay(w), gc, fill_pixel);
-              (void)XFillRectangle(XtDisplay(w), pixmap, gc, scr_x, scr_y, scr_dx, scr_dy);
+              xa_pen_color(gc, fill_pixel);
+              xa_fill_rect(pixmap, gc, scr_x, scr_y, scr_dx, scr_dy);
             }
           } // check map boundaries in y direction
         }  // don't do a screen pixel twice (in the same row)

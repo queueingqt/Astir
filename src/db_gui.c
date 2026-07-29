@@ -33,6 +33,8 @@
 
 #include "xa_settings.h"
 
+#include "xa_draw.h"
+
 // Must be last include file
 #include "leak_detection.h"
 
@@ -298,13 +300,13 @@ void draw_trail(Widget w, DataRow *fill, int solid)
     if (solid)
       // Used to be "JoinMiter" and "CapButt" below
     {
-      (void)XSetLineAttributes(XtDisplay(w), gc, 3, LineSolid, CapRound, JoinRound);
+      xa_pen_line(gc, 3, XA_LINE_SOLID, XA_CAP_ROUND, XA_JOIN_ROUND);
     }
     else
     {
       // Another choice is LineDoubleDash
-      (void)XSetLineAttributes(XtDisplay(w), gc, 3, LineOnOffDash, CapRound, JoinRound);
-      (void)XSetDashes(XtDisplay(w), gc, 0, short_dashed, 2);
+      xa_pen_line(gc, 3, XA_LINE_ON_OFF_DASH, XA_CAP_ROUND, XA_JOIN_ROUND);
+      xa_pen_dashes(gc, 0, short_dashed, 2);
     }
 
     // Traverse linked list of trail points from newest to
@@ -323,7 +325,7 @@ void draw_trail(Widget w, DataRow *fill, int solid)
 
         // draw trail segment
         //
-        (void)XSetForeground(XtDisplay(w),gc,col_trail);
+        xa_pen_color(gc, col_trail);
         draw_vector(da,
                     lon0,
                     lat0,
@@ -335,7 +337,7 @@ void draw_trail(Widget w, DataRow *fill, int solid)
 
         // draw position point itself
         //
-        (void)XSetForeground(XtDisplay(w),gc,col_dot);
+        xa_pen_color(gc, col_dot);
         draw_point(w,
                    lon0,
                    lat0,
@@ -399,7 +401,7 @@ void draw_trail(Widget w, DataRow *fill, int solid)
       ptr = ptr->prev;
       skip_dupes = 1;
     }
-    (void)XSetDashes(XtDisplay(w), gc, 0, medium_dashed, 2);
+    xa_pen_dashes(gc, 0, medium_dashed, 2);
   }
   else if (debug_level & 256)
   {
@@ -1298,13 +1300,7 @@ void draw_test_line(Widget w, long x, long y, long dx, long dy, long ofs)
 
   x += screen_width  - 10 - ofs;
   y += screen_height - 10;
-  (void)XDrawLine(XtDisplay(w),
-                  pixmap_final,
-                  gc,
-                  l16(x),
-                  l16(y),
-                  l16(x+dx),
-                  l16(y+dy));
+  xa_draw_line(pixmap_final, gc, l16(x), l16(y), l16(x+dx), l16(y+dy));
 }
 
 // draw text
@@ -1647,8 +1643,8 @@ void draw_ruler(Widget w)
   xastir_snprintf(text, sizeof(text), "%.0f %s",ruler_siz,unit);      // Set up string
   //fprintf(stderr,"Ruler: %s, %d\n",text,ruler_pix);
 
-  (void)XSetLineAttributes(XtDisplay(w),gc,1,LineSolid,CapRound,JoinRound);
-  (void)XSetForeground(XtDisplay(w),gc,colors[0x20]);         // white
+  xa_pen_line(gc, 1, XA_LINE_SOLID, XA_CAP_ROUND, XA_JOIN_ROUND);
+  xa_pen_color(gc, colors[0x20]);         // white
   for (i = 8; i >= 0; i--)
   {
     dx = (((i / 3)+1) % 3)-1;         // looks complicated...
@@ -1668,18 +1664,18 @@ void draw_ruler(Widget w)
     // If first time through and text-on-black style
     if ( (i == 8) && (letter_style == 2) )
     {
-      XSetForeground(XtDisplay(w),gc,colors[0x10]);   // black
-      (void)XSetLineAttributes(XtDisplay(w),gc,20,LineSolid,CapProjecting,JoinMiter);
+      xa_pen_color(gc, colors[0x10]);   // black
+      xa_pen_line(gc, 20, XA_LINE_SOLID, XA_CAP_PROJECTING, XA_JOIN_MITER);
       draw_test_line(w, dx, dy+5, ruler_pix, 0, ruler_pix);
 
       // Reset to needed parameters for drawing the scale
-      (void)XSetLineAttributes(XtDisplay(w),gc,1,LineSolid,CapRound,JoinRound);
-      (void)XSetForeground(XtDisplay(w),gc,colors[0x20]);         // white
+      xa_pen_line(gc, 1, XA_LINE_SOLID, XA_CAP_ROUND, XA_JOIN_ROUND);
+      xa_pen_color(gc, colors[0x20]);         // white
     }
 
     if (i == 0)
     {
-      (void)XSetForeground(XtDisplay(w),gc,colors[0x10]);  // black
+      xa_pen_color(gc, colors[0x10]);  // black
     }
 
     draw_test_line(w,dx,dy,          ruler_pix,0,ruler_pix);        // hor line
@@ -1888,9 +1884,9 @@ void display_file(Widget w)
     int offset;
 
     // Set the line width in the GC.  Make it nice and fat.
-    (void)XSetLineAttributes (XtDisplay (w), gc_tint, 7, LineSolid, CapButt,JoinMiter);
-    (void)XSetForeground (XtDisplay (w), gc_tint, colors[0x27]);
-    (void)(void)XSetFunction (XtDisplay (da), gc_tint, GXxor);
+    xa_pen_line(gc_tint, 7, XA_LINE_SOLID, XA_CAP_BUTT, XA_JOIN_MITER);
+    xa_pen_color(gc_tint, colors[0x27]);
+    (void)xa_pen_function(gc_tint, XA_FUNC_XOR);
 
     // Scale it so that the 'X' stays the same size at all zoom
     // levels.
@@ -4478,8 +4474,8 @@ void Station_info_destroy_shell(Widget UNUSED(widget), XtPointer clientData, XtP
   //        Station_data_destroy_shell(db_station_info, db_station_info, NULL);
 
   XtPopdown(shell);
-  (void)XFreePixmap(XtDisplay(appshell),SiS_icon0);
-  (void)XFreePixmap(XtDisplay(appshell),SiS_icon);
+  xa_surface_destroy(SiS_icon0);
+  xa_surface_destroy(SiS_icon);
 
   begin_critical_section(&db_station_popup_lock, "db.c:Station_info_destroy_shell" );
 

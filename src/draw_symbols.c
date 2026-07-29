@@ -48,6 +48,8 @@
 
 #include "xa_settings.h"
 
+#include "xa_draw.h"
+
 // Must be last include file
 #include "leak_detection.h"
 
@@ -132,10 +134,8 @@ void draw_nice_string(Widget w, Pixmap where, int style, long x, long y, char *t
 
       case 1:
         /* gray box background */
-        (void)XSetForeground(XtDisplay(w), gc, colors[0xff]);
-        (void)XFillRectangle(XtDisplay(w), where, gc,
-                             x, y - (font_height - font_height/4),
-                             text_w, font_height);
+        xa_pen_color(gc, colors[0xff]);
+        xa_fill_rect(where, gc, x, y - (font_height - font_height/4), text_w, font_height);
         /* fall through: draw text over box */
         xastir_cairo_draw_text(dpy, where, x, y, 0.0f, text, fontspec,
                                colors[bgcolor], 0, 0, NONE);
@@ -143,10 +143,8 @@ void draw_nice_string(Widget w, Pixmap where, int style, long x, long y, char *t
 
       case 2:
         /* black box - box drawn by caller via XFillRectangle, just draw text */
-        (void)XSetForeground(XtDisplay(w), gc, GetPixelByName(w, "black"));
-        (void)XFillRectangle(XtDisplay(w), where, gc,
-                             x, y - (font_height - font_height/4),
-                             text_w, font_height);
+        xa_pen_color(gc, GetPixelByName(w, "black"));
+        xa_fill_rect(where, gc, x, y - (font_height - font_height/4), text_w, font_height);
         xastir_cairo_draw_text(dpy, where, x, y, 0.0f, text, fontspec,
                                colors[fgcolor], 0, 0, NONE);
         return;
@@ -198,37 +196,33 @@ void draw_nice_string(Widget w, Pixmap where, int style, long x, long y, char *t
     switch (style)
     {
       case 0:
-        (void)XSetForeground(XtDisplay(w),gc,colors[bgcolor]);
-        (void)XDrawString(XtDisplay(w),where,gc,x+1,y-1,text,length);
-        (void)XDrawString(XtDisplay(w),where,gc,x+1,y,  text,length);
-        (void)XDrawString(XtDisplay(w),where,gc,x+1,y+1,text,length);
-        (void)XDrawString(XtDisplay(w),where,gc,x-1,y,  text,length);
-        (void)XDrawString(XtDisplay(w),where,gc,x-1,y-1,text,length);
-        (void)XDrawString(XtDisplay(w),where,gc,x-1,y+1,text,length);
-        (void)XDrawString(XtDisplay(w),where,gc,x,  y+1, text,length);
-        (void)XDrawString(XtDisplay(w),where,gc,x,  y-1, text,length);
+        xa_pen_color(gc, colors[bgcolor]);
+        xa_draw_string(where, gc, x+1, y-1, text, length);
+        xa_draw_string(where, gc, x+1, y, text, length);
+        xa_draw_string(where, gc, x+1, y+1, text, length);
+        xa_draw_string(where, gc, x-1, y, text, length);
+        xa_draw_string(where, gc, x-1, y-1, text, length);
+        xa_draw_string(where, gc, x-1, y+1, text, length);
+        xa_draw_string(where, gc, x, y+1, text, length);
+        xa_draw_string(where, gc, x, y-1, text, length);
         break;
       case 1:
-        (void)XSetForeground(XtDisplay(w),gc,colors[0xff]);
-        (void)XFillRectangle(XtDisplay(w),where,gc,
-                             x, y-(font_height-(font_height/4)),
-                             get_text_width(w,text), font_height);
-        (void)XSetForeground(XtDisplay(w),gc,colors[bgcolor]);
-        (void)XDrawString(XtDisplay(w),where,gc,x+(font_height/10),y+(font_width/8),text,length);
+        xa_pen_color(gc, colors[0xff]);
+        xa_fill_rect(where, gc, x, y-(font_height-(font_height/4)), get_text_width(w,text), font_height);
+        xa_pen_color(gc, colors[bgcolor]);
+        xa_draw_string(where, gc, x+(font_height/10), y+(font_width/8), text, length);
         break;
       case 2:
-        (void)XSetForeground(XtDisplay(w),gc,GetPixelByName(w,"black"));
-        (void)XFillRectangle(XtDisplay(w),where,gc,
-                             x, y-(font_height-(font_height/4)),
-                             get_text_width(w,text), font_height);
+        xa_pen_color(gc, GetPixelByName(w,"black"));
+        xa_fill_rect(where, gc, x, y-(font_height-(font_height/4)), get_text_width(w,text), font_height);
         break;
       case 3:
       default:
-        (void)XSetForeground(XtDisplay(w),gc,colors[bgcolor]);
-        (void)XDrawString(XtDisplay(w),where,gc,x+(font_height/10),y+(font_width/8),text,length);
+        xa_pen_color(gc, colors[bgcolor]);
+        xa_draw_string(where, gc, x+(font_height/10), y+(font_width/8), text, length);
         break;
       case 4:
-        (void)XSetForeground(XtDisplay(w),gc,colors[0x20]);
+        xa_pen_color(gc, colors[0x20]);
         for (x_outline=-2; x_outline<=2; x_outline++)
         {
           for (y_outline=-2; y_outline<=2; y_outline++)
@@ -237,18 +231,17 @@ void draw_nice_string(Widget w, Pixmap where, int style, long x, long y, char *t
                 || abs(x_outline) + abs(y_outline) > 3)
               continue;
 
-            (void)XDrawString(XtDisplay(w),where,gc,
-                              x+x_outline,y+y_outline,text,length);
+            xa_draw_string(where, gc, x+x_outline, y+y_outline, text, length);
           }
         }
-        (void)XSetForeground(XtDisplay(w),gc,colors[0x10]);
-        (void)XDrawString(XtDisplay(w),where,gc,x,y,text,length);
+        xa_pen_color(gc, colors[0x10]);
+        xa_draw_string(where, gc, x, y, text, length);
         if (xfs_ptr)
           XFreeFontInfo(NULL, xfs_ptr, 1);
         return;
     }
-    (void)XSetForeground(XtDisplay(w),gc,colors[fgcolor]);
-    (void)XDrawString(XtDisplay(w),where,gc,x,y,text,length);
+    xa_pen_color(gc, colors[fgcolor]);
+    xa_draw_string(where, gc, x, y, text, length);
     if (xfs_ptr)
       XFreeFontInfo(NULL, xfs_ptr, 1);
   }
@@ -415,19 +408,15 @@ void draw_WP_line(DataRow *p_station,
 
   // Compute whether either of them are on-screen.  If so, draw at
   // least part of the line between them.
-  (void)XSetLineAttributes(XtDisplay(da), gc, 0, LineOnOffDash, CapButt,JoinMiter);
-  (void)XSetForeground(XtDisplay(da),gc,color); // red3
+  xa_pen_line(gc, 0, XA_LINE_ON_OFF_DASH, XA_CAP_BUTT, XA_JOIN_MITER);
+  xa_pen_color(gc, color); // red3
 
 // Check that our parameters are within spec for XDrawLine.  We'll
 // stick to 16-bit values here due to warnings on the man-page
 // regarding XSegment structs and the protocol only handling
 // short's/unsigned short's, just in case.
 
-  (void)XDrawLine(XtDisplay(da),where,gc,
-                  l16(x),      // int
-                  l16(y),      // int
-                  l16(x2),     // int
-                  l16(y2));    // int
+  xa_draw_line(where, gc, l16(x), l16(y), l16(x2), l16(y2));    // int
 }
 
 
@@ -484,23 +473,17 @@ void draw_pod_circle(long x_long, long y_lat, double range, int color, Pixmap wh
 
     //fprintf(stderr,"Range:%f\tDiameter:%f\n",range,diameter);
 
-    (void)XSetLineAttributes(XtDisplay(da), gc, 2, LineSolid, CapButt,JoinMiter);
+    xa_pen_line(gc, 2, XA_LINE_SOLID, XA_CAP_BUTT, XA_JOIN_MITER);
     //(void)XSetForeground(XtDisplay(da),gc,colors[0x0a]);
     //(void)XSetForeground(XtDisplay(da),gc,colors[0x44]); // red3
-    (void)XSetForeground(XtDisplay(da),gc,color);
+    xa_pen_color(gc, color);
 
 // Check that our parameters are within spec for XDrawArc.  Tricky
 // 'cuz the XArc struct has short's and unsigned short's, while
 // XDrawArc man-page says int's/unsigned int's.  We'll stick to 16-bit
 // just to make sure.
 
-    (void)XDrawArc(XtDisplay(da),where,gc,
-                   l16(((x_long-NW_corner_longitude)/scale_x)-(diameter/2)), // int
-                   l16(((y_lat-NW_corner_latitude)/scale_y)-(diameter/2)),   // int
-                   lu16(diameter),         // unsigned int
-                   lu16(diameter),         // unsigned int
-                   l16(0),                 // int
-                   l16(64*360));           // int
+    xa_draw_arc(where, gc, l16(((x_long-NW_corner_longitude)/scale_x)-(diameter/2)), l16(((y_lat-NW_corner_latitude)/scale_y)-(diameter/2)), lu16(diameter), lu16(diameter), l16(0), l16(64*360));           // int
 
 // We may need to check for the lat/long being way too far
 // off-screen, refusing to draw the circles if so, if and only if we
@@ -546,10 +529,10 @@ void draw_precision_rectangle(long x_long,
 //            if ((y_lat < 0) || (y_lat > 64800000l))
 //                return;
 
-      (void)XSetLineAttributes(XtDisplay(da), gc, 2, LineSolid, CapButt,JoinMiter);
+      xa_pen_line(gc, 2, XA_LINE_SOLID, XA_CAP_BUTT, XA_JOIN_MITER);
       //(void)XSetForeground(XtDisplay(da),gc,colors[0x0a]);
       //(void)XSetForeground(XtDisplay(da),gc,colors[0x44]); // red3
-      (void)XSetForeground(XtDisplay(da),gc,color);
+      xa_pen_color(gc, color);
 
       if (x_long > 64800000L)
       {
@@ -695,15 +678,15 @@ void draw_phg_rng(long x_long, long y_lat, char *phg, time_t sec_heard, Pixmap w
       }   // End of switch
     }
 
-    (void)XSetLineAttributes(XtDisplay(da), gc, 1, LineSolid, CapButt,JoinMiter);
+    xa_pen_line(gc, 1, XA_LINE_SOLID, XA_CAP_BUTT, XA_JOIN_MITER);
 
     if ((sec_old+sec_heard)>sec_now())
     {
-      (void)XSetForeground(XtDisplay(da),gc,colors[0x0a]);
+      xa_pen_color(gc, colors[0x0a]);
     }
     else
     {
-      (void)XSetForeground(XtDisplay(da),gc,colors[0x52]);
+      xa_pen_color(gc, colors[0x52]);
     }
 
     if (is_rng || phg[6]=='0')      // Draw circl
@@ -714,13 +697,7 @@ void draw_phg_rng(long x_long, long y_lat, char *phg, time_t sec_heard, Pixmap w
       // XDrawArc man-page says int's/unsigned int's.  We'll stick to 16-bit
       // just to make sure.
 
-      (void)XDrawArc(XtDisplay(da),where,gc,
-                     l16(((x_long-NW_corner_longitude)/scale_x)-(diameter/2)), // int
-                     l16(((y_lat-NW_corner_latitude)/scale_y)-(diameter/2)),   // int
-                     lu16(diameter), // unsigned int
-                     lu16(diameter), // unsigned int
-                     l16(0),         // int
-                     l16(64*360));   // int
+      xa_draw_arc(where, gc, l16(((x_long-NW_corner_longitude)/scale_x)-(diameter/2)), l16(((y_lat-NW_corner_latitude)/scale_y)-(diameter/2)), lu16(diameter), lu16(diameter), l16(0), l16(64*360));   // int
     }
     else      // Draw oval to depict beam heading
     {
@@ -746,13 +723,7 @@ void draw_phg_rng(long x_long, long y_lat, char *phg, time_t sec_heard, Pixmap w
       // XDrawArc man-page says int's/unsigned int's.  We'll stick to 16-bit
       // just to make sure.
 
-      (void)XDrawArc(XtDisplay(da),where,gc,
-                     l16(((x_long-NW_corner_longitude)/scale_x)-(diameter/2) - offx),  // int
-                     l16(((y_lat-NW_corner_latitude)/scale_y)-(diameter/2) - offy),    // int
-                     lu16(diameter), // unsigned int
-                     lu16(diameter), // unsigned int
-                     l16(0),         // int
-                     l16(64*360));   // int
+      xa_draw_arc(where, gc, l16(((x_long-NW_corner_longitude)/scale_x)-(diameter/2) - offx), l16(((y_lat-NW_corner_latitude)/scale_y)-(diameter/2) - offy), lu16(diameter), lu16(diameter), l16(0), l16(64*360));   // int
     }
   }
 }
@@ -857,16 +828,16 @@ void draw_DF_circle(long x_long, long y_lat, char *shgd, time_t sec_heard, Pixma
 
     if (scale_y > 128)   // Don't fill in circle if zoomed in too far (too slow!)
     {
-      (void)XSetLineAttributes(XtDisplay(da), gc_stipple, 1, LineSolid, CapButt,JoinMiter);
+      xa_pen_line(gc_stipple, 1, XA_LINE_SOLID, XA_CAP_BUTT, XA_JOIN_MITER);
     }
     else
     {
-      (void)XSetLineAttributes(XtDisplay(da), gc_stipple, 8, LineSolid, CapButt,JoinMiter);
+      xa_pen_line(gc_stipple, 8, XA_LINE_SOLID, XA_CAP_BUTT, XA_JOIN_MITER);
     }
 
     // Stipple the area instead of obscuring the map underneath
-    (void)XSetStipple(XtDisplay(da), gc_stipple, pixmap_50pct_stipple);
-    (void)XSetFillStyle(XtDisplay(da), gc_stipple, FillStippled);
+    xa_pen_stipple(gc_stipple, pixmap_50pct_stipple);
+    xa_pen_fill_style(gc_stipple, XA_FILL_STIPPLED);
 
     // Choose the color for the DF'ing circle
     // We try to choose similar colors to those used in DOSaprs,
@@ -877,99 +848,99 @@ void draw_DF_circle(long x_long, long y_lat, char *shgd, time_t sec_heard, Pixma
       case '9':   // Light Red
         if ((sec_old+sec_heard)>sec_now())  // New
         {
-          (void)XSetForeground(XtDisplay(da),gc_stipple,colors[0x25]);
+          xa_pen_color(gc_stipple, colors[0x25]);
         }
         else                                // Old
         {
-          (void)XSetForeground(XtDisplay(da),gc_stipple,colors[0x25]);
+          xa_pen_color(gc_stipple, colors[0x25]);
         }
         break;
 
       case '8':   // Red
         if ((sec_old+sec_heard)>sec_now())  // New
         {
-          (void)XSetForeground(XtDisplay(da),gc_stipple,colors[0x2d]);
+          xa_pen_color(gc_stipple, colors[0x2d]);
         }
         else                                // Old
         {
-          (void)XSetForeground(XtDisplay(da),gc_stipple,colors[0x2d]);
+          xa_pen_color(gc_stipple, colors[0x2d]);
         }
         break;
 
       case '7':   // Light Magenta
         if ((sec_old+sec_heard)>sec_now())  // New
         {
-          (void)XSetForeground(XtDisplay(da),gc_stipple,colors[0x26]);
+          xa_pen_color(gc_stipple, colors[0x26]);
         }
         else                                // Old
         {
-          (void)XSetForeground(XtDisplay(da),gc_stipple,colors[0x26]);
+          xa_pen_color(gc_stipple, colors[0x26]);
         }
         break;
 
       case '6':   // Magenta
         if ((sec_old+sec_heard)>sec_now())  // New
         {
-          (void)XSetForeground(XtDisplay(da),gc_stipple,colors[0x2e]);
+          xa_pen_color(gc_stipple, colors[0x2e]);
         }
         else                                // Old
         {
-          (void)XSetForeground(XtDisplay(da),gc_stipple,colors[0x2e]);
+          xa_pen_color(gc_stipple, colors[0x2e]);
         }
         break;
 
       case '5':   // Light Cyan
         if ((sec_old+sec_heard)>sec_now())  // New
         {
-          (void)XSetForeground(XtDisplay(da),gc_stipple,colors[0x24]);
+          xa_pen_color(gc_stipple, colors[0x24]);
         }
         else                                // Old
         {
-          (void)XSetForeground(XtDisplay(da),gc_stipple,colors[0x24]);
+          xa_pen_color(gc_stipple, colors[0x24]);
         }
         break;
 
       case '4':   // Cyan
         if ((sec_old+sec_heard)>sec_now())  // New
         {
-          (void)XSetForeground(XtDisplay(da),gc_stipple,colors[0x2c]);
+          xa_pen_color(gc_stipple, colors[0x2c]);
         }
         else                                // Old
         {
-          (void)XSetForeground(XtDisplay(da),gc_stipple,colors[0x2c]);
+          xa_pen_color(gc_stipple, colors[0x2c]);
         }
         break;
 
       case '3':   // White
         if ((sec_old+sec_heard)>sec_now())  // New
         {
-          (void)XSetForeground(XtDisplay(da),gc_stipple,colors[0x0f]);
+          xa_pen_color(gc_stipple, colors[0x0f]);
         }
         else                                // Old
         {
-          (void)XSetForeground(XtDisplay(da),gc_stipple,colors[0x0f]);
+          xa_pen_color(gc_stipple, colors[0x0f]);
         }
         break;
 
       case '2':   // Light Blue
         if ((sec_old+sec_heard)>sec_now())  // New
         {
-          (void)XSetForeground(XtDisplay(da),gc_stipple,colors[0x22]);
+          xa_pen_color(gc_stipple, colors[0x22]);
         }
         else                                // Old
         {
-          (void)XSetForeground(XtDisplay(da),gc_stipple,colors[0x22]);
+          xa_pen_color(gc_stipple, colors[0x22]);
         }
         break;
 
       case '1':   // Blue
         if ((sec_old+sec_heard)>sec_now())  // New
         {
-          (void)XSetForeground(XtDisplay(da),gc_stipple,colors[0x2a]);
+          xa_pen_color(gc_stipple, colors[0x2a]);
         }
         else                                // Old
         {
-          (void)XSetForeground(XtDisplay(da),gc_stipple,colors[0x2a]);
+          xa_pen_color(gc_stipple, colors[0x2a]);
         }
         break;
 
@@ -977,11 +948,11 @@ void draw_DF_circle(long x_long, long y_lat, char *shgd, time_t sec_heard, Pixma
       default:
         if ((sec_old+sec_heard)>sec_now())  // New (was 0x30)
         {
-          (void)XSetForeground(XtDisplay(da),gc_stipple,colors[0x08]);
+          xa_pen_color(gc_stipple, colors[0x08]);
         }
         else                                // Old
         {
-          (void)XSetForeground(XtDisplay(da),gc_stipple,colors[0x08]);
+          xa_pen_color(gc_stipple, colors[0x08]);
         }
         break;
     }
@@ -1007,13 +978,7 @@ void draw_DF_circle(long x_long, long y_lat, char *shgd, time_t sec_heard, Pixma
     // XDrawArc man-page says int's/unsigned int's.  We'll stick to 16-bit
     // just to make sure.
 
-    (void)XDrawArc(XtDisplay(da),where,gc_stipple,
-                   l16(((x_long-NW_corner_longitude)/scale_x)-(diameter/2) - offx),  // int
-                   l16(((y_lat-NW_corner_latitude)/scale_y)-(diameter/2) - offy),    // int
-                   lu16(diameter), // unsigned int
-                   lu16(diameter), // unsigned int
-                   l16(0),         // int
-                   l16(64*360));   // int
+    xa_draw_arc(where, gc_stipple, l16(((x_long-NW_corner_longitude)/scale_x)-(diameter/2) - offx), l16(((y_lat-NW_corner_latitude)/scale_y)-(diameter/2) - offy), lu16(diameter), lu16(diameter), l16(0), l16(64*360));   // int
 
     if (scale_y > 128)   // Don't fill in circle if zoomed in too far (too slow!)
     {
@@ -1027,18 +992,12 @@ void draw_DF_circle(long x_long, long y_lat, char *shgd, time_t sec_heard, Pixma
         // XDrawArc man-page says int's/unsigned int's.  We'll stick to 16-bit
         // just to make sure.
 
-        (void)XDrawArc(XtDisplay(da),where,gc_stipple,
-                       l16(((x_long-NW_corner_longitude)/scale_x)-(diameter/2) - offx),  // int
-                       l16(((y_lat-NW_corner_latitude)/scale_y)-(diameter/2) - offy),    // int
-                       lu16(diameter),  // unsigned int
-                       lu16(diameter),  // unsigned int
-                       l16(0),         // int
-                       l16(64*360));   // int
+        xa_draw_arc(where, gc_stipple, l16(((x_long-NW_corner_longitude)/scale_x)-(diameter/2) - offx), l16(((y_lat-NW_corner_latitude)/scale_y)-(diameter/2) - offy), lu16(diameter), lu16(diameter), l16(0), l16(64*360));   // int
       }
     }
   }
   // Change back to non-stipple for whatever drawing occurs after this
-  (void)XSetFillStyle(XtDisplay(da), gc_stipple, FillSolid);
+  xa_pen_fill_style(gc_stipple, XA_FILL_SOLID);
 }
 
 
@@ -1069,21 +1028,15 @@ void draw_aloha_circle(long x_long, long y_lat, double range, int color, Pixmap 
   width = (((x_long-NW_corner_longitude)/scale_x)-(diameter/2));
   height = (((y_lat-NW_corner_latitude)/scale_y)-(diameter/2));
 
-  (void)XSetLineAttributes(XtDisplay(da), gc, 2, LineSolid, CapButt,JoinMiter);
-  (void)XSetForeground(XtDisplay(da),gc,color);
+  xa_pen_line(gc, 2, XA_LINE_SOLID, XA_CAP_BUTT, XA_JOIN_MITER);
+  xa_pen_color(gc, color);
 
   // Check that our parameters are within spec for XDrawArc.  Tricky
   // 'cuz the XArc struct has short's and unsigned short's, while
   // XDrawArc man-page says int's/unsigned int's.  We'll stick to 16-bit
   // just to make sure.
 
-  (void)XDrawArc(XtDisplay(da),where,gc,
-                 l16(width),     // int
-                 l16(height),    // int
-                 lu16(diameter), // unsigned int
-                 lu16(diameter), // unsigned int
-                 l16(0),         // int
-                 l16(64*360));   // int
+  xa_draw_arc(where, gc, l16(width), l16(height), lu16(diameter), lu16(diameter), l16(0), l16(64*360));   // int
 }
 
 
@@ -1155,19 +1108,15 @@ void draw_half_barbs(int *i, int quantity, float bearing_radians, long x, long y
     off_y = (long)( (barb_len / 2) * sin(barb_radians) );
     off_x = (long)( (barb_len / 2) * cos(barb_radians) );
 
-    (void)XSetLineAttributes(XtDisplay(da), gc, 0, LineSolid, CapButt,JoinMiter);
-    (void)XSetForeground(XtDisplay(da),gc,colors[0x44]); // red3
+    xa_pen_line(gc, 0, XA_LINE_SOLID, XA_CAP_BUTT, XA_JOIN_MITER);
+    xa_pen_color(gc, colors[0x44]); // red3
 
 // Check that our parameters are within spec for XDrawLine.  We'll
 // stick to 16-bit values here due to warnings on the man-page
 // regarding XSegment structs and the protocol only handling
 // short's/unsigned short's, just in case.
 
-    (void)XDrawLine(XtDisplay(da),where,gc,
-                    l16(start_x),           // int
-                    l16(start_y),           // int
-                    l16(start_x + off_x),   // int
-                    l16(start_y + off_y));  // int
+    xa_draw_line(where, gc, l16(start_x), l16(start_y), l16(start_x + off_x), l16(start_y + off_y));  // int
   }
 }
 
@@ -1196,19 +1145,15 @@ void draw_full_barbs(int *i, int quantity, float bearing_radians, long x, long y
     off_y = (long)( barb_len * sin(barb_radians) );
     off_x = (long)( barb_len * cos(barb_radians) );
 
-    (void)XSetLineAttributes(XtDisplay(da), gc, 0, LineSolid, CapButt,JoinMiter);
-    (void)XSetForeground(XtDisplay(da),gc,colors[0x44]); // red3
+    xa_pen_line(gc, 0, XA_LINE_SOLID, XA_CAP_BUTT, XA_JOIN_MITER);
+    xa_pen_color(gc, colors[0x44]); // red3
 
 // Check that our parameters are within spec for XDrawLine.  We'll
 // stick to 16-bit values here due to warnings on the man-page
 // regarding XSegment structs and the protocol only handling
 // short's/unsigned short's, just in case.
 
-    (void)XDrawLine(XtDisplay(da),where,gc,
-                    l16(start_x),           // int
-                    l16(start_y),           // int
-                    l16(start_x + off_x),   // int
-                    l16(start_y + off_y));  // int
+    xa_draw_line(where, gc, l16(start_x), l16(start_y), l16(start_x + off_x), l16(start_y + off_y));  // int
   }
 }
 
@@ -1242,8 +1187,8 @@ void draw_triangle_flags(int *i, int quantity, float bearing_radians, long x, lo
     off_y = (long)( barb_len * sin(barb_radians) );
     off_x = (long)( barb_len * cos(barb_radians) );
 
-    (void)XSetLineAttributes(XtDisplay(da), gc, 0, LineSolid, CapButt,JoinMiter);
-    (void)XSetForeground(XtDisplay(da),gc,colors[0x44]); // red3
+    xa_pen_line(gc, 0, XA_LINE_SOLID, XA_CAP_BUTT, XA_JOIN_MITER);
+    xa_pen_color(gc, colors[0x44]); // red3
 
     points[0].x = start_x;
     points[0].y = start_y;
@@ -1254,7 +1199,7 @@ void draw_triangle_flags(int *i, int quantity, float bearing_radians, long x, lo
 
     // Number of points is always 3 here, so we don't need to
     // check first before calling XFillPolygon().
-    (void)XFillPolygon(XtDisplay(da), where, gc, points, 3, Convex, CoordModeOrigin);
+    xa_fill_polygon(where, gc, (xa_point *)points, 3, XA_SHAPE_CONVEX, XA_COORD_ORIGIN);
   }
 }
 
@@ -1288,8 +1233,8 @@ void draw_square_flags(int *i, int quantity, float bearing_radians, long x, long
     off_y = (long)( barb_len * sin(barb_radians) );
     off_x = (long)( barb_len * cos(barb_radians) );
 
-    (void)XSetLineAttributes(XtDisplay(da), gc, 0, LineSolid, CapButt,JoinMiter);
-    (void)XSetForeground(XtDisplay(da),gc,colors[0x44]); // red3
+    xa_pen_line(gc, 0, XA_LINE_SOLID, XA_CAP_BUTT, XA_JOIN_MITER);
+    xa_pen_color(gc, colors[0x44]); // red3
 
     points[0].x = start_x;
     points[0].y = start_y;
@@ -1302,7 +1247,7 @@ void draw_square_flags(int *i, int quantity, float bearing_radians, long x, long
 
     // Number of points is always 4 here, so we don't need to
     // check first before calling XFillPolygon().
-    (void)XFillPolygon(XtDisplay(da), where, gc, points, 4, Convex, CoordModeOrigin);
+    xa_fill_polygon(where, gc, (xa_point *)points, 4, XA_SHAPE_CONVEX, XA_COORD_ORIGIN);
   }
 }
 
@@ -1428,19 +1373,15 @@ void draw_wind_barb(long x_long, long y_lat, char *speed,
   x = (x_long - NW_corner_longitude)/scale_x;
   y = (y_lat - NW_corner_latitude)/scale_y;
 
-  (void)XSetLineAttributes(XtDisplay(da), gc, 0, LineSolid, CapButt,JoinMiter);
-  (void)XSetForeground(XtDisplay(da),gc,colors[0x44]); // red3
+  xa_pen_line(gc, 0, XA_LINE_SOLID, XA_CAP_BUTT, XA_JOIN_MITER);
+  xa_pen_color(gc, colors[0x44]); // red3
 
 // Check that our parameters are within spec for XDrawLine.  We'll
 // stick to 16-bit values here due to warnings on the man-page
 // regarding XSegment structs and the protocol only handling
 // short's/unsigned short's, just in case.
 
-  (void)XDrawLine(XtDisplay(da),where,gc,
-                  l16(x),             // int
-                  l16(y),             // int
-                  l16(x + off_x),     // int
-                  l16(y + off_y));    // int
+  xa_draw_line(where, gc, l16(x), l16(y), l16(x + off_x), l16(y + off_y));    // int
 
   // Increment along shaft and draw filled polygons at:
   // "(angle + 45) % 360" degrees to create flags.
@@ -1670,18 +1611,18 @@ void draw_bearing(long x_long, long y_lat, char *course,
                           &y_lat4);           // output (*long)
     }
 
-    (void)XSetLineAttributes(XtDisplay(da), gc, 2, LineSolid, CapButt,JoinMiter);
+    xa_pen_line(gc, 2, XA_LINE_SOLID, XA_CAP_BUTT, XA_JOIN_MITER);
     //(void)XSetForeground(XtDisplay(da),gc,colors[0x0a]);
     if (draw_beamwidth)
     {
-      (void)XSetForeground(XtDisplay(da),gc,colors[0x4a]); // red2
+      xa_pen_color(gc, colors[0x4a]); // red2
       draw_vector(da, x_long, y_lat, x_long2, y_lat2, gc, where, 0);
       draw_vector(da, x_long, y_lat, x_long3, y_lat3, gc, where, 0);
     }
 
     if (draw_bearing)
     {
-      (void)XSetForeground(XtDisplay(da),gc,colors[0x44]); // red3
+      xa_pen_color(gc, colors[0x44]); // red3
       draw_vector(da, x_long, y_lat, x_long4, y_lat4, gc, where, 0);
     }
   }
@@ -1813,13 +1754,12 @@ void draw_ambiguity(long x_long, long y_lat, char amb, long *amb_x_long, long *a
   bottom = y_lat  + offset_lat;
 
 
-  (void)XSetForeground(XtDisplay(da), gc, colors[0x08]);
+  xa_pen_color(gc, colors[0x08]);
 
   // Draw rectangle (unfilled) plus vectors from symbol to
   // corners.
 
-  (void)XSetLineAttributes(XtDisplay(da), gc,
-                           2, LineOnOffDash, CapButt,JoinMiter);
+  xa_pen_line(gc, 2, XA_LINE_ON_OFF_DASH, XA_CAP_BUTT, XA_JOIN_MITER);
 
   // Top line of rectangle
   draw_vector(da,left,top,right,top,gc,pixmap_final, 0);
@@ -1914,17 +1854,17 @@ void draw_area(long x_long, long y_lat, char type, char color,
   // colors[0x21] is the first in the list of area object colors in main.c
   c = colors[0x21 + color];
 
-  (void)XSetForeground(XtDisplay(da), gc, c);
+  xa_pen_color(gc, c);
   if (xoff < 20 || yoff < 20)
   {
-    (void)XSetLineAttributes(XtDisplay(da), gc, 1, LineSolid, CapButt,JoinMiter);
+    xa_pen_line(gc, 1, XA_LINE_SOLID, XA_CAP_BUTT, XA_JOIN_MITER);
   }
   else
   {
-    (void)XSetLineAttributes(XtDisplay(da), gc, 2, LineSolid, CapButt,JoinMiter);
+    xa_pen_line(gc, 2, XA_LINE_SOLID, XA_CAP_BUTT, XA_JOIN_MITER);
   }
-  (void)XSetFillStyle(XtDisplay(da), gc, FillSolid); // just in case
-  (void)XSetStipple(XtDisplay(da), gc, pixmap_50pct_stipple);
+  xa_pen_fill_style(gc, XA_FILL_SOLID); // just in case
+  xa_pen_stipple(gc, pixmap_50pct_stipple);
 
   switch (type)
   {
@@ -1937,18 +1877,14 @@ void draw_area(long x_long, long y_lat, char type, char color,
 // while XDrawRectangle man-page says int's/unsigned int's.  We'll
 // stick to 16-bit just to make sure.
 
-        (void)XDrawRectangle(XtDisplay(da), where, gc,
-                             l16(left),     // int
-                             l16(top),      // int
-                             lu16(xoff),    // unsigned int
-                             lu16(yoff));   // unsigned int
+        xa_draw_rect(where, gc, l16(left), l16(top), lu16(xoff), lu16(yoff));   // unsigned int
       }
       break;
     case AREA_FILLED_BOX:
       if (onscreen(left, right, top, bottom))
       {
-        (void)XSetFillStyle(XtDisplay(da), gc, FillStippled);
-        (void)XFillRectangle(XtDisplay(da), where, gc, l16(left), l16(top), l16(xoff), l16(yoff));
+        xa_pen_fill_style(gc, XA_FILL_STIPPLED);
+        xa_fill_rect(where, gc, l16(left), l16(top), l16(xoff), l16(yoff));
       }
       break;
     /* For the rest of the objects, the l16 limiting of the values is inadequate because the
@@ -1970,13 +1906,7 @@ void draw_area(long x_long, long y_lat, char type, char color,
 // XDrawArc man-page says int's/unsigned int's.  We'll stick to 16-bit
 // just to make sure.
 
-        (void)XDrawArc(XtDisplay(da), where, gc,
-                       l16(left),         // int
-                       l16(top),          // int
-                       lu16(2*xoff),      // unsigned int
-                       lu16(2*yoff),      // unsigned int
-                       l16(0),            // int
-                       l16(64 * 360));    // int
+        xa_draw_arc(where, gc, l16(left), l16(top), lu16(2*xoff), lu16(2*yoff), l16(0), l16(64 * 360));    // int
       }
       break;
     case AREA_FILLED_CIRCLE:
@@ -1985,8 +1915,8 @@ void draw_area(long x_long, long y_lat, char type, char color,
       bottom += yoff;
       if (onscreen(left, right, top, bottom))
       {
-        (void)XSetFillStyle(XtDisplay(da), gc, FillStippled);
-        (void)XFillArc(XtDisplay(da), where, gc, l16(left), l16(top), l16(2*xoff), l16(2*yoff), 0, 64 * 360);
+        xa_pen_fill_style(gc, XA_FILL_STIPPLED);
+        xa_fill_arc(where, gc, l16(left), l16(top), l16(2*xoff), l16(2*yoff), 0, 64 * 360);
       }
       break;
     case AREA_LINE_RIGHT:
@@ -2008,28 +1938,24 @@ void draw_area(long x_long, long y_lat, char type, char color,
         points[3].y = l16(top +(conv_width * sin(angle)));
         if (onscreen(points[1].x, points[3].x, points[0].y, points[2].y))
         {
-          (void)XSetFillStyle(XtDisplay(da), gc, FillStippled);
+          xa_pen_fill_style(gc, XA_FILL_STIPPLED);
 
           // Number of points is always 4 here, so we don't
           // need to check first before calling
           // XFillPolygon().
-          (void)XFillPolygon(XtDisplay(da), where, gc, points, 4, Convex, CoordModeOrigin);
+          xa_fill_polygon(where, gc, (xa_point *)points, 4, XA_SHAPE_CONVEX, XA_COORD_ORIGIN);
         }
       }
       if (onscreen(left, right, top, bottom))
       {
-        (void)XSetFillStyle(XtDisplay(da), gc, FillSolid);
+        xa_pen_fill_style(gc, XA_FILL_SOLID);
 
 // Check that our parameters are within spec for XDrawLine.  We'll
 // stick to 16-bit values here due to warnings on the man-page
 // regarding XSegment structs and the protocol only handling
 // short's/unsigned short's, just in case.
 
-        (void)XDrawLine(XtDisplay(da), where, gc,
-                        l16(left),      // int
-                        l16(bottom),    // int
-                        l16(right),     // int
-                        l16(top));      // int
+        xa_draw_line(where, gc, l16(left), l16(bottom), l16(right), l16(top));      // int
       }
       break;
     case AREA_LINE_LEFT:
@@ -2049,28 +1975,24 @@ void draw_area(long x_long, long y_lat, char type, char color,
         points[3].y = l16(top +(conv_width * sin(angle)));
         if (onscreen(points[3].x, points[1].x, points[0].y, points[2].y))
         {
-          (void)XSetFillStyle(XtDisplay(da), gc, FillStippled);
+          xa_pen_fill_style(gc, XA_FILL_STIPPLED);
 
           // Number of points is always 4 here, so we don't
           // need to check first before calling
           // XFillPolygon().
-          (void)XFillPolygon(XtDisplay(da), where, gc, points, 4, Convex, CoordModeOrigin);
+          xa_fill_polygon(where, gc, (xa_point *)points, 4, XA_SHAPE_CONVEX, XA_COORD_ORIGIN);
         }
       }
       if (onscreen(left, right, top, bottom))
       {
-        (void)XSetFillStyle(XtDisplay(da), gc, FillSolid);
+        xa_pen_fill_style(gc, XA_FILL_SOLID);
 
 // Check that our parameters are within spec for XDrawLine.  We'll
 // stick to 16-bit values here due to warnings on the man-page
 // regarding XSegment structs and the protocol only handling
 // short's/unsigned short's, just in case.
 
-        (void)XDrawLine(XtDisplay(da), where, gc,
-                        l16(right),     // int
-                        l16(bottom),    // int
-                        l16(left),      // int
-                        l16(top));      // int
+        xa_draw_line(where, gc, l16(right), l16(bottom), l16(left), l16(top));      // int
       }
       break;
     case AREA_OPEN_TRIANGLE:
@@ -2091,10 +2013,7 @@ void draw_area(long x_long, long y_lat, char type, char color,
 // regarding XSegment structs and the protocol only handling
 // short's/unsigned short's, just in case.
 
-        (void)XDrawLines(XtDisplay(da), where, gc,
-                         points,             // XPoint *
-                         l16(4),             // int
-                         CoordModeOrigin);   // int
+        xa_draw_lines(where, gc, (xa_point *)points, l16(4), XA_COORD_ORIGIN);   // int
       }
       break;
     case AREA_FILLED_TRIANGLE:
@@ -2107,17 +2026,17 @@ void draw_area(long x_long, long y_lat, char type, char color,
       points[2].y = l16(bottom);
       if (onscreen(left, right, top, bottom))
       {
-        (void)XSetFillStyle(XtDisplay(da), gc, FillStippled);
+        xa_pen_fill_style(gc, XA_FILL_STIPPLED);
 
         // Number of points is always 3 here, so we don't need
         // to check first before calling XFillPolygon().
-        (void)XFillPolygon(XtDisplay(da), where, gc, points, 3, Convex, CoordModeOrigin);
+        xa_fill_polygon(where, gc, (xa_point *)points, 3, XA_SHAPE_CONVEX, XA_COORD_ORIGIN);
       }
       break;
     default:
       break;
   }
-  (void)XSetFillStyle(XtDisplay(da), gc, FillSolid);
+  xa_pen_fill_style(gc, XA_FILL_SOLID);
 }
 
 
@@ -2518,7 +2437,7 @@ void insert_symbol(char table, char symbol, char *pixel, int deg, char orient, i
         // DK7IN: is (da) correct or should this be (appshell) ?
         if (color != last_color)
         {
-          (void)XSetForeground(XtDisplay(da),gc,colors[color]);
+          xa_pen_color(gc, colors[color]);
           last_color = color;
         }
 
@@ -2527,11 +2446,7 @@ void insert_symbol(char table, char symbol, char *pixel, int deg, char orient, i
 // specifies int's.  We'll stick to 16-bit numbers just to make
 // sure.
 
-        (void)XDrawPoint(XtDisplay(da),
-                         symbol_data[symbols_loaded].pix,
-                         gc,
-                         l16(x),     // int
-                         l16(y));    // int
+        xa_draw_point(symbol_data[symbols_loaded].pix, gc, l16(x), l16(y));    // int
         // DK7IN
 
 
@@ -2540,7 +2455,7 @@ void insert_symbol(char table, char symbol, char *pixel, int deg, char orient, i
         {
           if (last_gc2 != 1)
           {
-            (void)XSetForeground(XtDisplay(appshell),gc2,1);  // active bit
+            xa_pen_color(gc2, 1);  // active bit
             last_gc2 = 1;
           }
         }
@@ -2548,7 +2463,7 @@ void insert_symbol(char table, char symbol, char *pixel, int deg, char orient, i
         {
           if (last_gc2 != 0)
           {
-            (void)XSetForeground(XtDisplay(appshell),gc2,0);  // transparent.
+            xa_pen_color(gc2, 0);  // transparent.
             last_gc2 = 0;
           }
         }
@@ -2558,11 +2473,7 @@ void insert_symbol(char table, char symbol, char *pixel, int deg, char orient, i
 // specifies int's.  We'll stick to 16-bit numbers just to make
 // sure.
 
-        (void)XDrawPoint(XtDisplay(appshell),
-                         symbol_data[symbols_loaded].pix_mask,
-                         gc2,
-                         l16(x),     // int
-                         l16(y));    // int
+        xa_draw_point(symbol_data[symbols_loaded].pix_mask, gc2, l16(x), l16(y));    // int
 
 
         // Create ghost symbol mask by setting every 2nd bit
@@ -2573,7 +2484,7 @@ void insert_symbol(char table, char symbol, char *pixel, int deg, char orient, i
           old_next=0;
           if (last_gc2 != 0)
           {
-            (void)XSetForeground(XtDisplay(appshell),gc2,0);
+            xa_pen_color(gc2, 0);
             last_gc2 = 0;
           }
         }
@@ -2583,11 +2494,7 @@ void insert_symbol(char table, char symbol, char *pixel, int deg, char orient, i
 // specifies int's.  We'll stick to 16-bit numbers just to make
 // sure.
 
-        (void)XDrawPoint(XtDisplay(appshell),
-                         symbol_data[symbols_loaded].pix_mask_old,
-                         gc2,
-                         l16(x),     // int
-                         l16(y));    // int
+        xa_draw_point(symbol_data[symbols_loaded].pix_mask_old, gc2, l16(x), l16(y));    // int
       }
       old_next++;    // shift one bit every scan line for ghost image
       if (old_next>1)
@@ -2834,11 +2741,11 @@ void symbol(Widget w, int ghost, char symbol_table, char symbol_id, char symbol_
   {
     if (ghost)
     {
-      (void)XSetClipMask(XtDisplay(w),gc,symbol_data[found].pix_mask_old);
+      xa_pen_clip_mask(gc, symbol_data[found].pix_mask_old);
     }
     else
     {
-      (void)XSetClipMask(XtDisplay(w),gc,symbol_data[found].pix_mask);
+      xa_pen_clip_mask(gc, symbol_data[found].pix_mask);
     }
   }
   (void)XSetClipOrigin(XtDisplay(w),gc,x_offset,y_offset);
@@ -2849,18 +2756,18 @@ void symbol(Widget w, int ghost, char symbol_table, char symbol_id, char symbol_
   {
     if (ghost)
     {
-      (void)XSetClipMask(XtDisplay(w),gc,symbol_data[alphanum_index].pix_mask_old);
+      xa_pen_clip_mask(gc, symbol_data[alphanum_index].pix_mask_old);
     }
     else
     {
-      (void)XSetClipMask(XtDisplay(w),gc,symbol_data[alphanum_index].pix_mask);
+      xa_pen_clip_mask(gc, symbol_data[alphanum_index].pix_mask);
     }
 
     (void)XSetClipOrigin(XtDisplay(w),gc,x_offset,y_offset);
     (void)XCopyArea(XtDisplay(w),symbol_data[alphanum_index].pix,where,gc,0,0,20,20,x_offset,y_offset); // rot
   }
 
-  (void)XSetClipMask(XtDisplay(w),gc,None);
+  xa_pen_clip_mask(gc, None);
 }
 
 // Calculate the width in pixels of the actual text
@@ -3392,8 +3299,8 @@ void draw_multipoints(long UNUSED(x_long), long UNUSED(y_lat), int numpoints, lo
 //                    xpoints[numpoints].y = xpoints[0].y;
 
           // First draw a wider black line.
-          (void)XSetForeground(XtDisplay(da), gc, colors[0x08]);  // black
-          (void)XSetLineAttributes(XtDisplay(da), gc, 4, LineSolid, CapButt, JoinMiter);
+          xa_pen_color(gc, colors[0x08]);  // black
+          xa_pen_line(gc, 4, XA_LINE_SOLID, XA_CAP_BUTT, XA_JOIN_MITER);
 
           skip_duplicates = 0;
           for (i = 0; i < numpoints-1; i++)
@@ -3420,8 +3327,8 @@ void draw_multipoints(long UNUSED(x_long), long UNUSED(y_lat), int numpoints, lo
                       skip_duplicates);
 
           // Then draw the appropriate colored line on top of it.
-          (void)XSetForeground(XtDisplay(da), gc, getLineColor(style));
-          (void)XSetLineAttributes(XtDisplay(da), gc, 2, getLineStyle(style), CapButt, JoinMiter);
+          xa_pen_color(gc, getLineColor(style));
+          xa_pen_line(gc, 2, getLineStyle(style), XA_CAP_BUTT, XA_JOIN_MITER);
 
           skip_duplicates = 0;
           for (i = 0; i < numpoints-1; i++)
@@ -3451,8 +3358,8 @@ void draw_multipoints(long UNUSED(x_long), long UNUSED(y_lat), int numpoints, lo
 
         case '1':           // line segments
 
-          (void)XSetForeground(XtDisplay(da), gc, getLineColor(style));
-          (void)XSetLineAttributes(XtDisplay(da), gc, 2, getLineStyle(style), CapButt, JoinMiter);
+          xa_pen_color(gc, getLineColor(style));
+          xa_pen_line(gc, 2, getLineStyle(style), XA_CAP_BUTT, XA_JOIN_MITER);
 
           skip_duplicates = 0;
           for (i = 0; i < numpoints-1; i++)
@@ -3491,7 +3398,7 @@ void Select_symbol_destroy_shell( Widget UNUSED(widget), XtPointer clientData, X
   // Free all 188 symbol pixmaps
   for ( i = 0; i < (126-32)*2; i++ )
   {
-    (void)XFreePixmap(XtDisplay(appshell),select_icons[i]);
+    xa_surface_destroy(select_icons[i]);
   }
 
   begin_critical_section(&select_symbol_dialog_lock, "draw_symbols.c:Select_symbol_destroy_shell" );
@@ -3885,10 +3792,10 @@ void draw_deadreckoning_features(DataRow *p_station,
         arc_degrees = 360;
       }
 
-      (void)XSetLineAttributes(XtDisplay(da), gc, 1, LineOnOffDash, CapButt,JoinMiter);
+      xa_pen_line(gc, 1, XA_LINE_ON_OFF_DASH, XA_CAP_BUTT, XA_JOIN_MITER);
       //(void)XSetForeground(XtDisplay(da),gc,colors[0x0a]);
       //(void)XSetForeground(XtDisplay(da),gc,colors[0x44]); // red3
-      (void)XSetForeground(XtDisplay(da),gc,color);
+      xa_pen_color(gc, color);
 
 
       // Compute angle from the two screen positions.
@@ -3956,26 +3863,14 @@ void draw_deadreckoning_features(DataRow *p_station,
 // XDrawArc man-page says int's/unsigned int's.  We'll stick to 16-bit
 // just to make sure.
 
-      (void)XDrawArc(XtDisplay(da),where,gc,
-                     l16(x-(diameter/2)),    // int
-                     l16(y-(diameter/2)),    // int
-                     lu16(diameter),         // unsigned int
-                     lu16(diameter),         // unsigned int
-                     l16(-64*my_course),     // int
-                     l16(64/2*arc_degrees)); // int
+      xa_draw_arc(where, gc, l16(x-(diameter/2)), l16(y-(diameter/2)), lu16(diameter), lu16(diameter), l16(-64*my_course), l16(64/2*arc_degrees)); // int
 
 // Check that our parameters are within spec for XDrawArc.  Tricky
 // 'cuz the XArc struct has short's and unsigned short's, while
 // XDrawArc man-page says int's/unsigned int's.  We'll stick to 16-bit
 // just to make sure.
 
-      (void)XDrawArc(XtDisplay(da),where,gc,
-                     l16(x-(diameter/2)),        // int
-                     l16(y-(diameter/2)),        // int
-                     lu16(diameter),             // unsigned int
-                     lu16(diameter),             // unsigned int
-                     l16(-64*my_course),         // int
-                     l16(-64/2*arc_degrees));    // int
+      xa_draw_arc(where, gc, l16(x-(diameter/2)), l16(y-(diameter/2)), lu16(diameter), lu16(diameter), l16(-64*my_course), l16(-64/2*arc_degrees));    // int
     }
   }
 
@@ -3990,8 +3885,8 @@ void draw_deadreckoning_features(DataRow *p_station,
   if (Display_.dr_course)
   {
 
-    (void)XSetLineAttributes(XtDisplay(da), gc, 0, LineOnOffDash, CapButt,JoinMiter);
-    (void)XSetForeground(XtDisplay(da),gc,color); // red3
+    xa_pen_line(gc, 0, XA_LINE_ON_OFF_DASH, XA_CAP_BUTT, XA_JOIN_MITER);
+    xa_pen_color(gc, color); // red3
 
     // This one changes the angle as the vector gets longer, by
     // about 10 degrees (A test at 133 degrees -> 143 degrees).

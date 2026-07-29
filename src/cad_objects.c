@@ -38,6 +38,8 @@
 #include <Xm/XmAll.h>
 #include <X11/cursorfont.h>
 
+#include "xa_draw.h"
+
 // Must be last include file
 #include "leak_detection.h"
 
@@ -2654,29 +2656,16 @@ void Draw_All_CAD_Objects(Widget w)
       }
 
       // Set up line color/width/type here
-      (void)XSetLineAttributes (XtDisplay (da),
-                                gc_tint,
-                                object_ptr->line_width,
-                                actual_line_type,
-                                CapButt,
-                                JoinMiter);
+      xa_pen_line(gc_tint, object_ptr->line_width, actual_line_type, XA_CAP_BUTT, XA_JOIN_MITER);
 
       if (object_ptr->line_type  != 1)
       {
-        (void)XSetDashes (XtDisplay (da),
-                          gc_tint,
-                          0,       // dash offset
-                          dash,    // dash list[]
-                          2);      // elements in dash lista
+        xa_pen_dashes(gc_tint, 0, dash, 2);      // elements in dash lista
       }
 
-      (void)XSetForeground (XtDisplay (da),
-                            gc_tint,
-                            object_ptr->line_color);
+      xa_pen_color(gc_tint, object_ptr->line_color);
 
-      (void)XSetFunction (XtDisplay (da),
-                          gc_tint,
-                          GXxor);
+      xa_pen_function(gc_tint, XA_FUNC_XOR);
 
       while (vertice != NULL)
       {

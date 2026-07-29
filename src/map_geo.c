@@ -2769,7 +2769,7 @@ void draw_geo_image_map (Widget w,
               }
               else
               {
-                XSetForeground(XtDisplay(w), gc, my_colors[(int)index_pack[l]].pixel);
+                xa_pen_color(gc, my_colors[(int)index_pack[l]].pixel);
                 trans_skip = 0; // draw it
               }
             }
@@ -2805,12 +2805,12 @@ void draw_geo_image_map (Widget w,
               }
               else
               {
-                XSetForeground(XtDisplay(w), gc, my_colors[0].pixel);
+                xa_pen_color(gc, my_colors[0].pixel);
                 trans_skip = 0; // draw it
               }
             }
 #else   // HAVE_MAGICK
-            (void)XSetForeground (XtDisplay (w), gc, XGetPixel (xi, map_x, map_y));
+            xa_pen_color(gc, XGetPixel (xi, map_x, map_y));
 #endif  // HAVE_MAGICK
 
 
@@ -2821,7 +2821,7 @@ void draw_geo_image_map (Widget w,
             if (!trans_skip)    // skip transparent
 #endif  // HAVE_MAGICK
 
-              (void)XFillRectangle (XtDisplay (w),pixmap,gc,scr_x,scr_y,scr_dx,scr_dy);
+              xa_fill_rect(pixmap, gc, scr_x, scr_y, scr_dx, scr_dy);
           } // check map boundaries in y direction
         }
       } // loop over map pixel columns

@@ -3204,7 +3204,7 @@ int create_image(Widget w)
                 XmNunitType,      &unit_type,
                 NULL);
 
-  (void)XSetDashes(XtDisplay(w), gc, 0, medium_dashed, 2);
+  xa_pen_dashes(gc, 0, medium_dashed, 2);
 
   screen_width  = (long)width;
   screen_height = (long)height;
@@ -3289,16 +3289,10 @@ int create_image(Widget w)
     return(0);
   }
 
-  (void)XSetForeground(XtDisplay(w),gc,colors[0xfd]);
-  (void)XSetBackground(XtDisplay(w),gc,colors[0xfd]);
+  xa_pen_color(gc, colors[0xfd]);
+  xa_pen_bg(gc, colors[0xfd]);
 
-  (void)XFillRectangle(XtDisplay(w),
-                       pixmap,
-                       gc,
-                       0,
-                       0,
-                       (unsigned int)screen_width,
-                       (unsigned int)screen_height);
+  xa_fill_rect(pixmap, gc, 0, 0, (unsigned int)screen_width, (unsigned int)screen_height);
 
   HandlePendingEvents(app_context);
   if (interrupt_drawing_now)
@@ -3524,7 +3518,7 @@ void refresh_image(Widget w)
                 XmNunitType,      &unit_type,
                 NULL);
 
-  (void)XSetDashes(XtDisplay(w), gc, 0, medium_dashed, 2);
+  xa_pen_dashes(gc, 0, medium_dashed, 2);
 
   screen_width  = (long)width;
   screen_height = (long)height;
@@ -3547,8 +3541,8 @@ void refresh_image(Widget w)
                                   SE_corner_longitude,
                                   SE_corner_latitude);
 
-  (void)XSetForeground(XtDisplay(w),gc,colors[0xfd]);
-  (void)XSetBackground(XtDisplay(w),gc,colors[0xfd]);
+  xa_pen_color(gc, colors[0xfd]);
+  xa_pen_bg(gc, colors[0xfd]);
 
   /* copy over map data to alert pixmap */
   (void)XCopyArea(XtDisplay(w),pixmap,pixmap_alerts,gc,0,0,(unsigned int)screen_width,(unsigned int)screen_height,0,0);
@@ -10576,15 +10570,9 @@ void create_appshell( Display *display, char * UNUSED(app_name), int UNUSED(app_
   create_gc(da);
 
   // Fill the drawing area with the background color.
-  (void)XSetForeground(XtDisplay(da),gc,MY_BG_COLOR); // Not a mistake!
-  (void)XSetBackground(XtDisplay(da),gc,MY_BG_COLOR);
-  (void)XFillRectangle(XtDisplay(appshell),
-                       XtWindow(da),
-                       gc,
-                       0,
-                       0,
-                       (unsigned int)screen_width,
-                       (unsigned int)screen_height);
+  xa_pen_color(gc, MY_BG_COLOR); // Not a mistake!
+  xa_pen_bg(gc, MY_BG_COLOR);
+  xa_fill_rect(XtWindow(da), gc, 0, 0, (unsigned int)screen_width, (unsigned int)screen_height);
 
 
   XtAddCallback (da, XmNinputCallback,  da_input,NULL);
@@ -11112,17 +11100,17 @@ void da_resize_execute(Widget w)
     /*  fprintf(stderr,"Size x:%ld, y:%ld\n",screen_width,screen_height);*/
     if (pixmap)
     {
-      (void)XFreePixmap(XtDisplay(w),pixmap);
+      xa_surface_destroy(pixmap);
     }
 
     if(pixmap_final)
     {
-      (void)XFreePixmap(XtDisplay(w),pixmap_final);
+      xa_surface_destroy(pixmap_final);
     }
 
     if(pixmap_alerts)
     {
-      (void)XFreePixmap(XtDisplay(w),pixmap_alerts);
+      xa_surface_destroy(pixmap_alerts);
     }
 
     pixmap=XCreatePixmap(XtDisplay(w),
@@ -11391,34 +11379,10 @@ void da_input(Widget w, XtPointer client_data, XtPointer call_data)
 //fprintf(stderr,"erasing\n");
             // Remove the last box drawn via the XOR
             // function.
-            XDrawLine(XtDisplay(da),
-                      XtWindow(da),
-                      gc_tint,
-                      l16(zoom_box_x1),    // Keep x constant
-                      l16(zoom_box_y1),
-                      l16(zoom_box_x1),
-                      l16(zoom_box_y2));
-            XDrawLine(XtDisplay(da),
-                      XtWindow(da),
-                      gc_tint,
-                      l16(zoom_box_x1),
-                      l16(zoom_box_y1),    // Keep y constant
-                      l16(zoom_box_x2),
-                      l16(zoom_box_y1));
-            XDrawLine(XtDisplay(da),
-                      XtWindow(da),
-                      gc_tint,
-                      l16(zoom_box_x2),    // Keep x constant
-                      l16(zoom_box_y1),
-                      l16(zoom_box_x2),
-                      l16(zoom_box_y2));
-            XDrawLine(XtDisplay(da),
-                      XtWindow(da),
-                      gc_tint,
-                      l16(zoom_box_x1),
-                      l16(zoom_box_y2),    // Keep y constant
-                      l16(zoom_box_x2),
-                      l16(zoom_box_y2));
+            xa_draw_line(XtWindow(da), gc_tint, l16(zoom_box_x1), l16(zoom_box_y1), l16(zoom_box_x1), l16(zoom_box_y2));
+            xa_draw_line(XtWindow(da), gc_tint, l16(zoom_box_x1), l16(zoom_box_y1), l16(zoom_box_x2), l16(zoom_box_y1));
+            xa_draw_line(XtWindow(da), gc_tint, l16(zoom_box_x2), l16(zoom_box_y1), l16(zoom_box_x2), l16(zoom_box_y2));
+            xa_draw_line(XtWindow(da), gc_tint, l16(zoom_box_x1), l16(zoom_box_y2), l16(zoom_box_x2), l16(zoom_box_y2));
           }
 
           // Reset the zoom-box variables
@@ -12256,9 +12220,9 @@ void check_pointer_position(void)
             return;
           }
 
-          (void)XSetLineAttributes(XtDisplay(da), gc_tint, 1, LineSolid, CapButt,JoinMiter);
-          (void)XSetForeground(XtDisplay(da), gc_tint, colors[(int)0x0e]); // yellow
-          (void)XSetFunction(XtDisplay(da), gc_tint, GXxor);
+          xa_pen_line(gc_tint, 1, XA_LINE_SOLID, XA_CAP_BUTT, XA_JOIN_MITER);
+          xa_pen_color(gc_tint, colors[(int)0x0e]); // yellow
+          xa_pen_function(gc_tint, XA_FUNC_XOR);
 
           // Check whether we already have a box on screen
           // that we need to erase.
@@ -12267,65 +12231,17 @@ void check_pointer_position(void)
 //fprintf(stderr,"erasing\n");
             // Remove the last box drawn via the XOR
             // function.
-            XDrawLine(XtDisplay(da),
-                      XtWindow(da),
-                      gc_tint,
-                      l16(zoom_box_x1),    // Keep x constant
-                      l16(zoom_box_y1),
-                      l16(zoom_box_x1),
-                      l16(zoom_box_y2));
-            XDrawLine(XtDisplay(da),
-                      XtWindow(da),
-                      gc_tint,
-                      l16(zoom_box_x1),
-                      l16(zoom_box_y1),    // Keep y constant
-                      l16(zoom_box_x2),
-                      l16(zoom_box_y1));
-            XDrawLine(XtDisplay(da),
-                      XtWindow(da),
-                      gc_tint,
-                      l16(zoom_box_x2),    // Keep x constant
-                      l16(zoom_box_y1),
-                      l16(zoom_box_x2),
-                      l16(zoom_box_y2));
-            XDrawLine(XtDisplay(da),
-                      XtWindow(da),
-                      gc_tint,
-                      l16(zoom_box_x1),
-                      l16(zoom_box_y2),    // Keep y constant
-                      l16(zoom_box_x2),
-                      l16(zoom_box_y2));
+            xa_draw_line(XtWindow(da), gc_tint, l16(zoom_box_x1), l16(zoom_box_y1), l16(zoom_box_x1), l16(zoom_box_y2));
+            xa_draw_line(XtWindow(da), gc_tint, l16(zoom_box_x1), l16(zoom_box_y1), l16(zoom_box_x2), l16(zoom_box_y1));
+            xa_draw_line(XtWindow(da), gc_tint, l16(zoom_box_x2), l16(zoom_box_y1), l16(zoom_box_x2), l16(zoom_box_y2));
+            xa_draw_line(XtWindow(da), gc_tint, l16(zoom_box_x1), l16(zoom_box_y2), l16(zoom_box_x2), l16(zoom_box_y2));
           }
 
           // Draw a box around the current zoom area.
-          XDrawLine(XtDisplay(da),
-                    XtWindow(da),
-                    gc_tint,
-                    l16(menu_x),         // Keep x constant
-                    l16(menu_y),
-                    l16(menu_x),
-                    l16(win_y_return));
-          XDrawLine(XtDisplay(da),
-                    XtWindow(da),
-                    gc_tint,
-                    l16(menu_x),
-                    l16(menu_y),         // Keep y constant
-                    l16(win_x_return),
-                    l16(menu_y));
-          XDrawLine(XtDisplay(da),
-                    XtWindow(da),
-                    gc_tint,
-                    l16(win_x_return),   // Keep x constant
-                    l16(menu_y),
-                    l16(win_x_return),
-                    l16(win_y_return));
-          XDrawLine(XtDisplay(da),
-                    XtWindow(da),
-                    gc_tint,
-                    l16(menu_x),
-                    l16(win_y_return),   // Keep y constant
-                    l16(win_x_return),
-                    l16(win_y_return));
+          xa_draw_line(XtWindow(da), gc_tint, l16(menu_x), l16(menu_y), l16(menu_x), l16(win_y_return));
+          xa_draw_line(XtWindow(da), gc_tint, l16(menu_x), l16(menu_y), l16(win_x_return), l16(menu_y));
+          xa_draw_line(XtWindow(da), gc_tint, l16(win_x_return), l16(menu_y), l16(win_x_return), l16(win_y_return));
+          xa_draw_line(XtWindow(da), gc_tint, l16(menu_x), l16(win_y_return), l16(win_x_return), l16(win_y_return));
 
           // Save the values away so that we can erase the
           // box later.
@@ -27764,8 +27680,8 @@ void Configure_station_destroy_shell( Widget widget, XtPointer clientData, XtPoi
 {
   Widget shell = (Widget) clientData;
   XtPopdown(shell);
-  (void)XFreePixmap(XtDisplay(appshell),CS_icon0);  // ???? DK7IN: avoid possible memory leak ?
-  (void)XFreePixmap(XtDisplay(appshell),CS_icon);
+  xa_surface_destroy(CS_icon0);  // ???? DK7IN: avoid possible memory leak ?
+  xa_surface_destroy(CS_icon);
   XtDestroyWidget(shell);
   configure_station_dialog = (Widget)NULL;
 

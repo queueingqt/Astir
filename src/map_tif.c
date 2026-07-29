@@ -2628,14 +2628,14 @@ void draw_geotiff_image_map (Widget w,
   //
   if (DRG_XOR_colors)
   {
-    (void)XSetLineAttributes (XtDisplay (w), gc_tint, 1, LineSolid, CapButt,JoinMiter);
+    xa_pen_line(gc_tint, 1, XA_LINE_SOLID, XA_CAP_BUTT, XA_JOIN_MITER);
 
     //        (void)XSetForeground (XtDisplay (w), gc_tint, colors[0x27]);  // yellow
     //        (void)XSetForeground (XtDisplay (w), gc_tint, colors[0x0f]); // White
     //        (void)XSetForeground (XtDisplay (w), gc_tint, colors[0x03]); // cyan
     //        (void)XSetForeground (XtDisplay (w), gc_tint, colors[0x06]); // orange
 
-    (void)XSetFunction (XtDisplay (da), gc_tint, GXxor);
+    xa_pen_function(gc_tint, XA_FUNC_XOR);
   }
 
 
@@ -2904,18 +2904,18 @@ void draw_geotiff_image_map (Widget w,
               // Draw the pixel using "gc_tint"
               // instead of "gc".
 
-              XSetForeground (XtDisplay (w), gc_tint, my_colors[*(imageMemory + column)].pixel);
+              xa_pen_color(gc_tint, my_colors[*(imageMemory + column)].pixel);
 
-              XFillRectangle (XtDisplay (w), pixmap, gc_tint, sxx, syy, stepwc, stephc);
+              xa_fill_rect(pixmap, gc_tint, sxx, syy, stepwc, stephc);
             }
             else
             {
 
               // Set the color for the pixel
-              XSetForeground (XtDisplay (w), gc, my_colors[*(imageMemory + column)].pixel);
+              xa_pen_color(gc, my_colors[*(imageMemory + column)].pixel);
 
               // And draw the pixel
-              XFillRectangle (XtDisplay (w), pixmap, gc, sxx, syy, stepwc, stephc);
+              xa_fill_rect(pixmap, gc, sxx, syy, stepwc, stephc);
             }
           }
         }
