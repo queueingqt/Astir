@@ -16,7 +16,30 @@ Run the measurement scripts against a **built** tree — several read `src/*.o`.
 | `find_dupes.py [minlines]` | Repeated code blocks touching drawing or the interrupt idiom — how the duplicate `XCopyArea` and settings families were found. |
 | `convert_draw.py src <file.c>... [--apply]` | Rewrites Xlib drawing calls to `xa_draw`. Parses calls with balanced parens (they span many lines) and skips comments/strings. Dry run by default. |
 | `extract_settings.py src <outbase> [--apply]` | Relocates plain-data definitions out of `main.c` into a core file, reading the target symbol list on stdin. Moves definitions verbatim so no call site changes. |
-| `split_scope.py src <file.c>...` | Where the GUI/core seam runs inside one file: which functions have Motif in the **body**, which merely carry a `Widget` in the signature, and which file-scope names both halves touch — that last list is what a split actually costs. |
+| `split_scope.py [--gui=fn,fn] src <file.c>...` | Where the GUI/core seam runs inside one file: which functions have Motif in the **body**, which are pulled in transitively by *calling* one that does, which merely carry a `Widget` in the signature, and which file-scope names both halves touch. `--gui=` adds known-GUI names defined in other files (`redraw_symbols`, `pos_dialog`, `resize_dialog`). |
+
+## The file splits are blocked on fonts, not on dialogs
+
+Worth knowing before starting one. Running `split_scope.py` with call-coupling
+turned on says:
+
+| file | GUI | what pulls the core half across |
+|---|---|---|
+| `cad_objects.c` | 74% | dialogs and `redraw_symbols` — splittable now |
+| `draw_symbols.c` | — | `draw_symbol`, via `XQueryFont` / `XSetClipOrigin` |
+| `maps.c` | 55% | eleven crossings, all text measurement |
+
+In `maps.c` the entire grid subsystem — `draw_grid`,
+`draw_complete_lat_lon_grid`, `draw_major_utm_mgrs_grid`,
+`draw_minor_utm_mgrs_grid`, `actually_draw_utm_minor_grid`, the biggest core
+functions in the file — reaches Motif through nothing but
+`get_border_width`, `get_rotated_label_text_length_pixels` and
+`draw_rotated_label_text_common`, which call `XLoadQueryFont`, `XTextExtents`
+and `XFreeFont`. No dialog is involved. Split the file today and the grid code
+lands on the GUI side for no reason but that it measures text.
+
+So the order is: abstract fonts, then split `maps.c` and `draw_symbols.c`.
+`cad_objects.c` does not depend on that and can go first.
 
 ## Reading the Xlib numbers
 

@@ -7,14 +7,28 @@ Splitting those files is the next step, and the question that decides whether a
 split is cheap or expensive is not "how many GUI functions", it is "how much do
 the GUI functions and the core functions share".
 
-So this reports three things per file:
+Motif in the body is only the first-order answer.  A function with no Motif in
+it that *calls* one of the dialog builders is coupled to the front end just as
+surely, and a split has to either move it too or invert the call.  Missing that
+makes a file look cleaner than it is: cad_objects.c looked like a tidy cut
+until three of its "core" functions turned out to call dialogs directly.
 
-  * which top-level functions touch Motif/Xt at all,
-  * which file-scope statics each group uses, and
-  * the statics used by BOTH -- the actual cost of the split, since every one
-    of those has to become a shared declaration or move with one side.
+So the classification runs to a fixpoint -- a function is GUI if it touches
+Motif, or if it calls a function that is GUI -- and the calls that crossed the
+boundary are reported, because those are the decisions a split forces.
+
+Reports per file:
+
+  * GUI functions, split into direct (Motif in the body) and pulled in by a call
+  * core functions carrying a Widget only in the signature
+  * the calls from core into GUI -- each is a move-or-invert decision
+  * file-scope names both halves touch -- the rest of the split's cost
 
 Usage: split_scope.py <src-dir> <file.c> [file.c...]
+
+Names defined elsewhere are not seen.  Pass extra known-GUI function names with
+--gui=name1,name2 to include calls out of the file (redraw_symbols, pos_dialog
+and resize_dialog live in main.c, for example).
 """
 import re, sys, os, collections
 
@@ -94,14 +108,13 @@ def file_statics(src, funcs):
   return names
 
 
-def report(path):
+def report(path, extra_gui=()):
   raw = open(path, encoding='utf-8', errors='replace').read()
   src = strip_comments(raw)
   funcs = top_level_functions(src)
   statics = file_statics(src, funcs)
 
-  gui, core = [], []
-  gui_uses, core_uses = collections.Counter(), collections.Counter()
+  info = {}
   for name, s, e in funcs:
     whole = src[s:e]
     # Count Motif references in the BODY only.  A function whose sole GUI
@@ -110,15 +123,42 @@ def report(path):
     # every drawing function in the file look like it belongs to the front end.
     brace = whole.find('{')
     body = whole[brace:] if brace >= 0 else whole
-    hits = len(GUI_RE.findall(body))
-    sig_only = hits == 0 and GUI_RE.search(whole[:brace] if brace >= 0 else '')
-    used = {v for v in statics if re.search(r'\b%s\b' % re.escape(v), body)}
-    if hits:
-      gui.append((name, hits, e - s))
-      gui_uses.update(used)
+    info[name] = {
+      'hits': len(GUI_RE.findall(body)),
+      'sig': bool(GUI_RE.search(whole[:brace] if brace >= 0 else '')),
+      'size': e - s,
+      'body': body,
+      'statics': {v for v in statics if re.search(r'\b%s\b' % re.escape(v), body)},
+      'calls': set(re.findall(r'\b([A-Za-z_]\w*)\s*\(', body)),
+    }
+
+  # Fixpoint: GUI by Motif, then GUI by calling something already GUI.
+  direct = {n for n, d in info.items() if d['hits']}
+  gui_set = set(direct) | set(extra_gui)
+  crossings = []
+  while True:
+    grew = False
+    for n, d in info.items():
+      if n in gui_set:
+        continue
+      reached = sorted(d['calls'] & gui_set)
+      if reached:
+        gui_set.add(n)
+        crossings.append((n, reached))
+        grew = True
+    if not grew:
+      break
+  gui_set -= set(extra_gui)          # those are not defined in this file
+
+  gui, core = [], []
+  gui_uses, core_uses = collections.Counter(), collections.Counter()
+  for name, d in info.items():
+    if name in gui_set:
+      gui.append((name, d['hits'], d['size']))
+      gui_uses.update(d['statics'])
     else:
-      core.append((name, e - s, bool(sig_only)))
-      core_uses.update(used)
+      core.append((name, d['size'], d['sig']))
+      core_uses.update(d['statics'])
 
   shared = sorted(set(gui_uses) & set(core_uses))
   gui_bytes = sum(b for _, _, b in gui)
@@ -130,12 +170,20 @@ def report(path):
         % (os.path.basename(path), len(funcs), len(gui), len(core),
            100.0 * gui_bytes / max(1, gui_bytes + core_bytes)))
   print("=" * 70)
-  print("  GUI functions -- Motif in the body (%d):" % len(gui))
+  print("  GUI functions (%d) -- Motif refs, or 0 if pulled in by a call:"
+        % len(gui))
   for name, hits, b in sorted(gui, key=lambda t: -t[1]):
     print("    %-42s %4d Motif refs, %5d bytes" % (name, hits, b))
   print("\n  core, but carrying a Widget only in the signature (%d):"
         % len(vestigial))
   print("    " + (", ".join(sorted(vestigial)) if vestigial else "(none)"))
+  print("\n  calls out of core into GUI (%d) -- move it or invert it:"
+        % len(crossings))
+  if crossings:
+    for name, reached in sorted(crossings):
+      print("    %-38s -> %s" % (name, ", ".join(reached)))
+  else:
+    print("    (none)")
   print("\n  shared file-scope names (%d) -- the cost of the split:" % len(shared))
   if shared:
     for v in shared:
@@ -146,8 +194,13 @@ def report(path):
 
 
 if __name__ == "__main__":
-  if len(sys.argv) < 3:
-    raise SystemExit("usage: split_scope.py <src-dir> <file.c> [file.c...]")
-  srcdir = sys.argv[1]
-  for f in sys.argv[2:]:
-    report(os.path.join(srcdir, f))
+  args = [a for a in sys.argv[1:] if not a.startswith("--")]
+  extra = []
+  for a in sys.argv[1:]:
+    if a.startswith("--gui="):
+      extra = [x for x in a[len("--gui="):].split(",") if x]
+  if len(args) < 2:
+    raise SystemExit("usage: split_scope.py [--gui=fn,fn] <src-dir> <file.c>...")
+  srcdir = args[0]
+  for f in args[1:]:
+    report(os.path.join(srcdir, f), extra)
