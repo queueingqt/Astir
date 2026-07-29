@@ -16,6 +16,7 @@ Run the measurement scripts against a **built** tree — several read `src/*.o`.
 | `find_dupes.py [minlines]` | Repeated code blocks touching drawing or the interrupt idiom — how the duplicate `XCopyArea` and settings families were found. |
 | `convert_draw.py src <file.c>... [--apply]` | Rewrites Xlib drawing calls to `xa_draw`. Parses calls with balanced parens (they span many lines) and skips comments/strings. Dry run by default. |
 | `extract_settings.py src <outbase> [--apply]` | Relocates plain-data definitions out of `main.c` into a core file, reading the target symbol list on stdin. Moves definitions verbatim so no call site changes. |
+| `split_scope.py src <file.c>...` | Where the GUI/core seam runs inside one file: which functions have Motif in the **body**, which merely carry a `Widget` in the signature, and which file-scope names both halves touch — that last list is what a split actually costs. |
 
 ## What the object-file measurements cannot see
 
