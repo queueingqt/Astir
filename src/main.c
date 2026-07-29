@@ -4070,6 +4070,13 @@ static void motif_ui_warn(const char *text)
   XtAppWarning(app_context, (String)text);
 }
 
+// What map_chooser_fill_in() memoised on the record.  maps.c frees the record
+// and cannot free this, because it no longer knows the type.
+static void motif_ui_free_label(void *label)
+{
+  XmStringFree((XmString)label);
+}
+
 void xa_ui_register_motif(void)
 {
   // Zero-initialised, not member-by-member into an uninitialised local.  A
@@ -4084,6 +4091,7 @@ void xa_ui_register_motif(void)
   cb.busy = motif_ui_busy;
   cb.flush = motif_ui_flush;
   cb.warn = motif_ui_warn;
+  cb.free_label = motif_ui_free_label;
   xa_ui_set_callbacks(&cb);
 }
 
@@ -22961,13 +22969,13 @@ void map_chooser_fill_in (void)
         // XmString corresponding to the filename, attach it
         // to the record.  The 2nd and succeeding times we
         // bring up Map Chooser, things will be faster.
-        if (current->XmStringPtr == NULL)
+        if (current->ui_label == NULL)
         {
-          current->XmStringPtr = XmStringCreateLocalized(current->filename);
+          current->ui_label = (void *)XmStringCreateLocalized(current->filename);
         }
 
         XmListAddItem(map_list,
-                      current->XmStringPtr,
+                      (XmString)current->ui_label,
                       n);
 
         // If a selected map, highlight it in the list

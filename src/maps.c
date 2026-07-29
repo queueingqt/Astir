@@ -7095,10 +7095,7 @@ static void free_map_index(map_index_record *index_list_head)
   while (current != NULL)
   {
     temp = current;
-    if (current->XmStringPtr != NULL)
-    {
-      XmStringFree(current->XmStringPtr);
-    }
+    xa_ui_free_label(current->ui_label);
     current = current->next;
     free(temp);
   }
@@ -7283,7 +7280,7 @@ static void index_update_directory(char *directory)
       // Fill in some default values for the new record.
       temp_record->selected = 0;
       temp_record->auto_maps = 0;
-      temp_record->XmStringPtr = NULL;
+      temp_record->ui_label = NULL;
 
       //current = current->next;
       done++;
@@ -7322,7 +7319,7 @@ static void index_update_directory(char *directory)
     // Fill in some default values for the new record.
     temp_record->selected = 0;
     temp_record->auto_maps = 0;
-    temp_record->XmStringPtr = NULL;
+    temp_record->ui_label = NULL;
   }
 
   // Update the values.  By this point we have a struct to fill
@@ -7463,7 +7460,7 @@ void index_update_xastir(char *filename,
       temp_record->min_zoom = 0;
       temp_record->map_layer = default_map_layer;
       temp_record->selected = 0;
-      temp_record->XmStringPtr = NULL;
+      temp_record->ui_label = NULL;
 
       if (       strstr(filename,".geo")
                  || strstr(filename,".GEO")
@@ -7538,7 +7535,7 @@ void index_update_xastir(char *filename,
     temp_record->min_zoom = 0;
     temp_record->map_layer = default_map_layer;
     temp_record->selected = 0;
-    temp_record->XmStringPtr = NULL;
+    temp_record->ui_label = NULL;
 
     if (       strstr(filename,".geo")
                || strstr(filename,".GEO")
@@ -7713,7 +7710,7 @@ void index_update_ll(char *filename,
       temp_record->min_zoom = 0;
       temp_record->map_layer = default_map_layer;
       temp_record->selected = 0;
-      temp_record->XmStringPtr = NULL;
+      temp_record->ui_label = NULL;
 
       if (       strstr(filename,".geo")
                  || strstr(filename,".GEO")
@@ -7790,7 +7787,7 @@ void index_update_ll(char *filename,
     temp_record->min_zoom = 0;
     temp_record->map_layer = default_map_layer;
     temp_record->selected = 0;
-    temp_record->XmStringPtr = NULL;
+    temp_record->ui_label = NULL;
 
     if (       strstr(filename,".geo")
                || strstr(filename,".GEO")
@@ -8209,8 +8206,8 @@ void index_save_to_file(void)
                 if (last == current) {   // We're at the head of the list
                     map_index_head = current->next;
 
-    // Remember to free the XmStringPtr if we use this bit of code
-    // again.
+    // Remember to xa_ui_free_label() the record's ui_label if we use this
+    // bit of code again.
 
                     free(current);
 
@@ -8224,8 +8221,8 @@ void index_save_to_file(void)
                     gone = current; // Save ptr to record we wish to delete
                     last->next = current->next; // Unlink from list
 
-    // Remember to free the XmStringPtr if we use this bit of code
-    // again.
+    // Remember to xa_ui_free_label() the record's ui_label if we use this
+    // bit of code again.
 
                     free(gone);
 
@@ -8433,7 +8430,7 @@ void index_restore_from_file(void)
           fprintf(stderr,"Malformed line '%s' in map index\n", in_string);
         }
 
-        temp_record->XmStringPtr = NULL;
+        temp_record->ui_label = NULL;
 
         // Do some reasonableness checking on the parameters
         // we just parsed.
@@ -9113,10 +9110,7 @@ static void empty_map_sorted_list(void)
   {
     current = map_sorted_list_head;
     map_sorted_list_head = current->next;
-    if (current->XmStringPtr != NULL)
-    {
-      XmStringFree(current->XmStringPtr);
-    }
+    xa_ui_free_label(current->ui_label);
     free(current);
   }
 }
@@ -9183,7 +9177,7 @@ static void insert_map_sorted(char *filename)
     temp_record->selected = 1;  // Always, we already know this!
     temp_record->accessed = 0;
     temp_record->next = NULL;
-    temp_record->XmStringPtr = NULL;
+    temp_record->ui_label = NULL;
 
     // Now find the proper place for it and insert it in
     // layer-order into the list.

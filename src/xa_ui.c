@@ -75,3 +75,12 @@ void xa_ui_warn(const char *text)
     ui.warn(text);
   }
 }
+
+
+void xa_ui_free_label(void *label)
+{
+  if (ui.free_label != NULL && label != NULL)
+  {
+    ui.free_label(label);
+  }
+}

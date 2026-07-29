@@ -54,6 +54,14 @@ typedef struct
   // file whose point count overflows the fixed vertex buffer, which is then
   // clamped and drawn anyway.
   void (*warn)(const char *text);
+
+  // Release whatever the front end cached in map_index_record.ui_label.
+  //
+  // The core owns those records -- it builds the map index and frees it -- but
+  // only the front end knows what it stored there, so only it can release it.
+  // A front end that caches nothing leaves the field NULL and needs no
+  // implementation.  Never called with NULL.
+  void (*free_label)(void *label);
 } xa_ui_callbacks;
 
 // Install the front end's implementations.  Passing NULL, or leaving a member
@@ -66,5 +74,6 @@ void xa_ui_pump_events(void);
 void xa_ui_busy(void);
 void xa_ui_flush(void);
 void xa_ui_warn(const char *text);
+void xa_ui_free_label(void *label);
 
 #endif // XA_UI_H

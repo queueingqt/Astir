@@ -24,8 +24,12 @@
 #ifndef __XASTIR_MAPS_H
 #define __XASTIR_MAPS_H
 
+// Xt only, for the Widget and XtPointer in the declarations below.  <Xm/Xm.h>
+// was here for one field of map_index_record, which is now opaque.  Of the 21
+// files that include this header, 19 include a Motif header themselves and are
+// unaffected; log_utils.c and tile_mgmnt.c reached Motif only through here, and
+// now reach none of it.
 #include <X11/Intrinsic.h>
-#include <Xm/Xm.h>
 
 #define MAX_OUTBOUND 900
 #define MAX_MAP_POINTS 500000
@@ -70,7 +74,13 @@ typedef struct
 typedef struct _map_index_record
 {
   char filename[MAX_FILENAME];
-  XmString XmStringPtr;
+  // A label for this record, in whatever form the front end wants to keep it,
+  // memoised so the map chooser does not rebuild one per row per open.  The
+  // core only ever sets it to NULL and hands it back through
+  // xa_ui_free_label(); it never looks inside.  Opaque rather than XmString
+  // because that was the only Motif type in this header, and a core data
+  // structure should not have a field whose type comes from the toolkit.
+  void *ui_label;
   unsigned long bottom;
   unsigned long top;
   unsigned long left;
