@@ -48,6 +48,8 @@
 #include "util.h"
 #include "log_utils.h"
 
+#include "xa_settings.h"
+
 // Must be last include file
 #include "leak_detection.h"
 
@@ -585,7 +587,7 @@ void output_igate_net(char *line, int port, int third_party)
     return;
   }
 
-  get_user_base_dir(LOGFILE_IGATE,log_file_path, sizeof(log_file_path));
+  get_user_base_dir(xa_log[XA_LOG_IGATE].file,log_file_path, sizeof(log_file_path));
   // Check for "TCPIP" or "TCPXX" in the path.  If found, don't
   // gate this into the internet again, it's already been gated to
   // RF, which means it's already been on the 'net.  No looping
@@ -605,7 +607,7 @@ void output_igate_net(char *line, int port, int third_party)
        || (strstr(path,"OPNTRC") != NULL) )    // OpenTrac Packet
   {
 
-    if (log_igate && (debug_level & 1024) )
+    if (xa_log[XA_LOG_IGATE].enabled && (debug_level & 1024) )
     {
 
       xastir_snprintf(temp,
@@ -638,7 +640,7 @@ void output_igate_net(char *line, int port, int third_party)
   if (message[0] == '}')
   {
 
-    if (log_igate && (debug_level & 1024) )
+    if (xa_log[XA_LOG_IGATE].enabled && (debug_level & 1024) )
     {
 
       xastir_snprintf(temp,
@@ -669,7 +671,7 @@ void output_igate_net(char *line, int port, int third_party)
 
     // We found a general query, don't gate it.
 
-    if (log_igate && (debug_level & 1024) )
+    if (xa_log[XA_LOG_IGATE].enabled && (debug_level & 1024) )
     {
 
       xastir_snprintf(temp,
@@ -705,7 +707,7 @@ void output_igate_net(char *line, int port, int third_party)
   if (strcmp(call_sign,my_callsign) == 0)
   {
 
-    if (log_igate && (debug_level & 1024) )
+    if (xa_log[XA_LOG_IGATE].enabled && (debug_level & 1024) )
     {
 
       xastir_snprintf(temp,
@@ -770,7 +772,7 @@ void output_igate_net(char *line, int port, int third_party)
   if (igate_options <= 0 )
   {
 
-    if (log_igate && (debug_level & 1024) )
+    if (xa_log[XA_LOG_IGATE].enabled && (debug_level & 1024) )
     {
 
       xastir_snprintf(temp,
@@ -818,7 +820,7 @@ void output_igate_net(char *line, int port, int third_party)
         // packet out to the internet.
 
         // log traffic for the first "up" interface only
-        if (log_igate && first)
+        if (xa_log[XA_LOG_IGATE].enabled && first)
         {
           xastir_snprintf(temp,
                           sizeof(temp),
@@ -838,7 +840,7 @@ void output_igate_net(char *line, int port, int third_party)
                         x);
 
         // log output
-        if (log_igate)
+        if (xa_log[XA_LOG_IGATE].enabled)
         {
           log_data( log_file_path, temp );
         }
@@ -898,7 +900,7 @@ void output_igate_rf(char *from, char *call, char *path, char *line,
   }
 
 
-  get_user_base_dir(LOGFILE_IGATE,log_file_path, sizeof(log_file_path));
+  get_user_base_dir(xa_log[XA_LOG_IGATE].file,log_file_path, sizeof(log_file_path));
 
   // Don't gate anything with NOGATE in it, in either direction.
   // Same for OpenTrac packets.
@@ -907,7 +909,7 @@ void output_igate_rf(char *from, char *call, char *path, char *line,
        || (strstr(path,"OPNTRC") != NULL) )   // OpenTrac Packet
   {
     // "NOGATE" was found in the header.  Don't gate it.
-    if (log_igate && (debug_level & 1024) )
+    if (xa_log[XA_LOG_IGATE].enabled && (debug_level & 1024) )
     {
       xastir_snprintf(temp,
                       sizeof(temp),
@@ -935,7 +937,7 @@ void output_igate_rf(char *from, char *call, char *path, char *line,
 
     // We found a general query, don't gate it.
 
-    if (log_igate && (debug_level & 1024) )
+    if (xa_log[XA_LOG_IGATE].enabled && (debug_level & 1024) )
     {
       xastir_snprintf(temp,
                       sizeof(temp),
@@ -1014,7 +1016,7 @@ void output_igate_rf(char *from, char *call, char *path, char *line,
       // "TCPXX" was found in the header.  We have an
       // unregistered user.
 
-      if (log_igate && (debug_level & 1024) )
+      if (xa_log[XA_LOG_IGATE].enabled && (debug_level & 1024) )
       {
         xastir_snprintf(temp,
                         sizeof(temp),
@@ -1055,7 +1057,7 @@ void output_igate_rf(char *from, char *call, char *path, char *line,
             || heard_via_tnc_in_past_hour(from)) )    // Have heard source call in previous hour
   {
 
-    if (log_igate && (debug_level & 1024) )
+    if (xa_log[XA_LOG_IGATE].enabled && (debug_level & 1024) )
     {
       xastir_snprintf(temp,
                       sizeof(temp),
@@ -1128,7 +1130,7 @@ void output_igate_rf(char *from, char *call, char *path, char *line,
           {
 
             // log traffic for first "up" interface only
-            if (log_igate && first)
+            if (xa_log[XA_LOG_IGATE].enabled && first)
             {
               xastir_snprintf(temp,
                               sizeof(temp),
@@ -1145,7 +1147,7 @@ void output_igate_rf(char *from, char *call, char *path, char *line,
                             x);
 
             // log output
-            if (log_igate)
+            if (xa_log[XA_LOG_IGATE].enabled)
             {
               log_data( log_file_path, temp );
             }
@@ -1171,7 +1173,7 @@ void output_igate_rf(char *from, char *call, char *path, char *line,
           }
           else
           {
-            if (log_igate && (debug_level & 1024) )
+            if (xa_log[XA_LOG_IGATE].enabled && (debug_level & 1024) )
             {
               xastir_snprintf(temp,
                               sizeof(temp),
@@ -1410,7 +1412,7 @@ void output_nws_igate_rf(char *from, char *path, char *line, int port, int third
     return;
   }
 
-  get_user_base_dir(LOGFILE_IGATE,log_file_path, sizeof(log_file_path));
+  get_user_base_dir(xa_log[XA_LOG_IGATE].file,log_file_path, sizeof(log_file_path));
   get_user_base_dir("data/nws-stations.txt",nws_file_path,
                     sizeof(nws_file_path));
 
@@ -1421,7 +1423,7 @@ void output_nws_igate_rf(char *from, char *path, char *line, int port, int third
   {
     // "TCPXX" was found in the header.  We have an
     // unregistered user.
-    if (log_igate && (debug_level & 1024) )
+    if (xa_log[XA_LOG_IGATE].enabled && (debug_level & 1024) )
     {
       xastir_snprintf(temp,
                       sizeof(temp),
@@ -1445,7 +1447,7 @@ void output_nws_igate_rf(char *from, char *path, char *line, int port, int third
   if ( strstr(path,"NOGATE") != NULL )
   {
     // "NOGATE" was found in the header.  Don't gate it.
-    if (log_igate && (debug_level & 1024) )
+    if (xa_log[XA_LOG_IGATE].enabled && (debug_level & 1024) )
     {
       xastir_snprintf(temp,
                       sizeof(temp),
@@ -1466,7 +1468,7 @@ void output_nws_igate_rf(char *from, char *path, char *line, int port, int third
   // see if we can gate NWS messages
   if (!filethere(nws_file_path))
   {
-    if (log_igate && (debug_level & 1024) )
+    if (xa_log[XA_LOG_IGATE].enabled && (debug_level & 1024) )
     {
       xastir_snprintf(temp,
                       sizeof(temp),
@@ -1496,7 +1498,7 @@ void output_nws_igate_rf(char *from, char *path, char *line, int port, int third
   if (!check_NWS_stations(from) || !group_active(from))  // Couldn't find the station
   {
 
-    if (log_igate && (debug_level & 1024) )
+    if (xa_log[XA_LOG_IGATE].enabled && (debug_level & 1024) )
     {
       xastir_snprintf(temp,
                       sizeof(temp),
@@ -1554,7 +1556,7 @@ void output_nws_igate_rf(char *from, char *path, char *line, int port, int third
           {
 
             // log traffic for first "up" interface only
-            if (log_igate && first)
+            if (xa_log[XA_LOG_IGATE].enabled && first)
             {
               xastir_snprintf(temp,
                               sizeof(temp),
@@ -1571,7 +1573,7 @@ void output_nws_igate_rf(char *from, char *path, char *line, int port, int third
                             x);
 
             // log output
-            if (log_igate)
+            if (xa_log[XA_LOG_IGATE].enabled)
             {
               log_data( log_file_path, temp );
             }
@@ -1595,7 +1597,7 @@ void output_nws_igate_rf(char *from, char *path, char *line, int port, int third
           }
           else
           {
-            if (log_igate && (debug_level & 1024) )
+            if (xa_log[XA_LOG_IGATE].enabled && (debug_level & 1024) )
             {
               xastir_snprintf(temp,
                               sizeof(temp),

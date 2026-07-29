@@ -41,6 +41,8 @@
 #include "xa_config.h"
 #include "log_utils.h"
 
+#include "xa_settings.h"
+
 // Must be last include file
 #include "leak_detection.h"
 
@@ -1210,7 +1212,7 @@ void Send_message_now( Widget UNUSED(w), XtPointer clientData, XtPointer UNUSED(
 //                XtSetSensitive(mw[ii].button_ok,FALSE);
 
       // Do message logging if that feature is enabled.
-      if (log_message_data)
+      if (xa_log[XA_LOG_MESSAGE].enabled)
       {
         char temp_msg[MAX_MESSAGE_LENGTH+1];
 
@@ -1229,7 +1231,7 @@ void Send_message_now( Widget UNUSED(w), XtPointer clientData, XtPointer UNUSED(
         strcat(temp_msg, temp2);              // Message
         temp_msg[sizeof(temp_msg)-1] = '\0';  // Terminate string
 
-        log_data( get_user_base_dir(LOGFILE_MESSAGE, temp_file_path,
+        log_data( get_user_base_dir(xa_log[XA_LOG_MESSAGE].file, temp_file_path,
                                     sizeof(temp_file_path)),
                   temp_msg );
       }

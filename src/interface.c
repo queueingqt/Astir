@@ -94,6 +94,8 @@
   #include <netax25/axconfig.h>
 #endif  // HAVE_LIBAX25
 
+#include "xa_settings.h"
+
 // Must be last include file
 #include "leak_detection.h"
 
@@ -7912,7 +7914,7 @@ void output_my_aprs_data(void)
 
   // This will log a posit in the general format for a network interface
   // whether or not any network interfaces are currently up.
-  if (log_net_data)
+  if (xa_log[XA_LOG_NET].enabled)
   {
 
     strcpy(data_txt, my_callsign);
@@ -7926,7 +7928,7 @@ void output_my_aprs_data(void)
     strcat(data_txt, data_txt_save);
     data_txt[sizeof(data_txt)-1] = '\0';  // Terminate string
 
-    log_data( get_user_base_dir(LOGFILE_NET, logfile_tmp_path,
+    log_data( get_user_base_dir(xa_log[XA_LOG_NET].file, logfile_tmp_path,
                                 sizeof(logfile_tmp_path)),
               (char *)data_txt );
   }
@@ -7970,7 +7972,7 @@ void output_my_aprs_data(void)
   // how many TNC's are defined.  It's a representative sample of what we're
   // sending out.  At least one TNC interface must be enabled in order to
   // have anything output to the log file here.
-  if (log_tnc_data)
+  if (xa_log[XA_LOG_TNC].enabled)
   {
     if (header_txt_save[0] != '\0')
     {
@@ -7980,7 +7982,7 @@ void output_my_aprs_data(void)
       strcat(data_txt, data_txt_save);
       data_txt[sizeof(data_txt)-1] = '\0';  // Terminate string
 
-      log_data( get_user_base_dir(LOGFILE_TNC, logfile_tmp_path,
+      log_data( get_user_base_dir(xa_log[XA_LOG_TNC].file, logfile_tmp_path,
                                   sizeof(logfile_tmp_path)),
                 (char *)data_txt );
     }
@@ -8539,8 +8541,8 @@ void output_my_data(char *message, int incoming_port, int type, int loopback_onl
     fprintf(stderr,"output_my_data: Transmitting and decoding: %s\n", data_txt);
   }
 
-  if (log_net_data)
-    log_data( get_user_base_dir(LOGFILE_NET, logfile_tmp_path,
+  if (xa_log[XA_LOG_NET].enabled)
+    log_data( get_user_base_dir(xa_log[XA_LOG_NET].file, logfile_tmp_path,
                                 sizeof(logfile_tmp_path)),
               (char *)data_txt );
 
@@ -8552,8 +8554,8 @@ void output_my_data(char *message, int incoming_port, int type, int loopback_onl
   if (data_txt_save[0] != '\0')
   {
     xastir_snprintf(data_txt, sizeof(data_txt), "%s%s", data_txt_save, message);
-    if (log_tnc_data)
-      log_data( get_user_base_dir(LOGFILE_TNC, logfile_tmp_path,
+    if (xa_log[XA_LOG_TNC].enabled)
+      log_data( get_user_base_dir(xa_log[XA_LOG_TNC].file, logfile_tmp_path,
                                   sizeof(logfile_tmp_path)),
                 (char *)data_txt );
   }

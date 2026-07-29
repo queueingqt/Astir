@@ -90,12 +90,6 @@ extern char MAP_INDEX_DATA[400];
 extern char SYMBOLS_DIR[400];
 extern char HELP_FILE[400];
 extern char SOUND_DIR[400];
-extern char LOGFILE_TNC[400];
-extern char LOGFILE_NET[400];
-extern char LOGFILE_IGATE[400];
-extern char LOGFILE_MESSAGE[400];
-extern char LOGFILE_WX[400];
-extern char LOGFILE_WX_ALERT[400];
 extern char sound_command[90];
 extern char prox_min[30];
 extern char prox_max[30];
@@ -142,5 +136,27 @@ typedef struct
 } xa_sound_cfg_t;
 
 extern xa_sound_cfg_t xa_sound[XA_SOUND_COUNT];
+
+// Logging was six pairs of parallel globals -- an enable flag and a path each.
+// One table indexed by the log kind removes the duplication; adding a log is a
+// one-line change instead of two globals, two externs and two config clauses.
+typedef enum
+{
+  XA_LOG_TNC = 0,
+  XA_LOG_NET,
+  XA_LOG_IGATE,
+  XA_LOG_MESSAGE,
+  XA_LOG_WX,
+  XA_LOG_WX_ALERT,
+  XA_LOG_COUNT
+} xa_log_kind_t;
+
+typedef struct
+{
+  int  enabled;
+  char file[400];
+} xa_log_cfg_t;
+
+extern xa_log_cfg_t xa_log[XA_LOG_COUNT];
 
 #endif // XA_SETTINGS_H

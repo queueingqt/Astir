@@ -1564,7 +1564,7 @@ void alert_data_add(char *call_sign, char *from_call, char *data,
   }
 
 
-  if (log_wx_alert_data && from != DATA_VIA_FILE)
+  if (xa_log[XA_LOG_WX_ALERT].enabled && from != DATA_VIA_FILE)
   {
     char temp_msg[MAX_MESSAGE_LENGTH+1];
 
@@ -1577,7 +1577,7 @@ void alert_data_add(char *call_sign, char *from_call, char *data,
                     call_sign,
                     data,
                     seq);
-    log_data( get_user_base_dir(LOGFILE_WX_ALERT, user_base_dir,
+    log_data( get_user_base_dir(xa_log[XA_LOG_WX_ALERT].file, user_base_dir,
                                 sizeof(user_base_dir)),
               temp_msg);
     //        fprintf(stderr, "%s\n", temp_msg);
@@ -15202,7 +15202,7 @@ void decode_info_field(char *call,
         }
 
         // Do message logging if that feature is enabled.
-        if (log_message_data && from != DATA_VIA_FILE)
+        if (xa_log[XA_LOG_MESSAGE].enabled && from != DATA_VIA_FILE)
         {
           char temp_msg[MAX_MESSAGE_LENGTH+1];
 
@@ -15212,7 +15212,7 @@ void decode_info_field(char *call,
                           call,
                           path,
                           orig_message);
-          log_data( get_user_base_dir(LOGFILE_MESSAGE, user_base_dir,
+          log_data( get_user_base_dir(xa_log[XA_LOG_MESSAGE].file, user_base_dir,
                                       sizeof(user_base_dir)),
                     temp_msg );
         }

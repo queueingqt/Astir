@@ -74,12 +74,6 @@ char MAP_INDEX_DATA[400];
 char SYMBOLS_DIR[400];
 char HELP_FILE[400];
 char SOUND_DIR[400];
-char LOGFILE_TNC[400];
-char LOGFILE_NET[400];
-char LOGFILE_IGATE[400];
-char LOGFILE_MESSAGE[400];
-char LOGFILE_WX[400];
-char LOGFILE_WX_ALERT[400];
 char sound_command[90];
 char prox_min[30];
 char prox_max[30];
@@ -106,3 +100,7 @@ xa_smart_beacon_t xa_sb =
 
 // Five {play?, filename} pairs collapsed into one table indexed by event.
 xa_sound_cfg_t xa_sound[XA_SOUND_COUNT];
+
+// Six {enable flag, path} pairs collapsed into one table.  Paths are filled in
+// from the config file, defaulting to logs/<kind>.log.
+xa_log_cfg_t xa_log[XA_LOG_COUNT];

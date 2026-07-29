@@ -44,6 +44,7 @@
 #include "db_funcs.h"
 #include "xa_config.h"
 #include "snprintf.h"
+#include "xa_settings.h"
 
 #include "maps.h" // for fill_in_new_alert_entries prototype
 
@@ -328,7 +329,7 @@ void load_wx_alerts_from_log(void)
   char filename[MAX_FILENAME];
   char logfile_path[MAX_VALUE];
 
-  get_user_base_dir(LOGFILE_WX_ALERT,logfile_path, sizeof(logfile_path));
+  get_user_base_dir(xa_log[XA_LOG_WX_ALERT].file,logfile_path, sizeof(logfile_path));
 
   time_now = sec_now();
 

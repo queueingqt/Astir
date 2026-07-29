@@ -273,6 +273,18 @@ int get_string(char *option, char *value, int value_size)
 }
 
 
+// Read a string option, falling back to a default when the option is absent or
+// empty.  This idiom was written out eighteen times, six lines each.
+static void get_string_default(char *option, char *value, int value_size,
+                               const char *dflt)
+{
+  if (!get_string(option, value, value_size) || value[0] == '\0')
+  {
+    xastir_snprintf(value, value_size, "%s", dflt);
+  }
+}
+
+
 
 
 
@@ -1034,26 +1046,26 @@ void save_data(void)
 
     }
     /* TNC */
-    store_int (fout, "TNC_LOG_DATA", log_tnc_data);
-    store_string (fout, "LOGFILE_TNC", LOGFILE_TNC);
+    store_int (fout, "TNC_LOG_DATA", xa_log[XA_LOG_TNC].enabled);
+    store_string (fout, "LOGFILE_TNC", xa_log[XA_LOG_TNC].file);
 
     /* NET */
-    store_int (fout, "NET_LOG_DATA", log_net_data);
+    store_int (fout, "NET_LOG_DATA", xa_log[XA_LOG_NET].enabled);
 
     store_int (fout, "NET_RUN_AS_IGATE", operate_as_an_igate);
     store_int (fout, "NETWORK_WAITTIME", NETWORK_WAITTIME);
 
     // LOGGING
-    store_int (fout, "LOG_IGATE", log_igate);
-    store_int (fout, "LOG_WX", log_wx);
-    store_int (fout, "LOG_MESSAGE", log_message_data);
-    store_int (fout, "LOG_WX_ALERT", log_wx_alert_data);
+    store_int (fout, "LOG_IGATE", xa_log[XA_LOG_IGATE].enabled);
+    store_int (fout, "LOG_WX", xa_log[XA_LOG_WX].enabled);
+    store_int (fout, "LOG_MESSAGE", xa_log[XA_LOG_MESSAGE].enabled);
+    store_int (fout, "LOG_WX_ALERT", xa_log[XA_LOG_WX_ALERT].enabled);
     store_int (fout, "TRAFFIC_UTF8", traffic_utf8_enabled);
-    store_string (fout, "LOGFILE_IGATE", LOGFILE_IGATE);
-    store_string (fout, "LOGFILE_NET", LOGFILE_NET);
-    store_string (fout, "LOGFILE_WX", LOGFILE_WX);
-    store_string (fout, "LOGFILE_MESSAGE", LOGFILE_MESSAGE);
-    store_string (fout, "LOGFILE_WX_ALERT", LOGFILE_WX_ALERT);
+    store_string (fout, "LOGFILE_IGATE", xa_log[XA_LOG_IGATE].file);
+    store_string (fout, "LOGFILE_NET", xa_log[XA_LOG_NET].file);
+    store_string (fout, "LOGFILE_WX", xa_log[XA_LOG_WX].file);
+    store_string (fout, "LOGFILE_MESSAGE", xa_log[XA_LOG_MESSAGE].file);
+    store_string (fout, "LOGFILE_WX_ALERT", xa_log[XA_LOG_WX_ALERT].file);
 
     // SNAPSHOTS
     store_int (fout, "SNAPSHOTS_ENABLED", snapshots_enabled);
@@ -1596,41 +1608,17 @@ void load_data_or_default(void)
 
   skip_dupe_checking = get_int("SKIP_DUPE_CHECK", 0, 1, 0);
 
-  if (!get_string ("AUTO_MAP_DIR", AUTO_MAP_DIR, sizeof(AUTO_MAP_DIR))
-      || AUTO_MAP_DIR[0] == '\0')
-  {
-    xastir_snprintf(AUTO_MAP_DIR,
-                    sizeof(AUTO_MAP_DIR),
-                    "%s",
-                    get_data_base_dir ("maps"));
-  }
+    get_string_default("AUTO_MAP_DIR", AUTO_MAP_DIR, sizeof(AUTO_MAP_DIR),
+                     get_data_base_dir ("maps"));
 
-  if (!get_string ("ALERT_MAP_DIR", ALERT_MAP_DIR, sizeof(ALERT_MAP_DIR))
-      || ALERT_MAP_DIR[0] == '\0')
-  {
-    xastir_snprintf(ALERT_MAP_DIR,
-                    sizeof(ALERT_MAP_DIR),
-                    "%s",
-                    get_data_base_dir ("Counties"));
-  }
+    get_string_default("ALERT_MAP_DIR", ALERT_MAP_DIR, sizeof(ALERT_MAP_DIR),
+                     get_data_base_dir ("Counties"));
 
-  if (!get_string ("SELECTED_MAP_DIR", SELECTED_MAP_DIR, sizeof(SELECTED_MAP_DIR))
-      || SELECTED_MAP_DIR[0] == '\0')
-  {
-    xastir_snprintf(SELECTED_MAP_DIR,
-                    sizeof(SELECTED_MAP_DIR),
-                    "%s",
-                    get_data_base_dir ("maps"));
-  }
+    get_string_default("SELECTED_MAP_DIR", SELECTED_MAP_DIR, sizeof(SELECTED_MAP_DIR),
+                     get_data_base_dir ("maps"));
 
-  if (!get_string ("SELECTED_MAP_DATA", SELECTED_MAP_DATA, sizeof(SELECTED_MAP_DATA))
-      || SELECTED_MAP_DATA[0] == '\0')
-  {
-    xastir_snprintf(SELECTED_MAP_DATA,
-                    sizeof(SELECTED_MAP_DATA),
-                    "%s",
-                    "config/selected_maps.sys");
-  }
+    get_string_default("SELECTED_MAP_DATA", SELECTED_MAP_DATA, sizeof(SELECTED_MAP_DATA),
+                     "config/selected_maps.sys");
 
   // get the base path for the user base directory, so we can use it over
   // and over without having to call get_user_base_dir a godzillion times.
@@ -1644,14 +1632,8 @@ void load_data_or_default(void)
                     "%s",
                     "config/selected_maps.sys");
 
-  if (!get_string ("MAP_INDEX_DATA", MAP_INDEX_DATA, sizeof(MAP_INDEX_DATA))
-      || MAP_INDEX_DATA[0] == '\0')
-  {
-    xastir_snprintf(MAP_INDEX_DATA,
-                    sizeof(MAP_INDEX_DATA),
-                    "%s",
-                    "config/map_index.sys");
-  }
+    get_string_default("MAP_INDEX_DATA", MAP_INDEX_DATA, sizeof(MAP_INDEX_DATA),
+                     "config/map_index.sys");
   // Check for old complete path, change to new short path if a
   // match
   if (strncmp( user_base_dir, MAP_INDEX_DATA, strlen(user_base_dir)) == 0)
@@ -1660,32 +1642,14 @@ void load_data_or_default(void)
                     "%s",
                     "config/map_index.sys");
 
-  if (!get_string ("SYMBOLS_DIR", SYMBOLS_DIR, sizeof(SYMBOLS_DIR))
-      || SYMBOLS_DIR[0] == '\0')
-  {
-    xastir_snprintf(SYMBOLS_DIR,
-                    sizeof(SYMBOLS_DIR),
-                    "%s",
-                    get_data_base_dir ("symbols"));
-  }
+    get_string_default("SYMBOLS_DIR", SYMBOLS_DIR, sizeof(SYMBOLS_DIR),
+                     get_data_base_dir ("symbols"));
 
-  if (!get_string ("SOUND_DIR", SOUND_DIR, sizeof(SOUND_DIR))
-      || SOUND_DIR[0] == '\0')
-  {
-    xastir_snprintf(SOUND_DIR,
-                    sizeof(SOUND_DIR),
-                    "%s",
-                    get_data_base_dir ("sounds"));
-  }
+    get_string_default("SOUND_DIR", SOUND_DIR, sizeof(SOUND_DIR),
+                     get_data_base_dir ("sounds"));
 
-  if (!get_string ("GROUP_DATA_FILE", group_data_file, sizeof(group_data_file))
-      || group_data_file[0] == '\0')
-  {
-    xastir_snprintf(group_data_file,
-                    sizeof(group_data_file),
-                    "%s",
-                    "config/groups");
-  }
+    get_string_default("GROUP_DATA_FILE", group_data_file, sizeof(group_data_file),
+                     "config/groups");
   // Check for old complete path, change to new short path if a
   // match
   if (strncmp( user_base_dir, group_data_file, strlen(user_base_dir)) == 0)
@@ -1694,26 +1658,14 @@ void load_data_or_default(void)
                     "%s",
                     "config/groups");
 
-  if (!get_string ("GNIS_FILE", locate_gnis_filename, sizeof(locate_gnis_filename))
-      || locate_gnis_filename[0] == '\0')
-  {
-    xastir_snprintf(locate_gnis_filename,
-                    sizeof(locate_gnis_filename),
-                    "%s",
-                    get_data_base_dir ("GNIS/WA.gnis"));
-  }
+    get_string_default("GNIS_FILE", locate_gnis_filename, sizeof(locate_gnis_filename),
+                     get_data_base_dir ("GNIS/WA.gnis"));
 
 
 #ifdef HAVE_NOMINATIM
   /* Nominatim geocoding configuration */
-  if (!get_string ("NOMINATIM_SERVER_URL", nominatim_server_url, sizeof(nominatim_server_url))
-      || nominatim_server_url[0] == '\0')
-  {
-    xastir_snprintf(nominatim_server_url,
-                    sizeof(nominatim_server_url),
-                    "%s",
-                    "https://nominatim.openstreetmap.org");
-  }
+    get_string_default("NOMINATIM_SERVER_URL", nominatim_server_url, sizeof(nominatim_server_url),
+                     "https://nominatim.openstreetmap.org");
 
   nominatim_cache_enabled = get_int ("NOMINATIM_CACHE_ENABLED", 0, 1, 1);
   nominatim_cache_days = get_int ("NOMINATIM_CACHE_DAYS", 0, 365, 30);
@@ -2284,115 +2236,79 @@ void load_data_or_default(void)
   }
 
   /* TNC */
-  log_tnc_data = get_int ("TNC_LOG_DATA", 0,1,0);
+  xa_log[XA_LOG_TNC].enabled = get_int ("TNC_LOG_DATA", 0,1,0);
 
-  if (!get_string ("LOGFILE_TNC", LOGFILE_TNC, sizeof(LOGFILE_TNC))
-      || LOGFILE_TNC[0] == '\0')
-  {
-    xastir_snprintf(LOGFILE_TNC,
-                    sizeof(LOGFILE_TNC),
-                    "%s",
-                    "logs/tnc.log");
-  }
+    get_string_default("LOGFILE_TNC", xa_log[XA_LOG_TNC].file, sizeof(xa_log[XA_LOG_TNC].file),
+                     "logs/tnc.log");
   // Check for old complete path, change to new short path if a
   // match
-  if (strncmp( user_base_dir, LOGFILE_TNC, strlen(user_base_dir)) == 0)
-    xastir_snprintf(LOGFILE_TNC,
-                    sizeof(LOGFILE_TNC),
+  if (strncmp( user_base_dir, xa_log[XA_LOG_TNC].file, strlen(user_base_dir)) == 0)
+    xastir_snprintf(xa_log[XA_LOG_TNC].file,
+                    sizeof(xa_log[XA_LOG_TNC].file),
                     "%s",
                     "logs/tnc.log");
 
   /* NET */
-  log_net_data = get_int ("NET_LOG_DATA", 0,1,0);
+  xa_log[XA_LOG_NET].enabled = get_int ("NET_LOG_DATA", 0,1,0);
 
   operate_as_an_igate = get_int ("NET_RUN_AS_IGATE", 0,2,0);
 
-  log_igate = get_int ("LOG_IGATE", 0,1,0);
+  xa_log[XA_LOG_IGATE].enabled = get_int ("LOG_IGATE", 0,1,0);
 
   NETWORK_WAITTIME = get_int ("NETWORK_WAITTIME", 10,120,10);
 
   // LOGGING
-  log_wx = get_int ("LOG_WX", 0,1,0);
-  log_message_data = get_int ("LOG_MESSAGE", 0, 1, 0);
-  log_wx_alert_data = get_int ("LOG_WX_ALERT", 0, 1, 0);
+  xa_log[XA_LOG_WX].enabled = get_int ("LOG_WX", 0,1,0);
+  xa_log[XA_LOG_MESSAGE].enabled = get_int ("LOG_MESSAGE", 0, 1, 0);
+  xa_log[XA_LOG_WX_ALERT].enabled = get_int ("LOG_WX_ALERT", 0, 1, 0);
 
-  if (!get_string ("LOGFILE_IGATE", LOGFILE_IGATE, sizeof(LOGFILE_IGATE))
-      || LOGFILE_IGATE[0] == '\0')
-  {
-    xastir_snprintf(LOGFILE_IGATE,
-                    sizeof(LOGFILE_IGATE),
-                    "%s",
-                    "logs/igate.log");
-  }
+    get_string_default("LOGFILE_IGATE", xa_log[XA_LOG_IGATE].file, sizeof(xa_log[XA_LOG_IGATE].file),
+                     "logs/igate.log");
   // Check for old complete path, change to new short path if a
   // match
-  if (strncmp( user_base_dir, LOGFILE_IGATE, strlen(user_base_dir)) == 0)
-    xastir_snprintf(LOGFILE_IGATE,
-                    sizeof(LOGFILE_IGATE),
+  if (strncmp( user_base_dir, xa_log[XA_LOG_IGATE].file, strlen(user_base_dir)) == 0)
+    xastir_snprintf(xa_log[XA_LOG_IGATE].file,
+                    sizeof(xa_log[XA_LOG_IGATE].file),
                     "%s",
                     "logs/igate.log");
 
-  if (!get_string ("LOGFILE_NET", LOGFILE_NET, sizeof(LOGFILE_NET))
-      || LOGFILE_NET[0] == '\0')
-  {
-    xastir_snprintf(LOGFILE_NET,
-                    sizeof(LOGFILE_NET),
-                    "%s",
-                    "logs/net.log");
-  }
+    get_string_default("LOGFILE_NET", xa_log[XA_LOG_NET].file, sizeof(xa_log[XA_LOG_NET].file),
+                     "logs/net.log");
   // Check for old complete path, change to new short path if a
   // match
-  if (strncmp( user_base_dir, LOGFILE_NET, strlen(user_base_dir)) == 0)
-    xastir_snprintf(LOGFILE_NET,
-                    sizeof(LOGFILE_NET),
+  if (strncmp( user_base_dir, xa_log[XA_LOG_NET].file, strlen(user_base_dir)) == 0)
+    xastir_snprintf(xa_log[XA_LOG_NET].file,
+                    sizeof(xa_log[XA_LOG_NET].file),
                     "%s",
                     "logs/net.log");
 
-  if (!get_string ("LOGFILE_WX", LOGFILE_WX, sizeof(LOGFILE_WX))
-      || LOGFILE_WX[0] == '\0')
-  {
-    xastir_snprintf(LOGFILE_WX,
-                    sizeof(LOGFILE_WX),
-                    "%s",
-                    "logs/wx.log");
-  }
+    get_string_default("LOGFILE_WX", xa_log[XA_LOG_WX].file, sizeof(xa_log[XA_LOG_WX].file),
+                     "logs/wx.log");
   // Check for old complete path, change to new short path if a
   // match
-  if (strncmp( user_base_dir, LOGFILE_WX, strlen(user_base_dir)) == 0)
-    xastir_snprintf(LOGFILE_WX,
-                    sizeof(LOGFILE_WX),
+  if (strncmp( user_base_dir, xa_log[XA_LOG_WX].file, strlen(user_base_dir)) == 0)
+    xastir_snprintf(xa_log[XA_LOG_WX].file,
+                    sizeof(xa_log[XA_LOG_WX].file),
                     "%s",
                     "logs/wx.log");
 
-  if (!get_string ("LOGFILE_MESSAGE", LOGFILE_MESSAGE, sizeof(LOGFILE_MESSAGE))
-      || LOGFILE_MESSAGE[0] == '\0')
-  {
-    xastir_snprintf(LOGFILE_MESSAGE,
-                    sizeof(LOGFILE_MESSAGE),
-                    "%s",
-                    "logs/message.log");
-  }
+    get_string_default("LOGFILE_MESSAGE", xa_log[XA_LOG_MESSAGE].file, sizeof(xa_log[XA_LOG_MESSAGE].file),
+                     "logs/message.log");
   // Check for old complete path, change to new short path if a
   // match
-  if (strncmp( user_base_dir, LOGFILE_MESSAGE, strlen(user_base_dir)) == 0)
-    xastir_snprintf(LOGFILE_MESSAGE,
-                    sizeof(LOGFILE_MESSAGE),
+  if (strncmp( user_base_dir, xa_log[XA_LOG_MESSAGE].file, strlen(user_base_dir)) == 0)
+    xastir_snprintf(xa_log[XA_LOG_MESSAGE].file,
+                    sizeof(xa_log[XA_LOG_MESSAGE].file),
                     "%s",
                     "logs/message.log");
 
-  if (!get_string ("LOGFILE_WX_ALERT", LOGFILE_WX_ALERT, sizeof(LOGFILE_WX_ALERT))
-      || LOGFILE_WX_ALERT[0] == '\0')
-  {
-    xastir_snprintf(LOGFILE_WX_ALERT,
-                    sizeof(LOGFILE_WX_ALERT),
-                    "%s",
-                    "logs/wx_alert.log");
-  }
+    get_string_default("LOGFILE_WX_ALERT", xa_log[XA_LOG_WX_ALERT].file, sizeof(xa_log[XA_LOG_WX_ALERT].file),
+                     "logs/wx_alert.log");
   // Check for old complete path, change to new short path if a
   // match
-  if (strncmp( user_base_dir, LOGFILE_WX_ALERT, strlen(user_base_dir)) == 0)
-    xastir_snprintf(LOGFILE_WX_ALERT,
-                    sizeof(LOGFILE_WX_ALERT),
+  if (strncmp( user_base_dir, xa_log[XA_LOG_WX_ALERT].file, strlen(user_base_dir)) == 0)
+    xastir_snprintf(xa_log[XA_LOG_WX_ALERT].file,
+                    sizeof(xa_log[XA_LOG_WX_ALERT].file),
                     "%s",
                     "logs/wx_alert.log");
 

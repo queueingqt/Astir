@@ -1046,12 +1046,6 @@ int using_gps_position = 0;     /* Set to one if a GPS port is active */
 int operate_as_an_igate;        /* toggle igate operations for net connections */
 unsigned igate_msgs_tx;         /* current total of igate messages transmitted */
 
-int log_tnc_data;               /* log data */
-int log_net_data;               /* log data */
-int log_igate;                  /* toggle to allow igate logging */
-int log_wx;                     /* toggle to allow wx logging */
-int log_message_data;           /* toggle to allow message logging */
-int log_wx_alert_data;          /* toggle to allow wx alert logging */
 int traffic_utf8_enabled = 1;   /* toggle UTF-8 parse/send for APRS messages */
 
 
@@ -6104,7 +6098,7 @@ void create_appshell( Display *display, char * UNUSED(app_name), int UNUSED(app_
                                         MY_BACKGROUND_COLOR,
                                         NULL);
   XtAddCallback(tnc_logging,XmNvalueChangedCallback,TNC_Logging_toggle,"1");
-  if (log_tnc_data)
+  if (xa_log[XA_LOG_TNC].enabled)
   {
     XmToggleButtonSetState(tnc_logging,TRUE,FALSE);
   }
@@ -6121,7 +6115,7 @@ void create_appshell( Display *display, char * UNUSED(app_name), int UNUSED(app_
                                         MY_BACKGROUND_COLOR,
                                         NULL);
   XtAddCallback(net_logging,XmNvalueChangedCallback,Net_Logging_toggle,"1");
-  if (log_net_data)
+  if (xa_log[XA_LOG_NET].enabled)
   {
     XmToggleButtonSetState(net_logging,TRUE,FALSE);
   }
@@ -6137,7 +6131,7 @@ void create_appshell( Display *display, char * UNUSED(app_name), int UNUSED(app_
                                           MY_BACKGROUND_COLOR,
                                           NULL);
   XtAddCallback(igate_logging,XmNvalueChangedCallback,IGate_Logging_toggle,"1");
-  if (log_igate)
+  if (xa_log[XA_LOG_IGATE].enabled)
   {
     XmToggleButtonSetState(igate_logging,TRUE,FALSE);
   }
@@ -6153,7 +6147,7 @@ void create_appshell( Display *display, char * UNUSED(app_name), int UNUSED(app_
                     MY_BACKGROUND_COLOR,
                     NULL);
   XtAddCallback(message_logging,XmNvalueChangedCallback,Message_Logging_toggle,"1");
-  if (log_message_data)
+  if (xa_log[XA_LOG_MESSAGE].enabled)
   {
     XmToggleButtonSetState(message_logging,TRUE,FALSE);
   }
@@ -6168,7 +6162,7 @@ void create_appshell( Display *display, char * UNUSED(app_name), int UNUSED(app_
                                        MY_BACKGROUND_COLOR,
                                        NULL);
   XtAddCallback(wx_logging,XmNvalueChangedCallback,WX_Logging_toggle,"1");
-  if (log_wx)
+  if (xa_log[XA_LOG_WX].enabled)
   {
     XmToggleButtonSetState(wx_logging,TRUE,FALSE);
   }
@@ -6184,7 +6178,7 @@ void create_appshell( Display *display, char * UNUSED(app_name), int UNUSED(app_
                      MY_BACKGROUND_COLOR,
                      NULL);
   XtAddCallback(wx_alert_logging,XmNvalueChangedCallback,WX_Alert_Logging_toggle,"1");
-  if (log_wx_alert_data)
+  if (xa_log[XA_LOG_WX_ALERT].enabled)
   {
     XmToggleButtonSetState(wx_alert_logging,TRUE,FALSE);
   }
@@ -13452,8 +13446,8 @@ void UpdateTime( XtPointer clientData, XtIntervalId UNUSED(id) )
             // Knock off the linefeed at the end
             line[n-1] = '\0';
 
-            if (log_net_data)
-              log_data( get_user_base_dir(LOGFILE_NET,
+            if (xa_log[XA_LOG_NET].enabled)
+              log_data( get_user_base_dir(xa_log[XA_LOG_NET].file,
                                           temp_file_name,
                                           sizeof(temp_file_name)),
                         (char *)line);
@@ -13632,8 +13626,8 @@ void UpdateTime( XtPointer clientData, XtIntervalId UNUSED(id) )
 //                            }
             }
 
-            if (log_net_data)
-              log_data( get_user_base_dir(LOGFILE_NET,
+            if (xa_log[XA_LOG_NET].enabled)
+              log_data( get_user_base_dir(xa_log[XA_LOG_NET].file,
                                           temp_file_name,
                                           sizeof(temp_file_name)),
                         (char *)(line + line_offset));
@@ -13692,8 +13686,8 @@ void UpdateTime( XtPointer clientData, XtIntervalId UNUSED(id) )
             // NET Data stream
             case DEVICE_NET_STREAM:
 
-              if (log_net_data)
-                log_data(get_user_base_dir(LOGFILE_NET,
+              if (xa_log[XA_LOG_NET].enabled)
+                log_data(get_user_base_dir(xa_log[XA_LOG_NET].file,
                                            temp_file_name,
                                            sizeof(temp_file_name)),
                          (char *)data_string);
@@ -13769,8 +13763,8 @@ void UpdateTime( XtPointer clientData, XtIntervalId UNUSED(id) )
 
             case DEVICE_AX25_TNC:
             case DEVICE_NET_AGWPE:
-              if (log_tnc_data)
-                log_data( get_user_base_dir(LOGFILE_TNC,
+              if (xa_log[XA_LOG_TNC].enabled)
+                log_data( get_user_base_dir(xa_log[XA_LOG_TNC].file,
                                             temp_file_name,
                                             sizeof(temp_file_name)),
                           (char *)data_string);
@@ -13826,8 +13820,8 @@ void UpdateTime( XtPointer clientData, XtIntervalId UNUSED(id) )
               else
               {
                 // get TNC data
-                if (log_tnc_data)
-                  log_data( get_user_base_dir(LOGFILE_TNC,
+                if (xa_log[XA_LOG_TNC].enabled)
+                  log_data( get_user_base_dir(xa_log[XA_LOG_TNC].file,
                                               temp_file_name,
                                               sizeof(temp_file_name)),
                             (char *)data_string);
@@ -13886,8 +13880,8 @@ void UpdateTime( XtPointer clientData, XtIntervalId UNUSED(id) )
               }
               else            // APRS Data
               {
-                if (log_tnc_data)
-                  log_data( get_user_base_dir(LOGFILE_TNC,
+                if (xa_log[XA_LOG_TNC].enabled)
+                  log_data( get_user_base_dir(xa_log[XA_LOG_TNC].file,
                                               temp_file_name,
                                               sizeof(temp_file_name)),
                             (char *)data_string);
@@ -13949,11 +13943,11 @@ void UpdateTime( XtPointer clientData, XtIntervalId UNUSED(id) )
             case DEVICE_SERIAL_WX:
 
             case DEVICE_NET_WX:
-              if (log_wx)
+              if (xa_log[XA_LOG_WX].enabled)
 // TODO:  Probably only logs to the first 0x00 byte...  Need another
 // logging function that accepts a size, perhaps converting it to
 // 0x00 or similar as it writes to file.
-                log_data( get_user_base_dir(LOGFILE_WX,
+                log_data( get_user_base_dir(xa_log[XA_LOG_WX].file,
                                             temp_file_name,
                                             sizeof(temp_file_name)),
                           (char *)data_string);
@@ -18081,12 +18075,12 @@ void GPS_operations( Widget UNUSED(w), XtPointer clientData, XtPointer UNUSED(ca
 
 void Set_Log_Indicator(void)
 {
-  if (       (1==log_tnc_data)
-             || (1==log_net_data)
-             || (1==log_wx)
-             || (1==log_igate)
-             || (1==log_wx_alert_data)
-             || (1==log_message_data) )
+  if (       (1==xa_log[XA_LOG_TNC].enabled)
+             || (1==xa_log[XA_LOG_NET].enabled)
+             || (1==xa_log[XA_LOG_WX].enabled)
+             || (1==xa_log[XA_LOG_IGATE].enabled)
+             || (1==xa_log[XA_LOG_WX_ALERT].enabled)
+             || (1==xa_log[XA_LOG_MESSAGE].enabled) )
   {
     XmTextFieldSetString(log_indicator, langcode("BBARSTA043")); // Logging
     XtVaSetValues(log_indicator,
@@ -18111,11 +18105,11 @@ void  TNC_Logging_toggle( Widget UNUSED(widget), XtPointer clientData, XtPointer
 
   if(state->set)
   {
-    log_tnc_data = atoi(which);
+    xa_log[XA_LOG_TNC].enabled = atoi(which);
   }
   else
   {
-    log_tnc_data = 0;
+    xa_log[XA_LOG_TNC].enabled = 0;
   }
   Set_Log_Indicator();
 }
@@ -18131,11 +18125,11 @@ void Net_Logging_toggle( Widget UNUSED(w), XtPointer clientData, XtPointer callD
 
   if(state->set)
   {
-    log_net_data = atoi(which);
+    xa_log[XA_LOG_NET].enabled = atoi(which);
   }
   else
   {
-    log_net_data = 0;
+    xa_log[XA_LOG_NET].enabled = 0;
   }
   Set_Log_Indicator();
 }
@@ -18151,11 +18145,11 @@ void IGate_Logging_toggle( Widget UNUSED(w), XtPointer clientData, XtPointer cal
 
   if(state->set)
   {
-    log_igate = atoi(which);
+    xa_log[XA_LOG_IGATE].enabled = atoi(which);
   }
   else
   {
-    log_igate = 0;
+    xa_log[XA_LOG_IGATE].enabled = 0;
   }
   Set_Log_Indicator();
 }
@@ -18171,11 +18165,11 @@ void Message_Logging_toggle( Widget UNUSED(w), XtPointer clientData, XtPointer c
 
   if(state->set)
   {
-    log_message_data = atoi(which);
+    xa_log[XA_LOG_MESSAGE].enabled = atoi(which);
   }
   else
   {
-    log_message_data = 0;
+    xa_log[XA_LOG_MESSAGE].enabled = 0;
   }
   Set_Log_Indicator();
 }
@@ -18191,11 +18185,11 @@ void WX_Logging_toggle( Widget UNUSED(w), XtPointer clientData, XtPointer callDa
 
   if(state->set)
   {
-    log_wx = atoi(which);
+    xa_log[XA_LOG_WX].enabled = atoi(which);
   }
   else
   {
-    log_wx = 0;
+    xa_log[XA_LOG_WX].enabled = 0;
   }
   Set_Log_Indicator();
 }
@@ -18211,11 +18205,11 @@ void WX_Alert_Logging_toggle( Widget UNUSED(w), XtPointer clientData, XtPointer 
 
   if(state->set)
   {
-    log_wx_alert_data = atoi(which);
+    xa_log[XA_LOG_WX_ALERT].enabled = atoi(which);
   }
   else
   {
-    log_wx_alert_data = 0;
+    xa_log[XA_LOG_WX_ALERT].enabled = 0;
   }
   Set_Log_Indicator();
 }
