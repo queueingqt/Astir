@@ -61,6 +61,8 @@
 #include "map_cache.h"
 #include <db.h>
 
+#include "xa_ui.h"
+
 // Must be last include file
 #include "leak_detection.h"
 
@@ -425,7 +427,7 @@ int map_cache_put( char * map_cache_url, char * map_cache_file )
   }
 
   // Map now cached
-  statusline(langcode("CACHE001"), 1);
+  xa_ui_status(langcode("CACHE001"));
 
 // close the db
 
@@ -526,7 +528,7 @@ int map_cache_get( char * map_cache_url, char * map_cache_file )
   mc_key.data=map_cache_url ;
   mc_key.size=strlen(map_cache_url);
 
-  statusline("Checking Map Cache",1);
+  xa_ui_status("Checking Map Cache");
   if (debug_level & 512 )
   {
     fprintf(stderr, "map_cache_get: Checking Map Cache\n");
@@ -685,7 +687,7 @@ int map_cache_get( char * map_cache_url, char * map_cache_file )
       // If we made it here all is good
 
       // Loading Cached Map
-      statusline(langcode("CACHE002"), 1);
+      xa_ui_status(langcode("CACHE002"));
       return (0);
     }
   }
@@ -707,7 +709,7 @@ int map_cache_get( char * map_cache_url, char * map_cache_file )
     // return the return from the get
 
     // Map not found in cache...
-    statusline(langcode("CACHE003"), 1);
+    xa_ui_status(langcode("CACHE003"));
     set_dangerous("map_cache_get: dbp->close 3");
     // Only try the close if we have a valid handle
     if (dbp != NULL)

@@ -62,6 +62,8 @@
 #include "xastir.h"
 #include "db_gis.h"
 
+#include "xa_ui.h"
+
 #ifdef HAVE_DB
 /* db_gis.c
  *
@@ -753,7 +755,7 @@ int openConnection(ioparam *anIface, Connection *connection)
           // can connect, run PQ_connect_poll loop
           // Note: xastir needs to decide when to time out
           start_time = sec_now();
-          statusline("Connecting to Postgresql database",1);
+          xa_ui_status("Connecting to Postgresql database");
           while ((connected==0) & (sec_now()<(start_time+30)))
           {
             // need to add a timer to polling loop
@@ -804,7 +806,7 @@ int openConnection(ioparam *anIface, Connection *connection)
         else
         {
           port = anIface->sp;
-          statusline("Connecting to MySQL database",1);
+          xa_ui_status("Connecting to MySQL database");
           if (debug_level & 4096)
           {
             fprintf(stderr,"Opening connection to %s.\n",anIface->device_host_name);
@@ -922,11 +924,11 @@ int openConnection(ioparam *anIface, Connection *connection)
     if (testConnection((Connection*)connection)==True)
     {
       returnvalue = 1;
-      statusline("Connected to database",1);
+      xa_ui_status("Connected to database");
     }
     else
     {
-      statusline("Incompatible database schema",1);
+      xa_ui_status("Incompatible database schema");
       fprintf(stderr,"Connection OK, but incompatible schema. [%s]\n",connection->errormessage);
       xastir_snprintf(anIface->database_errormessage, sizeof(anIface->database_errormessage), "%s",connection->errormessage);
       closeConnection(connection,-1);
@@ -937,7 +939,7 @@ int openConnection(ioparam *anIface, Connection *connection)
   {
     // Detailed error message should have been returned above, but make sure
     // there is at least a minimal failure message regardless of the problem.
-    statusline("Failed to connect to database",1);
+    xa_ui_status("Failed to connect to database");
     fprintf(stderr,"Failed to make database connection.\n");
     //free(connection);   // not pointing to the right thing ??
     port_data[connection->interface_number].status = DEVICE_ERROR;
@@ -1115,7 +1117,7 @@ int pingConnection(Connection *aDbConnection)
   if (returnvalue==0)
   {
     fprintf(stderr,"\n[%s]\n",aDbConnection->errormessage);
-    statusline("Database Ping Failed",1);
+    xa_ui_status("Database Ping Failed");
     port_data[aDbConnection->interface_number].status = DEVICE_ERROR;
   }
   return returnvalue;

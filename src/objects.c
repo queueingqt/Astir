@@ -46,6 +46,8 @@
 #include "object_utils.h"
 #include "dr_utils.h"
 
+#include "xa_ui.h"
+
 void move_station_time(DataRow *p_curr, DataRow *p_time);
 
 // forward declaration of a function present in db.c but not advertised by
@@ -641,7 +643,7 @@ void check_and_transmit_objects_items(time_t time)
 
         if (first && !object_tx_disable)      // "Transmitting objects/items"
         {
-          statusline(langcode("BBARSTA042"),1);
+          xa_ui_status(langcode("BBARSTA042"));
           first = 0;
         }
 

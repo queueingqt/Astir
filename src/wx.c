@@ -78,6 +78,8 @@
 #include "util.h"
 #include "mutex_utils.h"
 
+#include "xa_ui.h"
+
 // Must be last include file
 #include "leak_detection.h"
 
@@ -3884,7 +3886,7 @@ void wx_decode(unsigned char *wx_line, int data_length, int port)
             fprintf(stderr,"port_data_lock, Port = %d\n", port);
           }
 
-          statusline(langcode("BBARSTA032"),1);       // Decoded WX Data
+          xa_ui_status(langcode("BBARSTA032"));       // Decoded WX Data
           /* redraw now */
           //redraw_on_new_data=2;
           redraw_on_new_data=1;

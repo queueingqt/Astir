@@ -57,6 +57,8 @@
 #include "main.h"
 #include "snprintf.h"
 
+#include "xa_ui.h"
+
 // Must be last include file
 #include "leak_detection.h"
 
@@ -117,7 +119,7 @@ int build_rac_index(void)
     {
 
       // RAC index old, rebuilding
-      statusline(langcode("STIFCC0103"), 1);
+      xa_ui_status(langcode("STIFCC0103"));
 
       fprintf(stderr,"RAC index is old.  Rebuilding index.\n");
 //            XmTextFieldSetString(text,"RAC Index old rebuilding");

@@ -48,6 +48,8 @@
 #include "lang.h"
 #include "util.h"
 
+#include "xa_ui.h"
+
 // Must be last include file
 #include "leak_detection.h"
 
@@ -658,7 +660,7 @@ int gps_data_find(char *gps_line_data, int port)
     if (debug_level & 128)
     {
       // Got GPS RMC String
-      statusline(langcode("BBARSTA015"),0);
+      xa_ui_status(langcode("BBARSTA015"));
     }
 
     xastir_snprintf(gps_gprmc,
@@ -757,7 +759,7 @@ int gps_data_find(char *gps_line_data, int port)
     if (debug_level & 128)
     {
       // Got GPS GGA String
-      statusline(langcode("BBARSTA016"),0);
+      xa_ui_status(langcode("BBARSTA016"));
     }
 
     xastir_snprintf(gps_gpgga,
@@ -805,7 +807,7 @@ int gps_data_find(char *gps_line_data, int port)
 
     if (debug_level & 128)
     {
-      statusline(langcode("BBARSTA037"),0);
+      xa_ui_status(langcode("BBARSTA037"));
     }
 
     // Go update my screen position

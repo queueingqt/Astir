@@ -49,6 +49,8 @@
 #include "main.h"
 #include "lang.h"
 
+#include "xa_ui.h"
+
 // Must be last include file
 #include "leak_detection.h"
 #include "forked_getaddrinfo.h"
@@ -301,7 +303,7 @@ int forked_getaddrinfo(const char *hostname, const char *servname, const struct 
       while (wait_host!=-1)
       {
         xastir_snprintf(ttemp, sizeof(ttemp), langcode("BBARSTA031"), tm++);
-        statusline(ttemp,1);        // Looking up hostname...
+        xa_ui_status(ttemp);        // Looking up hostname...
 
         for (i=0; i < 60 && wait_host!=-1; i++)
         {

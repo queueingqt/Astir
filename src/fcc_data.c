@@ -44,6 +44,8 @@
 #include "xa_config.h"
 #include "main.h"
 
+#include "xa_ui.h"
+
 // Must be last include file
 #include "leak_detection.h"
 
@@ -117,7 +119,7 @@ int build_fcc_index(int type)
     else
     {
       // FCC index old, rebuilding
-      statusline(langcode("STIFCC0100"),1);
+      xa_ui_status(langcode("STIFCC0100"));
 
       fprintf(stderr,"FCC index is old.  Rebuilding index.\n");
 //            XmTextFieldSetString(text,"FCC index old, rebuilding");

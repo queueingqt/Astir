@@ -178,7 +178,7 @@ void draw_pop_map (Widget w,
                     langcode ("BBARSTA028"),
                     short_filenm);
   }
-  statusline(status_text,0);       // Loading/Indexing ...
+  xa_ui_status(status_text);       // Loading/Indexing ...
 
 
   xa_ui_pump_events();
