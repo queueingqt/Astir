@@ -10,13 +10,32 @@ Run the measurement scripts against a **built** tree — several read `src/*.o`.
 
 | script | what it answers |
 |---|---|
-| `../audit_x11.py src` | How many real Xlib call sites remain, by file and primitive. Strips comments and string literals, which a plain grep does not. |
+| `../audit_x11.py src` | Xlib call sites, by file and primitive. Strips comments and string literals, which a plain grep does not. Reports **two** numbers: the Stage 2 drawing scope, and everything else Xlib (fonts, colours, images, regions, cursors). Read the second one before claiming the tree is nearly toolkit-independent. |
 | `../core_boundary.py src` | What each object still needs from `main.o`, split into data and functions. The gating measurement for core extraction. |
 | `classify_syms.py src <obj.o>...` | For one object, *which* symbols it needs and whether they are GUI-typed (Widget, GC, Pixmap...) or plain data. Turns a bare count into a decision. |
 | `find_dupes.py [minlines]` | Repeated code blocks touching drawing or the interrupt idiom — how the duplicate `XCopyArea` and settings families were found. |
 | `convert_draw.py src <file.c>... [--apply]` | Rewrites Xlib drawing calls to `xa_draw`. Parses calls with balanced parens (they span many lines) and skips comments/strings. Dry run by default. |
 | `extract_settings.py src <outbase> [--apply]` | Relocates plain-data definitions out of `main.c` into a core file, reading the target symbol list on stdin. Moves definitions verbatim so no call site changes. |
 | `split_scope.py src <file.c>...` | Where the GUI/core seam runs inside one file: which functions have Motif in the **body**, which merely carry a `Widget` in the signature, and which file-scope names both halves touch — that last list is what a split actually costs. |
+
+## Reading the Xlib numbers
+
+`audit_x11.py` reports 35 remaining drawing call sites and 122 Xlib call sites
+reachable from core code. Both are true and they answer different questions —
+the first is "how much of the Stage 2 conversion is done", the second is "how
+much Xlib is left". Quote the first one only with its scope attached.
+
+The 122 is not a to-do list of 122 conversions. Roughly a quarter of it is in
+`rotated.c` and `color.c`, which a GTK4 backend replaces outright rather than
+converts — Pango does rotated text natively, and colour allocation is a
+backend concern. The number to act on is the Xlib in the map drivers and
+`draw_symbols.c`.
+
+A name starting with `X` is not evidence it is Xlib: `XTIFFClose` is libtiff,
+`XRotDrawAlignedString` is `rotated.c`'s own API, and `XA_CHECK` is a local
+macro in `xa_draw_x11.c`. Those three alone would have added 41 to the count.
+The script checks each name against `<X11/Xlib.h>` and `<X11/Xutil.h>` instead
+of guessing, and says so rather than reporting zero if those headers are absent.
 
 ## What the object-file measurements cannot see
 
