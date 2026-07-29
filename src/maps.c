@@ -112,6 +112,7 @@
 #include "xastir.h"
 #include "globals.h"
 #include "maps.h"
+#include "xa_perf.h"
 #include "alert.h"
 #include "util.h"
 #include "mutex_utils.h"

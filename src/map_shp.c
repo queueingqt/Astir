@@ -73,6 +73,7 @@
 #include "xastir.h"
 #include "globals.h"
 #include "maps.h"
+#include "xa_perf.h"
 #include "alert.h"
 #include "util.h"
 #include "main.h"
@@ -615,6 +616,7 @@ void draw_shapefile_map (Widget w,
                          int destination_pixmap,
                          map_draw_flags *mdf)
 {
+  xa_perf_count(XA_CNT_MAPS, 1);
 
   DBFHandle       hDBF;
   SHPObject       *object;
@@ -720,7 +722,9 @@ void draw_shapefile_map (Widget w,
 
   // Open the .dbf file for reading.  This has the textual
   // data (attributes) associated with each shape.
+  xa_perf_begin(XA_ZONE_SHP_OPEN);
   hDBF = DBFOpen( file, "rb" );
+  xa_perf_end(XA_ZONE_SHP_OPEN);
   if ( hDBF == NULL )
   {
     if (debug_level & 16)
@@ -818,7 +822,9 @@ void draw_shapefile_map (Widget w,
 
   // Open the .shx/.shp files for reading.
   // These are the index and the vertice files.
+  xa_perf_begin(XA_ZONE_SHP_OPEN);
   hSHP = SHPOpen( file, "rb" );
+  xa_perf_end(XA_ZONE_SHP_OPEN);
   if( hSHP == NULL )
   {
     fprintf(stderr,"draw_shapefile_map: SHPOpen(%s,\"rb\") failed.\n", file );
@@ -1074,8 +1080,10 @@ void draw_shapefile_map (Widget w,
       // shape whose bounding box overlaps the viewport.
       // RTree_hitarray will contain the shape numbers of every shape
       // found, nhits will be how many there are.
+      xa_perf_begin(XA_ZONE_SHP_INDEX);
       nhits = Xastir_RTreeSearch(si->root, &viewportRect,
                                  (void *)RTreeSearchCallback, 0);
+      xa_perf_end(XA_ZONE_SHP_INDEX);
     }
     else
     {
@@ -1140,7 +1148,10 @@ void draw_shapefile_map (Widget w,
       structure = RTree_hitarray_index;
     }
 
-    object = SHPReadObject( hSHP, structure );  // Note that each structure can have multiple rings
+    xa_perf_begin(XA_ZONE_SHP_READ);
+    object = SHPReadObject( hSHP, structure );
+    xa_perf_end(XA_ZONE_SHP_READ);
+    xa_perf_count(XA_CNT_SHAPES_READ, 1);  // Note that each structure can have multiple rings
 
     if (object == NULL)
     {
@@ -1199,7 +1210,9 @@ void draw_shapefile_map (Widget w,
       }
       if (sig_info)
       {
+        xa_perf_begin(XA_ZONE_DBFAWK);
         dbfawk_parse_record(sig_info->prog,hDBF,fld_info,structure);
+        xa_perf_end(XA_ZONE_DBFAWK);
         if (debug_level & 16)
         {
           fprintf(stderr,"------\n");
@@ -1385,9 +1398,12 @@ void draw_shapefile_map (Widget w,
 
               // numXPoints winds up being the number of points we read into
               // the points array
+              xa_perf_begin(XA_ZONE_SHP_TRANSFORM);
               numXPoints = get_vertices_screen_coords_XPoints(object, partStart,
                                                  nVertices, points,
                                                  &high_water_mark_index);
+              xa_perf_end(XA_ZONE_SHP_TRANSFORM);
+              xa_perf_count(XA_CNT_VERTICES, numXPoints);
 
               // Save the endpoints of the first line segment for
               // later use in label rotation
@@ -1400,9 +1416,12 @@ void draw_shapefile_map (Widget w,
               set_shpt_arc_attributes(w, (gps_flag)?gps_color:color,
                                       (gps_flag)?3:((lanes)?lanes:1),
                                       (gps_flag)?LineOnOffDash:pattern);
+              xa_perf_begin(XA_ZONE_SHP_DRAW);
               (void)XDrawLines(XtDisplay(w), pixmap, gc,
                                points, l16(numXPoints),
                                CoordModeOrigin);
+              xa_perf_end(XA_ZONE_SHP_DRAW);
+              xa_perf_count(XA_CNT_DRAW_CALLS, 1);
 
               // draw a label
               char * temp = (gps_flag)?gps_label:name;

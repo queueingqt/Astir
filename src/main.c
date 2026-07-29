@@ -118,6 +118,7 @@ char *xastir_version=VERSION;
 #include "main.h"
 #include "xa_config.h"
 #include "maps.h"
+#include "xa_perf.h"
 #include "alert.h"
 #include "interface.h"
 #include "wx.h"
@@ -3365,6 +3366,7 @@ void busy_cursor(Widget w)
 int create_image(Widget w)
 {
   Dimension width, height, margin_width, margin_height;
+  xa_perf_frame_begin();
   long lat_offset_temp;
   long long_offset_temp;
   char temp_course[20];
@@ -3529,7 +3531,9 @@ int create_image(Widget w)
     }
     else if (!disable_all_maps)
     {
+      xa_perf_begin(XA_ZONE_LOAD_MAPS);
       load_maps(w);
+      xa_perf_end(XA_ZONE_LOAD_MAPS);
     }
   }
 
@@ -3558,7 +3562,9 @@ int create_image(Widget w)
 
   if (!wx_alert_style && !disable_all_maps)
   {
-    load_alert_maps(w, ALERT_MAP_DIR);  // These write onto pixmap_alerts
+    xa_perf_begin(XA_ZONE_ALERT_MAPS);
+      load_alert_maps(w, ALERT_MAP_DIR);
+      xa_perf_end(XA_ZONE_ALERT_MAPS);  // These write onto pixmap_alerts
   }
 
   // Update to screen
@@ -3639,7 +3645,9 @@ int create_image(Widget w)
     return(0);
   }
 
-  draw_grid(w);                       // Draw grid if enabled
+  xa_perf_begin(XA_ZONE_DRAW_GRID);
+      draw_grid(w);
+      xa_perf_end(XA_ZONE_DRAW_GRID);                       // Draw grid if enabled
 
   HandlePendingEvents(app_context);
   if (interrupt_drawing_now)
@@ -3647,7 +3655,9 @@ int create_image(Widget w)
     return(0);
   }
 
-  display_file(w);                    // display stations (symbols, info, trails)
+  xa_perf_begin(XA_ZONE_DISPLAY_FILE);
+      display_file(w);
+      xa_perf_end(XA_ZONE_DISPLAY_FILE);                    // display stations (symbols, info, trails)
 
   last_alert_redraw=sec_now();        // set last time of screen redraw
 
@@ -3656,6 +3666,7 @@ int create_image(Widget w)
     fprintf(stderr,"Create image stop\n");
   }
 
+  xa_perf_frame_end("create_image");
   return(1);
 }
 
@@ -3676,6 +3687,7 @@ int create_image(Widget w)
 void refresh_image(Widget w)
 {
   Dimension width, height, margin_width, margin_height;
+  xa_perf_begin(XA_ZONE_REFRESH_IMAGE);
   long lat_offset_temp;
   long long_offset_temp;
   char temp_course[20];
@@ -3819,6 +3831,8 @@ void refresh_image(Widget w)
   // We just refreshed the screen, so don't try to erase any
   // zoom-in boxes via XOR.
   zoom_box_x1 = -1;
+
+  xa_perf_end(XA_ZONE_REFRESH_IMAGE);
 
   if (debug_level & 4)
   {
@@ -12558,6 +12572,77 @@ static int last_alert_on_screen = -1;
 
 // This is the periodic process that updates the maps/symbols/tracks.
 // At the end of the function it schedules itself to be run again.
+
+// ---------------------------------------------------------------------------
+// Scripted benchmark driver (XASTIR_BENCH=1).
+//
+// Drives a fixed sequence of pans and zooms from inside the application so
+// that pan/zoom performance is measured identically on every run.  GUI
+// automation (xdotool and friends) was rejected as too fragile for numbers we
+// intend to compare across code changes.
+//
+// Each step sets request_new_image, so create_image() runs and xa_perf emits
+// one [perf] line per frame.  The sequence ends by quitting cleanly, which
+// triggers xa_perf_report_totals().
+// ---------------------------------------------------------------------------
+static void quit(int sig);
+static int xa_bench_step_num = 0;
+
+static void xa_bench_tick( XtPointer clientData, XtIntervalId *UNUSED(id) )
+{
+  Widget w = (Widget)clientData;
+  int n = xa_bench_step_num++;
+
+  // 0-3   settle (startup indexing plus the first full render)
+  // 4-15  pan: right x3, down x3, left x3, up x3   (county-zoom panning)
+  // 16-19 zoom out x4                              (toward state scale)
+  // 20-23 zoom in x4                               (back in)
+  // 24    quit
+  if (n < 4)
+  {
+    ;  // settle
+  }
+  else if (n < 7)
+  {
+    Pan_right(w, NULL, NULL);
+  }
+  else if (n < 10)
+  {
+    Pan_down(w, NULL, NULL);
+  }
+  else if (n < 13)
+  {
+    Pan_left(w, NULL, NULL);
+  }
+  else if (n < 16)
+  {
+    Pan_up(w, NULL, NULL);
+  }
+  else if (n < 20)
+  {
+    fprintf(stderr, "[bench] zoom out %d\n", n - 15);
+    Zoom_out_no_pan(w, NULL, NULL);
+  }
+  else if (n < 24)
+  {
+    fprintf(stderr, "[bench] zoom in %d\n", n - 19);
+    Zoom_in_no_pan(w, NULL, NULL);
+  }
+  else
+  {
+    fprintf(stderr, "[bench] sequence complete\n");
+    quit(0);
+    return;
+  }
+
+  // 8000 ms between steps.  The first measured frames on this machine took
+  // 3.9 s and 0.9 s, and at a 1500 ms interval the pan requests coalesced --
+  // ten bench steps produced only two renders (one frame reported "maps 8"),
+  // which made the per-frame numbers meaningless.  The interval must exceed
+  // the worst frame time so that each step yields exactly one render.
+  (void)XtAppAddTimeOut(app_context, 8000, xa_bench_tick, clientData);
+}
+
 void UpdateTime( XtPointer clientData, XtIntervalId UNUSED(id) )
 {
   Widget w = (Widget) clientData;
@@ -14150,6 +14235,7 @@ static void quit(int sig)
     fprintf(stderr,"Caught %d\n",sig);
   }
 
+  xa_perf_report_totals();
   save_data();
 
   // shutdown all interfaces
@@ -30935,6 +31021,12 @@ int main(int argc, char *argv[], char *envp[])
       // Update the logging indicator
       Set_Log_Indicator();
 
+
+      if (getenv("XASTIR_BENCH"))
+      {
+        fprintf(stderr, "[bench] scripted pan/zoom benchmark starting\n");
+        (void)XtAppAddTimeOut(app_context, 5000, xa_bench_tick, (XtPointer)da);
+      }
 
       XtAppMainLoop(app_context);
 
