@@ -110,6 +110,9 @@ DataRow * sanity_check_time_list(time_t); // used only for debugging
 
 ///////////////////////////////////////// Global variables
 extern int  redraw_on_new_packet_data;
+#define MAX_PACKET_DATA_DISPLAY 100   // packet-data ring size
+extern char packet_data_string[MAX_PACKET_DATA_DISPLAY][MAX_LINE_SIZE+1];
+extern int  first_line, next_line, ncharsdel, nlinesadd;
 extern int  new_message_data;
 extern CADRow *CAD_list_head;
 extern int station_data_auto_update;

@@ -3858,3 +3858,82 @@ int locate_station(Widget w, char *call, int follow_case, int get_match, int cen
 }
 
 
+
+
+
+// Moved from db.c.  The ring buffer is core state, declared in db_funcs.h;
+// this is the Motif view of it.
+void display_packet_data(void)
+{
+
+  if( (Display_data_dialog != NULL)
+      && (redraw_on_new_packet_data !=0))
+  {
+    int pos;
+    int last_char;
+    int i;
+
+    // Find out the last character position in the dialog text
+    // area.
+    last_char = XmTextGetLastPosition(Display_data_text);
+
+    //fprintf(stderr,"In display_packet_data: first_line=%d,next_line=%d,ncharsdel=%d,nlinesadd=%d\n",first_line,next_line,ncharsdel,nlinesadd);
+
+    if (first_line != -1)   // there is data in the array
+    {
+      if (last_char == 0 || ncharsdel>=last_char)
+      {
+        //fprintf(stderr,"  Starting from clean slate...\n");
+        // but there is no text in the dialog or more chars to delete than
+        // there actually are in the dialog
+        // Clear the dialog just in case:
+        XmTextReplace(Display_data_text,0,last_char,"");
+
+        // display all the data in the ring
+        for (i=first_line; i != next_line;
+             i=(i+1)%MAX_PACKET_DATA_DISPLAY)
+        {
+          XmTextReplace(Display_data_text,last_char,last_char,
+                        packet_data_string[i]);
+          last_char=XmTextGetLastPosition(Display_data_text);
+          pos=last_char;
+          XtVaSetValues(Display_data_text,XmNcursorPosition,
+                        pos,NULL);
+        }
+        // Now clear counters so they're always the number of lines to
+        // add or characters to delete *since last display*
+        nlinesadd=0;
+        ncharsdel=0;
+      }
+      else     // there is stuff left over after we delete old stuff
+      {
+        if (ncharsdel)   // we have something to delete off the top
+        {
+          //fprintf(stderr,"  Must delete %d characters\n",ncharsdel);
+          XmTextReplace(Display_data_text,0,ncharsdel,"");
+          ncharsdel=0;
+        }
+        if (nlinesadd)   // and there's new stuff to add at end
+        {
+          //fprintf(stderr,"  Must add %d lines\n",nlinesadd);
+          last_char=XmTextGetLastPosition(Display_data_text);
+          for (i=(next_line+MAX_PACKET_DATA_DISPLAY
+                  -nlinesadd)%MAX_PACKET_DATA_DISPLAY;
+               i != next_line;
+               i=(i+1)%MAX_PACKET_DATA_DISPLAY)
+          {
+            //fprintf(stderr,"     Adding data from line %d\n",i);
+            XmTextReplace(Display_data_text,last_char,last_char,
+                          packet_data_string[i]);
+            last_char=XmTextGetLastPosition(Display_data_text);
+            pos=last_char;
+            XtVaSetValues(Display_data_text,XmNcursorPosition,
+                          pos,NULL);
+          }
+          nlinesadd=0;
+        }
+      }
+    }
+  }
+  redraw_on_new_packet_data=0;
+}

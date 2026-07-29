@@ -137,7 +137,8 @@ char GUARD_BAND_FOUR[GUARD_SIZE];
 ////////////////////////////////////
 
 //// Save most recent 100 packets in an array called packet_data_string[]
-#define MAX_PACKET_DATA_DISPLAY 100
+// Ring size for the packet-data display.  Declared in db_funcs.h now that the
+// view of the ring lives in db_gui.c.
 int  redraw_on_new_packet_data;
 char packet_data_string[MAX_PACKET_DATA_DISPLAY][MAX_LINE_SIZE+1];
 int first_line=-1;
@@ -12065,83 +12066,13 @@ void packet_data_add(char *from, char *line, int data_port)
 // always have it filled with the most current data out of the
 // string.
 //
-void display_packet_data(void)
-{
-
-  if( (Display_data_dialog != NULL)
-      && (redraw_on_new_packet_data !=0))
-  {
-    int pos;
-    int last_char;
-    int i;
-
-    // Find out the last character position in the dialog text
-    // area.
-    last_char = XmTextGetLastPosition(Display_data_text);
-
-    //fprintf(stderr,"In display_packet_data: first_line=%d,next_line=%d,ncharsdel=%d,nlinesadd=%d\n",first_line,next_line,ncharsdel,nlinesadd);
-
-    if (first_line != -1)   // there is data in the array
-    {
-      if (last_char == 0 || ncharsdel>=last_char)
-      {
-        //fprintf(stderr,"  Starting from clean slate...\n");
-        // but there is no text in the dialog or more chars to delete than
-        // there actually are in the dialog
-        // Clear the dialog just in case:
-        XmTextReplace(Display_data_text,0,last_char,"");
-
-        // display all the data in the ring
-        for (i=first_line; i != next_line;
-             i=(i+1)%MAX_PACKET_DATA_DISPLAY)
-        {
-          XmTextReplace(Display_data_text,last_char,last_char,
-                        packet_data_string[i]);
-          last_char=XmTextGetLastPosition(Display_data_text);
-          pos=last_char;
-          XtVaSetValues(Display_data_text,XmNcursorPosition,
-                        pos,NULL);
-        }
-        // Now clear counters so they're always the number of lines to
-        // add or characters to delete *since last display*
-        nlinesadd=0;
-        ncharsdel=0;
-      }
-      else     // there is stuff left over after we delete old stuff
-      {
-        if (ncharsdel)   // we have something to delete off the top
-        {
-          //fprintf(stderr,"  Must delete %d characters\n",ncharsdel);
-          XmTextReplace(Display_data_text,0,ncharsdel,"");
-          ncharsdel=0;
-        }
-        if (nlinesadd)   // and there's new stuff to add at end
-        {
-          //fprintf(stderr,"  Must add %d lines\n",nlinesadd);
-          last_char=XmTextGetLastPosition(Display_data_text);
-          for (i=(next_line+MAX_PACKET_DATA_DISPLAY
-                  -nlinesadd)%MAX_PACKET_DATA_DISPLAY;
-               i != next_line;
-               i=(i+1)%MAX_PACKET_DATA_DISPLAY)
-          {
-            //fprintf(stderr,"     Adding data from line %d\n",i);
-            XmTextReplace(Display_data_text,last_char,last_char,
-                          packet_data_string[i]);
-            last_char=XmTextGetLastPosition(Display_data_text);
-            pos=last_char;
-            XtVaSetValues(Display_data_text,XmNcursorPosition,
-                          pos,NULL);
-          }
-          nlinesadd=0;
-        }
-      }
-    }
-  }
-  redraw_on_new_packet_data=0;
-}
 
 
-
+// display_packet_data() moved to db_gui.c.  It was 1.8k of XmTextReplace against
+// a Motif text widget, driven from main.c's periodic update -- the last thing in
+// this file that needed a widget from the front end.  The ring buffer it reads
+// (packet_data_string, first_line, next_line, ncharsdel, nlinesadd) stays here,
+// filled by the packet decoder; only the view of it moved.
 
 
 /*
