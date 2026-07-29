@@ -329,7 +329,8 @@ Widget *predefined_object_menu_parent;
 Widget sar_object_sub;
 Widget predefined_object_menu_items[MAX_NUMBER_OF_PREDEFINED_OBJECTS];
 
-int debug_level;
+// debug_level now lives in xa_state.c -- it is the single most widely shared
+// symbol in the tree (30 core objects) and nothing about it is GUI.
 
 //Widget hidden_shell;
 Widget appshell;
@@ -955,26 +956,13 @@ char *database_ptr;             /* database pointers */
 //
 float f_center_longitude;    // Floating point map center longitude, updated by new_image()
 float f_center_latitude;     // Floating point map center latitude , updated by new_image()
-float f_NW_corner_longitude; // longitude of NW corner, updated by create_image(), refresh_image()
-float f_NW_corner_latitude;  // latitude  of NW corner, updated by create_image(), refresh_image()
-float f_SE_corner_longitude; // longitude of SE corner, updated by create_image(), refresh_image()
-float f_SE_corner_latitude;  // latitude  of SE corner, updated by create_image(), refresh_image()
-
-long center_longitude;       // Longitude at center of map, updated by display_zoom_image()
-long center_latitude;        // Latitude  at center of map, updated by display_zoom_image()
-long NW_corner_longitude;    // Longitude at NW corner, updated by create_image(), refresh_image()
-long NW_corner_latitude;     // Latitude  at NW corner, updated by create_image(), refresh_image()
-long SE_corner_longitude;    // Longitude at SE corner, updated by create_image(), refresh_image()
-long SE_corner_latitude;     // Latitude  at SE corner, updated by create_image(), refresh_image()
-
-long scale_x;                // x scaling in 1/100 sec per pixel, calculated from scale_y
-long scale_y;                // y scaling in 1/100 sec per pixel
+// The view state that used to live here -- the map corners, centre, scaling and
+// canvas size -- now lives in xa_state.c so that core objects needing it do not
+// have to link main.o and therefore Motif.  Declared in xa_state.h.
 
 long new_mid_x, new_mid_y;   // Check values used before applying real change
 long new_scale_x;
 long new_scale_y;
-long screen_width;           // Screen width,  map area without border (in pixels)
-long screen_height;          // Screen height, map area without border (in pixels)
 Position screen_x_offset;
 Position screen_y_offset;
 float d_screen_distance;     // Diag screen distance

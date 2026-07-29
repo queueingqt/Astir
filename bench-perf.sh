@@ -11,8 +11,17 @@ cd "$(dirname "$0")"
 export XAUTHORITY=/run/user/1000/xauth_ZUnYLn DISPLAY=:0
 
 LOG="bench-perf.log"
+# Bounded: xastir does not reliably die on SIGTERM.  See bench-attrib.sh.
 pkill -x xastir 2>/dev/null || true
-until ! pgrep -x xastir >/dev/null; do sleep 1; done
+waited=0
+while pgrep -x xastir >/dev/null; do
+  sleep 1; waited=$((waited+1))
+  [ "$waited" -eq 10 ] && pkill -KILL -x xastir 2>/dev/null || true
+  if [ "$waited" -ge 20 ]; then
+    echo "a previous xastir will not die (pid $(pgrep -x xastir | head -1)); aborting" >&2
+    exit 1
+  fi
+done
 
 cp "$(pwd)/ab-baseline-xastir.cnf" ~/.xastir/config/xastir.cnf
 

@@ -11,8 +11,20 @@ cd "$(dirname "$0")"
 export XAUTHORITY=/run/user/1000/xauth_ZUnYLn DISPLAY=:0
 
 LOG="bench-${TAG}.log"
+# Bound this wait.  Xastir does not always die on SIGTERM -- an instance once
+# survived it for 36 minutes and left this loop spinning forever, which is the
+# same unbounded-wait bug that already cost a session once.  Escalate, then give
+# up loudly rather than hanging.
 pkill -x xastir 2>/dev/null || true
-until ! pgrep -x xastir >/dev/null; do sleep 1; done
+waited=0
+while pgrep -x xastir >/dev/null; do
+  sleep 1; waited=$((waited+1))
+  [ "$waited" -eq 10 ] && pkill -KILL -x xastir 2>/dev/null || true
+  if [ "$waited" -ge 20 ]; then
+    echo "a previous xastir will not die (pid $(pgrep -x xastir | head -1)); aborting" >&2
+    exit 1
+  fi
+done
 
 # Xastir saves zoom/centre on exit, so consecutive runs would each start where
 # the previous finished.  Pin the same baseline view every run.
