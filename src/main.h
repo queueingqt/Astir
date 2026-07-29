@@ -172,67 +172,9 @@ extern int output_station_type;
 
 extern int emergency_beacon;
 
-typedef struct _selections
-{
-  int none;
-  int mine;
-  int tnc;
-  int direct;
-  int via_digi;
-  int net;
-  int tactical;
-  int old_data;
-
-  int stations;
-  int fixed_stations;
-  int moving_stations;
-  int weather_stations;
-  int CWOP_wx_stations;
-  int objects;
-  int weather_objects;
-  int gauge_objects;
-  int other_objects;
-  int aircraft_objects;
-  int vessel_objects;
-} Selections;
-extern Selections Select_;
-
-typedef struct _what_to_display
-{
-  int callsign;
-  int label_all_trackpoints;
-  int symbol;
-  int symbol_rotate;
-  int trail;
-
-  int course;
-  int speed;
-  int speed_short;
-  int altitude;
-
-  int weather;
-  int weather_text;
-  int temperature_only;
-  int wind_barb;
-
-  int aloha_circle;
-  int ambiguity;
-  int phg;
-  int default_phg;
-  int phg_of_moving;
-
-  int df_data;
-  int df_beamwidth_data;
-  int df_bearing_data;
-  int dr_data;
-  int dr_arc;
-  int dr_course;
-  int dr_symbol;
-
-  int dist_bearing;
-  int last_heard;
-} What_to_display;
-extern What_to_display Display_;
+// Selections and What_to_display moved to globals.h -- they are plain int
+// structs of display/selection filters with nothing GUI about them, and the
+// core needs them without main.h.  Their externs live in xa_settings.h.
 
 extern int currently_selected_stations;
 extern int currently_selected_stations_save;

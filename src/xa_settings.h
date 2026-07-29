@@ -16,6 +16,7 @@
 #define XA_SETTINGS_H
 
 #include <time.h>
+#include <sys/types.h>   // uid_t, gid_t
 
 // Array bounds (MAX_CALLSIGN, MAX_FILENAME, ...) and a few plain macros.
 // globals.h includes nothing at all, so it cannot drag X in.
@@ -158,5 +159,63 @@ typedef struct
 } xa_log_cfg_t;
 
 extern xa_log_cfg_t xa_log[XA_LOG_COUNT];
+
+// Second extraction pass: symbols whose definitions use /* */ trailing
+// comments, which the first pass's regex silently skipped.
+extern uid_t euid;
+extern gid_t egid;
+extern int my_argc;
+extern char **my_argv;
+extern char **my_envp;
+extern int currently_selected_stations;
+extern char dangerous_operation[200];
+extern int emergency_beacon;
+extern int re_sort_maps;
+extern int disable_all_maps;
+extern int map_auto_maps;  /* toggle use of auto_maps */
+extern int map_color_levels;  /* toggle use of map_color_levels */
+extern int map_color_fill;  /* Whether or not to fill in map polygons with solid color */
+extern int map_background_color;  /* Background color for maps */
+extern int letter_style;  /* Station Letter style */
+extern int icon_outline_style;  /* Icon Outline style */
+extern int wx_alert_style;  /* WX alert map style */
+extern time_t map_refresh_interval;  /* how often to refresh maps, seconds */
+extern time_t map_refresh_time;  /* when to refresh maps next, seconds */
+extern double cvt_m2len;  // from meter
+extern int interrupt_drawing_now;  // Flag used to interrupt map drawing
+extern int request_new_image;  // Flag used to request a create_image operation
+extern float f_center_longitude;  // Floating point map center longitude, updated by new_image()
+extern float f_center_latitude;  // Floating point map center latitude , updated by new_image()
+extern char user_dir[1000];  /* user directory file */
+extern int current_trail_color;  /* what color to draw station trails with */
+extern int wait_to_redraw;  /* wait to redraw until system is up */
+extern time_t max_transmit_time;  /* max time between transmits */
+extern time_t gps_time;  /* gps delay time */
+extern char gprmc_save_string[MAX_LINE_SIZE+1];
+extern char gpgga_save_string[MAX_LINE_SIZE+1];
+extern int gps_port_save;
+extern time_t sec_old;  /* station old after */
+extern time_t sec_clear;  /* station cleared after */
+extern time_t aircraft_sec_clear;  /* aircraft cleared after */
+extern time_t sec_remove;  /* Station removed after */
+extern int output_station_type;  /* Broadcast station type */
+extern time_t posit_next_time;  /* time at which next posit TX will occur */
+extern int transmit_now;  /* set to transmit now (push on moment) */
+extern int my_position_valid;  /* Don't send posits if this is zero */
+extern int using_gps_position;  /* Set to one if a GPS port is active */
+extern int operate_as_an_igate;  /* toggle igate operations for net connections */
+extern unsigned igate_msgs_tx;  /* current total of igate messages transmitted */
+extern int traffic_utf8_enabled;  /* toggle UTF-8 parse/send for APRS messages */
+extern time_t WX_ALERTS_REFRESH_TIME;  /* Minimum WX alert map refresh time in seconds */
+extern pid_t last_sound_pid;
+extern int disable_all_popups;
+
+extern Selections Select_;
+extern What_to_display Display_;
+
+#ifdef HAVE_LIBGEOTIFF
+extern int DRG_XOR_colors;
+extern int DRG_show_colors[13];
+#endif
 
 #endif // XA_SETTINGS_H

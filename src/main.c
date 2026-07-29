@@ -276,19 +276,13 @@ static int initial_load = 1;
 int first_time_run = 0;
 
 /* JMT - works under FreeBSD */
-uid_t euid;
-gid_t egid;
 
 
-int   my_argc;
-char **my_argv;
-char **my_envp;
 int  restart_xastir_now = 0;
 
 
 // A count of the stations currently on the screen.  Counted by
 // db.c:display_file() routine.
-int currently_selected_stations      = 0;
 int currently_selected_stations_save = 0;
 
 // If my_trail_diff_color is 0, all my calls (SSIDs) will use MY_TRAIL_COLOR.
@@ -296,7 +290,6 @@ int currently_selected_stations_save = 0;
 
 
 // Used in segfault handler
-char dangerous_operation[200];
 
 FILE *file_wx_test;
 
@@ -386,7 +379,6 @@ Widget help_list;
 Widget help_index_dialog = (Widget)NULL;
 Widget help_view_dialog  = (Widget)NULL;
 Widget emergency_beacon_toggle;
-int emergency_beacon = 0;
 static void Help_About(Widget w, XtPointer clientData, XtPointer callData);
 static void Help_Index(Widget w, XtPointer clientData, XtPointer callData);
 void  Emergency_beacon_toggle( Widget widget, XtPointer clientData, XtPointer callData);
@@ -408,7 +400,6 @@ Widget map_chooser_button_cancel = (Widget)NULL;
 Widget map_properties_dialog = (Widget)NULL;
 static void Map_chooser(Widget w, XtPointer clientData, XtPointer callData);
 Widget map_chooser_maps_selected_data = (Widget)NULL;
-int re_sort_maps = 1;
 
 #ifdef HAVE_LIBGEOTIFF
   static void Config_DRG(Widget w, XtPointer clientData, XtPointer callData);
@@ -424,31 +415,26 @@ static void CAD_draw_toggle( Widget w, XtPointer clientData, XtPointer calldata)
 
 static void Map_lock_pan_zoom_toggle( Widget w, XtPointer clientData, XtPointer calldata);
 
-int disable_all_maps = 0;
 static void Map_disable_toggle( Widget w, XtPointer clientData, XtPointer calldata);
 
 static void Map_auto_toggle( Widget w, XtPointer clientData, XtPointer calldata);
-int map_auto_maps;              /* toggle use of auto_maps */
 static void Map_auto_skip_raster_toggle( Widget w, XtPointer clientData, XtPointer calldata);
 Widget map_auto_skip_raster_button;
 Widget map_border_button;
 
 Widget map_levels_on, map_levels_off;
 static void Map_levels_toggle( Widget w, XtPointer clientData, XtPointer calldata);
-int map_color_levels;           /* toggle use of map_color_levels */
 
 Widget map_labels_on, map_labels_off;
 static void Map_labels_toggle( Widget w, XtPointer clientData, XtPointer calldata);
 
 Widget map_fill_on, map_fill_off;
 static void Map_fill_toggle( Widget w, XtPointer clientData, XtPointer calldata);
-int map_color_fill;             /* Whether or not to fill in map polygons with solid color */
 
 static void Index_maps_on_startup_toggle(Widget w, XtPointer clientData, XtPointer calldata);
 
 Widget map_bgcolor[12];
 static void Map_background(Widget w, XtPointer clientData, XtPointer calldata);
-int map_background_color;       /* Background color for maps */
 
 #if !defined(NO_GRAPHICS)
   Widget raster_intensity[11];
@@ -465,74 +451,17 @@ Widget map_font_text[FONT_MAX];
 
 Widget map_station_label0,map_station_label1,map_station_label2,map_station_label3,map_station_label4;
 static void Map_station_label(Widget w, XtPointer clientData, XtPointer calldata);
-int letter_style;               /* Station Letter style */
 
 Widget map_icon_outline0,map_icon_outline1,map_icon_outline2,map_icon_outline3;
 static void Map_icon_outline(Widget w, XtPointer clientData, XtPointer calldata);
-int icon_outline_style;         /* Icon Outline style */
 
 Widget map_wx_alerts_0,map_wx_alerts_1;
 static void Map_wx_alerts_toggle(Widget w, XtPointer clientData, XtPointer calldata);
-int wx_alert_style;             /* WX alert map style */
-time_t map_refresh_interval = 0; /* how often to refresh maps, seconds */
-time_t map_refresh_time = 0;     /* when to refresh maps next, seconds */
 
 // ------------------------ Filter and Display menus -----------------------------
-Selections Select_ = { 0, // none
-                       1, // mine
-                       1, // tnc
-                       1, // direct
-                       1, // via_digi
-                       1, // net
-                       0, // tactical
-                       1, // old_data
+// Select_ and Display_ moved to xa_settings.c -- plain int filter structs,
+// needed by xa_config.o, draw_symbols.o and db.o.  Typedefs are in globals.h.
 
-                       1, // stations
-                       1, // fixed_stations
-                       1, // moving_stations
-                       1, // weather_stations
-                       1, // CWOP_wx_stations
-                       1, // objects
-                       1, // weather_objects
-                       1, // gauge_objects
-                       1, // other_objects
-                       1, // aircraft_objects
-                       1, // vessel_objects
-                     };
-
-What_to_display Display_ = { 1, // callsign
-                             1, // label_all_trackpoints
-                             1, // symbol
-                             1, // symbol_rotate
-                             1, // trail
-
-                             1, // course
-                             1, // speed
-                             1, // speed_short
-                             1, // altitude
-
-                             1, // weather
-                             1, // weather_text
-                             1, // temperature_only
-                             1, // wind_barb
-
-                             1, // aloha_circle
-                             1, // ambiguity
-                             1, // phg
-                             1, // default_phg
-                             1, // phg_of_moving
-
-                             1, // df_data
-                             1, // df_beamwidth_data
-                             1, // df_bearing_data
-                             1, // dr_data
-                             1, // dr_arc
-                             1, // dr_course
-                             1, // dr_symbol
-
-                             1, // dist_bearing
-                             1, // last_heard
-                           };
 
 Widget select_none_button;
 Widget select_mine_button;
@@ -683,7 +612,6 @@ static void Units_choice_toggle(Widget w, XtPointer clientData, XtPointer callda
 char un_alt[2+1];   // m / ft
 char un_dst[2+1];   // mi / km      (..nm)
 char un_spd[4+1];   // mph / km/h   (..kn)
-double cvt_m2len;   // from meter
 double cvt_dm2len;  // from decimeter
 double cvt_hm2len;  // from hectometer
 
@@ -754,8 +682,8 @@ int festival_speak_ID;
   DRG_color11,
   DRG_color12;
 
-  int DRG_XOR_colors = 0;
-  int DRG_show_colors[13];
+  // DRG_XOR_colors / DRG_show_colors moved to xa_settings.c -- plain ints,
+  // and the last thing xa_config.o still needed from main.o.
 #endif  // HAVE_LIBGEOTIFF
 
 
@@ -905,9 +833,7 @@ Pixmap  pixmap_25pct_stipple; // 25% pixels used for large position ambiguity
 Pixmap  pixmap_13pct_stipple; // 12.5% pixels used for larger position ambiguity
 Pixmap  pixmap_wx_stipple;  // Used for weather alerts
 
-int interrupt_drawing_now = 0;  // Flag used to interrupt map drawing
 int request_resize = 0;         // Flag used to request a resize operation
-int request_new_image = 0;      // Flag used to request a create_image operation
 //time_t last_input_event = (time_t)0;  // Time of last mouse/keyboard event
 void new_image(Widget da);
 
@@ -927,8 +853,6 @@ char *database_ptr;             /* database pointers */
 // These describe the current map window.  They must be kept
 // up-to-date when we zoom/pan/resize the window.
 //
-float f_center_longitude;    // Floating point map center longitude, updated by new_image()
-float f_center_latitude;     // Floating point map center latitude , updated by new_image()
 // The view state that used to live here -- the map corners, centre, scaling and
 // canvas size -- now lives in xa_state.c so that core objects needing it do not
 // have to link main.o and therefore Motif.  Declared in xa_state.h.
@@ -942,27 +866,19 @@ float d_screen_distance;     // Diag screen distance
 float x_screen_distance;     // x screen distance
 //---------------------------------------------------------------------------------------------
 
-char user_dir[1000];            /* user directory file */
 int delay_time;                 /* used to delay display data */
 time_t last_weather_cycle;      // Time of last call to cycle_weather()
 Pixel colors[256];              /* screen colors */
 Pixel trail_colors[MAX_TRAIL_COLORS]; /* station trail colors, duh */
-int current_trail_color;        /* what color to draw station trails with */
 Pixel_Format visual_type = NOT_TRUE_NOR_DIRECT;
 int install_colormap;           /* if visual_type == NOT_TRUE..., should we install priv cmap */
 Colormap cmap;                  /* current colormap */
 
-int wait_to_redraw;             /* wait to redraw until system is up */
 int display_up = 0;             /* display up? */
 int display_up_first = 0;       /* display up first */
 
-time_t max_transmit_time;       /* max time between transmits */
 time_t last_alert_redraw;       /* last time alert caused a redraw */
 time_t sec_next_gps;            /* next gps check */
-time_t gps_time;                /* gps delay time */
-char gprmc_save_string[MAX_LINE_SIZE+1];
-char gpgga_save_string[MAX_LINE_SIZE+1];
-int gps_port_save;
 time_t remove_ID_message_time;  // Time to get rid of large msg on screen.
 int pending_ID_message = 0;     // Variable turning on/off this function
 
@@ -1003,10 +919,6 @@ Widget snapshot_interval_slider = (Widget)NULL;
 time_t GPS_time;                /* gps time out */
 time_t last_statusline;         // last update of statusline or 0 if inactive
 time_t last_id_time;            // Time of last ID message to statusline
-time_t sec_old;                 /* station old after */
-time_t sec_clear;               /* station cleared after */
-time_t aircraft_sec_clear;      /* aircraft cleared after */
-time_t sec_remove;              /* Station removed after */
 // creating APRS Objects from them.
 time_t last_RINO_download = (time_t)0;
 time_t sec_next_raw_wx;         /* raw wx transmit data */
@@ -1016,7 +928,6 @@ time_t sec_next_raw_wx;         /* raw wx transmit data */
 #endif  // TRANSMIT_RAW_WX
 
 
-int output_station_type;        /* Broadcast station type */
 
 int Configure_station_pos_amb;  /* Broadcast station position ambiguity */
 
@@ -1031,7 +942,6 @@ time_t net_next_time;           /* reconnect Next update delay time */
   time_t gc_next_time = 0L;       // Garbage collection next time
 #endif  // USING_LIBGC
 
-time_t posit_next_time;         /* time at which next posit TX will occur */
 
 time_t last_time;               /* last time in seconds */
 time_t next_time;               /* Next update delay time */
@@ -1040,17 +950,10 @@ time_t next_redraw;             /* Next update time */
 time_t last_redraw;             /* Time of last redraw */
 
 
-int transmit_now;               /* set to transmit now (push on moment) */
-int my_position_valid = 1;      /* Don't send posits if this is zero */
-int using_gps_position = 0;     /* Set to one if a GPS port is active */
-int operate_as_an_igate;        /* toggle igate operations for net connections */
-unsigned igate_msgs_tx;         /* current total of igate messages transmitted */
-
-int traffic_utf8_enabled = 1;   /* toggle UTF-8 parse/send for APRS messages */
 
 
 
-time_t WX_ALERTS_REFRESH_TIME;  /* Minimum WX alert map refresh time in seconds */
+
 
 /* button zoom */
 int menu_x;
@@ -1072,7 +975,6 @@ time_t next_file_read;
 SymbolData symbol_data[MAX_SYMBOLS];
 
 /* sound run */
-pid_t last_sound_pid;
 
 /* Default directories */
 
@@ -1092,7 +994,6 @@ Display *display;       /*  Display             */
 int last_popup_x;
 int last_popup_y;
 
-int disable_all_popups = 0;
 char temp_tracking_station_call[30] = "";
 
 time_t program_start_time;

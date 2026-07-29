@@ -31,6 +31,8 @@
 #include "sound.h"
 #include "mgrs_utils.h"
 
+#include "xa_settings.h"
+
 // Must be last include file
 #include "leak_detection.h"
 

@@ -104,3 +104,114 @@ xa_sound_cfg_t xa_sound[XA_SOUND_COUNT];
 // Six {enable flag, path} pairs collapsed into one table.  Paths are filled in
 // from the config file, defaulting to logs/<kind>.log.
 xa_log_cfg_t xa_log[XA_LOG_COUNT];
+
+uid_t euid;
+gid_t egid;
+int   my_argc;
+char **my_argv;
+char **my_envp;
+int currently_selected_stations      = 0;
+char dangerous_operation[200];
+int emergency_beacon = 0;
+int re_sort_maps = 1;
+int disable_all_maps = 0;
+int map_auto_maps;              /* toggle use of auto_maps */
+int map_color_levels;           /* toggle use of map_color_levels */
+int map_color_fill;             /* Whether or not to fill in map polygons with solid color */
+int map_background_color;       /* Background color for maps */
+int letter_style;               /* Station Letter style */
+int icon_outline_style;         /* Icon Outline style */
+int wx_alert_style;             /* WX alert map style */
+time_t map_refresh_interval = 0; /* how often to refresh maps, seconds */
+time_t map_refresh_time = 0;     /* when to refresh maps next, seconds */
+double cvt_m2len;   // from meter
+int interrupt_drawing_now = 0;  // Flag used to interrupt map drawing
+int request_new_image = 0;      // Flag used to request a create_image operation
+float f_center_longitude;    // Floating point map center longitude, updated by new_image()
+float f_center_latitude;     // Floating point map center latitude , updated by new_image()
+char user_dir[1000];            /* user directory file */
+int current_trail_color;        /* what color to draw station trails with */
+int wait_to_redraw;             /* wait to redraw until system is up */
+time_t max_transmit_time;       /* max time between transmits */
+time_t gps_time;                /* gps delay time */
+char gprmc_save_string[MAX_LINE_SIZE+1];
+char gpgga_save_string[MAX_LINE_SIZE+1];
+int gps_port_save;
+time_t sec_old;                 /* station old after */
+time_t sec_clear;               /* station cleared after */
+time_t aircraft_sec_clear;      /* aircraft cleared after */
+time_t sec_remove;              /* Station removed after */
+int output_station_type;        /* Broadcast station type */
+time_t posit_next_time;         /* time at which next posit TX will occur */
+int transmit_now;               /* set to transmit now (push on moment) */
+int my_position_valid = 1;      /* Don't send posits if this is zero */
+int using_gps_position = 0;     /* Set to one if a GPS port is active */
+int operate_as_an_igate;        /* toggle igate operations for net connections */
+unsigned igate_msgs_tx;         /* current total of igate messages transmitted */
+int traffic_utf8_enabled = 1;   /* toggle UTF-8 parse/send for APRS messages */
+time_t WX_ALERTS_REFRESH_TIME;  /* Minimum WX alert map refresh time in seconds */
+pid_t last_sound_pid;
+int disable_all_popups = 0;
+
+Selections Select_ = { 0, // none
+                       1, // mine
+                       1, // tnc
+                       1, // direct
+                       1, // via_digi
+                       1, // net
+                       0, // tactical
+                       1, // old_data
+
+                       1, // stations
+                       1, // fixed_stations
+                       1, // moving_stations
+                       1, // weather_stations
+                       1, // CWOP_wx_stations
+                       1, // objects
+                       1, // weather_objects
+                       1, // gauge_objects
+                       1, // other_objects
+                       1, // aircraft_objects
+                       1, // vessel_objects
+                     };
+
+What_to_display Display_ = { 1, // callsign
+                             1, // label_all_trackpoints
+                             1, // symbol
+                             1, // symbol_rotate
+                             1, // trail
+
+                             1, // course
+                             1, // speed
+                             1, // speed_short
+                             1, // altitude
+
+                             1, // weather
+                             1, // weather_text
+                             1, // temperature_only
+                             1, // wind_barb
+
+                             1, // aloha_circle
+                             1, // ambiguity
+                             1, // phg
+                             1, // default_phg
+                             1, // phg_of_moving
+
+                             1, // df_data
+                             1, // df_beamwidth_data
+                             1, // df_bearing_data
+                             1, // dr_data
+                             1, // dr_arc
+                             1, // dr_course
+                             1, // dr_symbol
+
+                             1, // dist_bearing
+                             1, // last_heard
+                           };
+
+#ifdef HAVE_LIBGEOTIFF
+// USGS DRG colour toggles.  Plain ints; they were the last symbols xa_config.o
+// needed from main.o.
+int DRG_XOR_colors = 0;
+int DRG_show_colors[13];
+#endif  // HAVE_LIBGEOTIFF

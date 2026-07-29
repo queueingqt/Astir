@@ -46,6 +46,8 @@
 #include "maps.h"
 #include "cairo_text.h"
 
+#include "xa_settings.h"
+
 // Must be last include file
 #include "leak_detection.h"
 
