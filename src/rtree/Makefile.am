@@ -3,7 +3,8 @@
 
 noinst_LIBRARIES=librtree.a
 
-librtree_a_SOURCES= card.c \
+librtree_a_SOURCES= bulk.c \
+                    card.c \
                     card.h \
                     index.c \
                     index.h \

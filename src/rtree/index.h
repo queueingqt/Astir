@@ -101,6 +101,9 @@ typedef int (*SearchHitCallback)(void *id, struct Rect *rect, void* arg);
 
 extern int Xastir_RTreeSearch(struct Node*, struct Rect*, SearchHitCallback, void*);
 extern int Xastir_RTreeInsertRect(struct Rect*, void *, struct Node**, int depth);
+
+// Build a tree in one pass from a complete set of rectangles (STR packing).
+extern struct Node *Xastir_RTreeBulkLoad(struct Rect *rects, void **ids, int n);
 extern int Xastir_RTreeDeleteRect(struct Rect*, void *, struct Node**);
 extern struct Node * Xastir_RTreeNewIndex(void);
 extern struct Node * Xastir_RTreeNewNode(void);

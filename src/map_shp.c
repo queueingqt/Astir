@@ -1029,14 +1029,13 @@ void draw_shapefile_map (Widget w,
   // contained in the current viewport.  We'll have to read every shape
   // in it anyway, and all we'd be doing is extra work searching the
   // RTree
-  // NOTE: forcing an index for fully-visible files is OFF by default, behind
-  // XASTIR_FORCE_INDEX.  It makes steady-state redraws much faster, but
-  // building an RTree reads the entire shapefile, at draw time, and blocks.
-  // Measured with a cold page cache at close zoom: one frame took 122 s, of
-  // which ~120 s was index construction for 14 files.  That is far worse for
-  // interactive use than the redraws it saves, especially since any input
-  // aborts drawing anyway.  Re-enable only once indexes are persisted to disk
-  // so the build is paid once, ever, rather than once per session.
+  // Forcing an index for fully-visible files is ON by default; set
+  // XASTIR_NO_FORCE_INDEX to disable it.  It was originally disabled because
+  // constructing an index blocked the first render for 122 s with a cold page
+  // cache.  Reading only the record extents rather than the full geometry, and
+  // packing the tree with STR bulk loading rather than repeated inserts,
+  // brought that to ~2.6 s cold for 63 files -- which the faster redraws repay
+  // within two frames.
   //
   // The original test skipped the index whenever the file was entirely inside
   // the viewport, on the grounds that every shape would be read anyway.  That
@@ -1048,7 +1047,7 @@ void draw_shapefile_map (Widget w,
                                    adfBndsMax[1],
                                    adfBndsMin[0],
                                    adfBndsMax[0])
-      || (getenv("XASTIR_FORCE_INDEX")
+      || (!getenv("XASTIR_NO_FORCE_INDEX")
           && xa_lod_index_worthwhile(nShapeType, nEntities,
                                      adfBndsMin, adfBndsMax)))
   {

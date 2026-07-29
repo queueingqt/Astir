@@ -463,7 +463,27 @@ void build_rtree (struct Node **root, SHPHandle sHP, const char *shp_path)
   FILE *fbox = NULL;
   unsigned int *shx_offs = NULL;
   int use_fast = 0;
+  struct Rect *bulk_rects = NULL;
+  void **bulk_ids = NULL;
+  int bulk_n = 0;
   SHPGetInfo(sHP, &nEntities, NULL, NULL, NULL);
+
+  // Collect every rectangle first, then pack the tree in one pass.  Repeated
+  // Xastir_RTreeInsertRect() was 92% of index construction (3990 ms of 4343 ms
+  // for 333,890 shapes); STR packing avoids the per-insert descent, node splits
+  // and allocation.
+  if (nEntities > 0)
+  {
+    bulk_rects = (struct Rect *)malloc((size_t)nEntities * sizeof(struct Rect));
+    bulk_ids   = (void **)malloc((size_t)nEntities * sizeof(void *));
+    if (bulk_rects == NULL || bulk_ids == NULL)
+    {
+      free(bulk_rects);
+      free(bulk_ids);
+      bulk_rects = NULL;
+      bulk_ids = NULL;
+    }
+  }
 
   // Prefer reading extents straight out of the .shp records.  Verify that
   // assumption on the first few records; if the layout is not what we expect,
@@ -550,7 +570,13 @@ void build_rtree (struct Node **root, SHPHandle sHP, const char *shp_path)
       if (bbox_shape.boundary[0] <= bbox_shape.boundary[2] &&
           bbox_shape.boundary[1] <= bbox_shape.boundary[3])
       {
-        if (!getenv("XASTIR_RTREE_NOINSERT"))
+        if (bulk_rects != NULL)
+        {
+          bulk_rects[bulk_n] = bbox_shape;
+          bulk_ids[bulk_n]   = (void *)(i+1);
+          bulk_n++;
+        }
+        else if (!getenv("XASTIR_RTREE_NOINSERT"))
         {
           Xastir_RTreeInsertRect(&bbox_shape, (void *)(i+1), root, 0);
         }
@@ -563,6 +589,36 @@ void build_rtree (struct Node **root, SHPHandle sHP, const char *shp_path)
     fclose(fbox);
   }
   free(shx_offs);
+
+  if (bulk_rects != NULL)
+  {
+    if (!getenv("XASTIR_RTREE_NOINSERT"))
+    {
+      struct Node *packed = Xastir_RTreeBulkLoad(bulk_rects, bulk_ids, bulk_n);
+
+      if (packed != NULL)
+      {
+        // Discard the empty root created before we were called.  Nothing was
+        // inserted into it on this path, so freeing the single node is enough.
+        if (*root != NULL)
+        {
+          Xastir_RTreeFreeNode(*root);
+        }
+        *root = packed;
+      }
+      else
+      {
+        // Packing failed (allocation); fall back to inserting one at a time.
+        int k;
+        for (k = 0; k < bulk_n; k++)
+        {
+          Xastir_RTreeInsertRect(&bulk_rects[k], bulk_ids[k], root, 0);
+        }
+      }
+    }
+    free(bulk_rects);
+    free(bulk_ids);
+  }
   xa_perf_end(XA_ZONE_RTREE_BUILD);
 }
 
