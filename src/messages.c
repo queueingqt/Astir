@@ -56,6 +56,8 @@
 #include "xa_config.h"
 #include "encoding.h"
 
+#include "xa_ui.h"
+
 // Must be last include file
 #include "leak_detection.h"
 
@@ -421,7 +423,7 @@ int check_popup_window(char *from_call_sign, int group)
 
       if (!disable_all_popups)
       {
-        Send_message(appshell, temp1, NULL);
+        xa_ui_open_message_window(temp1);
       }
 
       update_messages(1);

@@ -4077,6 +4077,14 @@ static void motif_ui_free_label(void *label)
   XmStringFree((XmString)label);
 }
 
+// Send_message() has an Xt callback's signature because it is also registered
+// as one, but it ignores its widget and callData and reads only the callsign.
+// The core was passing appshell into a parameter declared UNUSED.
+static void motif_ui_open_message_window(const char *to_call)
+{
+  Send_message((Widget)NULL, (XtPointer)to_call, (XtPointer)NULL);
+}
+
 void xa_ui_register_motif(void)
 {
   // Zero-initialised, not member-by-member into an uninitialised local.  A
@@ -4092,6 +4100,7 @@ void xa_ui_register_motif(void)
   cb.flush = motif_ui_flush;
   cb.warn = motif_ui_warn;
   cb.free_label = motif_ui_free_label;
+  cb.open_message_window = motif_ui_open_message_window;
   xa_ui_set_callbacks(&cb);
 }
 

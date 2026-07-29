@@ -84,3 +84,12 @@ void xa_ui_free_label(void *label)
     ui.free_label(label);
   }
 }
+
+
+void xa_ui_open_message_window(const char *to_call)
+{
+  if (ui.open_message_window != NULL && to_call != NULL)
+  {
+    ui.open_message_window(to_call);
+  }
+}

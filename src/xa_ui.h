@@ -62,6 +62,14 @@ typedef struct
   // A front end that caches nothing leaves the field NULL and needs no
   // implementation.  Never called with NULL.
   void (*free_label)(void *label);
+
+  // Open a window for composing a message to a station.  Called when a message
+  // arrives and popups are enabled -- the core decides that a conversation has
+  // started, the front end decides what a conversation looks like.
+  //
+  // to_call is the callsign, prefixed with '*' for a group message.  Read only;
+  // the front end must copy anything it keeps.
+  void (*open_message_window)(const char *to_call);
 } xa_ui_callbacks;
 
 // Install the front end's implementations.  Passing NULL, or leaving a member
@@ -75,5 +83,6 @@ void xa_ui_busy(void);
 void xa_ui_flush(void);
 void xa_ui_warn(const char *text);
 void xa_ui_free_label(void *label);
+void xa_ui_open_message_window(const char *to_call);
 
 #endif // XA_UI_H
