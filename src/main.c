@@ -3301,11 +3301,13 @@ void HandlePendingEvents( XtAppContext app)
 {
   XEvent event;
 
+  xa_perf_begin(XA_ZONE_EVENTS);
   while(XtAppPending(app))
   {
     XtAppNextEvent(app,&event);
     (void)XtDispatchEvent(&event);
   }
+  xa_perf_end(XA_ZONE_EVENTS);
 }
 
 
@@ -3532,7 +3534,9 @@ int create_image(Widget w)
     init_OSM_values();
     if (map_auto_maps && !disable_all_maps)
     {
+      xa_perf_begin(XA_ZONE_LOAD_MAPS);
       load_auto_maps(w,AUTO_MAP_DIR);
+      xa_perf_end(XA_ZONE_LOAD_MAPS);
     }
     else if (!disable_all_maps)
     {
@@ -4262,7 +4266,9 @@ void Tactical_Callsign_History_Clear( Widget UNUSED(w), XtPointer UNUSED(clientD
 void statusline(char *status_text,int UNUSED(update) )
 {
 
+  xa_perf_begin(XA_ZONE_STATUSLINE);
   XmTextFieldSetString (text, status_text);
+  xa_perf_end(XA_ZONE_STATUSLINE);
   last_statusline = sec_now();    // Used for auto-ID timeout
 //    if (update != 0)
 //        XmUpdateDisplay(text);      // do an immediate update

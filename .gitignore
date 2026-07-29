@@ -2,6 +2,9 @@
 build-*.log
 shot-*.log
 bench-*.log
+perf.data
+perf.data.old
+summary.log
 *.png
 *.pkg.tar.zst
 selected_maps.sys.user

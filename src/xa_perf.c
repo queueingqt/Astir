@@ -18,6 +18,13 @@ static int   perf_on = -1;          // -1 = not yet checked
 static long  zone_ns[XA_ZONE_COUNT];
 static long  zone_start[XA_ZONE_COUNT];
 static long  zone_calls[XA_ZONE_COUNT];
+// Recursion depth per zone.  Dispatching X events can re-enter the render
+// path, so a zone may legitimately begin again before it ends; only the
+// outermost interval is timed, otherwise the inner end() would stop the outer
+// one's clock.  Reset every frame so a zone leaked by an early return (the
+// drawing code returns from several places on interrupt_drawing_now) is
+// confined to that frame instead of being disabled for the rest of the run.
+static int   zone_depth[XA_ZONE_COUNT];
 static long  counters[XA_CNT_COUNT];
 
 static long  total_zone_ns[XA_ZONE_COUNT];
@@ -28,18 +35,40 @@ static long  frame_count  = 0;
 static long  frame_start  = 0;
 static long  frames_over_100ms = 0;
 
+// Designated initialisers: the label is tied to the enum value, so inserting a
+// zone cannot silently shift every name by one and mislabel the whole report.
 static const char *zone_name[XA_ZONE_COUNT] =
 {
-  "create_image", "refresh_image", "shp_open", "shp_index",
-  "shp_read", "shp_transform", "shp_draw",
-  "load_maps", "map_one", "dbfawk", "dbfawk_setup", "rtree_build",
-  "rtree_read", "rtree_insert",
-  "alert_maps", "display_file", "draw_grid"
+  [XA_ZONE_CREATE_IMAGE]  = "create_image",
+  [XA_ZONE_REFRESH_IMAGE] = "refresh_image",
+  [XA_ZONE_SHP_OPEN]      = "shp_open",
+  [XA_ZONE_SHP_INDEX]     = "shp_index",
+  [XA_ZONE_SHP_READ]      = "shp_read",
+  [XA_ZONE_SHP_TRANSFORM] = "shp_transform",
+  [XA_ZONE_SHP_DRAW]      = "shp_draw",
+  [XA_ZONE_LOAD_MAPS]     = "load_maps",
+  [XA_ZONE_MAP_ONE]       = "map_one",
+  [XA_ZONE_MAP_ONSCREEN]  = "map_onscreen",
+  [XA_ZONE_MAP_XMUPDATE]  = "map_xmupdate",
+  [XA_ZONE_EVENTS]        = "events",
+  [XA_ZONE_STATUSLINE]    = "statusline",
+  [XA_ZONE_DBFAWK]        = "dbfawk",
+  [XA_ZONE_DBFAWK_SETUP]  = "dbfawk_setup",
+  [XA_ZONE_RTREE_BUILD]   = "rtree_build",
+  [XA_ZONE_RTREE_READ]    = "rtree_read",
+  [XA_ZONE_RTREE_INSERT]  = "rtree_insert",
+  [XA_ZONE_ALERT_MAPS]    = "alert_maps",
+  [XA_ZONE_DISPLAY_FILE]  = "display_file",
+  [XA_ZONE_DRAW_GRID]     = "draw_grid"
 };
 
 static const char *counter_name[XA_CNT_COUNT] =
 {
-  "maps", "shapes_read", "shapes_skipped", "vertices", "draw_calls"
+  [XA_CNT_MAPS]           = "maps",
+  [XA_CNT_SHAPES_READ]    = "shapes_read",
+  [XA_CNT_SHAPES_SKIPPED] = "shapes_skipped",
+  [XA_CNT_VERTICES]       = "vertices",
+  [XA_CNT_DRAW_CALLS]     = "draw_calls"
 };
 
 
@@ -70,6 +99,8 @@ void xa_perf_frame_begin(void)
   }
   memset(zone_ns, 0, sizeof(zone_ns));
   memset(zone_calls, 0, sizeof(zone_calls));
+  memset(zone_start, 0, sizeof(zone_start));
+  memset(zone_depth, 0, sizeof(zone_depth));
   memset(counters, 0, sizeof(counters));
   frame_start = now_ns();
 }
@@ -81,15 +112,22 @@ void xa_perf_begin(xa_zone_t zone)
   {
     return;
   }
-  zone_start[zone] = now_ns();
+  if (zone_depth[zone]++ == 0)
+  {
+    zone_start[zone] = now_ns();
+  }
 }
 
 
 void xa_perf_end(xa_zone_t zone)
 {
-  if (!xa_perf_enabled() || zone >= XA_ZONE_COUNT || zone_start[zone] == 0)
+  if (!xa_perf_enabled() || zone >= XA_ZONE_COUNT || zone_depth[zone] == 0)
   {
     return;
+  }
+  if (--zone_depth[zone] != 0)
+  {
+    return;             // still inside an outer interval for this zone
   }
   long d = now_ns() - zone_start[zone];
   zone_ns[zone] += d;
@@ -139,7 +177,8 @@ void xa_perf_frame_end(const char *label)
   {
     if (zone_ns[i] > 0)
     {
-      fprintf(stderr, " %s %.1f", zone_name[i], zone_ns[i] / 1e6);
+      fprintf(stderr, " %s %.1f", zone_name[i] ? zone_name[i] : "?",
+              zone_ns[i] / 1e6);
     }
   }
   fprintf(stderr, " |");
@@ -180,7 +219,7 @@ void xa_perf_report_totals(void)
   {
     if (total_zone_ns[i] > 0)
     {
-      fprintf(stderr, "  %-14s %8.1f ms\n", zone_name[i],
+      fprintf(stderr, "  %-14s %8.1f ms\n", zone_name[i] ? zone_name[i] : "?",
               total_zone_ns[i] / 1e6);
     }
   }

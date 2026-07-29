@@ -28,8 +28,12 @@ typedef enum
   XA_ZONE_SHP_READ,           // SHPReadObject: disk + parse
   XA_ZONE_SHP_TRANSFORM,      // coordinate conversion
   XA_ZONE_SHP_DRAW,           // X11 drawing calls
-  XA_ZONE_LOAD_MAPS,          // load_maps(): the whole map pass
-  XA_ZONE_MAP_ONE,            // one draw_shapefile_map() call, end to end
+  XA_ZONE_LOAD_MAPS,          // load_maps()/load_auto_maps(): whole map pass
+  XA_ZONE_MAP_ONE,            // one map driver call, end to end
+  XA_ZONE_MAP_ONSCREEN,       // map_onscreen_index(): per-file visibility test
+  XA_ZONE_MAP_XMUPDATE,       // XmUpdateDisplay() issued once per map file
+  XA_ZONE_EVENTS,             // HandlePendingEvents(): X event pump
+  XA_ZONE_STATUSLINE,         // statusline(): Motif text field update
   XA_ZONE_DBFAWK,             // dbfawk signature match + rule evaluation
   XA_ZONE_DBFAWK_SETUP,       // per-file: sig lookup, symtab, awk compile
   XA_ZONE_RTREE_BUILD,        // build_rtree(): one-time index construction

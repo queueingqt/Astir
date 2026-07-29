@@ -6412,7 +6412,9 @@ void draw_map (Widget w, char *dir, char *filenm, alert_entry *alert,
     return;
   }
 
+  xa_perf_begin(XA_ZONE_MAP_ONSCREEN);
   onscreen = map_onscreen_index(filenm); // Check map index
+  xa_perf_end(XA_ZONE_MAP_ONSCREEN);
 
   // Check whether we're indexing or drawing the map
   if ( (destination_pixmap == INDEX_CHECK_TIMESTAMPS)
@@ -6456,6 +6458,7 @@ void draw_map (Widget w, char *dir, char *filenm, alert_entry *alert,
 
   if (map_driver_ptr->func)
   {
+    xa_perf_begin(XA_ZONE_MAP_ONE);
     map_driver_ptr->func(w,
                          dir,
                          filenm,
@@ -6463,9 +6466,12 @@ void draw_map (Widget w, char *dir, char *filenm, alert_entry *alert,
                          alert_color,
                          destination_pixmap,
                          draw_flags);
+    xa_perf_end(XA_ZONE_MAP_ONE);
   }
 
+  xa_perf_begin(XA_ZONE_MAP_XMUPDATE);
   XmUpdateDisplay (XtParent (da));
+  xa_perf_end(XA_ZONE_MAP_XMUPDATE);
 }  // End of draw_map()
 
 
