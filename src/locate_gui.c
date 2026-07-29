@@ -42,6 +42,9 @@
 #include "db_gui.h"
 #include "mutex_utils.h"
 
+
+#include "xa_settings.h"
+
 // Must be last include file
 #include "leak_detection.h"
 
@@ -50,7 +53,6 @@ extern XmFontList fontlist1;    // Menu/System fontlist
 Widget locate_station_dialog = (Widget)NULL;
 Widget locate_station_data = (Widget)NULL;
 
-char locate_station_call[30];
 static xastir_mutex locate_station_dialog_lock;
 
 Widget locate_place_dialog = (Widget)NULL;
@@ -65,7 +67,6 @@ char locate_state_name[50];
 char locate_county_name[50];
 char locate_quad_name[50];
 char locate_type_name[50];
-char locate_gnis_filename[200];
 static xastir_mutex locate_place_dialog_lock;
 
 

@@ -218,4 +218,52 @@ extern int DRG_XOR_colors;
 extern int DRG_show_colors[13];
 #endif
 
+
+// Moved out of view_message_gui.c, where these lived only because the dialog
+// that edits them does.  Definitions unchanged.
+extern int vm_range;
+extern int view_message_limit;
+extern int Read_messages_packet_data_type;  // 1=tnc_only, 2=net_only, 0=tnc&net
+extern int Read_messages_mine_only;
+
+
+// Moved out of list_gui.c, where these lived only because the dialog
+// that edits them does.  Definitions unchanged.
+// Incomplete type on purpose: list_gui.h already declares these the same way,
+// and the extent (LST_NUM) is a station-list category count that this header
+// has no business knowing.  The definition in xa_settings.c carries it.
+extern int list_size_h[];  // height of entire list widget
+extern int list_size_w[];  // width  of entire list widget
+
+
+// Moved out of bulletin_gui.c, where these lived only because the dialog
+// that edits them does.  Definitions unchanged.
+extern int bulletin_range;
+
+
+// Moved out of track_gui.c, where these lived only because the dialog
+// that edits them does.  Definitions unchanged.
+extern int track_station_on;  /* used for tracking stations */
+extern int track_me;
+extern int track_case;  /* used for tracking stations */
+extern int track_match;  /* used for tracking stations */
+extern char tracking_station_call[30];  /* Tracking station callsign */
+
+
+// Moved out of locate_gui.c, where these lived only because the dialog
+// that edits them does.  Definitions unchanged.
+extern char locate_station_call[30];
+extern char locate_gnis_filename[200];
+
+
+// Moved out of objects_gui.c, where these lived only because the dialog
+// that edits them does.  Definitions unchanged.
+extern char predefined_object_definition_filename[256];
+extern int predefined_menu_from_file;
+
+
+// Moved out of interface_gui.c, where these lived only because the dialog
+// that edits them does.  Definitions unchanged.
+extern int WX_rain_gauge_type;
+
 #endif // XA_SETTINGS_H

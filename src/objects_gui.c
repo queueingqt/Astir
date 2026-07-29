@@ -54,6 +54,9 @@
 
 #include "xa_draw.h"
 
+
+#include "xa_settings.h"
+
 // Must be last include file
 #include "leak_detection.h"
 
@@ -83,8 +86,6 @@ void Set_Del_Object(Widget w, XtPointer clientData, XtPointer calldata);
 predefinedObject predefinedObjects[MAX_NUMBER_OF_PREDEFINED_OBJECTS];
 void Populate_predefined_objects(predefinedObject *predefinedObjects);
 int number_of_predefined_objects;
-char predefined_object_definition_filename[256] = "predefined_SAR.sys";
-int predefined_menu_from_file = 0;
 
 int Area_object_enabled = 0;
 int Map_View_object_enabled = 0;

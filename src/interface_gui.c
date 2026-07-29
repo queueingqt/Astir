@@ -42,6 +42,9 @@
 #include "util.h"
 #include "db_gis.h"
 
+
+#include "xa_settings.h"
+
 // Must be last include file
 #include "leak_detection.h"
 
@@ -2758,7 +2761,6 @@ void Config_GPS( Widget UNUSED(w), int config_type, int port)
 
 /**** WX CONFIGURE ******/
 int WX_port;
-int WX_rain_gauge_type;
 Widget config_WX_dialog = (Widget)NULL;
 Widget WX_transmit_data;
 Widget WX_device_name_data;

@@ -52,6 +52,9 @@
 #include "util.h"
 #include "mutex_utils.h"
 
+
+#include "xa_settings.h"
+
 // Must be last include file
 #include "leak_detection.h"
 
@@ -64,10 +67,6 @@ Widget vm_dist_data = NULL;
 
 static xastir_mutex All_messages_dialog_lock;
 
-int vm_range;
-int view_message_limit = 10000;
-int Read_messages_packet_data_type = 0; // 1=tnc_only, 2=net_only, 0=tnc&net
-int Read_messages_mine_only = 0;
 
 
 

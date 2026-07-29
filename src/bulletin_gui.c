@@ -59,6 +59,9 @@
 #include "mutex_utils.h"
 #include "db_funcs.h"
 
+
+#include "xa_settings.h"
+
 // Must be last include file
 #include "leak_detection.h"
 
@@ -70,7 +73,6 @@ Widget zero_bulletin_data = NULL;
 
 static xastir_mutex display_bulletins_dialog_lock;
 
-int bulletin_range;
 int new_bulletin_flag = 0;
 int new_bulletin_count = 0;
 static time_t first_new_bulletin_time = 0;

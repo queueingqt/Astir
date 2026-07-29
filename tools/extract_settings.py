@@ -8,18 +8,33 @@ Only handles definitions that are unambiguous: file-scope (column 0), a single
 declarator, not inside any #if.  Anything else is reported and left for a human,
 because a wrong move here is a silent behaviour change.
 
-Usage: extract_settings.py <src-dir> <out-basename> [--apply]
+Usage: extract_settings.py <src-dir> <out-basename> [--from=file.c] [--append]
+                           [--apply]
 Reads the target symbol list on stdin, one per line.
+
+--from  the file to take definitions out of (default main.c).  main.c was the
+        only source when this was written, because it was the only one anybody
+        had measured.  A trial link later showed the core also needs 35 symbols
+        from eleven *_gui.c files, most of them plain settings that are only in
+        a GUI file because that is where the dialog editing them lives.
+--append  add to an existing out-base.c/.h instead of creating them.
 """
 import subprocess, sys, os, re
 
-if len(sys.argv) < 3:
-    raise SystemExit("usage: extract_settings.py <src-dir> <out-base> [--apply]")
-srcdir, outbase = sys.argv[1], sys.argv[2]
+args = [a for a in sys.argv[1:] if not a.startswith("--")]
+if len(args) < 2:
+    raise SystemExit("usage: extract_settings.py <src-dir> <out-base> "
+                     "[--from=f.c] [--append] [--apply]")
+srcdir, outbase = args[0], args[1]
 APPLY = "--apply" in sys.argv
+APPEND = "--append" in sys.argv
+srcname = "main.c"
+for a in sys.argv[1:]:
+    if a.startswith("--from="):
+        srcname = a[len("--from="):]
 
 targets = [l.strip() for l in sys.stdin if l.strip()]
-main_c = os.path.join(srcdir, "main.c")
+main_c = os.path.join(srcdir, srcname)
 raw = open(main_c, encoding="utf-8").read()
 lines = raw.split("\n")
 
@@ -69,7 +84,7 @@ print("not found at col 0   : %d" % len(missing))
 if skipped:
     print("\nskipped:")
     for n, (ln, why) in sorted(skipped.items()):
-        print("  %-34s main.c:%-6d %s" % (n, ln, why))
+        print("  %-34s %s:%-6d %s" % (n, srcname, ln, why))
 if missing:
     print("\nnot found as a simple file-scope definition (leave for a human):")
     for n in sorted(missing):
@@ -91,6 +106,29 @@ for name in sorted(found, key=lambda n: found[n][0]):
     decls.append(decl + ("  " + cmt if cmt else ""))
 
 guard = os.path.basename(outbase).upper().replace(".", "_") + "_H"
+
+if APPEND:
+    hpath = os.path.join(srcdir, outbase + ".h")
+    cpath = os.path.join(srcdir, outbase + ".c")
+    htxt = open(hpath, encoding="utf-8").read()
+    endif = htxt.rfind("#endif")
+    if endif < 0:
+        raise SystemExit("%s has no #endif to insert before" % hpath)
+    block = ("\n// Moved out of %s, where these lived only because the dialog\n"
+             "// that edits them does.  Definitions unchanged.\n" % srcname
+             + "\n".join(decls) + "\n")
+    open(hpath, "w", encoding="utf-8").write(htxt[:endif] + block + "\n"
+                                             + htxt[endif:])
+    open(cpath, "a", encoding="utf-8").write(
+        "\n\n// Moved verbatim from %s.\n" % srcname + "\n".join(defs) + "\n")
+    for name, (i, l) in found.items():
+        lines[i] = None
+    open(main_c, "w", encoding="utf-8").write(
+        "\n".join(l for l in lines if l is not None))
+    print("\nappended %d definitions to %s.c/.h; removed them from %s"
+          % (len(found), outbase, srcname))
+    sys.exit(0)
+
 with open(os.path.join(srcdir, outbase + ".h"), "w", encoding="utf-8") as f:
     f.write("""/*
  * %s.h -- user-configurable settings and session state, owned by the core.

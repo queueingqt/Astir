@@ -46,6 +46,9 @@
 #include "mutex_utils.h"
 #include "xa_config.h"
 
+
+#include "xa_settings.h"
+
 // Must be last include file
 #include "leak_detection.h"
 
@@ -69,11 +72,6 @@ Widget posit_length_value;
 
 int fetching_findu_trail_now = 0;
 
-int track_station_on = 0;       /* used for tracking stations */
-int track_me;
-int track_case;                 /* used for tracking stations */
-int track_match;                /* used for tracking stations */
-char tracking_station_call[30]; /* Tracking station callsign */
 char download_trail_station_call[30];   /* Trail station callsign */
 //N0VH
 #define MAX_FINDU_DURATION 120

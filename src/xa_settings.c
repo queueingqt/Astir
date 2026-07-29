@@ -10,6 +10,11 @@
 
 #include "xa_settings.h"
 
+// For LST_NUM, the station-list category count.  list_gui.h is all #defines
+// and prototypes -- no toolkit type anywhere in it -- so including it here
+// does not put Motif into a core object.
+#include "list_gui.h"
+
 int my_trail_diff_color = 0;
 int serial_char_pacing;  // Inter-char delay in ms for serial ports.
 char lang_to_use[30];
@@ -215,3 +220,41 @@ What_to_display Display_ = { 1, // callsign
 int DRG_XOR_colors = 0;
 int DRG_show_colors[13];
 #endif  // HAVE_LIBGEOTIFF
+
+
+// Moved verbatim from view_message_gui.c.
+int vm_range;
+int view_message_limit = 10000;
+int Read_messages_packet_data_type = 0; // 1=tnc_only, 2=net_only, 0=tnc&net
+int Read_messages_mine_only = 0;
+
+
+// Moved verbatim from list_gui.c.
+int list_size_h[LST_NUM];       // height of entire list widget
+int list_size_w[LST_NUM];       // width  of entire list widget
+
+
+// Moved verbatim from bulletin_gui.c.
+int bulletin_range;
+
+
+// Moved verbatim from track_gui.c.
+int track_station_on = 0;       /* used for tracking stations */
+int track_me;
+int track_case;                 /* used for tracking stations */
+int track_match;                /* used for tracking stations */
+char tracking_station_call[30]; /* Tracking station callsign */
+
+
+// Moved verbatim from locate_gui.c.
+char locate_station_call[30];
+char locate_gnis_filename[200];
+
+
+// Moved verbatim from objects_gui.c.
+char predefined_object_definition_filename[256] = "predefined_SAR.sys";
+int predefined_menu_from_file = 0;
+
+
+// Moved verbatim from interface_gui.c.
+int WX_rain_gauge_type;

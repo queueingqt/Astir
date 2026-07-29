@@ -56,6 +56,9 @@
 
 #include "xa_draw.h"
 
+
+#include "xa_settings.h"
+
 // Must be last include file
 #include "leak_detection.h"
 
@@ -106,8 +109,6 @@ Widget SL_node_path[LST_NUM][SL_MAX];
 Widget SL_power_gain[LST_NUM][SL_MAX];
 Widget SL_comments[LST_NUM][SL_MAX];
 int station_list_first = 1;
-int list_size_h[LST_NUM];       // height of entire list widget
-int list_size_w[LST_NUM];       // width  of entire list widget
 int list_size_i[LST_NUM];       // size initialized, dirty hack, but works...
 
 int last_offset[LST_NUM];
