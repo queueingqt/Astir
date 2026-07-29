@@ -165,6 +165,9 @@ char *xastir_version=VERSION;
 #include "xa_settings.h"
 #include "xa_ui.h"
 
+
+#include "station_draw.h"
+
 // Must be last include file
 #include "leak_detection.h"
 
@@ -613,11 +616,6 @@ static void Units_choice_toggle(Widget w, XtPointer clientData, XtPointer callda
 
 // 0: metric, 1: english, (2: nautical, not fully implemented)
 
-char un_alt[2+1];   // m / ft
-char un_dst[2+1];   // mi / km      (..nm)
-char un_spd[4+1];   // mph / km/h   (..kn)
-double cvt_dm2len;  // from decimeter
-double cvt_hm2len;  // from hectometer
 
 void update_units(void);
 
@@ -868,7 +866,6 @@ int display_up_first = 0;       /* display up first */
 time_t last_alert_redraw;       /* last time alert caused a redraw */
 time_t sec_next_gps;            /* next gps check */
 time_t remove_ID_message_time;  // Time to get rid of large msg on screen.
-int pending_ID_message = 0;     // Variable turning on/off this function
 
 
 // SmartBeaconing(tm) stuff.  If enabled, POSIT_rate won't be used

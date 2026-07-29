@@ -266,4 +266,14 @@ extern int predefined_menu_from_file;
 // that edits them does.  Definitions unchanged.
 extern int WX_rain_gauge_type;
 
+
+// Moved out of main.c, where these lived only because the dialog
+// that edits them does.  Definitions unchanged.
+extern char un_alt[2+1];  // m / ft
+extern char un_dst[2+1];  // mi / km      (..nm)
+extern char un_spd[4+1];  // mph / km/h   (..kn)
+extern double cvt_dm2len;  // from decimeter
+extern double cvt_hm2len;  // from hectometer
+extern int pending_ID_message;  // Variable turning on/off this function
+
 #endif // XA_SETTINGS_H

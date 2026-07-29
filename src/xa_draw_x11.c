@@ -93,6 +93,46 @@ void xa_canvas_size(int *width, int *height)
 }
 
 
+void xa_color_rgb(xa_color c, unsigned short *r, unsigned short *g,
+                  unsigned short *b)
+{
+  Display *dpy = xa_dpy();
+  XColor probe;
+
+  if (r)
+  {
+    *r = 0;
+  }
+  if (g)
+  {
+    *g = 0;
+  }
+  if (b)
+  {
+    *b = 0;
+  }
+  if (dpy == NULL)
+  {
+    return;
+  }
+
+  probe.pixel = (unsigned long)c;
+  (void)XQueryColor(dpy, cmap, &probe);
+  if (r)
+  {
+    *r = probe.red;
+  }
+  if (g)
+  {
+    *g = probe.green;
+  }
+  if (b)
+  {
+    *b = probe.blue;
+  }
+}
+
+
 xa_surface_id xa_surface_create(int width, int height, int depth)
 {
   Display *dpy = xa_dpy();

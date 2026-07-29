@@ -45,6 +45,9 @@
 
 #include "xa_settings.h"
 
+
+#include "station_draw.h"
+
 // Must be last include file
 #include "leak_detection.h"
 

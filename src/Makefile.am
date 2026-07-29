@@ -22,6 +22,7 @@ XASTIR_SRC = \
     db.c db_funcs.h database.h \
     db_gis.c db_gis.h \
     db_gui.c db_gui.h \
+    station_draw.c \
     dbfawk.c dbfawk.h \
     dlm.c dlm.h \
     encoding.c encoding.h \

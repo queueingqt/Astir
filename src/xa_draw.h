@@ -110,6 +110,21 @@ xa_surface_id xa_screen_target(void);
 void          xa_canvas_size(int *width, int *height);
 
 
+/* ---- colours ---------------------------------------------------------- */
+
+/*
+ * Resolve a colour to its components, 0-65535 per channel as X reports them.
+ *
+ * Needed because the trail drawing picks a contrasting dot colour by computing
+ * the brightness of the trail colour, and xa_color is an opaque index rather
+ * than an RGB triple.  The one caller is why this exists; a backend that
+ * already holds RGB answers it without a round trip.  Leaves the outputs at 0
+ * if the colour cannot be resolved.
+ */
+void xa_color_rgb(xa_color c, unsigned short *r, unsigned short *g,
+                  unsigned short *b);
+
+
 /* ---- surfaces --------------------------------------------------------- */
 
 // Create an offscreen surface.  XA_DEPTH_CANVAS means "same as the canvas";

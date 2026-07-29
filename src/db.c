@@ -86,6 +86,9 @@
 
 #include "xa_ui.h"
 
+
+#include "station_draw.h"
+
 // Must be last include file
 #include "leak_detection.h"
 

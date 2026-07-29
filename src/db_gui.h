@@ -1,3 +1,5 @@
+// display_station, draw_trail, track_station and set_map_position moved to
+// station_draw.c; declared in station_draw.h.
 #ifndef XASTIR_DB_GUI_H
 #define XASTIR_DB_GUI_H
 
@@ -15,14 +17,11 @@ void db_gui_init(void);
 // ------------------------------------------------------------------------
 // STATION TRACKING FUNCTIONS
 // ------------------------------------------------------------------------
-void track_station(Widget w, char *call_tracked, DataRow *p_station);
 
 
 // ------------------------------------------------------------------------
 // DRAWING AND RENDERING FUNCTIONS
 // ------------------------------------------------------------------------
-void draw_trail(Widget w, DataRow *fill, int solid);
-void display_station(Widget w, DataRow *p_station, int single);
 void draw_test_line(Widget w, long x, long y, long dx, long dy, long ofs);
 void draw_ruler_text(Widget w, char * text, long ofs);
 void draw_range_scale(Widget w);
@@ -65,7 +64,6 @@ extern void update_station_info(Widget w);
 // ------------------------------------------------------------------------
 // MAP POSITION AND LOCATION UTILITIES
 // ------------------------------------------------------------------------
-extern void set_map_position(Widget w, long lat, long lon);
 int locate_station(Widget w, char *call, int follow_case, int get_match, int center_map);
 
 

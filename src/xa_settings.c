@@ -258,3 +258,12 @@ int predefined_menu_from_file = 0;
 
 // Moved verbatim from interface_gui.c.
 int WX_rain_gauge_type;
+
+
+// Moved verbatim from main.c.
+char un_alt[2+1];   // m / ft
+char un_dst[2+1];   // mi / km      (..nm)
+char un_spd[4+1];   // mph / km/h   (..kn)
+double cvt_dm2len;  // from decimeter
+double cvt_hm2len;  // from hectometer
+int pending_ID_message = 0;     // Variable turning on/off this function
