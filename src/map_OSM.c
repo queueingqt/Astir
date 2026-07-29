@@ -152,6 +152,8 @@
 
 #include "xa_draw.h"
 
+#include "xa_ui.h"
+
 // Must be last include file
 #include "leak_detection.h"
 
@@ -1162,7 +1164,7 @@ void draw_OSM_tiles (Widget w,
                     sizeof(map_it),
                     langcode ("BBARSTA039"),  // Indexing %s
                     short_filenm);
-    statusline(map_it,0);       // Indexing
+    xa_ui_status(map_it);       // Indexing
 
     return; // Done indexing this file
   }
@@ -1238,7 +1240,7 @@ void draw_OSM_tiles (Widget w,
 
   xastir_snprintf(map_it, sizeof(map_it), "%s",
                   langcode ("BBARSTA050")); // Downloading tiles...
-  statusline(map_it,0);
+  xa_ui_status(map_it);
   XmUpdateDisplay(text);
 
   // make sure all the map directories exist
@@ -1261,7 +1263,7 @@ void draw_OSM_tiles (Widget w,
       {
         xastir_snprintf(map_it, sizeof(map_it), langcode("BBARSTA051"),
                         tileCnt, numTiles);  // Downloading tile %ls of %ls
-        statusline(map_it,0);
+        xa_ui_status(map_it);
         XmUpdateDisplay(text);
       }
 
@@ -1326,7 +1328,7 @@ void draw_OSM_tiles (Widget w,
     */
     xastir_snprintf(map_it, sizeof(map_it), "%s",
                     langcode ("BBARSTA049")); // Reading tiles...
-    statusline(map_it,0);
+    xa_ui_status(map_it);
     XmUpdateDisplay(text);
 
     tile_info = CloneImageInfo((ImageInfo *)NULL);
@@ -1507,7 +1509,7 @@ void draw_OSM_map (Widget w,
                   sizeof(map_it),
                   langcode ("BBARSTA028"),
                   short_filenm);
-  statusline(map_it,0);       // Loading ...
+  xa_ui_status(map_it);       // Loading ...
   XmUpdateDisplay(text);
 
   // Check whether we're indexing or drawing the map
@@ -1530,7 +1532,7 @@ void draw_OSM_map (Widget w,
                     sizeof(map_it),
                     langcode ("BBARSTA039"),
                     short_filenm);
-    statusline(map_it,0);       // Loading/Indexing ...
+    xa_ui_status(map_it);       // Loading/Indexing ...
 
     return; // Done indexing this file
   }

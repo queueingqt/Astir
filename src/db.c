@@ -84,6 +84,8 @@
 
 #include "xa_settings.h"
 
+#include "xa_ui.h"
+
 // Must be last include file
 #include "leak_detection.h"
 
@@ -10410,7 +10412,7 @@ int data_add(int type,
     {
 
       upd_echo(path);   // store digi that echoes my signal...
-      statusline(langcode("BBARSTA033"),0);   // Echo from digipeater
+      xa_ui_status(langcode("BBARSTA033"));   // Echo from digipeater
 
     }
     // check if data is just a secondary echo from another digi
@@ -11108,7 +11110,7 @@ int data_add(int type,
         xastir_snprintf(station_id, sizeof(station_id), langcode("BBARSTA002"),p_station->call_sign);
       }
 
-      statusline(station_id,0);
+      xa_ui_status(station_id);
     }
 
     // announce new station with sound file or speech synthesis
@@ -11174,7 +11176,7 @@ int data_add(int type,
                           "%s < %.3f %s",p_station->call_sign,
                           distance,
                           english_units?langcode("UNIOP00004"):langcode("UNIOP00005"));
-          statusline(station_id,0);
+          xa_ui_status(station_id);
           play_sound(sound_command,xa_sound[XA_SOUND_PROX].file);
           /*fprintf(stderr,"%s> PROX distance %f\n",p_station->call_sign, distance);*/
         }
@@ -11223,7 +11225,7 @@ int data_add(int type,
       {
         xastir_snprintf(station_id, sizeof(station_id), "%s %s %.1f %s",p_station->call_sign, langcode("UMBNDO0001"),
                         distance, english_units?langcode("UNIOP00004"):langcode("UNIOP00005"));
-        statusline(station_id,0);
+        xa_ui_status(station_id);
         play_sound(sound_command,xa_sound[XA_SOUND_BAND_OPEN].file);
         /*fprintf(stderr,"%s> BO distance %f\n",p_station->call_sign, distance);*/
       }
@@ -11669,7 +11671,7 @@ void my_station_gps_change(char *pos_long, char *pos_lat, char *course, char *sp
           {
             fprintf(stderr,"Redraw on new gps data \n");
           }
-          statusline(langcode("BBARSTA038"),0);
+          xa_ui_status(langcode("BBARSTA038"));
         }
         else if (debug_level & 256)
         {
@@ -16968,7 +16970,7 @@ void  read_file_line(FILE *f)
   {
     (void)fclose(f);
     read_file = 0;
-    statusline(langcode("BBARSTA012"),0);           // File done..
+    xa_ui_status(langcode("BBARSTA012"));           // File done..
     redraw_on_new_data = 2;                         // redraw immediately after finish
   }
 }
@@ -17043,7 +17045,7 @@ void search_tracked_station(DataRow **p_tracked)
           sprintf(station_id,"%s < %.3f %s from %s",t->call_sign, distance,
                   english_units?langcode("UNIOP00004"):langcode("UNIOP00005"),
                   curr->call_sign);
-          statusline(station_id,0);
+          xa_ui_status(station_id);
           play_sound(sound_command,xa_sound[XA_SOUND_PROX].file);
         }
 #ifdef HAVE_FESTIVAL
@@ -17381,7 +17383,7 @@ void calc_aloha(int secs_now)
                         langcode("BBARSTA044"),
                         (english_units) ? (int)aloha_radius : (int)(aloha_radius * cvt_mi2len),
                         (english_units) ? " miles" : " km");
-        statusline(status_text,1);
+        xa_ui_status(status_text);
       }
       aloha_status_time = secs_now + ALOHA_STATUS_INTERVAL;
     }

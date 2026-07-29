@@ -96,6 +96,8 @@
 
 #include "xa_settings.h"
 
+#include "xa_ui.h"
+
 // Must be last include file
 #include "leak_detection.h"
 
@@ -3457,7 +3459,7 @@ int net_init(int port)
   xastir_snprintf(port_num, sizeof(port_num), "%d", port_data[port].socket_port);
 
   xastir_snprintf(st, sizeof(st), langcode("BBARSTA019"), port_data[port].device_host_name);
-  statusline(st,1);   // Looking up host
+  xa_ui_status(st);   // Looking up host
 
   if(port_data[port].addr_list)
   {
@@ -3539,7 +3541,7 @@ int net_init(int port)
       }
 
       xastir_snprintf(st, sizeof(st), langcode("BBARSTA025"), wait_time - sec_now() );
-      statusline(st,1);           // Host found, connecting n
+      xa_ui_status(st);           // Host found, connecting n
       if (debug_level & 2)
       {
         fprintf(stderr,"%d\n", (int)(wait_time - sec_now()) );
@@ -3619,23 +3621,23 @@ int net_init(int port)
     {
       case 1: /* connection up */
         xastir_snprintf(st, sizeof(st), langcode("BBARSTA020"), port_data[port].device_host_name);
-        statusline(st,1);               // Connected to ...
+        xa_ui_status(st);               // Connected to ...
         break;
 
       case 0:
         xastir_snprintf(st, sizeof(st), "%s", langcode("BBARSTA021"));
-        statusline(st,1);               // Net Connection Failed!
+        xa_ui_status(st);               // Net Connection Failed!
         ok = -1;
         break;
 
       case -1:
         xastir_snprintf(st, sizeof(st), "%s", langcode("BBARSTA022"));
-        statusline(st,1);               // Could not bind socket
+        xa_ui_status(st);               // Could not bind socket
         break;
 
       case -2:
         xastir_snprintf(st, sizeof(st), "%s", langcode("BBARSTA018"));
-        statusline(st,1);               // Net Connection timed out
+        xa_ui_status(st);               // Net Connection timed out
         ok = 0;
         break;
 
@@ -3647,7 +3649,7 @@ int net_init(int port)
   else if (gai_rc == FAI_TIMEOUT)   /* host lookup time out */
   {
     xastir_snprintf(st, sizeof(st), "%s", langcode("BBARSTA018"));
-    statusline(st,1);                       // Net Connection timed out
+    xa_ui_status(st);                       // Net Connection timed out
     port_data[port].status = DEVICE_ERROR;
     if (debug_level & 2)
     {
@@ -3662,7 +3664,7 @@ int net_init(int port)
   else        /* Host ip look up failure (no ip address for that host) */
   {
     xastir_snprintf(st, sizeof(st), "%s", langcode("BBARSTA023"));
-    statusline(st,1);                           // No IP for Host
+    xa_ui_status(st);                           // No IP for Host
     port_data[port].status = DEVICE_ERROR;
     if (debug_level & 2)
     {
@@ -6165,7 +6167,7 @@ int add_device(int port_avail,int dev_type,char *dev_nm,char *passwd,int dev_sck
             // sending one posit.
             my_position_valid = 1;
             using_gps_position++;
-            statusline(langcode("BBARSTA041"),1);
+            xa_ui_status(langcode("BBARSTA041"));
             break;
 
           case DEVICE_SERIAL_WX:
@@ -6185,7 +6187,7 @@ int add_device(int port_avail,int dev_type,char *dev_nm,char *passwd,int dev_sck
             // sending one posit.
             my_position_valid = 1;
             using_gps_position++;
-            statusline(langcode("BBARSTA041"),1);
+            xa_ui_status(langcode("BBARSTA041"));
             break;
 
           case DEVICE_SERIAL_TNC_AUX_GPS:
@@ -6197,7 +6199,7 @@ int add_device(int port_avail,int dev_type,char *dev_nm,char *passwd,int dev_sck
             // sending one posit.
             my_position_valid = 1;
             using_gps_position++;
-            statusline(langcode("BBARSTA041"),1);
+            xa_ui_status(langcode("BBARSTA041"));
             break;
 
           default:
@@ -6343,7 +6345,7 @@ int add_device(int port_avail,int dev_type,char *dev_nm,char *passwd,int dev_sck
           // one posit.
           my_position_valid = 1;
           using_gps_position++;
-          statusline(langcode("BBARSTA041"),1);
+          xa_ui_status(langcode("BBARSTA041"));
         }
         break;
 

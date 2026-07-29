@@ -128,6 +128,8 @@
 
 #include "xa_draw.h"
 
+#include "xa_ui.h"
+
 // Must be last include file
 #include "leak_detection.h"
 
@@ -4319,7 +4321,7 @@ static void Print_window( Widget widget, XtPointer UNUSED(clientData), XtPointer
   }
 
   xastir_snprintf(temp, sizeof(temp), "%s", langcode("PRINT0012") );
-  statusline(temp,1);       // Dumping image to file...
+  xa_ui_status(temp);       // Dumping image to file...
 
   if (chdir(temp_base_dir) != 0)
   {
@@ -4362,7 +4364,7 @@ static void Print_window( Widget widget, XtPointer UNUSED(clientData), XtPointer
     }
 
     xastir_snprintf(temp, sizeof(temp), "%s", langcode("PRINT0013") );
-    statusline(temp,1);       // Converting to Postscript...
+    xa_ui_status(temp);       // Converting to Postscript...
 
 
 #ifdef HAVE_CONVERT
@@ -4451,7 +4453,7 @@ static void Print_window( Widget widget, XtPointer UNUSED(clientData), XtPointer
   }
 
   xastir_snprintf(temp, sizeof(temp), "%s", langcode("PRINT0014") );
-  statusline(temp,1);       // Finished creating print file.
+  xa_ui_status(temp);       // Finished creating print file.
 
   //popup_message( langcode("PRINT0015"), langcode("PRINT0014") );
 
@@ -4513,7 +4515,7 @@ static void Print_preview( Widget widget, XtPointer UNUSED(clientData), XtPointe
   }
 
   xastir_snprintf(temp, sizeof(temp), "%s", langcode("PRINT0012") );
-  statusline(temp,1);       // Dumping image to file...
+  xa_ui_status(temp);       // Dumping image to file...
 
   if (chdir(temp_base_dir) != 0)
   {
@@ -4652,7 +4654,7 @@ static void Print_preview( Widget widget, XtPointer UNUSED(clientData), XtPointe
                       print_resolution );
 
       xastir_snprintf(temp, sizeof(temp), "%s", langcode("PRINT0013") );
-      statusline(temp,1);       // Converting to Postscript...
+      xa_ui_status(temp);       // Converting to Postscript...
 
 
       // Filters:
@@ -4775,7 +4777,7 @@ static void Print_preview( Widget widget, XtPointer UNUSED(clientData), XtPointe
   }
 
   xastir_snprintf(temp, sizeof(temp), "%s", langcode("PRINT0014") );
-  statusline(temp,1);       // Finished creating print file.
+  xa_ui_status(temp);       // Finished creating print file.
 
   //popup_message( langcode("PRINT0015"), langcode("PRINT0014") );
 
@@ -9553,7 +9555,7 @@ void load_maps (Widget w)
 
       }
       (void)fclose (f);
-      statusline(" ",1);      // delete status line
+      xa_ui_status(" ");      // delete status line
     }
     else
     {
@@ -9577,7 +9579,7 @@ void load_maps (Widget w)
     HandlePendingEvents(app_context);
     if (interrupt_drawing_now)
     {
-      statusline(" ",1);      // delete status line
+      xa_ui_status(" ");      // delete status line
       // Update to screen
       xa_present_full(pixmap);
       return;

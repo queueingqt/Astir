@@ -163,6 +163,7 @@ char *xastir_version=VERSION;
 
 #include "xa_draw.h"
 #include "xa_settings.h"
+#include "xa_ui.h"
 
 // Must be last include file
 #include "leak_detection.h"
@@ -4034,6 +4035,22 @@ void Tactical_Callsign_History_Clear( Widget UNUSED(w), XtPointer UNUSED(clientD
 /*
  *  Display text in the status line, text is removed after timeout
  */
+
+// --- front-end callbacks the core calls through xa_ui.h -------------------
+// The core no longer calls statusline() directly; it calls xa_ui_status(),
+// which lands here only because the Motif shell registered this at startup.
+static void motif_ui_status(const char *text)
+{
+  statusline((char *)text, 1);
+}
+
+void xa_ui_register_motif(void)
+{
+  xa_ui_callbacks cb;
+  cb.status = motif_ui_status;
+  xa_ui_set_callbacks(&cb);
+}
+
 void statusline(char *status_text,int UNUSED(update) )
 {
 
@@ -30442,6 +30459,7 @@ int main(int argc, char *argv[], char *envp[])
   {
     if (load_language_file(get_user_base_dir("config/language.sys", temp_base_dir, sizeof(temp_base_dir))))
     {
+      xa_ui_register_motif();             // core -> GUI callbacks
       init_device_names();                // set interface names
       clear_message_windows();
       clear_popup_message_windows();

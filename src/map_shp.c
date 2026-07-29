@@ -103,6 +103,8 @@
 
 #include "xa_draw.h"
 
+#include "xa_ui.h"
+
 // Must be last include file
 #include "leak_detection.h"
 
@@ -996,7 +998,7 @@ void draw_shapefile_map (Widget w,
                     sizeof(status_text),
                     langcode ("BBARSTA039"),
                     short_filenm);
-    statusline(status_text,0);       // Indexing ...
+    xa_ui_status(status_text);       // Indexing ...
 
     // We're indexing only.  Save the extents in the index.
     index_update_ll(filenm,    // Filename only
@@ -1019,7 +1021,7 @@ void draw_shapefile_map (Widget w,
                     sizeof(status_text),
                     langcode ("BBARSTA028"),
                     short_filenm);
-    statusline(status_text,0);       // Loading ...
+    xa_ui_status(status_text);       // Loading ...
   }
 
   // We put this section AFTER the code that determines whether we're merely

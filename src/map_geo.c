@@ -139,6 +139,8 @@
 
 #include "xa_draw.h"
 
+#include "xa_ui.h"
+
 // Must be last include file
 #include "leak_detection.h"
 
@@ -351,7 +353,7 @@ void draw_toporama_map (Widget w,
                     sizeof(map_it),
                     langcode ("BBARSTA039"),
                     short_filenm);
-    statusline(map_it,0);       // Loading/Indexing ...
+    xa_ui_status(map_it);       // Loading/Indexing ...
 
     return; // Done indexing this file
   }
@@ -1706,7 +1708,7 @@ void draw_geo_image_map (Widget w,
                     sizeof(map_it),
                     langcode ("BBARSTA039"),
                     short_filenm);
-    statusline(map_it,0);       // Loading/Indexing ...
+    xa_ui_status(map_it);       // Loading/Indexing ...
 
     return; // Done indexing this file
   }
@@ -1766,7 +1768,7 @@ void draw_geo_image_map (Widget w,
                   sizeof(map_it),
                   langcode ("BBARSTA028"),
                   short_filenm);
-  statusline(map_it,0);       // Loading/Indexing ...
+  xa_ui_status(map_it);       // Loading/Indexing ...
 
 #ifndef NO_XPM
   atb.valuemask = 0;
