@@ -17,6 +17,29 @@ Run the measurement scripts against a **built** tree — several read `src/*.o`.
 | `convert_draw.py src <file.c>... [--apply]` | Rewrites Xlib drawing calls to `xa_draw`. Parses calls with balanced parens (they span many lines) and skips comments/strings. Dry run by default. |
 | `extract_settings.py src <outbase> [--apply]` | Relocates plain-data definitions out of `main.c` into a core file, reading the target symbol list on stdin. Moves definitions verbatim so no call site changes. |
 
+## What the object-file measurements cannot see
+
+`core_boundary.py` and `classify_syms.py` read `nm` output, so they report what
+**this configuration** links — not what the source couples to.
+
+- **Code behind an `#ifdef` that is off is invisible.** `db_gis.c` and
+  `map_cache.c` sit behind `HAVE_POSTGIS`/`HAVE_MYSQL` and `USE_MAP_CACHE`.
+  With those off their objects are 17k and 4k of nearly nothing, and
+  `core_boundary.py` called both clean while ten `statusline()` calls sat in
+  the source. A build configured with those features re-links `main.o` into
+  both. Before calling a count zero, confirm it with a source scan — reuse
+  `audit_x11.py`'s `strip()` so comments and string literals do not inflate it.
+- **A configuration you cannot build is a change you cannot verify.** Neither
+  libdb nor libpq is installed here, so edits to those regions are unverified
+  by anything stronger than being identical to edits made elsewhere. Say so
+  rather than letting the commit imply otherwise.
+- **`objdump -d` on these objects shows nothing.** The build uses `-flto=auto`,
+  so `.o` files carry `.gnu.lto_*` sections and a zero-length `.text`.
+  Comparing two builds by disassembly silently "passes" because both sides are
+  empty. `nm` still works — the symbol table is real — which is why the
+  boundary scripts are unaffected. To show that a cosmetic edit did not change
+  behaviour, re-run the benchmark; do not diff the objects.
+
 ## Hard-won cautions for anything that rewrites call sites
 
 Both bugs below produced code that *compiled*, which is why they are worth
