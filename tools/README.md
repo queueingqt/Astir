@@ -16,6 +16,7 @@ Run the measurement scripts against a **built** tree — several read `src/*.o`.
 | `find_dupes.py [minlines]` | Repeated code blocks touching drawing or the interrupt idiom — how the duplicate `XCopyArea` and settings families were found. |
 | `convert_draw.py src <file.c>... [--apply]` | Rewrites Xlib drawing calls to `xa_draw`. Parses calls with balanced parens (they span many lines) and skips comments/strings. Dry run by default. |
 | `extract_settings.py src <outbase> [--apply]` | Relocates plain-data definitions out of `main.c` into a core file, reading the target symbol list on stdin. Moves definitions verbatim so no call site changes. |
+| `split_file.py <src.c> <dest.c> <fn,fn,...> [--header=f] [--apply]` | Performs the split: moves the named functions, with their doc comments and any `#if` that wraps one, into a new file. Dry run by default. Refuses to write unless the moved and kept spans reassemble the original byte for byte. |
 | `split_scope.py [--gui=fn,fn] src <file.c>...` | Where the GUI/core seam runs inside one file: which functions have Motif in the **body**, which are pulled in transitively by *calling* one that does, which merely carry a `Widget` in the signature, and which file-scope names both halves touch. `--gui=` adds known-GUI names defined in other files (`redraw_symbols`, `pos_dialog`, `resize_dialog`). |
 
 ## The file splits are blocked on fonts, not on dialogs
@@ -25,7 +26,7 @@ turned on says:
 
 | file | GUI | what pulls the core half across |
 |---|---|---|
-| `cad_objects.c` | 74% | dialogs and `redraw_symbols` — splittable now |
+| ~~`cad_objects.c`~~ | ~~74%~~ | **done** — split into `cad_objects.c` (0% GUI) and `cad_objects_gui.c` |
 | `draw_symbols.c` | — | `draw_symbol`, via `XQueryFont` / `XSetClipOrigin` |
 | `maps.c` | 55% | eleven crossings, all text measurement |
 
@@ -94,9 +95,19 @@ repeating rather than rediscovering:
 - **Watch the end index.** Replacing up to `i - 1` when `i` is already past the
   closing paren re-emits it: `xa_ui_status(st));`
 
+- **A function can be wrapped in a preprocessor conditional.** `split_file.py`
+  moved `clsd_menuCallback` out of `cad_objects.c` and left its
+  `#ifndef USE_COMBO_BOX` behind: an empty conditional in the source file, and
+  an unguarded definition in the destination. Both files compiled. The tell
+  was that the function became a global symbol in a build where the guard
+  should have excluded it — worth checking `nm` against the source function
+  list after any move, not just that the tree builds.
+
 When a script that edits hundreds of sites turns out to be wrong, revert every
 file it touched and redo — do not patch its output. Some of the corruption it
-produced will compile.
+produced will compile. This applied to the split above: the fix went into the
+script and the whole split was re-run, rather than the two stray directives
+being deleted by hand.
 
 Also: a tool reporting "I can't handle these N cases" is itself a claim worth
 checking. `extract_settings.py` once reported 34 symbols as immovable; the real
