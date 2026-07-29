@@ -38,6 +38,27 @@ if [ -n "$bad_encoding" ]; then
   echo "         Search them with LC_ALL=C, edit them on bytes, or convert." >&2
 fi
 
+# The core headers must stay linkable by a front end that is not Motif, which
+# means they must compile standalone and pull in no X11/Xt/Motif header.  That
+# property is easy to lose by adding one convenient #include, and nothing else
+# would report it, so check it on every build.
+core_hdr_fail=""
+for h in xa_state.h xa_settings.h xa_draw.h globals.h; do
+  [ -f "src/$h" ] || continue
+  probe="$(mktemp -t xacore.XXXXXX.c)"
+  printf '#include "%s"\nint main(void){return 0;}\n' "$h" > "$probe"
+  if ! gcc -Isrc -H -fsyntax-only "$probe" 2>"$probe.err"; then
+    core_hdr_fail="$core_hdr_fail $h(does-not-compile-standalone)"
+  elif grep -qiE 'X11/|Xm/|Intrinsic' "$probe.err"; then
+    core_hdr_fail="$core_hdr_fail $h(pulls-in-X)"
+  fi
+  rm -f "$probe" "$probe.err"
+done
+if [ -n "$core_hdr_fail" ]; then
+  echo "WARNING: core headers are no longer front-end neutral:$core_hdr_fail" >&2
+  echo "         a GTK4 front end must be able to include these without X11." >&2
+fi
+
 if [ "$MODE" = "clean" ]; then
   make clean >/dev/null 2>&1 || true
   MODE=full

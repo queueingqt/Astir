@@ -50,6 +50,7 @@ XASTIR_SRC = \
     xa_perf.c xa_perf.h \
     xa_draw.h xa_draw_x11.c \
     xa_state.c xa_state.h \
+    xa_settings.c xa_settings.h \
     map_cache.c map_cache.h \
     map_dos.c \
     map_geo.c \

@@ -45,6 +45,26 @@
 #define CONVERT_DMS_NORMAL_FORMATED      8
 #define CONVERT_HP_NORMAL_FORMATED       9
 
+// Plain constants needed to define core state without pulling in main.h, which
+// is not X-free.  main.h defines these too, with the same values; the guards
+// keep either include order safe.  TRUE/FALSE otherwise arrive via X11.
+#ifndef TRUE
+  #define TRUE  1
+#endif
+#ifndef FALSE
+  #define FALSE 0
+#endif
+#ifndef MAX_PHG
+  #define MAX_PHG      8
+#endif
+#ifndef MAX_COMMENT
+  #define MAX_COMMENT  80
+#endif
+#ifndef USE_DDMMMM
+  #define USE_DDMMMM   1       // Default coordinate system, most APRS systems
+#endif
+
+
 /* Global variables defined in main.c */
 
 

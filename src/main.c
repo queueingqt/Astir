@@ -162,6 +162,7 @@ char *xastir_version=VERSION;
 #include <Xm/ComboBox.h>
 
 #include "xa_draw.h"
+#include "xa_settings.h"
 
 // Must be last include file
 #include "leak_detection.h"
@@ -292,7 +293,6 @@ int currently_selected_stations_save = 0;
 
 // If my_trail_diff_color is 0, all my calls (SSIDs) will use MY_TRAIL_COLOR.
 // If my_trail_diff_color = 1 then each different ssid for my callsign will use a different color.
-int my_trail_diff_color = 0;
 
 
 // Used in segfault handler
@@ -303,7 +303,6 @@ FILE *file_wx_test;
 int tcp_server_pid = 0;
 int udp_server_pid = 0;
 
-int serial_char_pacing;  // Inter-char delay in ms for serial ports.
 int dtr_on = 1;
 time_t sec_last_dtr = (time_t)0;
 
@@ -311,11 +310,8 @@ time_t last_updatetime = (time_t)0;
 int time_went_backwards = 0;
 
 /* language in use */
-char lang_to_use[30];
 
 /* version info in main.h */
-int  altnet;
-char altnet_call[MAX_CALLSIGN+1];
 
 static void Window_Quit(Widget w, XtPointer client, XtPointer call);
 static void save_state(Widget w, XtPointer client, XtPointer call);
@@ -361,9 +357,6 @@ int Igate_type;
 
 Widget Display_data_dialog  = (Widget)NULL;
 Widget Display_data_text;
-int Display_packet_data_type;
-int show_only_station_capabilities = 0;
-int Display_packet_data_mine_only = 0;
 
 Widget configure_defaults_dialog = (Widget)NULL;
 Widget configure_timing_dialog = (Widget)NULL;
@@ -405,7 +398,6 @@ void map_index_update_temp_select(char *filename, map_index_record **current);
 void map_index_temp_select_clear(void);
 
 void map_chooser_fill_in (void);
-int map_chooser_expand_dirs = 0;
 
 void map_chooser_init (void);
 
@@ -424,15 +416,12 @@ int re_sort_maps = 1;
 
 Widget grid_on, grid_off;
 static void Grid_toggle( Widget w, XtPointer clientData, XtPointer calldata);
-int long_lat_grid;              // Switch for Map Lat and Long grid display
 
 void Map_border_toggle( Widget w, XtPointer clientData, XtPointer callData);
-int draw_labeled_grid_border = FALSE;   // Toggle labeled border around map.
 
 
 static void CAD_draw_toggle( Widget w, XtPointer clientData, XtPointer calldata);
 
-int map_lock_pan_zoom = 0;
 static void Map_lock_pan_zoom_toggle( Widget w, XtPointer clientData, XtPointer calldata);
 
 int disable_all_maps = 0;
@@ -441,7 +430,6 @@ static void Map_disable_toggle( Widget w, XtPointer clientData, XtPointer callda
 static void Map_auto_toggle( Widget w, XtPointer clientData, XtPointer calldata);
 int map_auto_maps;              /* toggle use of auto_maps */
 static void Map_auto_skip_raster_toggle( Widget w, XtPointer clientData, XtPointer calldata);
-int auto_maps_skip_raster;
 Widget map_auto_skip_raster_button;
 Widget map_border_button;
 
@@ -451,13 +439,11 @@ int map_color_levels;           /* toggle use of map_color_levels */
 
 Widget map_labels_on, map_labels_off;
 static void Map_labels_toggle( Widget w, XtPointer clientData, XtPointer calldata);
-int map_labels;                 // toggle use of map_labels */
 
 Widget map_fill_on, map_fill_off;
 static void Map_fill_toggle( Widget w, XtPointer clientData, XtPointer calldata);
 int map_color_fill;             /* Whether or not to fill in map polygons with solid color */
 
-int index_maps_on_startup;      // Index maps on startup
 static void Index_maps_on_startup_toggle(Widget w, XtPointer clientData, XtPointer calldata);
 
 Widget map_bgcolor[12];
@@ -665,10 +651,6 @@ static void  Transmit_disable_toggle( Widget widget, XtPointer clientData, XtPoi
 static void  Posit_tx_disable_toggle( Widget widget, XtPointer clientData, XtPointer callData);
 static void  Object_tx_disable_toggle( Widget widget, XtPointer clientData, XtPointer callData);
 static void  Server_port_toggle( Widget widget, XtPointer clientData, XtPointer callData);
-int transmit_disable;
-int posit_tx_disable;
-int object_tx_disable;
-int enable_server_port = 0;
 Widget iface_transmit_now, posit_tx_disable_toggle, object_tx_disable_toggle;
 Widget server_port_toggle;
 
@@ -697,14 +679,11 @@ Widget server_port_toggle;
 static void Units_choice_toggle(Widget w, XtPointer clientData, XtPointer calldata);
 
 // 0: metric, 1: english, (2: nautical, not fully implemented)
-int english_units;
 
 char un_alt[2+1];   // m / ft
 char un_dst[2+1];   // mi / km      (..nm)
 char un_spd[4+1];   // mph / km/h   (..kn)
 double cvt_m2len;   // from meter
-double cvt_kn2len;  // from knots
-double cvt_mi2len;  // from miles
 double cvt_dm2len;  // from decimeter
 double cvt_hm2len;  // from hectometer
 
@@ -713,11 +692,9 @@ void update_units(void);
 // dist/bearing on status line
 static void Dbstatus_choice_toggle(Widget w, XtPointer clientData, XtPointer calldata);
 
-int do_dbstatus;
 
 
 // Coordinate System
-int coordinate_system = USE_DDMMMM; // Default, used for most APRS systems
 
 
 
@@ -759,7 +736,6 @@ int festival_speak_new_message_body;
 int festival_speak_new_weather_alert;
 int festival_speak_ID;
 //#endif    // HAVE_FESTIVAL
-int ATV_screen_ID;
 
 #ifdef HAVE_LIBGEOTIFF
   Widget configure_DRG_dialog = (Widget) NULL;
@@ -812,9 +788,6 @@ Widget load_predefined_objects_menu_from_file_enable;
 #else
   int lpomff_value;  // replacement value for predefined menu file combo box
 #endif // USE_COMBO_BOX
-int pop_up_new_bulletins = 0;
-int view_zero_distance_bulletins = 0;
-int warn_about_mouse_modifiers = 1;
 Widget altnet_active;
 Widget altnet_text;
 Widget disable_dupe_check;
@@ -979,8 +952,6 @@ Pixel_Format visual_type = NOT_TRUE_NOR_DIRECT;
 int install_colormap;           /* if visual_type == NOT_TRUE..., should we install priv cmap */
 Colormap cmap;                  /* current colormap */
 
-int redo_list;                  // Station List update request
-int redraw_on_new_data;         // Station redraw request
 int wait_to_redraw;             /* wait to redraw until system is up */
 int display_up = 0;             /* display up? */
 int display_up_first = 0;       /* display up first */
@@ -992,9 +963,6 @@ time_t gps_time;                /* gps delay time */
 char gprmc_save_string[MAX_LINE_SIZE+1];
 char gpgga_save_string[MAX_LINE_SIZE+1];
 int gps_port_save;
-time_t POSIT_rate;              // Posit TX rate timer
-time_t OBJECT_rate;             // Object/Item TX rate timer
-time_t update_DR_rate;          // How often to call draw_symbols if DR enabled
 time_t remove_ID_message_time;  // Time to get rid of large msg on screen.
 int pending_ID_message = 0;     // Variable turning on/off this function
 
@@ -1002,18 +970,7 @@ int pending_ID_message = 0;     // Variable turning on/off this function
 // SmartBeaconing(tm) stuff.  If enabled, POSIT_rate won't be used
 // for timing posits. sb_POSIT_rate computed via SmartBeaconing(tm)
 // will be used instead.
-int smart_beaconing;            // Master enable/disable for SmartBeaconing(tm) mode
-int sb_POSIT_rate = 30 * 60;    // Computed SmartBeaconing(tm) posit rate (secs)
-int sb_last_heading = -1;       // Heading at time of last posit
-int sb_current_heading = -1;    // Most recent heading parsed from GPS sentence
-int sb_turn_min = 20;           // Min threshold for corner pegging (degrees)
-int sb_turn_slope = 25;         // Threshold slope for corner pegging (degrees/mph)
-int sb_turn_time = 5;           // Time between other beacon & turn beacon (secs)
-int sb_posit_fast = 90;         // Fast beacon rate (secs)
-int sb_posit_slow = 30;         // Slow beacon rate (mins)
-int sb_low_speed_limit = 2;     // Speed below which SmartBeaconing(tm) is disabled &
 // we'll beacon at the POSIT_slow rate (mph)
-int sb_high_speed_limit = 60;   // Speed above which we'll beacon at the
 // POSIT_fast rate (mph)
 Widget smart_beacon_dialog = (Widget)NULL;
 Widget smart_beacon_enable = (Widget)NULL;
@@ -1040,7 +997,6 @@ Widget trail_segment_distance_max = (Widget)NULL;
 Widget RINO_download_timeout = (Widget)NULL;
 Widget net_map_slider = (Widget)NULL;
 Widget snapshot_interval_slider = (Widget)NULL;
-int net_map_timeout = 120;
 
 
 
@@ -1051,20 +1007,14 @@ time_t sec_old;                 /* station old after */
 time_t sec_clear;               /* station cleared after */
 time_t aircraft_sec_clear;      /* aircraft cleared after */
 time_t sec_remove;              /* Station removed after */
-int trail_segment_time;         // Segment missing if above this time (mins)
-int trail_segment_distance;     // Segment missing if greater distance
-int RINO_download_interval;     // Interval at which to download RINO waypoints,
 // creating APRS Objects from them.
 time_t last_RINO_download = (time_t)0;
 time_t sec_next_raw_wx;         /* raw wx transmit data */
-int dead_reckoning_timeout = 60 * 10;   // 10 minutes;
 
 #ifdef TRANSMIT_RAW_WX
   int transmit_raw_wx;            /* transmit raw wx data? */
 #endif  // TRANSMIT_RAW_WX
 
-int transmit_compressed_posit;  // transmit location in compressed format?
-int transmit_compressed_objects_items;  // Same for objects & items
 
 int output_station_type;        /* Broadcast station type */
 
@@ -1081,7 +1031,6 @@ time_t net_next_time;           /* reconnect Next update delay time */
   time_t gc_next_time = 0L;       // Garbage collection next time
 #endif  // USING_LIBGC
 
-time_t posit_last_time;
 time_t posit_next_time;         /* time at which next posit TX will occur */
 
 time_t last_time;               /* last time in seconds */
@@ -1090,7 +1039,6 @@ time_t next_time;               /* Next update delay time */
 time_t next_redraw;             /* Next update time */
 time_t last_redraw;             /* Time of last redraw */
 
-char aprs_station_message_type = '='; // station message-capable or not
 
 int transmit_now;               /* set to transmit now (push on moment) */
 int my_position_valid = 1;      /* Don't send posits if this is zero */
@@ -1107,8 +1055,6 @@ int log_wx_alert_data;          /* toggle to allow wx alert logging */
 int traffic_utf8_enabled = 1;   /* toggle UTF-8 parse/send for APRS messages */
 
 
-int snapshots_enabled = 0;      // toggle to allow creating .png snapshots on a regular basis
-int kmlsnapshots_enabled = 0;   // toggle to allow creating .kml snapshots on a regular basis
 
 time_t WX_ALERTS_REFRESH_TIME;  /* Minimum WX alert map refresh time in seconds */
 
@@ -1123,22 +1069,10 @@ int zoom_box_y2 = -1;
 int mouse_zoom = 0;
 
 // log file replay
-int read_file;
 FILE *read_file_ptr;
 time_t next_file_read;
 
 // Data for own station
-char my_callsign[MAX_CALLSIGN+1];
-char my_lat[MAX_LAT];
-char my_long[MAX_LONG];
-char my_group;
-char my_symbol;
-char my_phg[MAX_PHG+1];
-char my_comment[MAX_COMMENT+1];
-int  my_last_course;
-int  my_last_speed;
-long my_last_altitude;
-time_t my_last_altitude_time;
 
 /* Symbols */
 SymbolData symbol_data[MAX_SYMBOLS];
@@ -1148,39 +1082,10 @@ pid_t last_sound_pid;
 
 /* Default directories */
 
-char AUTO_MAP_DIR[400];
-char ALERT_MAP_DIR[400];
-char SELECTED_MAP_DIR[400];
-char SELECTED_MAP_DATA[400];
-char MAP_INDEX_DATA[400];
-char SYMBOLS_DIR[400];
-char HELP_FILE[400];
-char SOUND_DIR[400];
 
-char LOGFILE_TNC[400];
-char LOGFILE_NET[400];
-char LOGFILE_IGATE[400];
-char LOGFILE_MESSAGE[400];
-char LOGFILE_WX[400];
-char LOGFILE_WX_ALERT[400];
 
 /* sound data */
-char sound_command[90];
-int  sound_play_new_station;
-char sound_new_station[90];
-int  sound_play_new_message;
-char sound_new_message[90];
 
-int  sound_play_prox_message;
-char sound_prox_message[90];
-char prox_min[30];
-char prox_max[30];
-int  sound_play_band_open_message;
-char sound_band_open_message[90];
-char bando_min[30];
-char bando_max[30];
-int  sound_play_wx_alert_message;
-char sound_wx_alert_message[90];
 
 
 int input_x = 0;
