@@ -172,18 +172,48 @@ static double xa_lod_threshold_px(void)
 // whole file is inside the viewport: we no longer read every shape, so the
 // RTree lets most of them be rejected without touching the disk at all.
 // Only meaningful for layers whose shapes have real extent.
-static int xa_lod_index_worthwhile(int shape_type)
+static int xa_lod_index_worthwhile(int shape_type,
+                                   int nEntities,
+                                   double *bnds_min,
+                                   double *bnds_max)
 {
-  if (xa_lod_threshold_px() <= 0.0)
+  double w_px, h_px, area_px;
+
+  if (xa_lod_threshold_px() <= 0.0 || nEntities <= 0)
   {
     return 0;
   }
-  return (shape_type == SHPT_ARC
-          || shape_type == SHPT_ARCZ
-          || shape_type == SHPT_ARCM
-          || shape_type == SHPT_POLYGON
-          || shape_type == SHPT_POLYGONZ
-          || shape_type == SHPT_POLYGONM);
+  if (!(shape_type == SHPT_ARC
+        || shape_type == SHPT_ARCZ
+        || shape_type == SHPT_ARCM
+        || shape_type == SHPT_POLYGON
+        || shape_type == SHPT_POLYGONZ
+        || shape_type == SHPT_POLYGONM))
+  {
+    return 0;
+  }
+  if (scale_x <= 0 || scale_y <= 0)
+  {
+    return 0;
+  }
+
+  // Building an index is not free: it reads the entire shapefile once.  That
+  // is worth doing only when sub-pixel culling will then reject most of the
+  // shapes.  Estimate the density: if the file holds more shapes than the
+  // pixels it covers on screen, the average shape cannot resolve and culling
+  // will pay for the build many times over.  When zoomed in the opposite is
+  // true -- shapes are large, almost nothing is culled, and forcing a build
+  // just stalls the first render.  (Doing that unconditionally is what made a
+  // close-zoom first render take minutes.)
+  w_px = (bnds_max[0] - bnds_min[0]) * XA_LOD_DEG_TO_XASTIR / (double)scale_x;
+  h_px = (bnds_max[1] - bnds_min[1]) * XA_LOD_DEG_TO_XASTIR / (double)scale_y;
+  area_px = w_px * h_px;
+
+  if (area_px < 1.0)
+  {
+    return 1;  // whole file is a speck; the index will reject essentially all
+  }
+  return ((double)nEntities > area_px);
 }
 
 
@@ -853,6 +883,7 @@ void draw_shapefile_map (Widget w,
   }
 
   *dbfsig = '\0';
+  xa_perf_begin(XA_ZONE_DBFAWK_SETUP);
   fieldcount = dbfawk_sig(hDBF,dbfsig,sizeof(dbfsig));
   if (fieldcount == 0)
   {
@@ -916,6 +947,7 @@ void draw_shapefile_map (Widget w,
 
     /* find out which dbf fields we care to read */
     fld_info = dbfawk_field_list(hDBF, dbffields);
+    xa_perf_end(XA_ZONE_DBFAWK_SETUP);
   }
   else                    /* should never be reached anymore! */
   {
@@ -997,6 +1029,15 @@ void draw_shapefile_map (Widget w,
   // contained in the current viewport.  We'll have to read every shape
   // in it anyway, and all we'd be doing is extra work searching the
   // RTree
+  // NOTE: forcing an index for fully-visible files is OFF by default, behind
+  // XASTIR_FORCE_INDEX.  It makes steady-state redraws much faster, but
+  // building an RTree reads the entire shapefile, at draw time, and blocks.
+  // Measured with a cold page cache at close zoom: one frame took 122 s, of
+  // which ~120 s was index construction for 14 files.  That is far worse for
+  // interactive use than the redraws it saves, especially since any input
+  // aborts drawing anyway.  Re-enable only once indexes are persisted to disk
+  // so the build is paid once, ever, rather than once per session.
+  //
   // The original test skipped the index whenever the file was entirely inside
   // the viewport, on the grounds that every shape would be read anyway.  That
   // is no longer true once sub-pixel shapes are culled, and it was costing the
@@ -1007,7 +1048,9 @@ void draw_shapefile_map (Widget w,
                                    adfBndsMax[1],
                                    adfBndsMin[0],
                                    adfBndsMax[0])
-      || xa_lod_index_worthwhile(nShapeType))
+      || (getenv("XASTIR_FORCE_INDEX")
+          && xa_lod_index_worthwhile(nShapeType, nEntities,
+                                     adfBndsMin, adfBndsMax)))
   {
     // we keep a hash of all shapefiles encountered so far (and not purged
     // due to inactivity).  Find the record of this shapefile in that

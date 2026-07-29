@@ -44,13 +44,25 @@ fi
 # frame prints one "[perf] create_image" line, so wait until no new line has
 # appeared for 20 s.
 prev=-1
-while : ; do
-  n=$(grep -ac '^\[perf\] create_image' "shot-${TAG}.log" 2>/dev/null || echo 0)
+waited=0
+MAXWAIT=300
+while [ "$waited" -lt "$MAXWAIT" ]; do
+  # grep -c prints 0 AND exits nonzero when there is no match, so a
+  # "|| echo 0" fallback yields the two-line string "0\n0" and breaks [ -eq ].
+  n=$(grep -ac '^\[perf\] create_image' "shot-${TAG}.log" 2>/dev/null || true)
+  n=${n:-0}
   if [ "$n" -eq "$prev" ] && [ "$n" -gt 0 ]; then break; fi
   prev="$n"
   sleep 20
+  waited=$((waited+20))
 done
-echo "  render quiesced after $n frame(s)"
+if [ "$n" -eq 0 ]; then
+  echo "  WARNING: no frame completed in ${MAXWAIT}s -- capturing anyway."
+  echo "  (create_image has several early returns that emit no perf line, so"
+  echo "   zero frames does not necessarily mean nothing was drawn.)"
+else
+  echo "  render quiesced after $n frame(s)"
+fi
 
 timeout 60 spectacle -b -n -o "$OUT" >/dev/null 2>&1
 echo "captured $OUT (LOD=$LOD zoomout=$ZOOM)"

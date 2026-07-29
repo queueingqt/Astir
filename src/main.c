@@ -3386,6 +3386,7 @@ int create_image(Widget w)
   HandlePendingEvents(app_context);
   if (interrupt_drawing_now)
   {
+    xa_perf_frame_end("create_image:abort");
     return(0);
   }
 
@@ -3398,6 +3399,7 @@ int create_image(Widget w)
   HandlePendingEvents(app_context);
   if (interrupt_drawing_now)
   {
+    xa_perf_frame_end("create_image:abort");
     return(0);
   }
 
@@ -3491,6 +3493,7 @@ int create_image(Widget w)
   HandlePendingEvents(app_context);
   if (interrupt_drawing_now)
   {
+    xa_perf_frame_end("create_image:abort");
     return(0);
   }
 
@@ -3508,6 +3511,7 @@ int create_image(Widget w)
   HandlePendingEvents(app_context);
   if (interrupt_drawing_now)
   {
+    xa_perf_frame_end("create_image:abort");
     return(0);
   }
 
@@ -3516,6 +3520,7 @@ int create_image(Widget w)
   HandlePendingEvents(app_context);
   if (interrupt_drawing_now)
   {
+    xa_perf_frame_end("create_image:abort");
     return(0);
   }
 
@@ -3548,6 +3553,7 @@ int create_image(Widget w)
   HandlePendingEvents(app_context);
   if (interrupt_drawing_now)
   {
+    xa_perf_frame_end("create_image:abort");
     return(0);
   }
 
@@ -3557,6 +3563,7 @@ int create_image(Widget w)
   HandlePendingEvents(app_context);
   if (interrupt_drawing_now)
   {
+    xa_perf_frame_end("create_image:abort");
     return(0);
   }
 
@@ -3573,6 +3580,7 @@ int create_image(Widget w)
   HandlePendingEvents(app_context);
   if (interrupt_drawing_now)
   {
+    xa_perf_frame_end("create_image:abort");
     return(0);
   }
 
@@ -3582,6 +3590,7 @@ int create_image(Widget w)
   HandlePendingEvents(app_context);
   if (interrupt_drawing_now)
   {
+    xa_perf_frame_end("create_image:abort");
     return(0);
   }
 
@@ -3642,6 +3651,7 @@ int create_image(Widget w)
   HandlePendingEvents(app_context);
   if (interrupt_drawing_now)
   {
+    xa_perf_frame_end("create_image:abort");
     return(0);
   }
 
@@ -3652,6 +3662,7 @@ int create_image(Widget w)
   HandlePendingEvents(app_context);
   if (interrupt_drawing_now)
   {
+    xa_perf_frame_end("create_image:abort");
     return(0);
   }
 

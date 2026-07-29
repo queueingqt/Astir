@@ -31,6 +31,7 @@ typedef enum
   XA_ZONE_LOAD_MAPS,          // load_maps(): the whole map pass
   XA_ZONE_MAP_ONE,            // one draw_shapefile_map() call, end to end
   XA_ZONE_DBFAWK,             // dbfawk signature match + rule evaluation
+  XA_ZONE_DBFAWK_SETUP,       // per-file: sig lookup, symtab, awk compile
   XA_ZONE_ALERT_MAPS,         // load_alert_maps()
   XA_ZONE_DISPLAY_FILE,       // display_file(): stations, symbols, trails
   XA_ZONE_DRAW_GRID,          // draw_grid()
