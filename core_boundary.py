@@ -15,7 +15,7 @@ GUI_OBJS = {
     "main.o", "db_gui.o", "interface_gui.o", "list_gui.o", "locate_gui.o",
     "location_gui.o", "popup_gui.o", "objects_gui.o", "bulletin_gui.o",
     "geocoder_gui.o", "messages_gui.o", "track_gui.o", "view_message_gui.o",
-    "cad_objects_gui.o",
+    "cad_objects_gui.o", "draw_symbols_gui.o",
     "wx_gui.o", "xa_config_gui.o", "map_gui.o",
 }
 

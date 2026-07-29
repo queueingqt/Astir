@@ -28,6 +28,7 @@ XASTIR_SRC = \
     encoding.c encoding.h \
     dr_utils.c dr_utils.h \
     draw_symbols.c draw_symbols.h \
+    draw_symbols_gui.c \
     fcc_data.c fcc_data.h \
     festival.c festival.h \
     fetch_remote.c fetch_remote.h \
