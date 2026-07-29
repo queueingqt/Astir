@@ -18,7 +18,13 @@
 #include "xastir.h"
 #include "main.h"
 #include "color.h"    // Pixel_Format, NOT_TRUE_NOR_DIRECT
+#include "rotated.h"  // XRotDrawAlignedString and the alignment constants
+#include "snprintf.h" // xastir_snprintf, for the font-name cache
 #include "xa_draw.h"
+
+#ifdef HAVE_CAIRO
+  #include "cairo_text.h"
+#endif
 
 // da, gc, screen_width and screen_height come from xastir.h.
 
@@ -90,6 +96,341 @@ void xa_canvas_size(int *width, int *height)
   {
     *height = (int)screen_height;
   }
+}
+
+
+/* ---- text and fonts --------------------------------------------------- */
+
+XA_CHECK(XA_ALIGN_NONE == NONE);
+XA_CHECK(XA_ALIGN_TLEFT == TLEFT);
+XA_CHECK(XA_ALIGN_TCENTRE == TCENTRE);
+XA_CHECK(XA_ALIGN_TRIGHT == TRIGHT);
+XA_CHECK(XA_ALIGN_MLEFT == MLEFT);
+XA_CHECK(XA_ALIGN_MCENTRE == MCENTRE);
+XA_CHECK(XA_ALIGN_MRIGHT == MRIGHT);
+XA_CHECK(XA_ALIGN_BLEFT == BLEFT);
+XA_CHECK(XA_ALIGN_BCENTRE == BCENTRE);
+XA_CHECK(XA_ALIGN_BRIGHT == BRIGHT);
+
+
+xa_font xa_font_load(const char *name)
+{
+  Display *dpy = xa_dpy();
+
+  if (dpy == NULL || name == NULL)
+  {
+    return XA_FONT_NONE;
+  }
+  return (xa_font)XLoadQueryFont(dpy, name);
+}
+
+
+void xa_font_free(xa_font f)
+{
+  Display *dpy = xa_dpy();
+
+  if (dpy != NULL && f != XA_FONT_NONE)
+  {
+    (void)XFreeFont(dpy, (XFontStruct *)f);
+  }
+}
+
+
+static void metrics_from(const XFontStruct *fs, xa_font_metrics *m)
+{
+  if (m == NULL)
+  {
+    return;
+  }
+  if (fs == NULL)
+  {
+    m->max_width = m->min_width = m->ascent = m->descent = 0;
+    return;
+  }
+  m->max_width = fs->max_bounds.width;
+  m->min_width = fs->min_bounds.width;
+  m->ascent    = fs->max_bounds.ascent;
+  m->descent   = fs->max_bounds.descent;
+}
+
+
+void xa_font_metrics_get(xa_font f, xa_font_metrics *m)
+{
+  metrics_from((const XFontStruct *)f, m);
+}
+
+
+void xa_font_text_extents(xa_font f, const char *text, int length,
+                          int *width, int *ascent, int *descent)
+{
+  int dir, asc, desc;
+  XCharStruct overall;
+
+  if (width)
+  {
+    *width = 0;
+  }
+  if (ascent)
+  {
+    *ascent = 0;
+  }
+  if (descent)
+  {
+    *descent = 0;
+  }
+  if (f == XA_FONT_NONE || text == NULL || length <= 0)
+  {
+    return;
+  }
+  XTextExtents((XFontStruct *)f, text, length, &dir, &asc, &desc, &overall);
+  if (width)
+  {
+    *width = overall.width;
+  }
+  if (ascent)
+  {
+    *ascent = overall.ascent;
+  }
+  if (descent)
+  {
+    *descent = overall.descent;
+  }
+}
+
+
+int xa_font_text_width(xa_font f, const char *text, int length)
+{
+  int w;
+
+  xa_font_text_extents(f, text, length, &w, NULL, NULL);
+  return w;
+}
+
+
+/*
+ * The font a pen is set to.  XQueryFont() allocates, so every caller has to
+ * free -- and two of the three original sites returned without doing so on one
+ * path.  Confining that to here means the leak cannot come back.
+ */
+static XFontStruct *pen_font(xa_pen pen)
+{
+  Display *dpy = xa_dpy();
+
+  if (dpy == NULL || pen == NULL)
+  {
+    return NULL;
+  }
+  return XQueryFont(dpy, XGContextFromGC((GC)pen));
+}
+
+
+void xa_pen_font_metrics(xa_pen pen, xa_font_metrics *m)
+{
+  Display *dpy = xa_dpy();
+  XFontStruct *fs = pen_font(pen);
+
+  metrics_from(fs, m);
+  if (fs != NULL && dpy != NULL)
+  {
+    XFreeFontInfo(NULL, fs, 1);
+  }
+}
+
+
+int xa_pen_text_width(xa_pen pen, const char *text, int length)
+{
+  Display *dpy = xa_dpy();
+  XFontStruct *fs = pen_font(pen);
+  int w = 0;
+
+  if (fs != NULL)
+  {
+    if (text != NULL && length > 0)
+    {
+      int dir, asc, desc;
+      XCharStruct overall;
+      XTextExtents(fs, text, length, &dir, &asc, &desc, &overall);
+      w = overall.width;
+    }
+    if (dpy != NULL)
+    {
+      XFreeFontInfo(NULL, fs, 1);
+    }
+  }
+  return w;
+}
+
+
+void xa_pen_font(xa_pen pen, xa_font f)
+{
+  Display *dpy = xa_dpy();
+
+  if (dpy && pen && f != XA_FONT_NONE)
+  {
+    (void)XSetFont(dpy, (GC)pen, ((XFontStruct *)f)->fid);
+  }
+}
+
+
+void xa_draw_text_rotated(xa_surface_id dst, xa_pen pen, xa_font f,
+                          int x, int y, float degrees, int align,
+                          const char *text)
+{
+  Display *dpy = xa_dpy();
+
+  if (dpy == NULL || pen == NULL || dst == XA_SURFACE_NONE
+      || f == XA_FONT_NONE || text == NULL)
+  {
+    return;
+  }
+  (void)XRotDrawAlignedString(dpy, (XFontStruct *)f, degrees,
+                              (Drawable)dst, (GC)pen, x, y,
+                              (char *)text, align);
+}
+
+
+/*
+ * Font-spec text.  Two implementations live behind these three entry points,
+ * chosen by HAVE_CAIRO, and no caller sees which.
+ *
+ * The non-Cairo half needs a loaded font for a name, so it keeps a small cache
+ * here.  That cache used to be rotated_label_font[] in maps.c together with a
+ * parallel array of the names last loaded into it, so that changing the
+ * configured font could invalidate the entry -- roughly thirty lines of
+ * bookkeeping in a file that draws maps.  Keying on the name directly does the
+ * same job, and font resources belong to the renderer.
+ */
+#ifndef HAVE_CAIRO
+
+#define XA_FONT_CACHE 12
+
+static struct
+{
+  char  name[256];
+  xa_font font;
+} xa_font_cache[XA_FONT_CACHE];
+
+static xa_font font_for(const char *spec)
+{
+  int i, free_slot = -1;
+
+  if (spec == NULL || spec[0] == '\0')
+  {
+    return XA_FONT_NONE;
+  }
+  for (i = 0; i < XA_FONT_CACHE; i++)
+  {
+    if (xa_font_cache[i].font == XA_FONT_NONE)
+    {
+      if (free_slot < 0)
+      {
+        free_slot = i;
+      }
+      continue;
+    }
+    if (strcmp(xa_font_cache[i].name, spec) == 0)
+    {
+      return xa_font_cache[i].font;
+    }
+  }
+
+  {
+    xa_font f = xa_font_load(spec);
+    if (f == XA_FONT_NONE)
+    {
+      return XA_FONT_NONE;
+    }
+    // Full cache: use the font but do not keep it, rather than evicting an entry
+    // that something may still be drawing with.  With nine configurable label
+    // fonts and twelve slots this does not happen in practice.
+    if (free_slot >= 0)
+    {
+      xastir_snprintf(xa_font_cache[free_slot].name,
+                      sizeof(xa_font_cache[free_slot].name), "%s", spec);
+      xa_font_cache[free_slot].font = f;
+    }
+    return f;
+  }
+}
+
+#endif  // !HAVE_CAIRO
+
+
+void xa_draw_text_styled(xa_surface_id dst, int x, int y, float degrees,
+                         const char *text, const char *fontspec,
+                         xa_color fg, int outline, xa_color outline_color,
+                         int align)
+{
+  Display *dpy = xa_dpy();
+
+  if (dpy == NULL || dst == XA_SURFACE_NONE || text == NULL || fontspec == NULL)
+  {
+    return;
+  }
+
+#ifdef HAVE_CAIRO
+  xastir_cairo_draw_text(dpy, (Pixmap)dst, x, y, degrees, text, fontspec,
+                         (unsigned long)fg, outline,
+                         (unsigned long)outline_color, align);
+#else
+  {
+    xa_font f = font_for(fontspec);
+
+    if (f == XA_FONT_NONE)
+    {
+      return;
+    }
+    // The xvertext path has no outline mode; the callers that want one already
+    // draw the text repeatedly at offsets, which is what this reproduces.
+    if (outline)
+    {
+      int dx, dy;
+      xa_pen_color((xa_pen)gc, outline_color);
+      for (dx = -1; dx < 2; dx++)
+      {
+        for (dy = -1; dy < 2; dy++)
+        {
+          xa_draw_text_rotated(dst, (xa_pen)gc, f, x + dx, y + dy,
+                               degrees, align, text);
+        }
+      }
+    }
+    xa_pen_color((xa_pen)gc, fg);
+    xa_draw_text_rotated(dst, (xa_pen)gc, f, x, y, degrees, align, text);
+  }
+#endif
+}
+
+
+int xa_text_width(const char *text, const char *fontspec)
+{
+  if (text == NULL || fontspec == NULL)
+  {
+    return 0;
+  }
+#ifdef HAVE_CAIRO
+  return xastir_cairo_text_width(text, fontspec);
+#else
+  return xa_font_text_width(font_for(fontspec), text, (int)strlen(text));
+#endif
+}
+
+
+int xa_text_height(const char *fontspec)
+{
+  if (fontspec == NULL)
+  {
+    return 0;
+  }
+#ifdef HAVE_CAIRO
+  return xastir_cairo_text_height(fontspec);
+#else
+  {
+    xa_font_metrics m;
+    xa_font_metrics_get(font_for(fontspec), &m);
+    return m.ascent + m.descent;
+  }
+#endif
 }
 
 
@@ -293,6 +634,15 @@ void xa_pen_clip_mask(xa_pen pen, xa_surface_id mask)
   {
     // XA_SURFACE_NONE is None, which is exactly "no clipping" to Xlib.
     (void)XSetClipMask(dpy, (GC)pen, (Pixmap)mask);
+  }
+}
+
+void xa_pen_clip_origin(xa_pen pen, int x, int y)
+{
+  Display *dpy = xa_dpy();
+  if (dpy && pen)
+  {
+    (void)XSetClipOrigin(dpy, (GC)pen, x, y);
   }
 }
 

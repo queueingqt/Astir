@@ -110,6 +110,130 @@ xa_surface_id xa_screen_target(void);
 void          xa_canvas_size(int *width, int *height);
 
 
+/* ---- text and fonts --------------------------------------------------- */
+
+/*
+ * Fonts were the last thing keeping the core on Xlib, and the reason two files
+ * could not be split.  The grid subsystem in maps.c -- draw_grid, both UTM grid
+ * functions, the lat/lon grid, the largest core functions in the file -- reached
+ * Motif through nothing but text measurement, as did draw_symbol.  No dialog was
+ * ever involved.
+ *
+ * An opaque font handle.  An XFontStruct * today, which is why it is a pointer:
+ * the existing rotated_label_font[] array can hold these unchanged.  Callers
+ * must not dereference it.
+ */
+typedef void *xa_font;
+
+#define XA_FONT_NONE ((xa_font)0)
+
+// Load a font by backend-specific name (an XLFD today).  XA_FONT_NONE if it is
+// not available -- callers already check for that and fall back.
+xa_font xa_font_load(const char *name);
+void    xa_font_free(xa_font f);
+
+/*
+ * Font metrics, in pixels.
+ *
+ * max_width and min_width are the widest and narrowest glyph, not the average:
+ * the call sites compute (3*max + min)/4 as a stand-in for average advance, and
+ * reproducing that arithmetic exactly matters more than improving it, since the
+ * output must stay pixel-identical.
+ */
+typedef struct
+{
+  int max_width;
+  int min_width;
+  int ascent;
+  int descent;
+} xa_font_metrics;
+
+void xa_font_metrics_get(xa_font f, xa_font_metrics *m);
+
+/*
+ * Ink extents of one string in a given font, in pixels.  Distinct from
+ * xa_font_metrics: those are the font's widest and tallest glyph, these are what
+ * this particular string actually occupies.  Both callers exist -- the label
+ * width uses the string, the symbol layout uses the font.
+ *
+ * Any output pointer may be NULL.
+ */
+void xa_font_text_extents(xa_font f, const char *text, int length,
+                          int *width, int *ascent, int *descent);
+
+// Width alone, for the common case.
+int xa_font_text_width(xa_font f, const char *text, int length);
+
+/*
+ * The same two questions about whatever font a pen is currently drawing with.
+ *
+ * These exist because draw_symbols.c never names a font -- it asks the GC what
+ * it is set to.  Under X that is XGContextFromGC() plus XQueryFont(), a server
+ * round trip and an allocation that has to be freed; three call sites did it and
+ * two of them leaked on one path.  A backend that tracks its own pen state
+ * answers both without asking anyone.
+ */
+void xa_pen_font_metrics(xa_pen pen, xa_font_metrics *m);
+int  xa_pen_text_width(xa_pen pen, const char *text, int length);
+
+// Set the font a pen draws text with.
+void xa_pen_font(xa_pen pen, xa_font f);
+
+/*
+ * Alignment for rotated text.  Same numeric values as rotated.c's constants,
+ * static-asserted in the backend like the style constants above.
+ */
+#define XA_ALIGN_NONE     0
+#define XA_ALIGN_TLEFT    1
+#define XA_ALIGN_TCENTRE  2
+#define XA_ALIGN_TRIGHT   3
+#define XA_ALIGN_MLEFT    4
+#define XA_ALIGN_MCENTRE  5
+#define XA_ALIGN_MRIGHT   6
+#define XA_ALIGN_BLEFT    7
+#define XA_ALIGN_BCENTRE  8
+#define XA_ALIGN_BRIGHT   9
+
+/*
+ * Draw text rotated by `degrees`, anchored per `align`.
+ *
+ * Today this lands on rotated.c, a self-contained rotated-text renderer that
+ * predates Xft.  A GTK4 backend does not convert it -- Pango rotates text
+ * natively -- so keeping it behind one call is what makes that substitution a
+ * backend change rather than a call-site sweep.
+ */
+void xa_draw_text_rotated(xa_surface_id dst, xa_pen pen, xa_font f,
+                          int x, int y, float degrees, int align,
+                          const char *text);
+
+/*
+ * Text named by font spec rather than by loaded handle, with rotation,
+ * alignment and an optional outline.
+ *
+ * This is the interface the tree actually needs, and the reason it is separate
+ * from the handle-based calls above is worth recording.  Xastir has TWO text
+ * implementations selected by HAVE_CAIRO: Cairo, which takes a font spec string
+ * and needs no font handle at all, and the older xvertext path, which needs a
+ * loaded XFontStruct.  Both were open-coded at the call sites, so every caller
+ * had an #ifdef in it and the Cairo half needed a Display to pass down.
+ *
+ * Behind this call the backend picks the implementation, caches whatever it
+ * needs to, and supplies its own display connection.  Callers name a font and a
+ * colour and stop knowing which renderer is compiled in.
+ *
+ * fontspec is an XLFD or "Family:size=N".  outline non-zero draws a one-pixel
+ * outline in outline_color first.
+ */
+void xa_draw_text_styled(xa_surface_id dst, int x, int y, float degrees,
+                         const char *text, const char *fontspec,
+                         xa_color fg, int outline, xa_color outline_color,
+                         int align);
+
+// Measurement by font spec, for the same reason.
+int xa_text_width(const char *text, const char *fontspec);
+int xa_text_height(const char *fontspec);
+
+
 /* ---- colours ---------------------------------------------------------- */
 
 /*
@@ -182,6 +306,7 @@ void xa_pen_stipple(xa_pen pen, xa_surface_id bitmap);
 void xa_pen_ts_origin(xa_pen pen, int x, int y);
 void xa_pen_function(xa_pen pen, int func);
 void xa_pen_clip_mask(xa_pen pen, xa_surface_id mask);
+void xa_pen_clip_origin(xa_pen pen, int x, int y);
 
 
 /* ---- drawing ---------------------------------------------------------- */

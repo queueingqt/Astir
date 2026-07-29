@@ -120,7 +120,6 @@ void draw_nice_string(Widget w, Pixmap where, int style, long x, long y, char *t
 
 #ifdef HAVE_CAIRO
   {
-    Display *dpy = XtDisplay(w);
     const char *fontspec = rotated_label_fontname[FONT_STATION];
     static const int outline_offsets_2px[12][2] = {
       {-2,  0}, { 2,  0}, { 0, -2}, { 0,  2},
@@ -128,15 +127,15 @@ void draw_nice_string(Widget w, Pixmap where, int style, long x, long y, char *t
       {-2, -1}, {-2,  1}, { 2, -1}, { 2,  1}
     };
 
-    int font_height = xastir_cairo_text_height(fontspec);
-    int text_w      = xastir_cairo_text_width(text, fontspec);
+    int font_height = xa_text_height(fontspec);
+    int text_w      = xa_text_width(text, fontspec);
 
     switch (style)
     {
       case 0:
         /* outline style: 8 copies in bgcolor, then text in fgcolor */
-        xastir_cairo_draw_text(dpy, where, x, y, 0.0f, text, fontspec,
-                               colors[bgcolor], 1, colors[bgcolor], NONE);
+        xa_draw_text_styled(where, x, y, 0.0f, text, fontspec,
+                               colors[bgcolor], 1, colors[bgcolor], XA_ALIGN_NONE);
         break;
 
       case 1:
@@ -144,25 +143,25 @@ void draw_nice_string(Widget w, Pixmap where, int style, long x, long y, char *t
         xa_pen_color(gc, colors[0xff]);
         xa_fill_rect(where, gc, x, y - (font_height - font_height/4), text_w, font_height);
         /* fall through: draw text over box */
-        xastir_cairo_draw_text(dpy, where, x, y, 0.0f, text, fontspec,
-                               colors[bgcolor], 0, 0, NONE);
+        xa_draw_text_styled(where, x, y, 0.0f, text, fontspec,
+                               colors[bgcolor], 0, 0, XA_ALIGN_NONE);
         return;
 
       case 2:
         /* black box - box drawn by caller via XFillRectangle, just draw text */
         xa_pen_color(gc, GetPixelByName(w, "black"));
         xa_fill_rect(where, gc, x, y - (font_height - font_height/4), text_w, font_height);
-        xastir_cairo_draw_text(dpy, where, x, y, 0.0f, text, fontspec,
-                               colors[fgcolor], 0, 0, NONE);
+        xa_draw_text_styled(where, x, y, 0.0f, text, fontspec,
+                               colors[fgcolor], 0, 0, XA_ALIGN_NONE);
         return;
 
       case 3:
       default:
         /* shadow: draw offset copy in bgcolor first */
-        xastir_cairo_draw_text(dpy, where,
+        xa_draw_text_styled(where,
                                x + font_height/10, y + font_height/10,
                                0.0f, text, fontspec,
-                               colors[bgcolor], 0, 0, NONE);
+                               colors[bgcolor], 0, 0, XA_ALIGN_NONE);
         break;
 
       case 4:
@@ -171,34 +170,31 @@ void draw_nice_string(Widget w, Pixmap where, int style, long x, long y, char *t
 
         for (i = 0; i < 12; i++)
         {
-          xastir_cairo_draw_text(dpy, where,
+          xa_draw_text_styled(where,
                                  x + outline_offsets_2px[i][0],
                                  y + outline_offsets_2px[i][1],
                                  0.0f, text, fontspec,
-                                 colors[0x20], 0, 0, NONE);
+                                 colors[0x20], 0, 0, XA_ALIGN_NONE);
         }
-        xastir_cairo_draw_text(dpy, where, x, y, 0.0f, text, fontspec,
-                               colors[0x10], 0, 0, NONE);
+        xa_draw_text_styled(where, x, y, 0.0f, text, fontspec,
+                               colors[0x10], 0, 0, XA_ALIGN_NONE);
         return;
       }
     }
 
     /* final foreground text */
-    xastir_cairo_draw_text(dpy, where, x, y, 0.0f, text, fontspec,
-                           colors[fgcolor], 0, 0, NONE);
+    xa_draw_text_styled(where, x, y, 0.0f, text, fontspec,
+                           colors[fgcolor], 0, 0, XA_ALIGN_NONE);
   }
 #else  /* !HAVE_CAIRO */
   {
-    GContext gcontext;
-    XFontStruct *xfs_ptr;
+    xa_font_metrics fm;
     int font_width, font_height;
     int x_outline, y_outline;
 
-    gcontext = XGContextFromGC(gc);
-    xfs_ptr = XQueryFont(XtDisplay(w), gcontext);
-    font_width = (int)((xfs_ptr->max_bounds.width * 3
-                        + xfs_ptr->min_bounds.width) / 4);
-    font_height = xfs_ptr->max_bounds.ascent + xfs_ptr->max_bounds.descent;
+    xa_pen_font_metrics(gc, &fm);
+    font_width = (int)((fm.max_width * 3 + fm.min_width) / 4);
+    font_height = fm.ascent + fm.descent;
 
     switch (style)
     {
@@ -243,14 +239,10 @@ void draw_nice_string(Widget w, Pixmap where, int style, long x, long y, char *t
         }
         xa_pen_color(gc, colors[0x10]);
         xa_draw_string(where, gc, x, y, text, length);
-        if (xfs_ptr)
-          XFreeFontInfo(NULL, xfs_ptr, 1);
         return;
     }
     xa_pen_color(gc, colors[fgcolor]);
     xa_draw_string(where, gc, x, y, text, length);
-    if (xfs_ptr)
-      XFreeFontInfo(NULL, xfs_ptr, 1);
   }
 #endif /* HAVE_CAIRO */
 }
@@ -2743,7 +2735,7 @@ void symbol(Widget w, int ghost, char symbol_table, char symbol_id, char symbol_
       xa_pen_clip_mask(gc, symbol_data[found].pix_mask);
     }
   }
-  (void)XSetClipOrigin(XtDisplay(w),gc,x_offset,y_offset);
+  xa_pen_clip_origin(gc, x_offset, y_offset);
   xa_copy_area(symbol_data[found].pix, where, gc, 0, 0, 20, 20, x_offset, y_offset);
 
 
@@ -2758,7 +2750,7 @@ void symbol(Widget w, int ghost, char symbol_table, char symbol_id, char symbol_
       xa_pen_clip_mask(gc, symbol_data[alphanum_index].pix_mask);
     }
 
-    (void)XSetClipOrigin(XtDisplay(w),gc,x_offset,y_offset);
+    xa_pen_clip_origin(gc, x_offset, y_offset);
     xa_copy_area(symbol_data[alphanum_index].pix, where, gc, 0, 0, 20, 20, x_offset, y_offset); // rot
   }
 
@@ -2770,23 +2762,9 @@ void symbol(Widget w, int ghost, char symbol_table, char symbol_id, char symbol_
 long get_text_width(Widget w,char *text)
 {
 #ifdef HAVE_CAIRO
-  return (long)xastir_cairo_text_width(text, rotated_label_fontname[FONT_STATION]);
+  return (long)xa_text_width(text, rotated_label_fontname[FONT_STATION]);
 #else
-  long width;
-  GContext gcontext;
-  XFontStruct *xfs_ptr;
-  int dir, asc, desc;
-  XCharStruct overall;
-
-  gcontext = XGContextFromGC(gc);
-  xfs_ptr = XQueryFont(XtDisplay(w), gcontext);
-
-  XTextExtents(xfs_ptr, text, strlen(text), &dir, &asc, &desc, &overall);
-  width = overall.width;
-
-  if (xfs_ptr)
-    XFreeFontInfo(NULL, xfs_ptr, 1);
-  return width;
+  return xa_pen_text_width(gc, text, (int)strlen(text));
 #endif
 }
 
@@ -2812,33 +2790,26 @@ void draw_symbol(Widget w, char symbol_table, char symbol_id, char symbol_overla
 // N7IPB - 4/7/2016
 //
 #ifndef HAVE_CAIRO
-  GContext gcontext;
-  XFontStruct *xfs_ptr;
+  xa_font_metrics fm;
 #endif
   int font_width, font_height;
 
 #ifdef HAVE_CAIRO
-  font_width  = xastir_cairo_text_width("0", rotated_label_fontname[FONT_STATION]);
-  font_height = xastir_cairo_text_height(rotated_label_fontname[FONT_STATION]);
+  font_width  = xa_text_width("0", rotated_label_fontname[FONT_STATION]);
+  font_height = xa_text_height(rotated_label_fontname[FONT_STATION]);
 #else
-  gcontext = XGContextFromGC(gc);
+  xa_pen_font_metrics(gc, &fm);
 
-  xfs_ptr = XQueryFont(XtDisplay(w), gcontext);
-
-  font_width = (int)((xfs_ptr->max_bounds.width
-                      + xfs_ptr->max_bounds.width
-                      + xfs_ptr->max_bounds.width
-                      + xfs_ptr->min_bounds.width) / 4);
+  font_width = (int)((fm.max_width
+                      + fm.max_width
+                      + fm.max_width
+                      + fm.min_width) / 4);
 
   // Get the font height and use it for the distance between lineis of text
-  font_height = xfs_ptr->max_bounds.ascent;
+  font_height = fm.ascent;
 
-  // Free the info to avoid a memory leak
-  if (xfs_ptr)
-  {
-    // This leaks memory if the last parameter is a "0"
-    XFreeFontInfo(NULL, xfs_ptr, 1);
-  }
+  // The XFreeFontInfo() that used to be here, with a comment warning that it
+  // leaks if the last argument is 0, is now inside xa_pen_font_metrics().
 #endif /* HAVE_CAIRO */
 
   if ((x_long>NW_corner_longitude) && (x_long<SE_corner_longitude))

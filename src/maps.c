@@ -3847,10 +3847,11 @@ void draw_label_text (Widget w, int x, int y, int label_length, int color, char 
 // takes a big chunk of memory each time.  Can you say "memory
 // leak"?
 
-XFontStruct *rotated_label_font[FONT_MAX]= {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL};
+// Only the configured font NAMES live here now.  The loaded fonts, and the
+// cache that avoided reloading one per label, moved into the drawing backend --
+// font resources belong to the renderer, and keeping them here meant this file
+// held an XFontStruct array plus a parallel array of names to invalidate it.
 char rotated_label_fontname[FONT_MAX][MAX_LABEL_FONTNAME];
-static char
-current_rotated_label_fontname[FONT_MAX][sizeof(rotated_label_fontname)] = {"","","","","","","","",""};
 
 /**********************************************************
  * draw_rotated_label_text_common()
@@ -3884,104 +3885,28 @@ static void draw_rotated_label_text_common (Widget w, float my_rotation, int x, 
     return;
   }
 
-#ifdef HAVE_CAIRO
+/* Two passes: the outline first, then the foreground text clean over it.
+   A single compound call with fg != outline produced invisible text.
+
+   There used to be an #ifdef HAVE_CAIRO here with two entirely separate
+   implementations under it -- Cairo took a font spec, the xvertext path loaded
+   an XFontStruct and cached it in rotated_label_font[] with a parallel array of
+   last-loaded names to invalidate against.  Both are behind
+   xa_draw_text_styled() now, including the font cache, so this function no
+   longer knows or cares which renderer was compiled in. */
+  if (draw_outline)
   {
-    Display  *dpy = XtDisplay(w);
-
-    /* Use the same two-call pattern as draw_nice_string:
-     * first pass draws the outline (same color for fg+outline so it
-     * fills evenly), second pass draws the foreground text clean.
-     * A single compound call with fg!=outline produced invisible text. */
-    if (draw_outline)
-    {
-      xastir_cairo_draw_text(
-          dpy,
-          target_pixmap,
-          x,
-          y,
-          my_rotation,
-          label_text,
-          rotated_label_fontname[fontsize],
-          (unsigned long)outline_bg_color,   /* fg_pixel = outline color */
-          1,                                  /* draw_outline = true     */
-          (unsigned long)outline_bg_color,   /* outline_pixel = same    */
-          align);
-    }
-
-    /* Foreground text, no outline */
-    xastir_cairo_draw_text(
-        dpy,
-        target_pixmap,
-        x,
-        y,
-        my_rotation,
-        label_text,
-        rotated_label_fontname[fontsize],
-        (unsigned long)color,
-        0,
-        0,
-        align);
+    xa_draw_text_styled(target_pixmap, x, y, my_rotation,
+                        label_text, rotated_label_fontname[fontsize],
+                        outline_bg_color,   /* fg = the outline colour */
+                        1,                  /* draw the outline        */
+                        outline_bg_color,   /* and in the same colour  */
+                        align);
   }
-#else  /* !HAVE_CAIRO -- fall back to old xvertext path */
-  {
-    int x_outline, y_outline;
 
-    /* see if fontname has changed */
-    if (rotated_label_font[fontsize] &&
-        strcmp(rotated_label_fontname[fontsize],current_rotated_label_fontname[fontsize]) != 0)
-    {
-      XFreeFont(XtDisplay(w),rotated_label_font[fontsize]);
-      rotated_label_font[fontsize] = NULL;
-      xastir_snprintf(current_rotated_label_fontname[fontsize],
-                      sizeof(rotated_label_fontname),
-                      "%s",
-                      rotated_label_fontname[fontsize]);
-    }
-    /* load font */
-    if(!rotated_label_font[fontsize])
-    {
-      rotated_label_font[fontsize]=(XFontStruct *)XLoadQueryFont(XtDisplay (w),
-                                   rotated_label_fontname[fontsize]);
-      if (rotated_label_font[fontsize] == NULL)
-      {
-        fprintf(stderr,"draw_rotated_label_text: Couldn't get font %s\n",
-                rotated_label_fontname[fontsize]);
-        return;
-      }
-    }
-
-    if (draw_outline)
-    {
-      xa_pen_color(gc, outline_bg_color);
-      for (x_outline=-1; x_outline<2; x_outline++)
-      {
-        for (y_outline=-1; y_outline<2; y_outline++)
-        {
-          (void)XRotDrawAlignedString(XtDisplay (w),
-                                      rotated_label_font[fontsize],
-                                      my_rotation,
-                                      target_pixmap,
-                                      gc,
-                                      x+x_outline,
-                                      y+y_outline,
-                                      label_text,
-                                      align);
-        }
-      }
-    }
-
-    xa_pen_color(gc, color);
-    (void)XRotDrawAlignedString(XtDisplay (w),
-                                rotated_label_font[fontsize],
-                                my_rotation,
-                                target_pixmap,
-                                gc,
-                                x,
-                                y,
-                                label_text,
-                                align);
-  }
-#endif /* HAVE_CAIRO */
+  xa_draw_text_styled(target_pixmap, x, y, my_rotation,
+                      label_text, rotated_label_fontname[fontsize],
+                      color, 0, 0, align);
 }
 
 
@@ -4000,33 +3925,8 @@ int get_rotated_label_text_length_pixels(Widget w, char *label_text, int fontsiz
   if (fontsize < 0 || fontsize >= FONT_MAX)
     return -1;
 
-#ifdef HAVE_CAIRO
-  return xastir_cairo_text_width(label_text, rotated_label_fontname[fontsize]);
-#else
-  int dir, asc, desc;
-  XCharStruct overall;
-  int return_value = -1;
-  int got_font = TRUE;
-
-  if(!rotated_label_font[fontsize])
-  {
-    rotated_label_font[fontsize]=(XFontStruct *)XLoadQueryFont(XtDisplay (w),
-                                 rotated_label_fontname[fontsize]);
-    if (rotated_label_font[fontsize] == NULL)
-    {
-      fprintf(stderr,"get_rotated_label_text_length_pixels: Couldn't get font %s\n",
-              rotated_label_fontname[fontsize]);
-      got_font = FALSE;
-    }
-  }
-  if (got_font)
-  {
-    XTextExtents(rotated_label_font[fontsize], label_text, strlen(label_text),
-                 &dir, &asc, &desc, &overall);
-    return_value = overall.width;
-  }
-  return return_value;
-#endif
+  (void)w;
+  return xa_text_width(label_text, rotated_label_fontname[fontsize]);
 }
 
 
@@ -4045,35 +3945,9 @@ int get_rotated_label_text_height_pixels(Widget w, char *label_text, int fontsiz
   if (fontsize < 0 || fontsize >= FONT_MAX)
     return -1;
 
-#ifdef HAVE_CAIRO
   (void)label_text;
   (void)w;
-  return xastir_cairo_text_height(rotated_label_fontname[fontsize]);
-#else
-  int dir, asc, desc;
-  XCharStruct overall;
-  int return_value = -1;
-  int got_font = TRUE;
-
-  if(!rotated_label_font[fontsize])
-  {
-    rotated_label_font[fontsize]=(XFontStruct *)XLoadQueryFont(XtDisplay (w),
-                                 rotated_label_fontname[fontsize]);
-    if (rotated_label_font[fontsize] == NULL)
-    {
-      fprintf(stderr,"get_rotated_label_text_height_pixels: Couldn't get font %s\n",
-              rotated_label_fontname[fontsize]);
-      got_font = FALSE;
-    }
-  }
-  if (got_font)
-  {
-    XTextExtents(rotated_label_font[fontsize], label_text, strlen(label_text),
-                 &dir, &asc, &desc, &overall);
-    return_value = overall.ascent + overall.descent;
-  }
-  return return_value;
-#endif
+  return xa_text_height(rotated_label_fontname[fontsize]);
 }
 
 

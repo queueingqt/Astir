@@ -20,28 +20,30 @@ Run the measurement scripts against a **built** tree — several read `src/*.o`.
 | `split_file.py <src.c> <dest.c> <fn,fn,...> [--header=f] [--apply]` | Performs the split: moves the named functions, with their doc comments and any `#if` that wraps one, into a new file. Dry run by default. Refuses to write unless the moved and kept spans reassemble the original byte for byte. |
 | `split_scope.py [--gui=fn,fn] src <file.c>...` | Where the GUI/core seam runs inside one file: which functions have Motif in the **body**, which are pulled in transitively by *calling* one that does, which merely carry a `Widget` in the signature, and which file-scope names both halves touch. `--gui=` adds known-GUI names defined in other files (`redraw_symbols`, `pos_dialog`, `resize_dialog`). |
 
-## The file splits are blocked on fonts, not on dialogs
+## The file splits were blocked on fonts, not on dialogs
 
-Worth knowing before starting one. Running `split_scope.py` with call-coupling
-turned on says:
+Resolved, but the shape of it is worth keeping. `split_scope.py` with
+call-coupling on reported:
 
-| file | GUI | what pulls the core half across |
-|---|---|---|
-| ~~`cad_objects.c`~~ | ~~74%~~ | **done** — split into `cad_objects.c` (0% GUI) and `cad_objects_gui.c` |
-| `draw_symbols.c` | — | `draw_symbol`, via `XQueryFont` / `XSetClipOrigin` |
-| `maps.c` | 55% | eleven crossings, all text measurement |
+| file | GUI then | now | what had pulled the core half across |
+|---|---|---|---|
+| `cad_objects.c` | 74% | **split** | dialogs and `redraw_symbols` |
+| `maps.c` | 55% | 20% | eleven crossings, every one text measurement |
+| `draw_symbols.c` | — | 14% | `draw_symbol`, via `XQueryFont` / `XSetClipOrigin` |
 
 In `maps.c` the entire grid subsystem — `draw_grid`,
-`draw_complete_lat_lon_grid`, `draw_major_utm_mgrs_grid`,
-`draw_minor_utm_mgrs_grid`, `actually_draw_utm_minor_grid`, the biggest core
-functions in the file — reaches Motif through nothing but
-`get_border_width`, `get_rotated_label_text_length_pixels` and
-`draw_rotated_label_text_common`, which call `XLoadQueryFont`, `XTextExtents`
-and `XFreeFont`. No dialog is involved. Split the file today and the grid code
-lands on the GUI side for no reason but that it measures text.
+`draw_complete_lat_lon_grid`, both UTM grid functions,
+`actually_draw_utm_minor_grid`, the biggest core functions in the file —
+reached Motif through nothing but `get_border_width`,
+`get_rotated_label_text_length_pixels` and `draw_rotated_label_text_common`,
+which called `XLoadQueryFont`, `XTextExtents` and `XFreeFont`. No dialog was
+anywhere in that chain. Splitting the file first would have put the grid code on
+the GUI side because it measures text.
 
-So the order is: abstract fonts, then split `maps.c` and `draw_symbols.c`.
-`cad_objects.c` does not depend on that and can go first.
+Fonts now go through `xa_draw.h`, both files have zero crossings, and the two
+splits are unblocked. The general lesson: run the transitive check before
+choosing which file to cut, because the first-order answer named the wrong
+blocker.
 
 ## Reading the Xlib numbers
 
@@ -61,6 +63,33 @@ A name starting with `X` is not evidence it is Xlib: `XTIFFClose` is libtiff,
 macro in `xa_draw_x11.c`. Those three alone would have added 41 to the count.
 The script checks each name against `<X11/Xlib.h>` and `<X11/Xutil.h>` instead
 of guessing, and says so rather than reporting zero if those headers are absent.
+
+## Verifying a change that alters pixels
+
+The counter checks in `bench-attrib.sh` cannot see text. They count shapes,
+vertices and draw calls, all of which stay identical while a font change moves
+every label by a pixel. For anything touching text or colour, compare the
+rendered map itself.
+
+`snapshot_ab.sh <out.xpm>` does that, using Xastir's own snapshot facility:
+`SNAPSHOTS_ENABLED:1` makes it write `pixmap_final` to
+`~/.xastir/tmp/snapshot.xpm`, which is the finished frame with no window
+involved. Run it against each build and `cmp` the two files.
+
+Three other approaches were tried first and all three produced worthless
+results rather than failing:
+
+- **`ab-shot.sh` captures the whole screen** (`spectacle -b`), so it only works
+  if Xastir is the visible unobscured window. One side came back as a blank grey
+  Xastir window, the other as the browser that happened to be on top of it, and
+  the comparison dutifully reported a 7% difference. `bench-attrib.sh`'s header
+  already warns it was written to avoid exactly this.
+- **Cropping the screenshot** to the Xastir window does not help, because the
+  window content was wrong, not the framing.
+- **`xwd` / `xwininfo` / `xdotool` are not installed here**, so capturing a
+  specific window by id was not available either.
+
+`import -window` exists but needs a window id from one of the missing tools.
 
 ## Link it before believing it
 
