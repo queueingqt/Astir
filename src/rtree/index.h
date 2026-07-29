@@ -94,7 +94,9 @@ struct ListNode
  * It can terminate the search early by returning 0 in which case
  * the search will return the number of hits found up to that point.
  */
-typedef int (*SearchHitCallback)(void *id, void* arg);
+// The matched leaf rectangle is passed to the callback so that callers can
+// reject a hit without having to read the underlying record from disk.
+typedef int (*SearchHitCallback)(void *id, struct Rect *rect, void* arg);
 
 
 extern int Xastir_RTreeSearch(struct Node*, struct Rect*, SearchHitCallback, void*);

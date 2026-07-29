@@ -130,8 +130,119 @@ int RTree_hitarray_index=0;
 
 //This trivial routine is used by the RTreeSearch as a callback when it finds
 // a match.
-int RTreeSearchCallback(int id, void* UNUSED(arg) )
+// ---------------------------------------------------------------------------
+// Level-of-detail: is this shape too small to be visible at the current scale?
+//
+// Measured 2026-07-28: dbfawk_parse_record() accounted for 62% of frame time,
+// because it runs for every *visible* shape -- and at state scale essentially
+// every road in a county is "visible", 432,081 of them in one frame.  The
+// styling it computes (including display_level, which decides whether to draw
+// at all) is only knowable after running it, so the work cannot be avoided by
+// looking at the result.
+//
+// It can be avoided by looking at the geometry.  A shape whose bounding box
+// spans less than about a pixel in both directions cannot render as anything
+// but a dot, so skipping it costs nothing visible and saves the dbfawk run,
+// the coordinate transform and the draw.
+//
+// Only applied to shapes with more than one vertex, so point layers (which
+// legitimately have a zero-size bounding box) are never skipped.
+//
+// scale_x / scale_y are 1/100 second per pixel; shape bounds are degrees.
+// degrees -> 1/100 sec is  * 3600 * 100.
+// ---------------------------------------------------------------------------
+#define XA_LOD_DEG_TO_XASTIR 360000.0
+
+static double xa_lod_threshold_px(void)
 {
+  static double px = -1.0;
+  if (px < 0.0)
+  {
+    const char *e = getenv("XASTIR_LOD_PX");
+    px = (e && *e) ? atof(e) : 1.0;
+    if (px < 0.0)
+    {
+      px = 0.0;
+    }
+  }
+  return px;
+}
+
+// With sub-pixel culling active the index is worth consulting even when the
+// whole file is inside the viewport: we no longer read every shape, so the
+// RTree lets most of them be rejected without touching the disk at all.
+// Only meaningful for layers whose shapes have real extent.
+static int xa_lod_index_worthwhile(int shape_type)
+{
+  if (xa_lod_threshold_px() <= 0.0)
+  {
+    return 0;
+  }
+  return (shape_type == SHPT_ARC
+          || shape_type == SHPT_ARCZ
+          || shape_type == SHPT_ARCM
+          || shape_type == SHPT_POLYGON
+          || shape_type == SHPT_POLYGONZ
+          || shape_type == SHPT_POLYGONM);
+}
+
+
+static int xa_lod_subpixel(SHPObject *object)
+{
+  double thr, w_px, h_px;
+
+  if (object == NULL || object->nVertices < 2)
+  {
+    return 0;
+  }
+  thr = xa_lod_threshold_px();
+  if (thr <= 0.0 || scale_x <= 0 || scale_y <= 0)
+  {
+    return 0;
+  }
+
+  w_px = (object->dfXMax - object->dfXMin) * XA_LOD_DEG_TO_XASTIR / (double)scale_x;
+  h_px = (object->dfYMax - object->dfYMin) * XA_LOD_DEG_TO_XASTIR / (double)scale_y;
+
+  if (w_px < thr && h_px < thr)
+  {
+    xa_perf_count(XA_CNT_SHAPES_SKIPPED, 1);
+    return 1;
+  }
+  return 0;
+}
+
+// Set per file, immediately before the RTree search.  Sub-pixel rejection is
+// only valid for shapes that have real extent; a point layer legitimately has a
+// zero-size bounding box and must never be rejected on size.
+static int xa_lod_size_cull_ok = 0;
+
+int RTreeSearchCallback(int id, struct Rect *rect, void* UNUSED(arg) )
+{
+  // Reject shapes that cannot resolve at the current scale *before* they are
+  // read from disk.  The index already holds each shape's bounding box in the
+  // same units as the shape itself, so this costs nothing extra.  Measured
+  // 2026-07-28: at continental zoom 1,023,393 of 1,024,612 shapes were read
+  // only to be discarded immediately afterwards.
+  if (xa_lod_size_cull_ok && rect != NULL)
+  {
+    double thr = xa_lod_threshold_px();
+
+    if (thr > 0.0 && scale_x > 0 && scale_y > 0)
+    {
+      double w_px = (rect->boundary[2] - rect->boundary[0])
+                    * XA_LOD_DEG_TO_XASTIR / (double)scale_x;
+      double h_px = (rect->boundary[3] - rect->boundary[1])
+                    * XA_LOD_DEG_TO_XASTIR / (double)scale_y;
+
+      if (w_px < thr && h_px < thr)
+      {
+        xa_perf_count(XA_CNT_SHAPES_SKIPPED, 1);
+        return 1;  // keep searching, but do not record this hit
+      }
+    }
+  }
+
   if (!RTree_hitarray)
   {
     RTree_hitarray = (int *)malloc(1000*sizeof(int));
@@ -609,68 +720,6 @@ static awk_rule dbfawk_default_rules[] =
 static dbfawk_sig_info *dbfawk_default_sig = NULL;
 
 
-// ---------------------------------------------------------------------------
-// Level-of-detail: is this shape too small to be visible at the current scale?
-//
-// Measured 2026-07-28: dbfawk_parse_record() accounted for 62% of frame time,
-// because it runs for every *visible* shape -- and at state scale essentially
-// every road in a county is "visible", 432,081 of them in one frame.  The
-// styling it computes (including display_level, which decides whether to draw
-// at all) is only knowable after running it, so the work cannot be avoided by
-// looking at the result.
-//
-// It can be avoided by looking at the geometry.  A shape whose bounding box
-// spans less than about a pixel in both directions cannot render as anything
-// but a dot, so skipping it costs nothing visible and saves the dbfawk run,
-// the coordinate transform and the draw.
-//
-// Only applied to shapes with more than one vertex, so point layers (which
-// legitimately have a zero-size bounding box) are never skipped.
-//
-// scale_x / scale_y are 1/100 second per pixel; shape bounds are degrees.
-// degrees -> 1/100 sec is  * 3600 * 100.
-// ---------------------------------------------------------------------------
-#define XA_LOD_DEG_TO_XASTIR 360000.0
-
-static double xa_lod_threshold_px(void)
-{
-  static double px = -1.0;
-  if (px < 0.0)
-  {
-    const char *e = getenv("XASTIR_LOD_PX");
-    px = (e && *e) ? atof(e) : 1.0;
-    if (px < 0.0)
-    {
-      px = 0.0;
-    }
-  }
-  return px;
-}
-
-static int xa_lod_subpixel(SHPObject *object)
-{
-  double thr, w_px, h_px;
-
-  if (object == NULL || object->nVertices < 2)
-  {
-    return 0;
-  }
-  thr = xa_lod_threshold_px();
-  if (thr <= 0.0 || scale_x <= 0 || scale_y <= 0)
-  {
-    return 0;
-  }
-
-  w_px = (object->dfXMax - object->dfXMin) * XA_LOD_DEG_TO_XASTIR / (double)scale_x;
-  h_px = (object->dfYMax - object->dfYMin) * XA_LOD_DEG_TO_XASTIR / (double)scale_y;
-
-  if (w_px < thr && h_px < thr)
-  {
-    xa_perf_count(XA_CNT_SHAPES_SKIPPED, 1);
-    return 1;
-  }
-  return 0;
-}
 
 void draw_shapefile_map (Widget w,
                          char *dir,
@@ -948,10 +997,17 @@ void draw_shapefile_map (Widget w,
   // contained in the current viewport.  We'll have to read every shape
   // in it anyway, and all we'd be doing is extra work searching the
   // RTree
+  // The original test skipped the index whenever the file was entirely inside
+  // the viewport, on the grounds that every shape would be read anyway.  That
+  // is no longer true once sub-pixel shapes are culled, and it was costing the
+  // most: at continental zoom all 63 county files are "inside the viewport",
+  // so every one of them was fully scanned -- 295 full scans against 20 index
+  // searches in a measured run.
   if (!map_inside_viewport_lat_lon(adfBndsMin[1],
                                    adfBndsMax[1],
                                    adfBndsMin[0],
-                                   adfBndsMax[0]))
+                                   adfBndsMax[0])
+      || xa_lod_index_worthwhile(nShapeType))
   {
     // we keep a hash of all shapefiles encountered so far (and not purged
     // due to inactivity).  Find the record of this shapefile in that
@@ -1145,8 +1201,23 @@ void draw_shapefile_map (Widget w,
       // RTree_hitarray will contain the shape numbers of every shape
       // found, nhits will be how many there are.
       xa_perf_begin(XA_ZONE_SHP_INDEX);
+      // Only arc/polygon layers may be rejected on size; points have a
+      // zero-extent bounding box by nature.
+      xa_lod_size_cull_ok = (nShapeType == SHPT_ARC
+                             || nShapeType == SHPT_ARCZ
+                             || nShapeType == SHPT_ARCM
+                             || nShapeType == SHPT_POLYGON
+                             || nShapeType == SHPT_POLYGONZ
+                             || nShapeType == SHPT_POLYGONM);
       nhits = Xastir_RTreeSearch(si->root, &viewportRect,
                                  (void *)RTreeSearchCallback, 0);
+
+      // Xastir_RTreeSearch() returns the number of leaves that overlapped the
+      // viewport, which is not the same as the number of hits the callback
+      // chose to record now that it rejects sub-pixel shapes.  The iteration
+      // below indexes RTree_hitarray, so it must be bounded by what was
+      // actually stored, or it walks past the end of the recorded entries.
+      nhits = RTree_hitarray_index;
       xa_perf_end(XA_ZONE_SHP_INDEX);
     }
     else

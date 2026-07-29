@@ -82,7 +82,7 @@ int Xastir_RTreeSearch(struct Node *N, struct Rect *R, SearchHitCallback shcb, v
       {
         hitCount++;
         if(shcb) // call the user-provided callback
-          if( ! shcb(n->branch[i].child, cbarg))
+          if( ! shcb(n->branch[i].child, &n->branch[i].rect, cbarg))
           {
             return hitCount;  // callback wants to terminate search early
           }
