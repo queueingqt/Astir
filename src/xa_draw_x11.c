@@ -21,12 +21,22 @@
 #include "rotated.h"  // XRotDrawAlignedString and the alignment constants
 #include "snprintf.h" // xastir_snprintf, for the font-name cache
 #include "xa_draw.h"
+#include "xa_draw_x11.h"
 
 #ifdef HAVE_CAIRO
   #include "cairo_text.h"
 #endif
 
-// da, gc, screen_width and screen_height come from xastir.h.
+// gc, screen_width and screen_height come from xastir.h.  The canvas widget does
+// not: the front end hands it over through xa_x11_set_canvas(), so that this
+// file defines the whole of its dependency on the toolkit rather than sharing a
+// global with main.c.  See xa_draw_x11.h.
+static Widget xa_canvas = (Widget)NULL;
+
+void xa_x11_set_canvas(Widget canvas)
+{
+  xa_canvas = canvas;
+}
 
 // The style constants in xa_draw.h are declared to carry the same numeric
 // values as X11's, so the backend needs no translation table.  That is an
@@ -63,7 +73,15 @@ XA_CHECK(sizeof(xa_point) == sizeof(XPoint));
 // are all the same connection, so resolve it in one place.
 static Display *xa_dpy(void)
 {
-  return (da != (Widget)NULL) ? XtDisplay(da) : NULL;
+  return (xa_canvas != (Widget)NULL) ? XtDisplay(xa_canvas) : NULL;
+}
+
+
+// The screen, for the three calls that want a depth or a root window rather
+// than a connection.  Same reason as xa_dpy(): resolve it in one place.
+static Screen *xa_scr(void)
+{
+  return (xa_canvas != (Widget)NULL) ? XtScreen(xa_canvas) : NULL;
 }
 
 
@@ -71,13 +89,13 @@ xa_surface_id xa_screen_target(void)
 {
   Window win;
 
-  if (da == (Widget)NULL)
+  if (xa_canvas == (Widget)NULL)
   {
     return XA_SURFACE_NONE;
   }
 
   // XtWindow() is None until the widget is realized.
-  win = XtWindow(da);
+  win = XtWindow(xa_canvas);
   if (win == None)
   {
     return XA_SURFACE_NONE;
@@ -438,11 +456,11 @@ xa_color xa_color_by_name(const char *name)
 {
   // GetPixelByName() takes a Widget only to reach XtDisplay().  The canvas
   // serves, and it is the widget every caller was passing anyway.
-  if (name == NULL || da == (Widget)NULL)
+  if (name == NULL || xa_canvas == (Widget)NULL)
   {
     return (xa_color)0;
   }
-  return (xa_color)GetPixelByName(da, (char *)name);
+  return (xa_color)GetPixelByName(xa_canvas, (char *)name);
 }
 
 
@@ -496,10 +514,10 @@ xa_surface_id xa_surface_create(int width, int height, int depth)
   }
   if (depth <= 0)
   {
-    depth = DefaultDepthOfScreen(XtScreen(da));
+    depth = DefaultDepthOfScreen(xa_scr());
   }
   return (xa_surface_id)XCreatePixmap(dpy,
-                                      RootWindowOfScreen(XtScreen(da)),
+                                      RootWindowOfScreen(xa_scr()),
                                       (unsigned int)width,
                                       (unsigned int)height,
                                       (unsigned int)depth);
@@ -766,7 +784,7 @@ xa_surface_id xa_bitmap_from_data(const char *bits, int width, int height)
     return XA_SURFACE_NONE;
   }
   return (xa_surface_id)XCreateBitmapFromData(dpy,
-                                              RootWindowOfScreen(XtScreen(da)),
+                                              RootWindowOfScreen(xa_scr()),
                                               (char *)bits,
                                               (unsigned int)width,
                                               (unsigned int)height);
@@ -786,7 +804,7 @@ xa_pen xa_pen_create(xa_surface_id for_surface)
   // serves for anything canvas-depth.
   d = (for_surface != XA_SURFACE_NONE)
       ? (Drawable)for_surface
-      : (Drawable)RootWindowOfScreen(XtScreen(da));
+      : (Drawable)RootWindowOfScreen(xa_scr());
   return (xa_pen)XCreateGC(dpy, d, 0, NULL);
 }
 

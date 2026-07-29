@@ -52,7 +52,7 @@ XASTIR_SRC = \
     maps.c maps.h \
     maps_gui.c \
     xa_perf.c xa_perf.h \
-    xa_draw.h xa_draw_x11.c \
+    xa_draw.h xa_draw_x11.c xa_draw_x11.h \
     xa_state.c xa_state.h \
     xa_settings.c xa_settings.h \
     xa_ui.c xa_ui.h \

@@ -162,6 +162,7 @@ char *xastir_version=VERSION;
 #include <Xm/ComboBox.h>
 
 #include "xa_draw.h"
+#include "xa_draw_x11.h"  // xa_x11_set_canvas(): the front end names the backend
 #include "xa_settings.h"
 #include "xa_ui.h"
 
@@ -9862,6 +9863,11 @@ void create_appshell( Display *display, char * UNUSED(app_name), int UNUSED(app_
                         MY_FOREGROUND_COLOR,
                         MY_BACKGROUND_COLOR,
                         NULL);
+
+  // Hand the canvas to the drawing backend.  It has to happen here rather than
+  // anywhere later: the backend treats "no canvas" as "do not draw", so any
+  // drawing between the widget existing and this call would silently do nothing.
+  xa_x11_set_canvas(da);
 
 
 //-------------------------------------------------------------------------
