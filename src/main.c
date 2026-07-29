@@ -324,6 +324,9 @@ Widget predefined_object_menu_items[MAX_NUMBER_OF_PREDEFINED_OBJECTS];
 //Widget hidden_shell;
 Widget appshell;
 Widget form;
+// The GCs and pixmaps moved to xa_draw_x11.c: they are drawing-backend
+// resources, so core objects that need them should depend on the renderer
+// rather than on main.c and therefore Motif.
 Widget da;
 Widget text;
 Widget text2;
@@ -812,14 +815,6 @@ Widget posamb0,posamb1,posamb2,posamb3,posamb4;
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /* GLOBAL DEFINES */
-GC gc=0;                // Used for drawing maps
-GC gc2=0;               // Used for drawing symbols
-GC gc_tint=0;           // Used for tinting maps & symbols
-GC gc_stipple=0;        // Used for drawing symbols
-GC gc_bigfont=0;
-Pixmap  pixmap;
-Pixmap  pixmap_alerts;
-Pixmap  pixmap_final;
 
 // Global variable, so we can set it up once check it from then on,
 // preventing memory leaks from repeatedly setting up the same
@@ -828,10 +823,6 @@ XFontStruct *station_font = NULL;   // Station font
 XFontStruct *font1;                 // Menu/System font
 XmFontList fontlist1;               // Menu/System fontlist
 
-Pixmap  pixmap_50pct_stipple; // 50% pixels used for position ambiguity, DF circle, etc.
-Pixmap  pixmap_25pct_stipple; // 25% pixels used for large position ambiguity
-Pixmap  pixmap_13pct_stipple; // 12.5% pixels used for larger position ambiguity
-Pixmap  pixmap_wx_stipple;  // Used for weather alerts
 
 int request_resize = 0;         // Flag used to request a resize operation
 //time_t last_input_event = (time_t)0;  // Time of last mouse/keyboard event
@@ -868,11 +859,7 @@ float x_screen_distance;     // x screen distance
 
 int delay_time;                 /* used to delay display data */
 time_t last_weather_cycle;      // Time of last call to cycle_weather()
-Pixel colors[256];              /* screen colors */
-Pixel trail_colors[MAX_TRAIL_COLORS]; /* station trail colors, duh */
-Pixel_Format visual_type = NOT_TRUE_NOR_DIRECT;
 int install_colormap;           /* if visual_type == NOT_TRUE..., should we install priv cmap */
-Colormap cmap;                  /* current colormap */
 
 int display_up = 0;             /* display up? */
 int display_up_first = 0;       /* display up first */
@@ -3346,7 +3333,7 @@ int create_image(Widget w)
   }
 
   /* copy map data to alert pixmap */
-  (void)XCopyArea(XtDisplay(w),pixmap,pixmap_alerts,gc,0,0,(unsigned int)screen_width,(unsigned int)screen_height,0,0);
+  xa_copy_area(pixmap, pixmap_alerts, gc, 0, 0, (unsigned int)screen_width, (unsigned int)screen_height, 0, 0);
 
   HandlePendingEvents(app_context);
   if (interrupt_drawing_now)
@@ -3373,7 +3360,7 @@ int create_image(Widget w)
   }
 
   /* copy map and alert data to final pixmap */
-  (void)XCopyArea(XtDisplay(w),pixmap_alerts,pixmap_final,gc,0,0,(unsigned int)screen_width,(unsigned int)screen_height,0,0);
+  xa_copy_area(pixmap_alerts, pixmap_final, gc, 0, 0, (unsigned int)screen_width, (unsigned int)screen_height, 0, 0);
 
   HandlePendingEvents(app_context);
   if (interrupt_drawing_now)
@@ -3545,7 +3532,7 @@ void refresh_image(Widget w)
   xa_pen_bg(gc, colors[0xfd]);
 
   /* copy over map data to alert pixmap */
-  (void)XCopyArea(XtDisplay(w),pixmap,pixmap_alerts,gc,0,0,(unsigned int)screen_width,(unsigned int)screen_height,0,0);
+  xa_copy_area(pixmap, pixmap_alerts, gc, 0, 0, (unsigned int)screen_width, (unsigned int)screen_height, 0, 0);
 
   if (!wx_alert_style && !disable_all_maps)
   {
@@ -3554,7 +3541,7 @@ void refresh_image(Widget w)
   }
 
   /* copy over map and alert data to final pixmap */
-  (void)XCopyArea(XtDisplay(w),pixmap_alerts,pixmap_final,gc,0,0,(unsigned int)screen_width,(unsigned int)screen_height,0,0);
+  xa_copy_area(pixmap_alerts, pixmap_final, gc, 0, 0, (unsigned int)screen_width, (unsigned int)screen_height, 0, 0);
 
 //    statusline("Weather Alert Maps Loaded",1);
 
@@ -3667,7 +3654,7 @@ void redraw_symbols(Widget w)
   if(!wait_to_redraw)
   {
 
-    (void)XCopyArea(XtDisplay(w),pixmap_alerts,pixmap_final,gc,0,0,(unsigned int)screen_width,(unsigned int)screen_height,0,0);
+    xa_copy_area(pixmap_alerts, pixmap_final, gc, 0, 0, (unsigned int)screen_width, (unsigned int)screen_height, 0, 0);
 
     draw_grid(w);           // draw grid if enabled
 
@@ -3679,7 +3666,7 @@ void redraw_symbols(Widget w)
 
     display_file(w);        // display stations (symbols, info, trails)
 
-    (void)XCopyArea(XtDisplay(w),pixmap_final,XtWindow(w),gc,0,0,(unsigned int)screen_width,(unsigned int)screen_height,0,0);
+    xa_copy_area(pixmap_final, XtWindow(w), gc, 0, 0, (unsigned int)screen_width, (unsigned int)screen_height, 0, 0);
   }
   else
   {
@@ -10934,35 +10921,26 @@ void create_gc(Widget w)
 
   values.background=GetPixelByName(w,"darkgray");
 
-  gc = XCreateGC(my_display, XtWindow(w), mask, &values);
+  gc = xa_pen_create(XtWindow(w));
 
   // Load a new font into the GC for the station font
   Load_station_font();
 
-  gc_tint = XCreateGC(my_display, XtWindow(w), mask, &values);
+  gc_tint = xa_pen_create(XtWindow(w));
 
-  gc_stipple = XCreateGC(my_display, XtWindow(w), mask, &values);
+  gc_stipple = xa_pen_create(XtWindow(w));
 
-  gc_bigfont = XCreateGC(my_display, XtWindow(w), mask, &values);
+  gc_bigfont = xa_pen_create(XtWindow(w));
 
-  pix =  XCreatePixmap(XtDisplay(w), RootWindowOfScreen(XtScreen(w)), 20, 20, 1);
+  pix =  xa_surface_create(20, 20, 1);
   values.function = GXcopy;
-  gc2 = XCreateGC(XtDisplay(w), pix,GCForeground|GCBackground|GCFunction, &values);
+  gc2 = xa_pen_create(pix);
 
-  pixmap=XCreatePixmap(XtDisplay(w),
-                       DefaultRootWindow(XtDisplay(w)),
-                       (unsigned int)screen_width,(unsigned int)screen_height,
-                       DefaultDepthOfScreen(XtScreen(w)));
+  pixmap=xa_surface_create((unsigned int)screen_width, (unsigned int)screen_height, XA_DEPTH_CANVAS);
 
-  pixmap_final=XCreatePixmap(XtDisplay(w),
-                             DefaultRootWindow(XtDisplay(w)),
-                             (unsigned int)screen_width,(unsigned int)screen_height,
-                             DefaultDepthOfScreen(XtScreen(w)));
+  pixmap_final=xa_surface_create((unsigned int)screen_width, (unsigned int)screen_height, XA_DEPTH_CANVAS);
 
-  pixmap_alerts=XCreatePixmap(XtDisplay(w),
-                              DefaultRootWindow(XtDisplay(w)),
-                              (unsigned int)screen_width,(unsigned int)screen_height,
-                              DefaultDepthOfScreen(XtScreen(w)));
+  pixmap_alerts=xa_surface_create((unsigned int)screen_width, (unsigned int)screen_height, XA_DEPTH_CANVAS);
 
   xastir_snprintf(xbm_path, sizeof(xbm_path), "%s/%s", SYMBOLS_DIR, "2x2.xbm");
   ret_val = XReadBitmapFile(XtDisplay(w), DefaultRootWindow(XtDisplay(w)),
@@ -11045,16 +11023,7 @@ void da_expose(Widget w, XtPointer UNUSED(client_data), XtPointer call_data)
                 XmNunitType, &unit_type,
                 NULL);
 
-  (void)XCopyArea(XtDisplay(w),
-                  pixmap_final,
-                  XtWindow(w),
-                  gc,
-                  event->x,
-                  event->y,
-                  event->width,
-                  event->height,
-                  event->x,
-                  event->y);
+  xa_copy_area(pixmap_final, XtWindow(w), gc, event->x, event->y, event->width, event->height, event->x, event->y);
 
   // We just refreshed the screen, so don't try to erase any
   // zoom-in boxes via XOR.
@@ -11113,20 +11082,11 @@ void da_resize_execute(Widget w)
       xa_surface_destroy(pixmap_alerts);
     }
 
-    pixmap=XCreatePixmap(XtDisplay(w),
-                         DefaultRootWindow(XtDisplay(w)),
-                         (unsigned int)width,(unsigned int)height,
-                         DefaultDepthOfScreen(XtScreen(w)));
+    pixmap=xa_surface_create((unsigned int)width, (unsigned int)height, XA_DEPTH_CANVAS);
 
-    pixmap_final=XCreatePixmap(XtDisplay(w),
-                               DefaultRootWindow(XtDisplay(w)),
-                               (unsigned int)width,(unsigned int)height,
-                               DefaultDepthOfScreen(XtScreen(w)));
+    pixmap_final=xa_surface_create((unsigned int)width, (unsigned int)height, XA_DEPTH_CANVAS);
 
-    pixmap_alerts=XCreatePixmap(XtDisplay(w),
-                                DefaultRootWindow(XtDisplay(w)),
-                                (unsigned int)width,(unsigned int)height,
-                                DefaultDepthOfScreen(XtScreen(w)));
+    pixmap_alerts=xa_surface_create((unsigned int)width, (unsigned int)height, XA_DEPTH_CANVAS);
 
     HandlePendingEvents(app_context);
     if (interrupt_drawing_now)
@@ -28616,16 +28576,8 @@ void Configure_station( Widget UNUSED(ww), XtPointer UNUSED(clientData), XtPoint
                                  NULL);
 
     // icon
-    CS_icon0 = XCreatePixmap(XtDisplay(appshell),
-                             RootWindowOfScreen(XtScreen(appshell)),
-                             20,
-                             20,
-                             DefaultDepthOfScreen(XtScreen(appshell)));
-    CS_icon  = XCreatePixmap(XtDisplay(appshell),
-                             RootWindowOfScreen(XtScreen(appshell)),
-                             20,
-                             20,
-                             DefaultDepthOfScreen(XtScreen(appshell)));
+    CS_icon0 = xa_surface_create(20, 20, XA_DEPTH_CANVAS);
+    CS_icon  = xa_surface_create(20, 20, XA_DEPTH_CANVAS);
     station_config_icon = XtVaCreateManagedWidget("Configure_station icon",
                           xmLabelWidgetClass,
                           cs_form1,

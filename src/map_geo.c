@@ -171,16 +171,7 @@ int check_interrupt(
     }
 #endif // HAVE_MAGICK
     // Update to screen
-    (void)XCopyArea(XtDisplay(*da),
-                    *pixmap,
-                    XtWindow(*da),
-                    *gc,
-                    0,
-                    0,
-                    (unsigned int)screen_width,
-                    (unsigned int)screen_height,
-                    0,
-                    0);
+    xa_copy_area(*pixmap, XtWindow(*da), *gc, 0, 0, (unsigned int)screen_width, (unsigned int)screen_height, 0, 0);
 #ifdef HAVE_MAGICK
     DestroyExceptionInfo(exception);
 #endif // HAVE_MAGICK

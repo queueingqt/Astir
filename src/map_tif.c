@@ -1518,7 +1518,7 @@ void draw_geotiff_image_map (Widget w,
       GTIFFree (gtif);
       XTIFFClose (tif);
       // Update to screen
-      (void)XCopyArea(XtDisplay(da),pixmap,XtWindow(da),gc,0,0,screen_width,screen_height,0,0);
+      xa_copy_area(pixmap, XtWindow(da), gc, 0, 0, screen_width, screen_height, 0, 0);
       return;
     }
 
@@ -1613,7 +1613,7 @@ void draw_geotiff_image_map (Widget w,
       GTIFFree (gtif);
       XTIFFClose (tif);
       // Update to screen
-      (void)XCopyArea(XtDisplay(da),pixmap,XtWindow(da),gc,0,0,screen_width,screen_height,0,0);
+      xa_copy_area(pixmap, XtWindow(da), gc, 0, 0, screen_width, screen_height, 0, 0);
       return;
     }
 
@@ -1708,7 +1708,7 @@ void draw_geotiff_image_map (Widget w,
       GTIFFree (gtif);
       XTIFFClose (tif);
       // Update to screen
-      (void)XCopyArea(XtDisplay(da),pixmap,XtWindow(da),gc,0,0,screen_width,screen_height,0,0);
+      xa_copy_area(pixmap, XtWindow(da), gc, 0, 0, screen_width, screen_height, 0, 0);
       return;
     }
 
@@ -1822,7 +1822,7 @@ void draw_geotiff_image_map (Widget w,
     GTIFFree (gtif);
     XTIFFClose (tif);
     // Update to screen
-    (void)XCopyArea(XtDisplay(da),pixmap,XtWindow(da),gc,0,0,screen_width,screen_height,0,0);
+    xa_copy_area(pixmap, XtWindow(da), gc, 0, 0, screen_width, screen_height, 0, 0);
     return;
   }
 
@@ -2016,7 +2016,7 @@ void draw_geotiff_image_map (Widget w,
     GTIFFree (gtif);
     XTIFFClose (tif);
     // Update to screen
-    (void)XCopyArea(XtDisplay(da),pixmap,XtWindow(da),gc,0,0,screen_width,screen_height,0,0);
+    xa_copy_area(pixmap, XtWindow(da), gc, 0, 0, screen_width, screen_height, 0, 0);
     return;
   }
 
@@ -2617,7 +2617,7 @@ void draw_geotiff_image_map (Widget w,
     GTIFFree (gtif);
     XTIFFClose (tif);
     // Update to screen
-    (void)XCopyArea(XtDisplay(da),pixmap,XtWindow(da),gc,0,0,screen_width,screen_height,0,0);
+    xa_copy_area(pixmap, XtWindow(da), gc, 0, 0, screen_width, screen_height, 0, 0);
     return;
   }
 
@@ -2662,7 +2662,7 @@ void draw_geotiff_image_map (Widget w,
       GTIFFree (gtif);
       XTIFFClose (tif);
       // Update to screen
-      (void)XCopyArea(XtDisplay(da),pixmap,XtWindow(da),gc,0,0,screen_width,screen_height,0,0);
+      xa_copy_area(pixmap, XtWindow(da), gc, 0, 0, screen_width, screen_height, 0, 0);
       return;
     }
 

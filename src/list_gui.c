@@ -54,6 +54,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "xa_draw.h"
+
 // Must be last include file
 #include "leak_detection.h"
 
@@ -395,8 +397,7 @@ void init_station_lists(void)
 {
   int type,i;
 
-  blank_icon = XCreatePixmap(XtDisplay(appshell),RootWindowOfScreen(XtScreen(appshell)),20,20,
-                             DefaultDepthOfScreen(XtScreen(appshell)));
+  blank_icon = xa_surface_create(20, 20, XA_DEPTH_CANVAS);
 
   begin_critical_section(&station_list_dialog_lock, "list_gui.c:init_station_lists" );
 
@@ -405,8 +406,7 @@ void init_station_lists(void)
     station_list_dialog[type] = NULL;       // set list to undefined
     for (i=0; i<ROWS; i++)
     {
-      SL_icon[type][i] = XCreatePixmap(XtDisplay(appshell),RootWindowOfScreen(XtScreen(appshell)),20,20,
-                                       DefaultDepthOfScreen(XtScreen(appshell)));
+      SL_icon[type][i] = xa_surface_create(20, 20, XA_DEPTH_CANVAS);
     }
   }
   memset(SL_callback, 0, sizeof(SL_callback));

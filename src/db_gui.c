@@ -4239,8 +4239,7 @@ void Station_data(Widget w, XtPointer clientData, XtPointer calldata)
     // Now build from the top of the dialog to the buttons.
 
 
-    icon = XCreatePixmap(XtDisplay(appshell),RootWindowOfScreen(XtScreen(appshell)),
-                         20,20,DefaultDepthOfScreen(XtScreen(appshell)));
+    icon = xa_surface_create(20, 20, XA_DEPTH_CANVAS);
 
     symbol(db_station_info,0,p_station->aprs_symbol.aprs_type,
            p_station->aprs_symbol.aprs_symbol,
@@ -4783,10 +4782,8 @@ void Station_info(Widget w, XtPointer clientData, XtPointer UNUSED(calldata) )
 
 // DK7IN: I want to add the symbol in front of the call...
         // icon
-        SiS_icon0 = XCreatePixmap(XtDisplay(appshell),RootWindowOfScreen(XtScreen(appshell)),20,20,
-                                  DefaultDepthOfScreen(XtScreen(appshell)));
-        SiS_icon  = XCreatePixmap(XtDisplay(appshell),RootWindowOfScreen(XtScreen(appshell)),20,20,
-                                  DefaultDepthOfScreen(XtScreen(appshell)));
+        SiS_icon0 = xa_surface_create(20, 20, XA_DEPTH_CANVAS);
+        SiS_icon  = xa_surface_create(20, 20, XA_DEPTH_CANVAS);
         /*      SiS_symb  = XtVaCreateManagedWidget("Station_info icon", xmLabelWidgetClass, ob_form1,
                                     XmNlabelType,               XmPIXMAP,
                                     XmNlabelPixmap,             SiS_icon,

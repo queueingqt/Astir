@@ -1765,7 +1765,7 @@ void draw_shapefile_map (Widget w,
           {
             //Free the temporary GC that we may have used to
             //draw polygons using the clip-mask:
-            XFreeGC(XtDisplay(w), gc_temp);
+            xa_pen_destroy(gc_temp);
           }
 
 
@@ -2993,10 +2993,7 @@ GC get_hole_clipping_context(Widget w, SHPObject *object,
   // the regions, but we'll need it when we draw the filled polygons
   // onto the map pixmap using the final region as a clip-mask.
 
-  gc_temp = XCreateGC(XtDisplay(w),
-                      XtWindow(w),
-                      0,
-                      &gc_temp_values);
+  gc_temp = xa_pen_create(XtWindow(w));
   // now copy the fill style and stipple from gc.
   XCopyGC(XtDisplay(w),
           gc,

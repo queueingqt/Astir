@@ -2535,16 +2535,8 @@ void Set_Del_Object( Widget w, XtPointer clientData, XtPointer calldata)
                          NULL);
 
     // icon
-    Ob_icon0 = XCreatePixmap(XtDisplay(appshell),
-                             RootWindowOfScreen(XtScreen(appshell)),
-                             20,
-                             20,
-                             DefaultDepthOfScreen(XtScreen(appshell)));
-    Ob_icon  = XCreatePixmap(XtDisplay(appshell),
-                             RootWindowOfScreen(XtScreen(appshell)),
-                             20,
-                             20,
-                             DefaultDepthOfScreen(XtScreen(appshell)));
+    Ob_icon0 = xa_surface_create(20, 20, XA_DEPTH_CANVAS);
+    Ob_icon  = xa_surface_create(20, 20, XA_DEPTH_CANVAS);
     object_icon = XtVaCreateManagedWidget("Set_Del_Object icon",
                                           xmLabelWidgetClass,
                                           ob_form1,
@@ -5810,16 +5802,7 @@ void reload_object_item(void)
 
     // Update the screen
     redraw_symbols(da);
-    (void)XCopyArea(XtDisplay(da),
-                    pixmap_final,
-                    XtWindow(da),
-                    gc,
-                    0,
-                    0,
-                    screen_width,
-                    screen_height,
-                    0,
-                    0);
+    xa_copy_area(pixmap_final, XtWindow(da), gc, 0, 0, screen_width, screen_height, 0, 0);
   }
   else
   {

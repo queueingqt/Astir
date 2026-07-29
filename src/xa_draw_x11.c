@@ -17,6 +17,7 @@
 
 #include "xastir.h"
 #include "main.h"
+#include "color.h"    // Pixel_Format, NOT_TRUE_NOR_DIRECT
 #include "xa_draw.h"
 
 // da, gc, screen_width and screen_height come from xastir.h.
@@ -397,3 +398,30 @@ void xa_pen_destroy(xa_pen pen)
     (void)XFreeGC(dpy, (GC)pen);
   }
 }
+
+/* ---- backend-owned drawing resources ---------------------------------- */
+/*
+ * These were defined in main.c, which meant every core object that draws had
+ * to link the Motif GUI to get them.  They are the renderer's resources, so
+ * they live with the renderer; a different backend defines its own.
+ * Declarations stay in xastir.h/main.h so no call site changed.
+ */
+GC gc=0;                // Used for drawing maps
+GC gc2=0;               // Used for drawing symbols
+GC gc_tint=0;           // Used for tinting maps & symbols
+GC gc_stipple=0;        // Used for drawing symbols
+GC gc_bigfont=0;
+Pixmap  pixmap;
+Pixmap  pixmap_alerts;
+Pixmap  pixmap_final;
+Pixmap  pixmap_50pct_stipple; // 50% pixels used for position ambiguity, DF circle, etc.
+Pixmap  pixmap_25pct_stipple; // 25% pixels used for large position ambiguity
+Pixmap  pixmap_13pct_stipple; // 12.5% pixels used for larger position ambiguity
+Pixmap  pixmap_wx_stipple;  // Used for weather alerts
+
+// Colour resources: the allocated palette, the trail palette, the colormap
+// and the visual class.  Renderer state, for the same reason as the GCs.
+Pixel colors[256];              /* screen colors */
+Pixel trail_colors[MAX_TRAIL_COLORS]; /* station trail colors, duh */
+Pixel_Format visual_type = NOT_TRUE_NOR_DIRECT;
+Colormap cmap;                  /* current colormap */

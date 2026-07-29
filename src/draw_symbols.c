@@ -2381,23 +2381,11 @@ void insert_symbol(char table, char symbol, char *pixel, int deg, char orient, i
     // when reloading -> reuse already created pixmaps...
     if(reloading == 0)
     {
-      symbol_data[symbols_loaded].pix=XCreatePixmap(XtDisplay(appshell),
-                                      RootWindowOfScreen(XtScreen(appshell)),
-                                      20,
-                                      20,
-                                      DefaultDepthOfScreen(XtScreen(appshell)));
+      symbol_data[symbols_loaded].pix=xa_surface_create(20, 20, XA_DEPTH_CANVAS);
 
-      symbol_data[symbols_loaded].pix_mask=XCreatePixmap(XtDisplay(appshell),
-                                           RootWindowOfScreen(XtScreen(appshell)),
-                                           20,
-                                           20,
-                                           1);
+      symbol_data[symbols_loaded].pix_mask=xa_surface_create(20, 20, 1);
 
-      symbol_data[symbols_loaded].pix_mask_old=XCreatePixmap(XtDisplay(appshell),
-          RootWindowOfScreen(XtScreen(appshell)),
-          20,
-          20,
-          1);
+      symbol_data[symbols_loaded].pix_mask_old=xa_surface_create(20, 20, 1);
     }
 
     old_next=0;
@@ -2749,7 +2737,7 @@ void symbol(Widget w, int ghost, char symbol_table, char symbol_id, char symbol_
     }
   }
   (void)XSetClipOrigin(XtDisplay(w),gc,x_offset,y_offset);
-  (void)XCopyArea(XtDisplay(w),symbol_data[found].pix,where,gc,0,0,20,20,x_offset,y_offset);
+  xa_copy_area(symbol_data[found].pix, where, gc, 0, 0, 20, 20, x_offset, y_offset);
 
 
   if(alphanum_index > 0)
@@ -2764,7 +2752,7 @@ void symbol(Widget w, int ghost, char symbol_table, char symbol_id, char symbol_
     }
 
     (void)XSetClipOrigin(XtDisplay(w),gc,x_offset,y_offset);
-    (void)XCopyArea(XtDisplay(w),symbol_data[alphanum_index].pix,where,gc,0,0,20,20,x_offset,y_offset); // rot
+    xa_copy_area(symbol_data[alphanum_index].pix, where, gc, 0, 0, 20, 20, x_offset, y_offset); // rot
   }
 
   xa_pen_clip_mask(gc, None);
@@ -3594,11 +3582,7 @@ void Select_symbol( Widget UNUSED(w), XtPointer UNUSED(clientData), XtPointer UN
     for ( i = 33; i < 127; i++ )
     {
 
-      select_icons[i-33] = XCreatePixmap(XtDisplay(appshell),
-                                         RootWindowOfScreen(XtScreen(appshell)),
-                                         20,
-                                         20,
-                                         DefaultDepthOfScreen(XtScreen(appshell)));
+      select_icons[i-33] = xa_surface_create(20, 20, XA_DEPTH_CANVAS);
 
       b1 = XtVaCreateManagedWidget("symbol button",
                                    xmPushButtonWidgetClass,
@@ -3625,11 +3609,7 @@ void Select_symbol( Widget UNUSED(w), XtPointer UNUSED(clientData), XtPointer UN
     for ( i = 33+94; i < 127+94; i++ )
     {
 
-      select_icons[i-33] = XCreatePixmap(XtDisplay(appshell),
-                                         RootWindowOfScreen(XtScreen(appshell)),
-                                         20,
-                                         20,
-                                         DefaultDepthOfScreen(XtScreen(appshell)));
+      select_icons[i-33] = xa_surface_create(20, 20, XA_DEPTH_CANVAS);
 
       b1 = XtVaCreateManagedWidget("symbol button",
                                    xmPushButtonWidgetClass,
