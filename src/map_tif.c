@@ -1520,7 +1520,7 @@ void draw_geotiff_image_map (Widget w,
       GTIFFree (gtif);
       XTIFFClose (tif);
       // Update to screen
-      xa_copy_area(pixmap, XtWindow(da), gc, 0, 0, screen_width, screen_height, 0, 0);
+      xa_present_full(pixmap);
       return;
     }
 
@@ -1615,7 +1615,7 @@ void draw_geotiff_image_map (Widget w,
       GTIFFree (gtif);
       XTIFFClose (tif);
       // Update to screen
-      xa_copy_area(pixmap, XtWindow(da), gc, 0, 0, screen_width, screen_height, 0, 0);
+      xa_present_full(pixmap);
       return;
     }
 
@@ -1710,7 +1710,7 @@ void draw_geotiff_image_map (Widget w,
       GTIFFree (gtif);
       XTIFFClose (tif);
       // Update to screen
-      xa_copy_area(pixmap, XtWindow(da), gc, 0, 0, screen_width, screen_height, 0, 0);
+      xa_present_full(pixmap);
       return;
     }
 
@@ -1824,7 +1824,7 @@ void draw_geotiff_image_map (Widget w,
     GTIFFree (gtif);
     XTIFFClose (tif);
     // Update to screen
-    xa_copy_area(pixmap, XtWindow(da), gc, 0, 0, screen_width, screen_height, 0, 0);
+    xa_present_full(pixmap);
     return;
   }
 
@@ -2018,7 +2018,7 @@ void draw_geotiff_image_map (Widget w,
     GTIFFree (gtif);
     XTIFFClose (tif);
     // Update to screen
-    xa_copy_area(pixmap, XtWindow(da), gc, 0, 0, screen_width, screen_height, 0, 0);
+    xa_present_full(pixmap);
     return;
   }
 
@@ -2619,7 +2619,7 @@ void draw_geotiff_image_map (Widget w,
     GTIFFree (gtif);
     XTIFFClose (tif);
     // Update to screen
-    xa_copy_area(pixmap, XtWindow(da), gc, 0, 0, screen_width, screen_height, 0, 0);
+    xa_present_full(pixmap);
     return;
   }
 
@@ -2664,7 +2664,7 @@ void draw_geotiff_image_map (Widget w,
       GTIFFree (gtif);
       XTIFFClose (tif);
       // Update to screen
-      xa_copy_area(pixmap, XtWindow(da), gc, 0, 0, screen_width, screen_height, 0, 0);
+      xa_present_full(pixmap);
       return;
     }
 

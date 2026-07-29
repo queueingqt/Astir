@@ -145,14 +145,17 @@
 #include "leak_detection.h"
 
 
+// The drawing area, the pixmap, the GC and the canvas size used to be threaded
+// through as five parameters, and every one of the fifteen call sites passed
+// the same globals.  Presenting a frame is one named operation now, and it
+// asks the renderer where the canvas is, so none of them are needed here.
 int check_interrupt(
 #ifdef HAVE_MAGICK
-  Image *image, ImageInfo *image_info, ExceptionInfo *exception,
+  Image *image, ImageInfo *image_info, ExceptionInfo *exception
 #else // HAVE_MAGICK
-  XImage *xi,
+  XImage *xi
 #endif // HAVE_MAGICK
-  Widget *da, Pixmap *pixmap,
-  GC *gc, unsigned long screen_width, unsigned long screen_height)
+)
 {
   xa_ui_pump_events();
   if (interrupt_drawing_now)
@@ -173,7 +176,7 @@ int check_interrupt(
     }
 #endif // HAVE_MAGICK
     // Update to screen
-    xa_copy_area(*pixmap, XtWindow(*da), *gc, 0, 0, (unsigned int)screen_width, (unsigned int)screen_height, 0, 0);
+    xa_present_full(pixmap);
 #ifdef HAVE_MAGICK
     DestroyExceptionInfo(exception);
 #endif // HAVE_MAGICK
@@ -2025,8 +2028,7 @@ void draw_geo_image_map (Widget w,
   width = image->columns;
   height = image->rows;
 
-  if (check_interrupt(image, image_info,
-                      &exception, &da, &pixmap, &gc, screen_width, screen_height))
+  if (check_interrupt(image, image_info, &exception))
   {
     return;
   }
@@ -2073,8 +2075,7 @@ void draw_geo_image_map (Widget w,
     imagemagick_options.gamma_flag = 0;
   }
 
-  if (check_interrupt(image, image_info,
-                      &exception, &da, &pixmap, &gc, screen_width, screen_height))
+  if (check_interrupt(image, image_info, &exception))
   {
     return;
   }
@@ -2088,8 +2089,7 @@ void draw_geo_image_map (Widget w,
     GammaImage(image, gamma);
   }
 
-  if (check_interrupt(image, image_info,
-                      &exception, &da, &pixmap, &gc, screen_width, screen_height))
+  if (check_interrupt(image, image_info, &exception))
   {
     return;
   }
@@ -2103,8 +2103,7 @@ void draw_geo_image_map (Widget w,
     ContrastImage(image, imagemagick_options.contrast);
   }
 
-  if (check_interrupt(image, image_info,
-                      &exception, &da, &pixmap, &gc, screen_width, screen_height))
+  if (check_interrupt(image, image_info, &exception))
   {
     return;
   }
@@ -2118,8 +2117,7 @@ void draw_geo_image_map (Widget w,
     NegateImage(image, imagemagick_options.negate);
   }
 
-  if (check_interrupt(image, image_info,
-                      &exception, &da, &pixmap, &gc, screen_width, screen_height))
+  if (check_interrupt(image, image_info, &exception))
   {
     return;
   }
@@ -2133,8 +2131,7 @@ void draw_geo_image_map (Widget w,
     EqualizeImage(image);
   }
 
-  if (check_interrupt(image, image_info,
-                      &exception, &da, &pixmap, &gc, screen_width, screen_height))
+  if (check_interrupt(image, image_info, &exception))
   {
     return;
   }
@@ -2148,8 +2145,7 @@ void draw_geo_image_map (Widget w,
     NormalizeImage(image);
   }
 
-  if (check_interrupt(image, image_info,
-                      &exception, &da, &pixmap, &gc, screen_width, screen_height))
+  if (check_interrupt(image, image_info, &exception))
   {
     return;
   }
@@ -2163,8 +2159,7 @@ void draw_geo_image_map (Widget w,
     LevelImage(image, imagemagick_options.level);
   }
 
-  if (check_interrupt(image, image_info,
-                      &exception, &da, &pixmap, &gc, screen_width, screen_height))
+  if (check_interrupt(image, image_info, &exception))
   {
     return;
   }
@@ -2196,8 +2191,7 @@ void draw_geo_image_map (Widget w,
   }
   */
 
-  if (check_interrupt(image, image_info,
-                      &exception, &da, &pixmap, &gc, screen_width, screen_height))
+  if (check_interrupt(image, image_info, &exception))
   {
     return;
   }
@@ -2262,8 +2256,7 @@ void draw_geo_image_map (Widget w,
     // Quantize down to 128 will go here...
   }
 
-  if (check_interrupt(image, image_info,
-                      &exception, &da, &pixmap, &gc, screen_width, screen_height))
+  if (check_interrupt(image, image_info, &exception))
   {
     return;
   }
@@ -2288,8 +2281,7 @@ void draw_geo_image_map (Widget w,
     return;
   }
 
-  if (check_interrupt(image, image_info,
-                      &exception, &da, &pixmap, &gc, screen_width, screen_height))
+  if (check_interrupt(image, image_info, &exception))
   {
     return;
   }
@@ -2318,8 +2310,7 @@ void draw_geo_image_map (Widget w,
     return;
   }
 
-  if (check_interrupt(image, image_info,
-                      &exception, &da, &pixmap, &gc, screen_width, screen_height))
+  if (check_interrupt(image, image_info, &exception))
   {
     return;
   }
@@ -2430,8 +2421,7 @@ void draw_geo_image_map (Widget w,
       }
     }
 
-  if (check_interrupt(image, image_info,
-                      &exception, &da, &pixmap, &gc, screen_width, screen_height))
+  if (check_interrupt(image, image_info, &exception))
   {
     return;
   }
@@ -2642,11 +2632,11 @@ void draw_geo_image_map (Widget w,
 
   if (check_interrupt(
 #ifdef HAVE_MAGICK
-  image, image_info, &exception,
+        image, image_info, &exception
 #else  // HAVE_MAGICK
-  xi,
+        xi
 #endif // HAVE_MAGICK
-        &da, &pixmap, &gc, screen_width, screen_height))
+      ))
   {
     return;
   }
@@ -2660,11 +2650,11 @@ void draw_geo_image_map (Widget w,
 
     if (check_interrupt(
 #ifdef HAVE_MAGICK
-          image, image_info, &exception,
+          image, image_info, &exception
 #else  // HAVE_MAGICK
-          xi,
+          xi
 #endif // HAVE_MAGICK
-          &da, &pixmap, &gc, screen_width, screen_height))
+        ))
     {
       return;
     }
