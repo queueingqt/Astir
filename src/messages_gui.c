@@ -61,7 +61,8 @@ Widget auto_msg_dialog = (Widget)NULL;
 Widget auto_msg_set_data = (Widget)NULL;
 
 static xastir_mutex auto_msg_dialog_lock;
-xastir_mutex send_message_dialog_lock;
+// send_message_dialog_lock now lives in messages.c: db.c and messages.c take it
+// too, so it is not this dialog's private lock despite the name.
 
 void select_station_type(int ii);
 

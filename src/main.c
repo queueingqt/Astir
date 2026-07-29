@@ -960,7 +960,7 @@ time_t next_file_read;
 // Data for own station
 
 /* Symbols */
-SymbolData symbol_data[MAX_SYMBOLS];
+// symbol_data[] moved to draw_symbols.c, which is what draws from it.
 
 /* sound run */
 

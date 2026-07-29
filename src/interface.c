@@ -119,6 +119,14 @@ extern void port_write_binary(int port, unsigned char *data, int length);
 
 iodevices dtype[MAX_IFACE_DEVICE_TYPES]; // device names
 
+// The interface configuration table, moved from interface_gui.c.  It sat there
+// because that is where the dialog editing it lives, but db, gps, igate,
+// messages and this file all read it -- and its siblings below were here all
+// along.  init_critical_section() for the lock still runs from
+// interface_gui_init(); only the definitions moved.
+ioparam devices[MAX_IFACE_DEVICES];     // interface configuration
+xastir_mutex devices_lock;              // Protects the devices[] array
+
 iface port_data[MAX_IFACE_DEVICES];     // shared port data
 
 int port_id[MAX_IFACE_DEVICES];         // shared port id data

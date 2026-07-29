@@ -63,6 +63,11 @@
 
 
 
+// Moved from messages_gui.c.  db.c and this file take it as well as the send
+// dialog, so it is shared state, not the dialog's own.  init_critical_section()
+// for it still runs from messages_gui_init(); only the definition moved.
+xastir_mutex send_message_dialog_lock;
+
 char group_data_file[400];
 char *group_data_list = NULL;   // Need this NULL for Solaris!
 int  group_data_count = 0;

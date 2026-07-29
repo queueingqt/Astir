@@ -67,8 +67,10 @@ Widget control_iface_list = NULL;
 
 static xastir_mutex control_interface_dialog_lock;
 
-ioparam devices[MAX_IFACE_DEVICES];
-xastir_mutex devices_lock;
+// devices[] and devices_lock now live in interface.c.  They are the interface
+// configuration table -- five core objects read it (db, gps, igate, interface,
+// messages) and this file only edits it through a dialog.  Declared in
+// interface.h, so nothing here changed but the location.
 
 void Choose_interface_destroy_shell(Widget widget, XtPointer clientData, XtPointer callData);
 void modify_device_list(int option, int port);

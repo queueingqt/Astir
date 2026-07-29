@@ -61,6 +61,11 @@ extern XmFontList fontlist1;    // Menu/System fontlist
 
 #define ANGLE_UPDOWN 45         /* prefer horizontal cars if less than 45 degrees */
 
+// The symbol bitmap table, moved from main.c.  This file is the only other
+// user and the only one that draws from it; main.c merely loaded it.
+// Declared in draw_symbols.h, so no call site changed.
+SymbolData symbol_data[MAX_SYMBOLS];
+
 int symbols_loaded = 0;
 int symbols_cache[5] = {0,0,0,0,0};
 Widget select_symbol_dialog = (Widget)NULL;
