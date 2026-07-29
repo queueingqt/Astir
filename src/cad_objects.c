@@ -40,6 +40,8 @@
 
 #include "xa_draw.h"
 
+#include "xa_ui.h"
+
 // Must be last include file
 #include "leak_detection.h"
 
@@ -1772,7 +1774,7 @@ void Restore_CAD_Objects_from_file(void)
   }
   (void)fclose(f);
   // Reload symbols/tracks/CAD objects to draw the loaded objects
-  redraw_symbols(da);
+  xa_ui_redraw();
 }
 
 
@@ -2413,7 +2415,7 @@ void Draw_CAD_Objects_erase( Widget w,
   Save_CAD_Objects_to_file();
 
   // Reload symbols/tracks/CAD objects
-  redraw_symbols(da);
+  xa_ui_redraw();
 }
 
 
@@ -2483,7 +2485,7 @@ void Draw_CAD_Objects_close_polygon( Widget UNUSED(widget),
     }
   }
   // Reload symbols/tracks/CAD objects and redraw the polygon
-  redraw_symbols(da);
+  xa_ui_redraw();
 
 #ifdef CAD_DEBUG
   fprintf(stderr,"Points in closed polygon: n = %d\n",n);

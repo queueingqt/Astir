@@ -70,6 +70,15 @@ typedef struct
   // to_call is the callsign, prefixed with '*' for a group message.  Read only;
   // the front end must copy anything it keeps.
   void (*open_message_window)(const char *to_call);
+
+  // Redraw the map now: recomposite the layers, draw the stations, present.
+  // Called from core code that has changed what should be on screen and cannot
+  // wait for the next natural redraw -- loading CAD objects from file, erasing
+  // one, closing a polygon.
+  //
+  // Not the same as flush(), which makes already-issued drawing visible.  This
+  // one re-runs the drawing.
+  void (*redraw)(void);
 } xa_ui_callbacks;
 
 // Install the front end's implementations.  Passing NULL, or leaving a member
@@ -84,5 +93,6 @@ void xa_ui_flush(void);
 void xa_ui_warn(const char *text);
 void xa_ui_free_label(void *label);
 void xa_ui_open_message_window(const char *to_call);
+void xa_ui_redraw(void);
 
 #endif // XA_UI_H

@@ -3667,7 +3667,7 @@ void redraw_symbols(Widget w)
 
     display_file(w);        // display stations (symbols, info, trails)
 
-    xa_copy_area(pixmap_final, XtWindow(w), gc, 0, 0, (unsigned int)screen_width, (unsigned int)screen_height, 0, 0);
+    xa_present_full(pixmap_final);
   }
   else
   {
@@ -4085,6 +4085,11 @@ static void motif_ui_open_message_window(const char *to_call)
   Send_message((Widget)NULL, (XtPointer)to_call, (XtPointer)NULL);
 }
 
+static void motif_ui_redraw(void)
+{
+  redraw_symbols(da);
+}
+
 void xa_ui_register_motif(void)
 {
   // Zero-initialised, not member-by-member into an uninitialised local.  A
@@ -4101,6 +4106,7 @@ void xa_ui_register_motif(void)
   cb.warn = motif_ui_warn;
   cb.free_label = motif_ui_free_label;
   cb.open_message_window = motif_ui_open_message_window;
+  cb.redraw = motif_ui_redraw;
   xa_ui_set_callbacks(&cb);
 }
 

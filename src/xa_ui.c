@@ -93,3 +93,12 @@ void xa_ui_open_message_window(const char *to_call)
     ui.open_message_window(to_call);
   }
 }
+
+
+void xa_ui_redraw(void)
+{
+  if (ui.redraw != NULL)
+  {
+    ui.redraw();
+  }
+}
