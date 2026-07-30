@@ -65,84 +65,33 @@ receives messages from three stations and covers `update_messages` end to end
 the second one needed a message addressed to *someone else*: traffic to our own
 callsign takes the "to me" branch in `db.c` and never calls it.
 
-It does **not** reach:
+It also covers the **reverse-video highlight** (`msg_highlight mode=selected`),
+which took some finding. `update_messages()` picks that branch by `acked == 0 &&
+is_my_call(from_call_sign)` — a message *we* sent that has not been acked.
+
+The obvious route was auto-reply, and it does not work: enabling `auto_reply`
+headlessly produced no trace change at all, because an outgoing message only
+enters `msg_data` from inside the transmit path (`messages.c`, "so queued
+messages will appear in the Send Message box as unacked messages"), and a
+scripted run has no transmit-capable interface. The scaffolding for it was
+removed again rather than left in place looking useful.
+
+What does work is replaying a packet that appears to come *from* the configured
+callsign. The branch keys on `from_call_sign`, not on how the record got there.
+One log line.
+
+It still does **not** reach:
 
 | never fires | needs |
 |---|---|
-| `msg_destroy` (the destroy branch of `close_all`) | a window actually being open when it runs — `clear_message_windows()` *is* called, once, at startup, when they all still are closed |
-| `msg_scan_call fn=clear_acked_message` | an *outgoing* message being acked |
-| `msg_highlight mode=selected` | an outgoing message not yet acked — the reverse-video branch keys on `is_my_call(from)` |
+| `msg_destroy` (the destroy branch of `close_all`) | a window open when it runs — `clear_message_windows()` *is* called, once, at startup, when they are all still closed. Reaching it needs the Messages menu, so it is GUI-interactive and out of reach of a replay. |
 
-All three are outbound-message paths, which a receive-only replay cannot reach.
-A scenario that sends as well as receives would close the gap; until one exists
-those three are inspection-only, and a clean `trace_ab.sh` diff says nothing
-about them.
+That is the whole remaining gap, down from three. One of the other two closed by
+covering it; the third closed by deleting the dead loop in `clear_acked_message`
+that was the only thing in it.
 
-`clear_acked_message`'s share of that is smaller than it looks. Its loop reads
-the callsign out of every open window, uppercases it, and then does nothing
-with it — the only statement that used the result is commented out
-(`XtSetSensitive(mw[ii].button_ok,TRUE)`). It is two Motif calls kept alive by
-dead code, not behaviour that has to be preserved.
-
-### What it was built for, and what that found
-
-The first use was moving `mw[]` out of `messages.c` and the Motif calls out of
-`db.c`'s `update_messages()` — eight `msg_window_*` callbacks in `xa_ui.h`. The
-trace came back **byte-identical**: same 239 raw records, same 89 normalised,
-same histogram. That is the whole argument that the move is faithful, and there
-was no way to make it before.
-
-Two details it would have caught had they been got wrong, both of which are
-easy to miss by reading:
-
-- `pos += strlen(temp2)` sat *inside* `if (mw[..].send_message_text != NULL)`,
-  so a window with no transcript did not advance the insert position. A callback
-  returning `void` silently changes that; `msg_window_append` returns a value.
-- The original distinguished "no callsign field" from "empty callsign" —
-  `new_message_data--` happens for the first and not the second. Hence
-  `msg_window_callsign` returning a value too.
-
-### The fifth way to get a worthless result: colormap contention
-
-This one cost a bisect, and it is the second time the *pixel* harness has been
-confidently wrong.
-
-Xastir allocates its palette with `XAllocColor` against the shared colormap. If
-the previous Xastir has only just exited, the server may still be holding its
-entries, and `XAllocColor` then returns *approximations* rather than the exact
-colours. The frame still renders, still settles, and still passes the
-two-identical-snapshots check -- it simply has about 180 extra near-black and
-near-grey shades in it.
-
-It presented as a clean, reproducible regression:
-
-| capture | colours | when |
-|---|---|---|
-| baseline | 822 | after a build |
-| after a header change | 964 | straight after a trace run |
-| repeat | 964 | straight after the previous capture |
-| repeat | **967** | straight after that one |
-| change reverted | 822 | after a five-minute rebuild |
-| change restored | 822 | after a five-minute rebuild |
-
-Two things made it convincing: it reproduced, and reverting appeared to fix it.
-Both were artefacts of *when* the runs happened -- every "good" capture followed
-a long rebuild, which is ample time for the colormap to settle, and every "bad"
-one followed another Xastir within seconds.
-
-The tell was in the data the whole time: **964 and 967 differ from each other.**
-A real rendering difference is deterministic. Two runs of one build disagreeing
-is not a regression, it is a broken measurement -- the same rule that caught the
-half-drawn-frame race, applied to the other end of the run.
-
-Guarded now. `snapshot_ab.sh` sleeps 5 s after killing the previous instance, and
-always prints the colour count, warning when it is not the expected 822.
-`SNAP_EXPECT_COLORS=any` when a change is meant to alter the palette.
-
-**Do not start a bisect on a pixel difference until a re-run, spaced out, has
-reproduced it.** A bisect on a flaky measurement is a machine for producing
-wrong conclusions: it will confidently name whichever change happened to be in
-the tree when the flake fired.
+**Baseline: 307 raw records normalising to 110**, with `msg_insert 61`,
+`msg_scan_call 22` and exactly one `mode=selected`.
 
 ### Proving the harness works before trusting it
 

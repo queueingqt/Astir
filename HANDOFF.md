@@ -329,8 +329,9 @@ for the same reason — two runs, and they must match:
 diff /tmp/tbase1.trace /tmp/tbase2.trace  # MUST be empty
 ```
 
-A correct baseline here is **239 raw records normalising to 89**, and the stderr
-histogram should show `msg_insert 49` and `msg_scan_call 17`. Read that
+A correct baseline here is **307 raw records normalising to 110**, and the stderr
+histogram should show `msg_insert 61`, `msg_scan_call 22` and exactly one
+`msg_highlight ... mode=selected`. Read that
 histogram rather than trusting the diff: it is the only statement of what the
 scenario actually reached.
 
@@ -476,11 +477,12 @@ In rough order of value per unit of risk:
     ~1000 lines. A backend implementing only the drawing and pen calls, with text
     stubbed, is enough to find out whether the interface is actually sufficient —
     which is the open question, and one the call-site count cannot answer.
-5. **Get the untested paths exercised.** Three message-window records still
-    never appear — `msg_destroy`, `clear_acked_message`'s scan, and
-    `mode=selected` — and two of them need an *outgoing* message. A send-capable
-    scenario would close both at once and is the cheapest coverage available;
-    the third needs a window open when the windows are cleared. Same for
+5. ~~**Get the untested message-window paths exercised.**~~ **Two of three
+    done** — `mode=selected` now fires (replay a packet that appears to come
+    *from* the configured callsign; auto-reply does *not* work, see
+    `tools/README.md`), and `clear_acked_message`'s scan closed by deleting the
+    dead loop. Only `msg_destroy` is left and it needs GUI interaction. Still
+    open for
     `xa_image_*` (needs OSM
     tiles) and `xa_bitmap_load` (needs an active alert); `XASTIR_REPLAY` is now
     the tool for building all of them, since it drives Xastir from a packet log
