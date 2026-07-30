@@ -68,6 +68,8 @@
 // is a build-time choice.
 void             xa_gtk4_set_canvas(GtkWidget *canvas, int width, int height);
 cairo_surface_t *xa_gtk4_canvas_surface(void);
+int              xa_gtk4_set_device_scale(int scale);
+int              xa_gtk4_device_scale(void);
 
 // From xa_gtk4_palette.c, generated from main.c's colour table.
 void xa_gtk4_load_palette(void);
@@ -266,11 +268,64 @@ static void xa_draw_cb(GtkDrawingArea *area, cairo_t *cr,
 }
 
 
+/*
+ * How many device pixels the toolkit gives us per logical pixel.
+ *
+ * The widget knows, once it is on a monitor; before that, and in the headless
+ * render, there is no widget to ask.  XASTIR_GTK4_DEVICE_SCALE overrides both,
+ * which is the only way to render a HiDPI frame without a HiDPI monitor and so
+ * the only way to gate this from a script.
+ */
+static int wanted_device_scale(GtkWidget *w)
+{
+  const char *env = getenv("XASTIR_GTK4_DEVICE_SCALE");
+  int s;
+
+  if (env != NULL && (s = atoi(env)) >= 1)
+  {
+    return s;
+  }
+  if (w != NULL && gtk_widget_get_realized(w))
+  {
+    return gtk_widget_get_scale_factor(w);
+  }
+  return 1;
+}
+
+
+/*
+ * Build the canvas and the layer pixmaps at the current size and device scale.
+ * Both change independently -- a resize keeps the scale, dragging the window to
+ * a different monitor keeps the size -- and either one invalidates every
+ * surface, because they are all sized from the canvas.
+ */
+static void rebuild_surfaces(GtkWidget *area, int width, int height)
+{
+  xa_gtk4_set_device_scale(wanted_device_scale(area));
+
+  // Surfaces are sized to the canvas, so they are rebuilt rather than scaled.
+  xa_surface_destroy(pixmap);
+  xa_surface_destroy(pixmap_alerts);
+  xa_surface_destroy(pixmap_final);
+  xa_gtk4_set_canvas(area, width, height);
+  pixmap        = xa_surface_create(width, height, XA_DEPTH_CANVAS);
+  pixmap_alerts = xa_surface_create(width, height, XA_DEPTH_CANVAS);
+  pixmap_final  = xa_surface_create(width, height, XA_DEPTH_CANVAS);
+}
+
+
 static void xa_resized(GtkDrawingArea *area, int width, int height,
                        gpointer user_data)
 {
-  (void)area; (void)user_data;
-  if (width <= 0 || height <= 0 || (width == xa_w && height == xa_h))
+  int rescaled = wanted_device_scale(GTK_WIDGET(area)) != xa_gtk4_device_scale();
+
+  (void)user_data;
+  // The size test alone is not enough.  This is the first callback that runs
+  // with a realized widget, so it is where the real monitor scale first becomes
+  // knowable -- and if the allocation happens to match the default size, the
+  // early return would leave the frame at scale 1 for good.
+  if (width <= 0 || height <= 0
+      || (width == xa_w && height == xa_h && !rescaled))
   {
     return;
   }
@@ -279,14 +334,25 @@ static void xa_resized(GtkDrawingArea *area, int width, int height,
   screen_width = width;
   screen_height = height;
 
-  // Surfaces are sized to the canvas, so they are rebuilt rather than scaled.
-  xa_surface_destroy(pixmap);
-  xa_surface_destroy(pixmap_alerts);
-  xa_surface_destroy(pixmap_final);
-  xa_gtk4_set_canvas(GTK_WIDGET(area), width, height);
-  pixmap        = xa_surface_create(width, height, XA_DEPTH_CANVAS);
-  pixmap_alerts = xa_surface_create(width, height, XA_DEPTH_CANVAS);
-  pixmap_final  = xa_surface_create(width, height, XA_DEPTH_CANVAS);
+  rebuild_surfaces(GTK_WIDGET(area), width, height);
+  xa_render();
+}
+
+
+// The window moved to a monitor with a different scale.  The logical size has
+// not changed, so "resize" does not fire and nothing else would notice.
+static void xa_scale_changed(GObject *obj, GParamSpec *pspec,
+                             gpointer user_data)
+{
+  GtkWidget *area = GTK_WIDGET(obj);
+
+  (void)pspec; (void)user_data;
+  if (!xa_ready || xa_w <= 0 || xa_h <= 0
+      || wanted_device_scale(area) == xa_gtk4_device_scale())
+  {
+    return;
+  }
+  rebuild_surfaces(area, xa_w, xa_h);
   xa_render();
 }
 
@@ -634,6 +700,12 @@ static int init_core(void)
 
   xa_gtk4_load_palette();
 
+  // Before any surface is created, because a surface is built at whatever the
+  // scale was when it was made.  There is no widget yet, so this can only pick
+  // up the environment override; the real monitor scale arrives with the first
+  // resize, which rebuilds everything anyway.
+  xa_gtk4_set_device_scale(wanted_device_scale(NULL));
+
   load_data_or_default();        // the config file, into the core's settings
 
   screen_width  = xa_w;
@@ -778,6 +850,8 @@ static void on_activate(GtkApplication *app, gpointer user_data)
   gtk_drawing_area_set_draw_func(GTK_DRAWING_AREA(xa_area), xa_draw_cb,
                                  NULL, NULL);
   g_signal_connect(xa_area, "resize", G_CALLBACK(xa_resized), NULL);
+  g_signal_connect(xa_area, "notify::scale-factor",
+                   G_CALLBACK(xa_scale_changed), NULL);
 
   drag = gtk_gesture_drag_new();
   g_signal_connect(drag, "drag-begin", G_CALLBACK(on_drag_begin), NULL);
@@ -811,7 +885,7 @@ static void on_activate(GtkApplication *app, gpointer user_data)
   gtk_box_append(GTK_BOX(box), xa_area);
   gtk_window_set_child(GTK_WINDOW(win), box);
 
-  xa_gtk4_set_canvas(xa_area, xa_w, xa_h);
+  rebuild_surfaces(xa_area, xa_w, xa_h);
   gtk_window_present(GTK_WINDOW(win));
 
   // Open the menu shortly after startup, for screenshots and UI tests.  There

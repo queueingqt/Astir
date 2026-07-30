@@ -74,6 +74,26 @@ static gtk4_surface gtk4_surfaces[GTK4_MAX_SURFACES];
 static GtkWidget *gtk4_canvas = NULL;
 static int gtk4_canvas_w = 0, gtk4_canvas_h = 0;
 
+/*
+ * Device pixels per logical pixel.
+ *
+ * Every coordinate that crosses xa_draw.h is logical: the core sizes its world
+ * from screen_width/screen_height and has no business knowing what a monitor
+ * does with them.  Resolution independence therefore lives entirely here --
+ * a canvas-depth surface is allocated at scale x its logical size and told its
+ * device scale, so Cairo renders strokes, glyphs and curves at the real pixel
+ * grid while the caller keeps drawing in logical units.
+ *
+ * Without this the whole frame is composed at 1x and stretched by GTK on the
+ * way to the screen, which pixelates everything the app draws -- map strokes,
+ * the lat/lon grid, Pango labels, range rings -- not just the raster icons.
+ *
+ * Bitmaps (A8 stipples and clip masks) stay at 1:1 deliberately: they carry
+ * their own resolution, an .xbm being 1 bit per device pixel by definition,
+ * and scaling them would blur a pattern that is meant to be crisp.
+ */
+static int gtk4_device_scale = 1;
+
 static gtk4_surface *surf_of(xa_surface_id s)
 {
   if (s == XA_SURFACE_NONE || s >= GTK4_MAX_SURFACES)
@@ -107,6 +127,25 @@ static xa_surface_id surf_new(cairo_surface_t *cs, int w, int h, int bitmap)
 }
 
 /*
+ * A colour surface of `width` x `height` *logical* pixels, backed by however
+ * many device pixels that currently means.  cairo_surface_set_device_scale()
+ * is what makes the difference invisible to the caller: it puts the scale in
+ * the surface's own matrix, so a cairo_t created on it takes logical
+ * coordinates and rasterises at device resolution.
+ */
+static cairo_surface_t *canvas_surface_create(int width, int height)
+{
+  cairo_surface_t *cs =
+    cairo_image_surface_create(CAIRO_FORMAT_RGB24,
+                               width  * gtk4_device_scale,
+                               height * gtk4_device_scale);
+
+  cairo_surface_set_device_scale(cs, (double)gtk4_device_scale,
+                                 (double)gtk4_device_scale);
+  return cs;
+}
+
+/*
  * Hand the backend its canvas.  The counterpart of xa_x11_set_canvas():
  * the front end owns the widget, the backend owns everything drawn into it.
  *
@@ -126,11 +165,39 @@ void xa_gtk4_set_canvas(GtkWidget *canvas, int width, int height)
   {
     cairo_surface_destroy(gtk4_surfaces[GTK4_CANVAS_ID].surf);
   }
-  gtk4_surfaces[GTK4_CANVAS_ID].surf =
-    cairo_image_surface_create(CAIRO_FORMAT_RGB24, width, height);
+  gtk4_surfaces[GTK4_CANVAS_ID].surf = canvas_surface_create(width, height);
   gtk4_surfaces[GTK4_CANVAS_ID].width = width;
   gtk4_surfaces[GTK4_CANVAS_ID].height = height;
   gtk4_surfaces[GTK4_CANVAS_ID].is_bitmap = 0;
+}
+
+
+/*
+ * Tell the backend how many device pixels a logical pixel is worth.
+ *
+ * Takes effect on surfaces created after it, so the front end sets it before
+ * rebuilding the canvas and the layer pixmaps -- which it already does on every
+ * resize, because those are sized to the canvas.  Returns whether it changed,
+ * so a scale-factor notification can skip a rebuild that would do nothing.
+ */
+int xa_gtk4_set_device_scale(int scale)
+{
+  if (scale < 1)
+  {
+    scale = 1;
+  }
+  if (scale == gtk4_device_scale)
+  {
+    return 0;
+  }
+  gtk4_device_scale = scale;
+  return 1;
+}
+
+
+int xa_gtk4_device_scale(void)
+{
+  return gtk4_device_scale;
 }
 
 // What the widget's draw function should paint.  NULL before set_canvas().
@@ -161,18 +228,23 @@ void xa_canvas_size(int *width, int *height)
 
 xa_surface_id xa_surface_create(int width, int height, int depth)
 {
-  cairo_format_t fmt = (depth == XA_DEPTH_BITMAP)
-                       ? CAIRO_FORMAT_A8 : CAIRO_FORMAT_RGB24;
-
   if (width <= 0 || height <= 0)
   {
     return XA_SURFACE_NONE;
   }
   // A8 rather than A1 for bitmaps: the contract only ever uses them as stipples
   // and clip masks, where Cairo wants coverage, and A1 rows are awkward to
-  // fill by hand for no benefit here.
-  return surf_new(cairo_image_surface_create(fmt, width, height),
-                  width, height, depth == XA_DEPTH_BITMAP);
+  // fill by hand for no benefit here.  Bitmaps are not device-scaled; see the
+  // gtk4_device_scale comment for why.
+  if (depth == XA_DEPTH_BITMAP)
+  {
+    return surf_new(cairo_image_surface_create(CAIRO_FORMAT_A8, width, height),
+                    width, height, 1);
+  }
+  // Colour surfaces are layers Xastir composes the frame from -- pixmap,
+  // pixmap_alerts, pixmap_final -- and are copied to the canvas whole, so they
+  // have to carry the same resolution or the copy throws it away again.
+  return surf_new(canvas_surface_create(width, height), width, height, 0);
 }
 
 
@@ -1106,35 +1178,82 @@ void xa_image_destroy(xa_image img)
 }
 
 
+/*
+ * An xa_image is a buffer of *logical* pixels -- the OSM tile path is the only
+ * caller, and it works one screen pixel at a time.  A device-scaled surface has
+ * more pixels than that and a stride to match, so reading its memory directly
+ * with logical coordinates would sample the top-left corner of the frame and
+ * call it the whole frame.  At scale 1 the two are the same thing and the
+ * direct loop is kept; above it, Cairo does the resampling.
+ */
+static cairo_surface_t *logical_copy_of(gtk4_surface *g, int x, int y,
+                                        int width, int height)
+{
+  cairo_surface_t *tmp =
+    cairo_image_surface_create(CAIRO_FORMAT_RGB24, width, height);
+  cairo_t *cr = cairo_create(tmp);
+
+  cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+  cairo_set_source_surface(cr, g->surf, -x, -y);
+  cairo_paint(cr);
+  cairo_destroy(cr);
+  cairo_surface_flush(tmp);
+  return tmp;
+}
+
+
 xa_image xa_image_capture(xa_surface_id src, int x, int y,
                           int width, int height)
 {
   gtk4_surface *g = surf_of(src);
   gtk4_image *im;
+  cairo_surface_t *from;
   unsigned char *data;
-  int stride, ix, iy;
+  int stride, ix, iy, ox, oy, limit_w, limit_h;
 
   if (g == NULL) { return XA_IMAGE_NONE; }
   im = (gtk4_image *)xa_image_create(width, height);
   if (im == NULL) { return XA_IMAGE_NONE; }
 
-  cairo_surface_flush(g->surf);
-  data = cairo_image_surface_get_data(g->surf);
-  stride = cairo_image_surface_get_stride(g->surf);
-  if (data == NULL) { return (xa_image)im; }   // not an image surface: leave blank
+  if (gtk4_device_scale == 1)
+  {
+    from = g->surf;                        // read the surface itself
+    ox = x;
+    oy = y;
+    limit_w = g->width;
+    limit_h = g->height;
+    cairo_surface_flush(from);
+  }
+  else
+  {
+    from = logical_copy_of(g, x, y, width, height);   // already the right window
+    ox = 0;
+    oy = 0;
+    limit_w = width;
+    limit_h = height;
+  }
+
+  data = cairo_image_surface_get_data(from);
+  stride = cairo_image_surface_get_stride(from);
+  if (data == NULL)                        // not an image surface: leave blank
+  {
+    if (from != g->surf) { cairo_surface_destroy(from); }
+    return (xa_image)im;
+  }
 
   for (iy = 0; iy < height; iy++)
   {
-    int sy = y + iy;
-    if (sy < 0 || sy >= g->height) { continue; }
+    int sy = oy + iy;
+    if (sy < 0 || sy >= limit_h) { continue; }
     for (ix = 0; ix < width; ix++)
     {
-      int sx = x + ix;
-      if (sx < 0 || sx >= g->width) { continue; }
+      int sx = ox + ix;
+      if (sx < 0 || sx >= limit_w) { continue; }
       im->px[(size_t)iy * width + ix] =
         ((uint32_t *)(data + (size_t)sy * stride))[sx] & 0x00ffffff;
     }
   }
+  if (from != g->surf) { cairo_surface_destroy(from); }
   return (xa_image)im;
 }
 
@@ -1215,6 +1334,45 @@ void xa_image_to_surface(xa_surface_id dst, xa_pen pen, xa_image img,
 
   (void)pen;                     // a raw pixel put ignores pen state, as in X
   if (g == NULL || im == NULL) { return; }
+
+  // Above scale 1 the destination has more pixels than the buffer has, so the
+  // buffer becomes a source surface and Cairo places it in logical coordinates.
+  // The image is raster either way -- an OSM tile magnified to device
+  // resolution is still the tile -- but it lands in the right place and covers
+  // the whole area, which the direct write below would not.
+  if (gtk4_device_scale != 1)
+  {
+    cairo_surface_t *tmp =
+      cairo_image_surface_create(CAIRO_FORMAT_RGB24, width, height);
+    unsigned char *td = cairo_image_surface_get_data(tmp);
+    int tstride = cairo_image_surface_get_stride(tmp);
+    cairo_t *cr;
+
+    if (td == NULL) { cairo_surface_destroy(tmp); return; }
+    for (iy = 0; iy < height; iy++)
+    {
+      int sy = src_y + iy;
+      if (sy < 0 || sy >= im->height) { continue; }
+      for (ix = 0; ix < width; ix++)
+      {
+        int sx = src_x + ix;
+        if (sx < 0 || sx >= im->width) { continue; }
+        ((uint32_t *)(td + (size_t)iy * tstride))[ix] =
+          0xff000000u | (uint32_t)im->px[(size_t)sy * im->width + sx];
+      }
+    }
+    cairo_surface_mark_dirty(tmp);
+
+    cr = cairo_create(g->surf);
+    cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+    cairo_set_source_surface(cr, tmp, dst_x, dst_y);
+    cairo_rectangle(cr, dst_x, dst_y, width, height);
+    cairo_fill(cr);
+    cairo_destroy(cr);
+    cairo_surface_destroy(tmp);
+    return;
+  }
+
   cairo_surface_flush(g->surf);
   data = cairo_image_surface_get_data(g->surf);
   stride = cairo_image_surface_get_stride(g->surf);
