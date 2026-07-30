@@ -16,7 +16,11 @@ The link is expected to FAIL.  What matters is the list, because that list is
 exactly the remaining work -- and unlike a grep it cannot be fooled by a name
 that merely starts with X (XTIFFOpen is libtiff) or miss one that does not.
 
-Usage: link_null.py [srcdir]     (default src/, must be built)
+Usage: link_null.py [srcdir] [--backend=NAME]
+
+NAME is `null` (the default) or `gtk4`.  The gtk4 one is the real question --
+the null backend proves the *header* is neutral, a GTK4 backend proves the
+interface is expressive enough for a toolkit that is not X11.
 """
 import subprocess, sys, os, re, glob, collections, tempfile
 
@@ -52,8 +56,32 @@ def link_command(srcdir):
   return None
 
 
+# name -> (source file, pkg-config packages)
+BACKENDS = {
+  "null": ("xa_draw_null.c", []),
+  "gtk4": ("xa_draw_gtk4.c", ["gtk4"]),
+}
+
+
+def pkg(flagtype, pkgs):
+  if not pkgs:
+    return []
+  r = subprocess.run(["pkg-config", flagtype] + pkgs, capture_output=True, text=True)
+  if r.returncode != 0:
+    raise SystemExit("pkg-config %s %s failed: %s" % (flagtype, pkgs, r.stderr))
+  return r.stdout.split()
+
+
 def main():
-  srcdir = sys.argv[1] if len(sys.argv) > 1 else "src"
+  args_in = [a for a in sys.argv[1:] if not a.startswith("--")]
+  which = "null"
+  for a in sys.argv[1:]:
+    if a.startswith("--backend="):
+      which = a.split("=", 1)[1]
+  if which not in BACKENDS:
+    raise SystemExit("unknown backend %r; have %s" % (which, ", ".join(BACKENDS)))
+  bsrc, bpkgs = BACKENDS[which]
+  srcdir = args_in[0] if args_in else "src"
   if not os.path.exists(os.path.join(srcdir, "main.o")):
     raise SystemExit("%s not built" % srcdir)
 
@@ -66,20 +94,21 @@ def main():
   core = [o for o in objs
           if not o.endswith(GUI_SUFFIX) and o not in STANDALONE
           and o != "main.o" and o not in X11_BACKEND
-          and o != "xa_draw_null.o"]   # appended explicitly below
+          and o not in ("xa_draw_null.o", "xa_draw_gtk4.o")]  # appended below
 
   # Compiled here rather than by make, because it must never end up in the
   # xastir binary: it defines the same symbols as the X11 backend.  Compiled
   # with no X include path on purpose -- if it ever needs one, xa_draw.h has
   # sprung a leak and this is where that shows up first.
-  nullobj = os.path.join(srcdir, "xa_draw_null.o")
+  nullobj = os.path.join(srcdir, bsrc[:-2] + ".o")
   r = subprocess.run(["gcc", "-I" + srcdir,
                       "-I" + os.path.dirname(os.path.abspath(srcdir)),
-                      "-O2", "-Wall", "-c", os.path.join(srcdir, "xa_draw_null.c"),
-                      "-o", nullobj], capture_output=True, text=True)
+                      "-O2", "-Wall"] + pkg("--cflags", bpkgs)
+                     + ["-c", os.path.join(srcdir, bsrc), "-o", nullobj],
+                     capture_output=True, text=True)
   if r.returncode != 0:
-    raise SystemExit("the null backend does not compile -- xa_draw.h is not "
-                     "toolkit-neutral:\n" + r.stderr)
+    raise SystemExit("the %s backend does not compile -- xa_draw.h is not "
+                     "toolkit-neutral:\n%s" % (which, r.stderr))
 
   # Rebuild the command IN ORDER.  Libraries only resolve against objects that
   # precede them on the link line, so hoisting the flags to the front makes
@@ -105,8 +134,9 @@ def main():
   if not placed:
     raise SystemExit("no objects found on the link line")
 
-  print("core objects : %d  (+ xa_draw_null.o, without %s)"
-        % (len(core), " ".join(sorted(X11_BACKEND))))
+  print("backend      : %s (%s)" % (which, bsrc))
+  print("core objects : %d  (+ %s, without %s)"
+        % (len(core), os.path.basename(nullobj), " ".join(sorted(X11_BACKEND))))
   print("X libs dropped: %s" % (" ".join(sorted(set(dropped))) or "(none found!)"))
 
   with tempfile.TemporaryDirectory() as td:
@@ -124,7 +154,7 @@ def main():
         if len(p) >= 3 and p[1] in "TDBRG":
           live.add(p[2])
     rsp = os.path.join(td, "objs.rsp")
-    open(rsp, "w").write("\n".join(core) + "\nxa_draw_null.o\n")
+    open(rsp, "w").write("\n".join(core) + "\n" + os.path.basename(nullobj) + "\n")
     out = os.path.join(td, "a.out")
     args = []
     for t in rebuilt:
@@ -134,6 +164,7 @@ def main():
         args.append(out)
       else:
         args.append(t)
+    args += pkg("--libs", bpkgs)
     args += ["-Wl,-u%s" % sym for sym in sorted(live)]
     # Run from srcdir: the link line carries -Lrtree and other relative paths,
     # which resolve to nothing from anywhere else -- and the link then fails

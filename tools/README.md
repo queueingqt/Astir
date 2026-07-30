@@ -22,8 +22,70 @@ Run the measurement scripts against a **built** tree — several read `src/*.o`.
 | `snapshot_ab.sh <out.xpm>` | Pixel-level A/B, via Xastir's own snapshot facility. `SNAP_BIN=` runs another binary. Requires `snapshot/snap.cnf`, which is committed so the comparison configuration is fixed rather than whatever happened to be in `~/.xastir`. |
 | `split_scope.py [--gui=fn,fn] src <file.c>...` | Where the GUI/core seam runs inside one file: which functions have Motif in the **body**, which are pulled in transitively by *calling* one that does, which merely carry a `Widget` in the signature, and which file-scope names both halves touch. `--gui=` adds known-GUI names defined in other files (`redraw_symbols`, `pos_dialog`, `resize_dialog`). |
 | `trace_ab.sh <out.trace>` | Operation-level A/B for the **message windows**, which the pixel harness cannot see at all. Replays `trace/messages.log` and records what the core asks the windows to do. `SNAP_BIN=`, `SNAP_DIR=`, `TRACE_LOG=` as for `snapshot_ab.sh`. |
-| `link_null.py [src]` | **Can the core link without X?** Swaps in `xa_draw_null.o` and strikes every X library off the link line. Reports the X symbols Xastir's own objects still need, per object, via `nm` rather than the linker. |
+| `gtk4_smoke.sh [out]` | Builds and runs the GTK4 backend against Cairo/Pango headlessly, checks 31 assertions and writes a PNG. The difference between "links" and "draws". |
+| `link_null.py [src] [--backend=null\|gtk4]` | **Can the core link without X?** Swaps in `xa_draw_null.o` and strikes every X library off the link line. Reports the X symbols Xastir's own objects still need, per object, via `nm` rather than the linker. |
 | `trace_norm.py <raw.trace>` | Normalises a raw trace so two runs of the same build compare equal. Prints what it collapsed and masked, and an operation histogram, on stderr — read that, it is the coverage report. |
+
+## There is a GTK4 backend
+
+`src/xa_draw_gtk4.c`. Cairo for drawing, Pango for text, GTK4 for the canvas.
+All 57 entry points, no X11, no Motif.
+
+Three things are established, and it is worth being exact about which:
+
+| | how |
+|---|---|
+| the header is toolkit-neutral | compiles against gtk4 with **no X include path**, zero X headers reached |
+| the interface is satisfiable by a non-X toolkit | `link_null.py --backend=gtk4` — the core links, needing **0** X symbols |
+| the calls actually draw | `tools/gtk4_smoke.sh` — 31 checks, renders a PNG |
+
+**It has never drawn a frame of Xastir.** There is no GTK4 front end; `main.c`
+is still 30,000 lines of Motif. Nothing here has been compared against the X11
+backend pixel for pixel, and it cannot be until a front end exists.
+
+### The smoke test is the point
+
+"It links" is not evidence that anything draws, and this project has been caught
+by that class of claim more than once. `tools/gtk4_smoke.c` drives the backend
+directly — no display, no GTK main loop, because Cairo image surfaces and Pango
+need neither — and then *checks* the result rather than trusting it: sampled
+pixel values at known coordinates, a distinct-colour count so an all-black
+frame fails, and a PNG to look at.
+
+It earned its keep immediately. `xa_region_subtract()` copied shape structs
+wholesale, which took the *source* list's `next` pointer along with the payload
+and spliced the destination list into the region being read from. Both region
+checks failed; everything else passed. That bug is invisible to a compiler, to a
+link, and to a reviewer skimming a struct copy.
+
+### Where the mapping is approximate
+
+Marked `APPROXIMATE` in the source. These are where to look first if output is
+ever wrong:
+
+- **`XA_FUNC_XOR`.** X's `GXxor` is bitwise on pixel *values*; Cairo composites
+  colours and has no equivalent. `CAIRO_OPERATOR_DIFFERENCE` shares the property
+  Xastir relies on — drawing twice restores the original — but the intermediate
+  colour differs. Used for rubber-band boxes and the in-progress CAD polygon.
+- **Font metrics.** X reports the widest and narrowest glyph in the font; Pango
+  offers approximate character and digit widths. Call sites compute
+  `(3*max + min)/4` as a stand-in for average advance, so the arithmetic stays
+  meaningful, but the two extremes are not the true ones.
+- **Colours are RGB, not indices.** There is no colormap, so
+  `xa_color_is_direct()` is unconditionally true and the palette-display paths
+  in the raster map drivers never run.
+- **Bitmaps.** `.xbm` is a C source fragment and GdkPixbuf will not read it, so
+  the backend parses it directly; anything GdkPixbuf *can* read is tried first,
+  which makes this strictly more capable than the X11 one.
+
+### The obvious performance question
+
+A `cairo_t` is created and destroyed per drawing call. That is deliberate for a
+first implementation — `cairo_t` carries a state stack, and caching one per
+surface means every entry point must leave that stack exactly as it found it or
+state leaks between unrelated calls. Correct first. `xa_image_put_pixel()`, the
+one call the header singles out as needing to stay cheap, touches no `cairo_t`
+at all: it is a store into a local array.
 
 ## Is xa_draw.h actually sufficient?  Yes -- measured
 

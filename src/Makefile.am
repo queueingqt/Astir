@@ -9,7 +9,7 @@ DIST_SUBDIRS = rtree
 
 # xa_draw_null.c ships but must not link: it defines the same symbols as the
 # X11 backend.  Only tools/link_null.py builds it, and it compiles it itself.
-EXTRA_DIST=icon.xbm xa_draw_null.c
+EXTRA_DIST=icon.xbm xa_draw_null.c xa_draw_gtk4.c
 
 XASTIR_SRC = \
     alert.c alert.h \

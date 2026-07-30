@@ -25,6 +25,7 @@ GUI object.
 | core `.c` files pulling in **no** X header at all | 0 | 0 | **48 of 59** |
 | core headers rooting the X include tree | many | many | **0** |
 | X symbols the core needs, against a **non-X backend** | untested | untested | **18, in 3 renderer files** |
+| backends implementing `xa_draw.h` | 1 (X11) | 1 (X11) | **3** (X11, null, GTK4) |
 | lines of GTK4 front end written | 0 | 0 | **0** |
 
 Two things happened. First the harness the previous notes asked for, because the
@@ -254,6 +255,43 @@ dead code.** It reads the callsign out of every open window, uppercases it, and
 discards it; the only statement that used the result is commented out. Those are
 two of the four Motif calls that make `messages.o` non-portable, and they are
 holding up nothing.
+
+## There is a GTK4 backend
+
+`src/xa_draw_gtk4.c` -- Cairo for drawing, Pango for text, GTK4 for the canvas.
+All 57 entry points, no X11, no Motif.
+
+Three claims, each with its own evidence, and they are not the same claim:
+
+| | how |
+|---|---|
+| the header is toolkit-neutral | compiles against gtk4 with **no X include path**; zero X headers reached, zero X symbols undefined |
+| a non-X toolkit can satisfy the interface | `tools/link_null.py src --backend=gtk4` -- the core links needing **0** X symbols |
+| the calls actually draw | `tools/gtk4_smoke.sh` -- 31 assertions, renders a PNG |
+
+**It has never drawn a frame of Xastir**, and cannot until a front end exists.
+`main.c` is still 30,000 lines of Motif. Nothing here has been compared against
+the X11 backend pixel for pixel.
+
+The smoke test is what makes the third row worth anything. "It links" says
+nothing about whether pixels come out, so `tools/gtk4_smoke.c` drives the
+backend directly -- headless, since Cairo image surfaces and Pango need no
+display -- and checks sampled pixel values at known coordinates plus a
+distinct-colour count, so a blank frame fails rather than passing quietly.
+
+It paid for itself immediately: `xa_region_subtract()` copied shape structs
+wholesale, taking the source list's `next` pointer with the payload and splicing
+the destination list into the region being read. Both region assertions failed
+and everything else passed. A compiler cannot see that, a link cannot see it,
+and it is easy to miss in review.
+
+Four places where the mapping from X11 is approximate, all marked `APPROXIMATE`
+in the source and all worth reading before trusting output: `XA_FUNC_XOR`
+becomes `CAIRO_OPERATOR_DIFFERENCE` (same draw-twice-restores property,
+different intermediate colour); font metrics come from Pango's approximations
+rather than the true widest and narrowest glyph; colours are RGB rather than
+colormap indices, so the palette paths in the raster drivers never run; and
+`.xbm` is parsed directly because GdkPixbuf will not read it.
 
 ## The interface question is answered
 
@@ -501,18 +539,16 @@ In rough order of value per unit of risk:
     technique both times — move the widget-typed declarations to a `_gui.h`,
     let the compiler find the callers, and add the header to `build.sh`'s
     neutrality check so it cannot come back.
-4. ~~**Write a second backend.**~~ **Done, and the answer is yes.**
-    `src/xa_draw_null.c` implements all 58 entry points with no toolkit, and
-    `tools/link_null.py` links the core against it with every X library struck
-    off. Xastir's own core needs **18 X symbols across 3 objects** — `rotated.o`
-    (11), `color.o` (6), `cairo_text.o` (2) — and all three are renderer files a
-    backend replaces outright. Every other core object, map drivers included,
-    links against a backend that has never seen X11.
-    **Next**: those three. `rotated.c` is not a conversion target — Pango does
-    rotated text natively — so it belongs to whichever real backend comes next.
-    `color.c`'s visual detection and `cairo_text.c`'s two calls are small.
-    And note the first thing that actually stops a no-X link is **not Xastir**:
-    GraphicsMagick is itself linked against libX11.
+4. ~~**Write a second backend.**~~ **Done twice** -- a null one to prove the
+    header is neutral, and a real GTK4 one. See above.
+    **Next**: the front end. That is the only thing left between this and a
+    running GTK4 Xastir, and it is by far the largest piece -- `main.c` is
+    ~30,800 lines and the front end ~69,000 across 16 files. The drawing half of
+    the problem is solved and proven; the dialogs, menus and event loop are not
+    started. A first target would be a GtkApplicationWindow with a
+    GtkDrawingArea whose draw function paints `xa_gtk4_canvas_surface()`, plus
+    the 24 `xa_ui.h` callbacks -- enough to see a map.
+
 5. **Get the untested message-window paths exercised.** One of three done, by
     deletion: `clear_acked_message`'s scan is gone with its dead loop. Two
     remain. `msg_destroy` needs GUI interaction. `mode=selected` was covered for
