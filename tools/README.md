@@ -22,7 +22,54 @@ Run the measurement scripts against a **built** tree — several read `src/*.o`.
 | `snapshot_ab.sh <out.xpm>` | Pixel-level A/B, via Xastir's own snapshot facility. `SNAP_BIN=` runs another binary. Requires `snapshot/snap.cnf`, which is committed so the comparison configuration is fixed rather than whatever happened to be in `~/.xastir`. |
 | `split_scope.py [--gui=fn,fn] src <file.c>...` | Where the GUI/core seam runs inside one file: which functions have Motif in the **body**, which are pulled in transitively by *calling* one that does, which merely carry a `Widget` in the signature, and which file-scope names both halves touch. `--gui=` adds known-GUI names defined in other files (`redraw_symbols`, `pos_dialog`, `resize_dialog`). |
 | `trace_ab.sh <out.trace>` | Operation-level A/B for the **message windows**, which the pixel harness cannot see at all. Replays `trace/messages.log` and records what the core asks the windows to do. `SNAP_BIN=`, `SNAP_DIR=`, `TRACE_LOG=` as for `snapshot_ab.sh`. |
+| `link_null.py [src]` | **Can the core link without X?** Swaps in `xa_draw_null.o` and strikes every X library off the link line. Reports the X symbols Xastir's own objects still need, per object, via `nm` rather than the linker. |
 | `trace_norm.py <raw.trace>` | Normalises a raw trace so two runs of the same build compare equal. Prints what it collapsed and masked, and an operation histogram, on stderr — read that, it is the coverage report. |
+
+## Is xa_draw.h actually sufficient?  Yes -- measured
+
+The open question all along was whether `xa_draw.h` is a real abstraction or an
+X11 interface wearing a hat.  No call-site count can answer it: an interface
+that is only ever compiled inside X11 looks portable from in there.
+
+`src/xa_draw_null.c` answers it.  It is a second, complete implementation of all
+58 entry points that uses no toolkit at all -- surfaces, pens, images and
+regions are plain malloc'd records, drawing calls are counted and optionally
+traced, text metrics are a fixed-width approximation.  It compiles with **no X
+include path**, which already proves the header itself is clean.
+
+`tools/link_null.py` then does the real test: every core object, with
+`xa_draw_null.o` swapped in for `xa_draw_x11.o` and every X library struck off
+the link line.
+
+    X symbols Xastir's own core objects still need: 18, across 3 objects
+      rotated.o           11  XCopyGC XCreateImage XDrawImageString ...
+      color.o              6  XAllocColor XFree XGetVisualInfo ...
+      cairo_text.o         2  XGetGeometry XQueryColor
+
+**Every other core object links against a backend that has never seen X11** --
+all the map drivers, the shapefile reader, `db.c`, `messages.c`, the lot.  The
+three that do not are exactly the files a second backend replaces outright:
+`rotated.c` is the pre-Xft rotated-text renderer (Pango does this natively),
+`color.c` is visual and colormap detection, `cairo_text.c` is the Cairo text
+path.  None is application logic.
+
+The link still does not complete, and the first thing that stops it is not
+Xastir: **GraphicsMagick is itself linked against libX11**.  A no-X build needs
+a Magick built without it, or a different image path.  Worth knowing before
+anyone plans the port around Xastir's code alone.
+
+### Two traps in writing that tool, both of which fired
+
+- **Library order.** Libraries only resolve against objects that precede them on
+  the link line.  Hoisting the flags to the front made every library look
+  unsatisfied, and the first report was a hundred and sixty "missing" symbols
+  from ImageMagick, shapelib and libcurl.
+- **`-fno-lto` to get attribution.** These are LTO objects; without the plugin
+  the linker cannot read them at all.  It reported *two* undefined symbols
+  instead of a hundred and sixty and the run looked like a triumph.  LTO stays
+  on, and attribution comes from `nm -u` per object intersected with what the X
+  libraries actually export -- the same method `audit_x11.py` uses, and for the
+  same reason: a name starting with X is not evidence.
 
 ## The message windows need a different harness
 

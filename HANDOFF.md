@@ -24,6 +24,7 @@ GUI object.
 | harnesses that can see the message windows | 0 | 0 | **1** |
 | core `.c` files pulling in **no** X header at all | 0 | 0 | **48 of 59** |
 | core headers rooting the X include tree | many | many | **0** |
+| X symbols the core needs, against a **non-X backend** | untested | untested | **18, in 3 renderer files** |
 | lines of GTK4 front end written | 0 | 0 | **0** |
 
 Two things happened. First the harness the previous notes asked for, because the
@@ -254,6 +255,34 @@ discards it; the only statement that used the result is commented out. Those are
 two of the four Motif calls that make `messages.o` non-portable, and they are
 holding up nothing.
 
+## The interface question is answered
+
+`xa_draw.h` is a real abstraction, not an X11 interface wearing a hat. That was
+the open question and no call-site count could settle it: an interface only ever
+compiled inside X11 looks portable from in there.
+
+`src/xa_draw_null.c` settles it by being a second implementation — all 58 entry
+points, no toolkit, surfaces and pens as plain malloc'd records, text metrics a
+fixed-width approximation. It compiles with **no X include path at all**, which
+alone proves the header is clean.
+
+`tools/link_null.py` does the rest: every core object, `xa_draw_null.o` in place
+of `xa_draw_x11.o`, every X library struck off the link line. Result: **18 X
+symbols, across 3 objects** — `rotated.o`, `color.o`, `cairo_text.o`. Every
+other core object links against a backend that has never seen X11.
+
+The three are exactly the files the earlier notes already flagged as "a backend
+replaces these outright", so this is confirmation rather than news — but it is
+now measured, and it is a number that can be watched.
+
+Two traps in building that tool, both of which fired and both worth remembering
+because they are the same shape as everything else that has gone wrong here:
+putting the libraries before the objects on the link line made every library
+look unsatisfied (160 phantom missing symbols from ImageMagick and shapelib);
+and `-fno-lto`, added to get per-object attribution, made the linker unable to
+read the LTO objects at all, so it reported **two** undefined symbols and looked
+like a triumph. Attribution comes from `nm` now.
+
 ## What is left, and where
 
 `audit_x11.py` now reports 34 drawing call sites in **3** files and 49 other
@@ -473,10 +502,18 @@ In rough order of value per unit of risk:
     technique both times — move the widget-typed declarations to a `_gui.h`,
     let the compiler find the callers, and add the header to `build.sh`'s
     neutrality check so it cannot come back.
-4. **Write a second backend.** `xa_draw.h` is ~40 entry points and the X11 one is
-    ~1000 lines. A backend implementing only the drawing and pen calls, with text
-    stubbed, is enough to find out whether the interface is actually sufficient —
-    which is the open question, and one the call-site count cannot answer.
+4. ~~**Write a second backend.**~~ **Done, and the answer is yes.**
+    `src/xa_draw_null.c` implements all 58 entry points with no toolkit, and
+    `tools/link_null.py` links the core against it with every X library struck
+    off. Xastir's own core needs **18 X symbols across 3 objects** — `rotated.o`
+    (11), `color.o` (6), `cairo_text.o` (2) — and all three are renderer files a
+    backend replaces outright. Every other core object, map drivers included,
+    links against a backend that has never seen X11.
+    **Next**: those three. `rotated.c` is not a conversion target — Pango does
+    rotated text natively — so it belongs to whichever real backend comes next.
+    `color.c`'s visual detection and `cairo_text.c`'s two calls are small.
+    And note the first thing that actually stops a no-X link is **not Xastir**:
+    GraphicsMagick is itself linked against libX11.
 5. ~~**Get the untested message-window paths exercised.**~~ **Two of three
     done** — `mode=selected` now fires (replay a packet that appears to come
     *from* the configured callsign; auto-reply does *not* work, see

@@ -7,7 +7,9 @@ bin_PROGRAMS = xastir xastir_udp_client testdbfawk
 SUBDIRS = rtree
 DIST_SUBDIRS = rtree
 
-EXTRA_DIST=icon.xbm
+# xa_draw_null.c ships but must not link: it defines the same symbols as the
+# X11 backend.  Only tools/link_null.py builds it, and it compiles it itself.
+EXTRA_DIST=icon.xbm xa_draw_null.c
 
 XASTIR_SRC = \
     alert.c alert.h \
