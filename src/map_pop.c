@@ -99,8 +99,7 @@
 // was severely broken by the new format. The population information should be
 // gathered from census.gov or other locations concerned with population mapping.
 //
-void draw_pop_map (Widget w,
-                   char *dir,
+void draw_pop_map (char *dir,
                    char *filenm,
                    alert_entry * UNUSED(alert),
                    u_char UNUSED(alert_color),

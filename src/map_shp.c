@@ -755,8 +755,7 @@ static dbfawk_sig_info *dbfawk_default_sig = NULL;
 
 
 
-void draw_shapefile_map (Widget w,
-                         char *dir,
+void draw_shapefile_map (char *dir,
                          char *filenm,
                          alert_entry * alert,
                          u_char alert_color,
@@ -1567,7 +1566,7 @@ void draw_shapefile_map (Widget w,
               y1=points[1].y;
               // Reset these for each part, because we might have changed
               // them for the labels of the last part.
-              set_shpt_arc_attributes(w, (gps_flag)?gps_color:color,
+              set_shpt_arc_attributes((gps_flag)?gps_color:color,
                                       (gps_flag)?3:((lanes)?lanes:1),
                                       (gps_flag)?LineOnOffDash:pattern);
               xa_perf_begin(XA_ZONE_SHP_DRAW);
@@ -1606,7 +1605,7 @@ void draw_shapefile_map (Widget w,
                   float angle = (gps_flag)?(-90):get_label_angle(x0,x1,y0,y1);
                   int color_to_use=(gps_flag)?gps_color:label_color;
 
-                  (void)draw_rotated_label_text(w, (int)angle, x, y,
+                  (void)draw_rotated_label_text((int)angle, x, y,
                                                 strlen(temp),
                                                 colors[color_to_use],
                                                 (char *)temp,
@@ -1636,7 +1635,7 @@ void draw_shapefile_map (Widget w,
           // right when we draw the polygon, single-part shapes with holes
           // won't stippled properly, because this stipple applies to that
           // GC.
-          set_shpt_polygon_fill_stipple(w, fill_style, fill_stipple,
+          set_shpt_polygon_fill_stipple(fill_style, fill_stipple,
                                         draw_filled);
           polygon_hole_flag = 0;
 
@@ -1713,7 +1712,7 @@ void draw_shapefile_map (Widget w,
               if ((!draw_filled || !map_color_fill) && polygon_hole_storage[ring] == 1)
               {
                 // We have a hole drawn as unfilled.
-                draw_polygon_boundary_dashed(w,color,points,numXPoints);
+                draw_polygon_boundary_dashed(color,points,numXPoints);
               }
               else if (!weather_alert_flag)
               {
@@ -1724,9 +1723,9 @@ void draw_shapefile_map (Widget w,
                 // Set the stipple now.  need to do here, because
                 // if not done inside the loop, only the first part of the
                 // multi-part polygon gets stippled!
-                set_shpt_polygon_fill_stipple(w, fill_style, fill_stipple,
+                set_shpt_polygon_fill_stipple(fill_style, fill_stipple,
                                         draw_filled);
-                draw_filled_polygon(w,
+                draw_filled_polygon(
                                     (polygon_hole_flag)?gc_temp:gc,
                                     points, numXPoints, color, fill_color,
                                     lanes, pattern,
@@ -1739,7 +1738,7 @@ void draw_shapefile_map (Widget w,
                 // and the polygon border, all of which will be
                 // stippled with an alert pattern because we already
                 // set that up in gc_tint.
-                draw_wx_polygon(w, points, numXPoints);
+                draw_wx_polygon(points, numXPoints);
               }
               else
               {
@@ -1798,7 +1797,7 @@ void draw_shapefile_map (Widget w,
                         "  displaying label %s with color %x\n",
                         name,label_color);
               }
-              (void)draw_centered_label_text(w,
+              (void)draw_centered_label_text(
                                              -90,
                                              x,
                                              y,
@@ -2603,7 +2602,7 @@ void add_label_to_label_hash(label_string **label_hash, const char *label_text)
 
 // When we're doing SHPT_ARC we wind up switching back and forth between
 // line color and label color.  Consolidate that in one spot.
-void set_shpt_arc_attributes(Widget w, int color, int lanes, int pattern)
+void set_shpt_arc_attributes(int color, int lanes, int pattern)
 {
   xa_pen_color(gc, colors[color]);
   xa_pen_line(gc, (lanes)?lanes:1, pattern, XA_CAP_BUTT, XA_JOIN_MITER);
@@ -2613,7 +2612,7 @@ void set_shpt_arc_attributes(Widget w, int color, int lanes, int pattern)
 
 
 // Set the fill style and stipple pattern used for filled polygons
-void set_shpt_polygon_fill_stipple(Widget w, int fill_style, int fill_stipple,
+void set_shpt_polygon_fill_stipple(int fill_style, int fill_stipple,
                                int draw_filled)
 {
   xa_pen_fill_style(gc, fill_style);
@@ -3038,7 +3037,7 @@ int clip_x_y_pair(long *x, long *y, long x_min, long x_max, long y_min, long y_m
 
 
 // draw an unfilled polygon with dashed boundary in given color.
-void draw_polygon_boundary_dashed(Widget w, int color, XPoint *points,
+void draw_polygon_boundary_dashed(int color, XPoint *points,
                                   int numPoints)
 {
   xa_pen_color(gc, colors[color]);
@@ -3063,7 +3062,7 @@ void draw_polygon_boundary_dashed(Widget w, int color, XPoint *points,
 //
 // "do_the_fill" determines whether we should do the fill or not.
 //
-void draw_filled_polygon(Widget w, GC theGC, XPoint *points, int numPoints,
+void draw_filled_polygon(GC theGC, XPoint *points, int numPoints,
                          int color, int fill_color, int lanes, int pattern,
                          int do_the_fill)
 {
@@ -3094,7 +3093,7 @@ void draw_filled_polygon(Widget w, GC theGC, XPoint *points, int numPoints,
 // The wx alerts get drawn in a way almost, but not quite, like others,
 // but into a different graphics context that already has its attributes
 // set.  So we have a second polygon drawing routine.
-void draw_wx_polygon(Widget w, XPoint *points, int numPoints)
+void draw_wx_polygon(XPoint *points, int numPoints)
 {
   xa_pen_fill_style(gc_tint, XA_FILL_STIPPLED);
 

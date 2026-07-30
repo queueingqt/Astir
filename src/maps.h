@@ -120,8 +120,7 @@ void draw_point(
                 Pixmap which_pixmap,
                 int skip_duplicates);
 
-void draw_point_ll(Widget w,
-                   float y1,
+void draw_point_ll(float y1,
                    float x1,
                    GC gc,
                    Pixmap which_pixmap,
@@ -147,14 +146,14 @@ void draw_vector_ll(
 
 char *get_map_ext (char *filename);
 char *get_map_dir (char *fullpath);
-void load_auto_maps(Widget w, char *dir);
-void load_maps(Widget w);
+void load_auto_maps(char *dir);
+void load_maps(void);
 void fill_in_new_alert_entries(void);
-void load_alert_maps(Widget w, char *dir);
+void load_alert_maps(char *dir);
 void  index_update_xastir(char *filename, unsigned long bottom, unsigned long top, unsigned long left, unsigned long right, int default_map_layer);
 void  index_update_ll(char *filename, double bottom, double top, double left, double right, int default_map_layer);
 extern void get_horizontal_datum(char *datum, int sizeof_datum);
-void draw_grid (Widget w);
+void draw_grid (void);
 void Snapshot(void);
 extern int index_retrieve(char *filename, unsigned long *bottom,
                           unsigned long *top, unsigned long *left, unsigned long *right,
@@ -179,10 +178,10 @@ extern int map_inside_viewport_lat_lon(double map_min_y,
                                        double map_max_y,
                                        double map_min_x,
                                        double map_max_x);
-extern void draw_label_text (Widget w, int x, int y, int label_length, int color, char *label_text);
-extern void draw_rotated_label_text (Widget w, int rotation, int x, int y, int label_length, int color, char *label_text, int fontsize);
-extern int get_rotated_label_text_length_pixels(Widget w, char *label_text, int fontsize);
-extern void draw_centered_label_text (Widget w, int rotation, int x, int y, int label_length, int color, char *label_text, int fontsize);
+extern void draw_label_text (int x, int y, int label_length, int color, char *label_text);
+extern void draw_rotated_label_text (int rotation, int x, int y, int label_length, int color, char *label_text, int fontsize);
+extern int get_rotated_label_text_length_pixels(char *label_text, int fontsize);
+extern void draw_centered_label_text (int rotation, int x, int y, int label_length, int color, char *label_text, int fontsize);
 extern void  Monochrome( Widget widget, XtPointer clientData, XtPointer callData);
 extern void Snapshot(void);
 extern void clean_string(char *input);
@@ -225,7 +224,7 @@ extern float raster_map_intensity;
 
 extern void Print_Postscript(Widget widget, XtPointer clientData, XtPointer callData);
 
-extern void map_plot (Widget w, long max_x, long max_y, long x_long_cord, long y_lat_cord, unsigned char color, long object_behavior, int destination_pixmap, int draw_filled);
+extern void map_plot (long max_x, long max_y, long x_long_cord, long y_lat_cord, unsigned char color, long object_behavior, int destination_pixmap, int draw_filled);
 
 // A struct to pass down in to map driver functions so they can have
 // driver-specific flags.  Most drivers won't care about any (or even all)

@@ -95,8 +95,7 @@
 // types of files which are columnar.  The files that we parse are
 // pipe-delimited.
 //
-void draw_gnis_map (Widget w,
-                    char *dir,
+void draw_gnis_map (char *dir,
                     char *filenm,
                     alert_entry * UNUSED(alert),
                     u_char UNUSED(alert_color),

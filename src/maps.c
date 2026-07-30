@@ -149,8 +149,8 @@ extern XmFontList fontlist1;    // Menu/System fontlist
 #endif  // !(HAVE_LIBXPM || HAVE_LIBXPM_IN_XM)
 
 
-void draw_rotated_label_text_to_target (Widget w, int rotation, int x, int y, int label_length, int color, char *label_text, int fontsize, Pixmap target_pixmap, int draw_outline, int outline_bg_color);
-int get_rotated_label_text_height_pixels(Widget w, char *label_text, int fontsize);
+void draw_rotated_label_text_to_target (int rotation, int x, int y, int label_length, int color, char *label_text, int fontsize, Pixmap target_pixmap, int draw_outline, int outline_bg_color);
+int get_rotated_label_text_height_pixels(char *label_text, int fontsize);
 
 // Constants defining the color of the labeled grid border.
 int outline_border_labels = TRUE;   // if true put an outline around the border labels
@@ -1076,8 +1076,7 @@ void draw_point(
 //
 // Input points are in lat/long coordinates.
 //
-void draw_point_ll(Widget w,
-                   float y1,   // lat1
+void draw_point_ll(float y1,   // lat1
                    float x1,   // long1
                    GC gc,
                    Pixmap which_pixmap,
@@ -1255,7 +1254,7 @@ void draw_vector_ll(
 
 // Find length of a standard string of seven zeroes in the border font.
 // Supporting function for draw_grid() and the grid drawing functions.
-int get_standard_border_string_width_pixels(Widget w, int length)
+int get_standard_border_string_width_pixels(int length)
 {
   int string_width_pixels = 0; // Width of the unrotated seven_zeroes label string in pixels.
   char seven_zeroes[8] = "0000000";
@@ -1263,10 +1262,10 @@ int get_standard_border_string_width_pixels(Widget w, int length)
 
   if (length==5)
   {
-    string_width_pixels = get_rotated_label_text_length_pixels(w, five_zeroes, FONT_BORDER);
+    string_width_pixels = get_rotated_label_text_length_pixels(five_zeroes, FONT_BORDER);
   }
 
-  string_width_pixels = get_rotated_label_text_length_pixels(w, seven_zeroes, FONT_BORDER);
+  string_width_pixels = get_rotated_label_text_length_pixels(seven_zeroes, FONT_BORDER);
   return string_width_pixels;
 }
 
@@ -1276,12 +1275,12 @@ int get_standard_border_string_width_pixels(Widget w, int length)
 
 // Find height of a standard string in the border font
 // Supporting function for draw_grid() and the grid drawing functions.
-int get_standard_border_string_height_pixels(Widget w)
+int get_standard_border_string_height_pixels(void)
 {
   int string_width_pixels = 0; // Width of the unrotated seven_zeroes label string in pixels.
   char one_zero[2] = "0";
 
-  string_width_pixels = get_rotated_label_text_height_pixels(w, one_zero, FONT_BORDER);
+  string_width_pixels = get_rotated_label_text_height_pixels(one_zero, FONT_BORDER);
   return string_width_pixels;
 }
 
@@ -1292,7 +1291,7 @@ int get_standard_border_string_height_pixels(Widget w)
 // Find out the width to use for the border to apply when uing a labeled grid.
 // Border width is determined from the height of the border font.
 // Supporting function for draw_grid() and the grid drawing functions.
-int get_border_width(Widget w)
+int get_border_width(void)
 {
   int border_width = 14;      // The width of the border to draw around the
   // map to place labeled tick marks into
@@ -1300,7 +1299,7 @@ int get_border_width(Widget w)
   // The default here is overidden by size of the border font.
   int string_height_pixels = 0; // Height of a string in the border font in pixels
 
-  string_height_pixels = get_standard_border_string_height_pixels(w);
+  string_height_pixels = get_standard_border_string_height_pixels();
   // Rotated text functions used to draw the border text add some
   // blank space at the bottom of the text so make the border wide enough
   // to compensate for this.
@@ -1350,7 +1349,7 @@ void get_horizontal_datum(char *datum, int sizeof_datum)
 // Lat/Long coordinate system, draw lat/long lines.  Called by
 // draw_grid() below.
 //
-void draw_complete_lat_lon_grid(Widget w)
+void draw_complete_lat_lon_grid(void)
 {
 
   int coord;
@@ -1393,7 +1392,7 @@ void draw_complete_lat_lon_grid(Widget w)
   {
     coordinate_format = CONVERT_HP_NORMAL_FORMATED;
   }
-  border_width = get_border_width(w);
+  border_width = get_border_width();
   // Find xastir coordinates of upper left and lower right corners.
   xx = NW_corner_longitude  + (border_width * scale_x);
   yy = NW_corner_latitude   + (border_width * scale_y);
@@ -1402,7 +1401,7 @@ void draw_complete_lat_lon_grid(Widget w)
   screen_width_xastir = xx2 - xx;
 //  screen_height_xastir = yy2 - yy;
   // Determine some parameters used in drawing the border.
-  string_width_pixels = get_standard_border_string_width_pixels(w, 7);
+  string_width_pixels = get_standard_border_string_width_pixels(7);
   // 1 xastir coordinate = 1/100 of a second
   // 100*60*60 xastir coordinates (=360000 xastir coordinates) = 1 degree
   // 64800000 xastir coordinates = 180 degrees
@@ -1437,7 +1436,7 @@ void draw_complete_lat_lon_grid(Widget w)
                     sizeof(top_label),
                     langcode("MDATA002"),
                     grid_label,grid_label1,grid_label2,metadata_datum);
-    draw_rotated_label_text_to_target (w, 270,
+    draw_rotated_label_text_to_target (270,
                                        border_width+2,
                                        border_width-1,
                                        sizeof(top_label),colors[0x10],top_label,FONT_BORDER,
@@ -1602,11 +1601,11 @@ void draw_complete_lat_lon_grid(Widget w)
           grid_label[strlen(grid_label)-4] = grid_label[strlen(grid_label)];
         }
       }
-      string_width_pixels = get_rotated_label_text_length_pixels(w, grid_label, FONT_BORDER);
+      string_width_pixels = get_rotated_label_text_length_pixels(grid_label, FONT_BORDER);
       // test for overlap of label with previously printed label
       if (x > last_label_end + 3 && x < (unsigned int)(screen_width - string_width_pixels))
       {
-        draw_rotated_label_text_to_target (w, 270,
+        draw_rotated_label_text_to_target (270,
                                            x,
                                            screen_height,
                                            sizeof(grid_label),colors[0x09],grid_label,FONT_BORDER,
@@ -1692,17 +1691,17 @@ void draw_complete_lat_lon_grid(Widget w)
           grid_label[strlen(grid_label)-4] = grid_label[strlen(grid_label)];
         }
       }
-      string_width_pixels = get_rotated_label_text_length_pixels(w, grid_label, FONT_BORDER);
+      string_width_pixels = get_rotated_label_text_length_pixels(grid_label, FONT_BORDER);
       // check to make sure we aren't overwriting the previous label text
       if ((y > last_label_end+3) && (y > (unsigned int)string_width_pixels))
       {
-        draw_rotated_label_text_to_target (w, 180,
+        draw_rotated_label_text_to_target (180,
                                            screen_width,
                                            y,
                                            sizeof(grid_label),colors[0x09],grid_label,FONT_BORDER,
                                            pixmap_final,
                                            outline_border_labels, colors[outline_border_labels_color]);
-        draw_rotated_label_text_to_target (w, 180,
+        draw_rotated_label_text_to_target (180,
                                            border_width,
                                            y,
                                            sizeof(grid_label),colors[0x09],grid_label,FONT_BORDER,
@@ -1809,7 +1808,7 @@ void draw_complete_lat_lon_grid(Widget w)
 // C    72S to 80S ( 8 degrees latitude, equator=10,000,000)
 // A/B  80S to 90S (UPS System) false N/E = 2,000,000
 //
-void draw_major_utm_mgrs_grid(Widget w)
+void draw_major_utm_mgrs_grid(void)
 {
   int ii;
 
@@ -1943,7 +1942,7 @@ void draw_major_utm_mgrs_grid(Widget w)
   if (draw_labeled_grid_border==TRUE && scale_x > 3000)
   {
     // Determine the width of the border
-    border_width = get_border_width(w);
+    border_width = get_border_width();
     // Find out what the map datum is.
     get_horizontal_datum(metadata_datum, sizeof(metadata_datum));
 
@@ -2030,7 +2029,7 @@ void draw_major_utm_mgrs_grid(Widget w)
                     sizeof(top_label),
                     langcode("MDATA003"),
                     grid_label,grid_label1,metadata_datum);
-    draw_rotated_label_text_to_target (w, 270,
+    draw_rotated_label_text_to_target (270,
                                        border_width+2,
                                        border_width-1,
                                        sizeof(top_label),colors[0x10],top_label,FONT_BORDER,
@@ -2050,7 +2049,7 @@ void draw_major_utm_mgrs_grid(Widget w)
       zone_str[strlen(zone_str)-1] = '\0';
       if (strcmp(zone_str,zone_str2) !=0)
       {
-        draw_rotated_label_text_to_target (w, 270,
+        draw_rotated_label_text_to_target (270,
                                            x + 1,
                                            screen_height,
                                            sizeof(zone_str),colors[0x10],zone_str,FONT_BORDER,
@@ -2072,7 +2071,7 @@ void draw_major_utm_mgrs_grid(Widget w)
       zone_str[1] = '\0';
       if (strcmp(zone_str,zone_str2) !=0)
       {
-        draw_rotated_label_text_to_target (w, 270,
+        draw_rotated_label_text_to_target (270,
                                            1,
                                            y,
                                            sizeof(zone_str),colors[0x10],zone_str,FONT_BORDER,
@@ -2102,7 +2101,7 @@ void draw_major_utm_mgrs_grid(Widget w)
 // draw_minor_utm_mgrs_grid() is the function which calculates the
 // grid points.
 //
-void actually_draw_utm_minor_grid(Widget w)
+void actually_draw_utm_minor_grid(void)
 {
 
 
@@ -2164,10 +2163,10 @@ void actually_draw_utm_minor_grid(Widget w)
   numberofzones = 0;
 
   // Determine the width of the border
-  border_width = get_border_width(w);
+  border_width = get_border_width();
   // Determine some parameters used in drawing the border.
-  string_width_pixels = get_standard_border_string_width_pixels(w, 7);
-  short_width_pixels = get_standard_border_string_width_pixels(w,5);
+  string_width_pixels = get_standard_border_string_width_pixels(7);
+  short_width_pixels = get_standard_border_string_width_pixels(5);
 
   for (Zone=0; Zone < UTM_GRID_MAX_ZONES; Zone++)
   {
@@ -2266,7 +2265,7 @@ void actually_draw_utm_minor_grid(Widget w)
             //    (2*border_width)+2,
             //    grid_label,
             //    0x10,zone_color,(int)strlen(grid_label));
-            draw_rotated_label_text_to_target (w, 270,
+            draw_rotated_label_text_to_target (270,
                                                border_width+2,
                                                (2*border_width)+2,
                                                sizeof(grid_label),colors[zone_color],grid_label,FONT_BORDER,
@@ -2279,7 +2278,7 @@ void actually_draw_utm_minor_grid(Widget w)
                             sizeof(grid_label),
                             "%s",
                             zone_str);
-            draw_rotated_label_text_to_target (w, 270,
+            draw_rotated_label_text_to_target (270,
                                                border_width+2,
                                                screen_height - (2*border_width) - 2,
                                                sizeof(grid_label),colors[zone_color],grid_label,FONT_BORDER,
@@ -2304,7 +2303,7 @@ void actually_draw_utm_minor_grid(Widget w)
             //    (2*border_width)+2,
             //    grid_label,
             //    0x10,zone_color,(int)strlen(grid_label));
-            draw_rotated_label_text_to_target (w, 270,
+            draw_rotated_label_text_to_target (270,
                                                screen_width - (border_width * 3),
                                                (2*border_width)+2,
                                                sizeof(grid_label),colors[zone_color],grid_label,FONT_BORDER,
@@ -2317,7 +2316,7 @@ void actually_draw_utm_minor_grid(Widget w)
                             sizeof(grid_label),
                             "%s",
                             zone_str);
-            draw_rotated_label_text_to_target (w, 270,
+            draw_rotated_label_text_to_target (270,
                                                screen_width - (border_width * 3),
                                                screen_height - (2*border_width) - 2,
                                                sizeof(grid_label),colors[zone_color],grid_label,FONT_BORDER,
@@ -2360,7 +2359,7 @@ void actually_draw_utm_minor_grid(Widget w)
                           sizeof(grid_label),
                           "%s",
                           zone_str);
-          draw_rotated_label_text_to_target (w, 270,
+          draw_rotated_label_text_to_target (270,
                                              xx2,
                                              screen_height,
                                              sizeof(grid_label),colors[easting_color],grid_label,FONT_BORDER,
@@ -2383,7 +2382,7 @@ void actually_draw_utm_minor_grid(Widget w)
                           sizeof(grid_label),
                           "%s",
                           zone_str);
-          draw_rotated_label_text_to_target (w, 270,
+          draw_rotated_label_text_to_target (270,
                                              1,
                                              screen_height,
                                              sizeof(grid_label),colors[easting_color],grid_label,FONT_BORDER,
@@ -2482,7 +2481,7 @@ void actually_draw_utm_minor_grid(Widget w)
         //    border_width-2,
         //    top_label,
         //    0x10,0x20,(int)strlen(top_label));
-        draw_rotated_label_text_to_target (w, 270,
+        draw_rotated_label_text_to_target (270,
                                            border_width+2,
                                            border_width-1,
                                            sizeof(top_label),colors[0x10],top_label,FONT_BORDER,
@@ -2614,7 +2613,7 @@ void actually_draw_utm_minor_grid(Widget w)
               {
                 // ok to draw the label
                 last_line_labeled = TRUE;
-                draw_rotated_label_text_to_target (w, 270,
+                draw_rotated_label_text_to_target (270,
                                                    utm_grid.zone[Zone].col[ii].points[bottom_point].x+1,
                                                    screen_height,
                                                    sizeof(grid_label),colors[easting_color],grid_label,FONT_BORDER,
@@ -2702,7 +2701,7 @@ void actually_draw_utm_minor_grid(Widget w)
                    )
                 {
                   last_line_labeled = TRUE;
-                  draw_rotated_label_text_to_target (w, 180,
+                  draw_rotated_label_text_to_target (180,
                                                      border_width,
                                                      utm_grid.zone[Zone].row[ii].points[0].y,
                                                      sizeof(grid_label),colors[northing_color],grid_label,FONT_BORDER,
@@ -2721,7 +2720,7 @@ void actually_draw_utm_minor_grid(Widget w)
                 {
                   // label northings on right border
                   last_line_labeled = TRUE;
-                  draw_rotated_label_text_to_target (w, 180,
+                  draw_rotated_label_text_to_target (180,
                                                      screen_width,
                                                      utm_grid.zone[Zone].row[ii].points[utm_grid.zone[Zone].row[ii].npoints-1].y-1,
                                                      sizeof(grid_label),colors[northing_color],grid_label,FONT_BORDER,
@@ -2774,7 +2773,7 @@ void actually_draw_utm_minor_grid(Widget w)
 //          3 if out of zones
 //          4 if realloc failure
 //
-int draw_minor_utm_mgrs_grid(Widget w)
+int draw_minor_utm_mgrs_grid(void)
 {
 
   long xx, yy, xx1, yy1;
@@ -2829,7 +2828,7 @@ int draw_minor_utm_mgrs_grid(Widget w)
   {
 
     // XPoint arrays are already set up.  Go draw the grid.
-    actually_draw_utm_minor_grid(w);
+    actually_draw_utm_minor_grid();
 
     return(0);
   }
@@ -3433,7 +3432,7 @@ int draw_minor_utm_mgrs_grid(Widget w)
   utm_grid.hash.lr_y = SE_corner_latitude;
 
   // XPoint arrays are set up.  Go draw the grid.
-  actually_draw_utm_minor_grid(w);
+  actually_draw_utm_minor_grid();
 
   return(0);
 
@@ -3449,7 +3448,7 @@ int draw_minor_utm_mgrs_grid(Widget w)
 // Draws a lat/lon or UTM/UPS grid on top of the view.
 //
 //*****************************************************************
-void draw_grid(Widget w)
+void draw_grid(void)
 {
   int half;                   // Center of the white lines used to draw the borders
   int border_width = 14;      // The width of the border to draw around the
@@ -3466,7 +3465,7 @@ void draw_grid(Widget w)
   if (draw_labeled_grid_border==TRUE)
   {
     // Determine how wide the border should be.
-    border_width = get_border_width(w);
+    border_width = get_border_width();
     half = border_width/2;
     // draw a white border around the map.
     xa_pen_line(gc, border_width, XA_LINE_SOLID, XA_CAP_ROUND, XA_JOIN_ROUND);
@@ -3494,10 +3493,10 @@ void draw_grid(Widget w)
 //draw_vector_ll(5.0,  5.0, -5.0, -5.0, gc_tint, pixmap_final, 0);
 
     // Draw major UTM/MGRS zones
-    draw_major_utm_mgrs_grid(w);
+    draw_major_utm_mgrs_grid();
 
     // Draw minor UTM/MGRS zones
-    ret_code = draw_minor_utm_mgrs_grid(w);
+    ret_code = draw_minor_utm_mgrs_grid();
     if (ret_code)
     {
       fprintf(stderr,
@@ -3508,7 +3507,7 @@ void draw_grid(Widget w)
   }   // End of UTM grid section
   else   // Lat/Long coordinate system, draw lat/long lines
   {
-    draw_complete_lat_lon_grid(w);
+    draw_complete_lat_lon_grid();
   }   // End of Lat/Long section
 }  // End of draw_grid()
 
@@ -3806,7 +3805,7 @@ int map_visible_lat_lon (double map_min_y,    // f_bottom_map_boundary
  * Does what it says.  Used to draw strings onto the
  * display.
  **********************************************************/
-void draw_label_text (Widget w, int x, int y, int label_length, int color, char *label_text)
+void draw_label_text (int x, int y, int label_length, int color, char *label_text)
 {
 
   // This draws a gray background rectangle upon which we draw the text.
@@ -3855,7 +3854,7 @@ char rotated_label_fontname[FONT_MAX][MAX_LABEL_FONTNAME];
  **********************************************************/
 /* common code used by the two entries --- a result of retrofitting a new
    feature (centered) */
-static void draw_rotated_label_text_common (Widget w, float my_rotation, int x, int y, int UNUSED(label_length), int color, char *label_text, int align, int fontsize, Pixmap target_pixmap, int draw_outline, int outline_bg_color)
+static void draw_rotated_label_text_common (float my_rotation, int x, int y, int UNUSED(label_length), int color, char *label_text, int align, int fontsize, Pixmap target_pixmap, int draw_outline, int outline_bg_color)
 {
   // Do some sanity checking
   if (fontsize < 0 || fontsize >= FONT_MAX)
@@ -3899,12 +3898,11 @@ static void draw_rotated_label_text_common (Widget w, float my_rotation, int x, 
 //    fontsize - the fontsize in the rotated_label_font in which the string
 //    is to be rendered.
 // Returns: the length in pixels of the string, -1 on an error.
-int get_rotated_label_text_length_pixels(Widget w, char *label_text, int fontsize)
+int get_rotated_label_text_length_pixels(char *label_text, int fontsize)
 {
   if (fontsize < 0 || fontsize >= FONT_MAX)
     return -1;
 
-  (void)w;
   return xa_text_width(label_text, rotated_label_fontname[fontsize]);
 }
 
@@ -3919,13 +3917,12 @@ int get_rotated_label_text_length_pixels(Widget w, char *label_text, int fontsiz
 //    fontsize - the fontsize in the rotated_label_font in which the string
 //    is to be rendered.
 // Returns: the height in pixels of the string, -1 on an error.
-int get_rotated_label_text_height_pixels(Widget w, char *label_text, int fontsize)
+int get_rotated_label_text_height_pixels(char *label_text, int fontsize)
 {
   if (fontsize < 0 || fontsize >= FONT_MAX)
     return -1;
 
   (void)label_text;
-  (void)w;
   return xa_text_height(rotated_label_fontname[fontsize]);
 }
 
@@ -3935,7 +3932,7 @@ int get_rotated_label_text_height_pixels(Widget w, char *label_text, int fontsiz
 
 // Draw a rotated label onto the specified pixmap.
 // Wrapper for draw_rotated_label_text-common().
-void draw_rotated_label_text_to_target (Widget w, int rotation, int x, int y, int label_length, int color, char *label_text, int fontsize, Pixmap target_pixmap, int draw_outline, int outline_bg_color)
+void draw_rotated_label_text_to_target (int rotation, int x, int y, int label_length, int color, char *label_text, int fontsize, Pixmap target_pixmap, int draw_outline, int outline_bg_color)
 {
   float my_rotation = (float)((-rotation)-90);
 
@@ -3943,7 +3940,7 @@ void draw_rotated_label_text_to_target (Widget w, int rotation, int x, int y, in
        || ( (my_rotation >  90.0) && (my_rotation <  270.0) ) )
   {
     my_rotation = my_rotation + 180.0;
-    (void)draw_rotated_label_text_common(w,
+    (void)draw_rotated_label_text_common(
                                          my_rotation,
                                          x,
                                          y,
@@ -3958,7 +3955,7 @@ void draw_rotated_label_text_to_target (Widget w, int rotation, int x, int y, in
   }
   else
   {
-    (void)draw_rotated_label_text_common(w,
+    (void)draw_rotated_label_text_common(
                                          my_rotation,
                                          x,
                                          y,
@@ -3977,7 +3974,7 @@ void draw_rotated_label_text_to_target (Widget w, int rotation, int x, int y, in
 
 
 
-void draw_rotated_label_text (Widget w, int rotation, int x, int y, int label_length, int color, char *label_text, int fontsize)
+void draw_rotated_label_text (int rotation, int x, int y, int label_length, int color, char *label_text, int fontsize)
 {
   float my_rotation = (float)((-rotation)-90);
 
@@ -3985,7 +3982,7 @@ void draw_rotated_label_text (Widget w, int rotation, int x, int y, int label_le
        || ( (my_rotation >  90.0) && (my_rotation <  270.0) ) )
   {
     my_rotation = my_rotation + 180.0;
-    (void)draw_rotated_label_text_common(w,
+    (void)draw_rotated_label_text_common(
                                          my_rotation,
                                          x,
                                          y,
@@ -3998,7 +3995,7 @@ void draw_rotated_label_text (Widget w, int rotation, int x, int y, int label_le
   }
   else
   {
-    (void)draw_rotated_label_text_common(w,
+    (void)draw_rotated_label_text_common(
                                          my_rotation,
                                          x,
                                          y,
@@ -4011,11 +4008,11 @@ void draw_rotated_label_text (Widget w, int rotation, int x, int y, int label_le
   }
 }
 
-void draw_centered_label_text (Widget w, int rotation, int x, int y, int label_length, int color, char *label_text, int fontsize)
+void draw_centered_label_text (int rotation, int x, int y, int label_length, int color, char *label_text, int fontsize)
 {
   float my_rotation = (float)((-rotation)-90);
 
-  (void)draw_rotated_label_text_common(w,
+  (void)draw_rotated_label_text_common(
                                        my_rotation,
                                        x,
                                        y,
@@ -4265,16 +4262,14 @@ enum map_onscreen_enum map_onscreen_index(char *filename)
  * and write them to the map index file.
  **********************************************************/
 /* table of map drivers, selected by filename extension */
-extern void draw_dos_map(Widget w,
-                         char *dir,
+extern void draw_dos_map(char *dir,
                          char *filenm,
                          alert_entry *alert,
                          u_char alert_color,
                          int destination_pixmap,
                          map_draw_flags *draw_flags);
 
-extern void draw_palm_image_map(Widget w,
-                                char *dir,
+extern void draw_palm_image_map(char *dir,
                                 char *filenm,
                                 alert_entry *alert,
                                 u_char alert_color,
@@ -4282,8 +4277,7 @@ extern void draw_palm_image_map(Widget w,
                                 map_draw_flags *draw_flags);
 
 #ifdef HAVE_LIBSHP
-extern void draw_shapefile_map (Widget w,
-                                char *dir,
+extern void draw_shapefile_map (char *dir,
                                 char *filenm,
                                 alert_entry *alert,
                                 u_char alert_color,
@@ -4292,32 +4286,28 @@ extern void draw_shapefile_map (Widget w,
   extern void clear_dbfawk_sigs(void);
 #endif /* HAVE_LIBSHP */
 #ifdef HAVE_LIBGEOTIFF
-extern void draw_geotiff_image_map(Widget w,
-                                   char *dir,
+extern void draw_geotiff_image_map(char *dir,
                                    char *filenm,
                                    alert_entry *alert,
                                    u_char alert_color,
                                    int destination_pixmap,
                                    map_draw_flags *draw_flags);
 #endif /* HAVE_LIBGEOTIFF */
-extern void draw_geo_image_map(Widget w,
-                               char *dir,
+extern void draw_geo_image_map(char *dir,
                                char *filenm,
                                alert_entry *alert,
                                u_char alert_color,
                                int destination_pixmap,
                                map_draw_flags *draw_flags);
 
-extern void draw_gnis_map(Widget w,
-                          char *dir,
+extern void draw_gnis_map(char *dir,
                           char *filenm,
                           alert_entry *alert,
                           u_char alert_color,
                           int destination_pixmap,
                           map_draw_flags *draw_flags);
 
-extern void draw_pop_map(Widget w,
-                         char *dir,
+extern void draw_pop_map(char *dir,
                          char *filenm,
                          alert_entry *alert,
                          u_char alert_color,
@@ -4328,8 +4318,7 @@ struct
 {
   char *ext;
   enum {none=0, map, tif, geo, gnis, shp, pop} type;
-  void (*func)(Widget w,
-               char *dir,
+  void (*func)(char *dir,
                char *filenm,
                alert_entry *alert,
                u_char alert_color,
@@ -4358,7 +4347,7 @@ struct
 
 
 
-void draw_map (Widget w, char *dir, char *filenm, alert_entry *alert,
+void draw_map (char *dir, char *filenm, alert_entry *alert,
                u_char alert_color, int destination_pixmap,
                map_draw_flags *draw_flags)
 {
@@ -4455,8 +4444,7 @@ void draw_map (Widget w, char *dir, char *filenm, alert_entry *alert,
   if (map_driver_ptr->func)
   {
     xa_perf_begin(XA_ZONE_MAP_ONE);
-    map_driver_ptr->func(w,
-                         dir,
+    map_driver_ptr->func(dir,
                          filenm,
                          alert,
                          alert_color,
@@ -4511,7 +4499,7 @@ static void index_update_accessed(char *filename);
 // to.  Re-index the map if map_index_timestamp is older.
 //
 /////////////////////////////////////////////////////////////////////
-static void map_search (Widget w, char *dir, alert_entry * alert, int *alert_count,int warn, int destination_pixmap)
+static void map_search (char *dir, alert_entry * alert, int *alert_count,int warn, int destination_pixmap)
 {
   struct dirent *dl = NULL;
   DIR *dm;
@@ -4900,7 +4888,7 @@ static void map_search (Widget w, char *dir, alert_entry * alert, int *alert_cou
           fprintf(stderr,"map_search: calling draw_map for an alert\n");
         }
 
-        draw_map (w,
+        draw_map (
                   dir,                // Alert directory
                   alert->filename,    // Shapefile filename
                   alert,
@@ -5024,7 +5012,7 @@ static void map_search (Widget w, char *dir, alert_entry * alert, int *alert_cou
 //                                    sizeof(this_time),
 //                                    "%s",
 //                                    ctime(ftime));
-                map_search(w, fullpath, alert, alert_count, warn, destination_pixmap);
+                map_search(fullpath, alert, alert_count, warn, destination_pixmap);
               }
               break;
 
@@ -5096,7 +5084,7 @@ static void map_search (Widget w, char *dir, alert_entry * alert, int *alert_cou
                 mdf.draw_filled=1;
                 mdf.usgs_drg=0;
 
-                draw_map (w,
+                draw_map (
                           dir,
                           dl->d_name,
                           alert ? &alert[*alert_count] : NULL,
@@ -5126,7 +5114,7 @@ static void map_search (Widget w, char *dir, alert_entry * alert, int *alert_cou
                   fprintf(stderr,"Calling draw_map\n");
                 }
 
-                draw_map (w,
+                draw_map (
                           map_dir,
                           ptr,
                           alert ? &alert[*alert_count] : NULL,
@@ -6800,7 +6788,7 @@ void map_indexer(int parameter)
       fprintf(stderr,"map_indexer: Calling map_search\n");
     }
 
-    map_search (NULL, AUTO_MAP_DIR, NULL, NULL, (int)FALSE, INDEX_CHECK_TIMESTAMPS);
+    map_search (AUTO_MAP_DIR, NULL, NULL, (int)FALSE, INDEX_CHECK_TIMESTAMPS);
 
     if (debug_level & 16)
     {
@@ -6814,7 +6802,7 @@ void map_indexer(int parameter)
       fprintf(stderr,"map_indexer: Calling map_search\n");
     }
 
-    map_search (NULL, AUTO_MAP_DIR, NULL, NULL, (int)FALSE, INDEX_NO_TIMESTAMPS);
+    map_search (AUTO_MAP_DIR, NULL, NULL, (int)FALSE, INDEX_NO_TIMESTAMPS);
 
     if (debug_level & 16)
     {
@@ -6949,7 +6937,7 @@ void fill_in_new_alert_entries(void)
       // to dump warnings out to the console as well.  If the
       // warning was received on local RF or locally, warn the
       // operator (the weather must be near).
-      map_search (da,
+      map_search (
                   alert_scan,
                   temp,
                   &alert_count,
@@ -6989,7 +6977,7 @@ void fill_in_new_alert_entries(void)
  * map_search() fills in the filename field of the alert struct.
  * draw_shapefile_map() fills in the index field.
  *******************************************************************/
-void load_alert_maps (Widget w, char *dir)
+void load_alert_maps (char *dir)
 {
 //    int ii;
   int level;
@@ -7028,8 +7016,8 @@ void load_alert_maps (Widget w, char *dir)
 
 
 // Just for a test
-//draw_shapefile_map (w, dir, filenm, alert, alert_color, destination_pixmap);
-//draw_shapefile_map (w, dir, "c_16my01.shp", NULL, '\0', DRAW_TO_PIXMAP_ALERTS);
+//draw_shapefile_map (dir, filenm, alert, alert_color, destination_pixmap);
+//draw_shapefile_map (dir, "c_16my01.shp", NULL, '\0', DRAW_TO_PIXMAP_ALERTS);
 
 
 // Are we drawing them in reverse order so that the important
@@ -7110,7 +7098,7 @@ void load_alert_maps (Widget w, char *dir)
 
           if (temp->alert_level != 'C')
           {
-            draw_map (w, dir, temp->filename, temp,
+            draw_map (dir, temp->filename, temp,
                       fill_color[level], DRAW_TO_PIXMAP_ALERTS, &mdf);  // draw filled
           }
         }
@@ -7131,7 +7119,7 @@ void load_alert_maps (Widget w, char *dir)
               fprintf(stderr,"load_alert_maps: Calling draw_map\n");
             }
 
-            draw_map (w, dir, temp->filename, temp,
+            draw_map (dir, temp->filename, temp,
                       fill_color[level], DRAW_TO_PIXMAP_ALERTS, &mdf);  // draw filled
           }
           if (temp)
@@ -7339,7 +7327,7 @@ static void insert_map_sorted(char *filename)
  * OLD: Recurses through the map directories looking for
  * maps to load.
  **********************************************************/
-void load_auto_maps (Widget w, char * UNUSED(dir) )
+void load_auto_maps (char * UNUSED(dir) )
 {
   map_index_record *current = map_index_head;
   map_draw_flags mdf;
@@ -7381,7 +7369,7 @@ void load_auto_maps (Widget w, char * UNUSED(dir) )
         insert_map_sorted(current->filename);
 
         /*
-                        draw_map (w,
+                        draw_map (
                             SELECTED_MAP_DIR,
                             current->filename,
                             NULL,
@@ -7438,7 +7426,7 @@ void load_auto_maps (Widget w, char * UNUSED(dir) )
         fprintf(stderr,"load_auto_maps: Calling draw_map\n");
       }
 
-      draw_map (w,
+      draw_map (
                 SELECTED_MAP_DIR,
                 current->filename,
                 NULL,
@@ -7467,7 +7455,7 @@ void load_auto_maps (Widget w, char * UNUSED(dir) )
  * added to the Map Chooser in order to change the layer each map is
  * drawn at.
  *******************************************************************/
-void load_maps (Widget w)
+void load_maps (void)
 {
   FILE *f;
   char mapname[MAX_FILENAME];
@@ -7592,7 +7580,7 @@ void load_maps (Widget w)
                     insert_map_sorted(current->filename);
 
                     /*
-                                                            draw_map (w,
+                                                            draw_map (
                                                                 SELECTED_MAP_DIR,
                                                                 current->filename,
                                                                 NULL,
@@ -7615,7 +7603,7 @@ void load_maps (Widget w)
               insert_map_sorted(mapname);
 
               /*
-                                          draw_map (w,
+                                          draw_map (
                                               SELECTED_MAP_DIR,
                                               mapname,
                                               NULL,
@@ -7704,7 +7692,7 @@ void load_maps (Widget w)
 //start_timer();
 //fprintf(stderr,"Calling draw_map() 500 times...\n");
 //for (dummy = 0; dummy < 500; dummy++) {
-    draw_map (w,
+    draw_map (
               SELECTED_MAP_DIR,
               current->filename,
               NULL,

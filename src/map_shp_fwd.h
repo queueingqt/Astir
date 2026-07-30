@@ -67,19 +67,19 @@ int check_label_skip(label_string **label_hash, const char *label_text,
                      int mod_number, int *skip_label);
 void add_label_to_label_hash(label_string **label_hash, const char *label_text);
 float get_label_angle(int x0, int x1, int y0, int y1);
-void set_shpt_arc_attributes(Widget w, int color, int lanes, int pattern);
-void set_shpt_polygon_fill_stipple(Widget w, int fill_style, int fill_stipple,
+void set_shpt_arc_attributes(int color, int lanes, int pattern);
+void set_shpt_polygon_fill_stipple(int fill_style, int fill_stipple,
                                    int draw_filled);
 int preprocess_shp_polygon_holes(SHPObject *object, int *polygon_hole_storage);
 xa_pen get_hole_clipping_context(SHPObject *object,
                                  int *polygon_hole_storage,
                                  int *high_water_mark_index);
 int clip_x_y_pair(long *x, long *y, long x_min, long x_max, long y_min, long y_max);
-void draw_polygon_boundary_dashed(Widget w, int color, XPoint *points,
+void draw_polygon_boundary_dashed(int color, XPoint *points,
                                   int numPoints);
-void draw_filled_polygon(Widget w, GC theGC, XPoint *points, int numPoints,
+void draw_filled_polygon(GC theGC, XPoint *points, int numPoints,
                          int color, int fill_color, int lanes, int pattern,
                          int do_the_fill);
-void draw_wx_polygon(Widget w, XPoint *points, int numPoints);
+void draw_wx_polygon(XPoint *points, int numPoints);
 void choose_polygon_label_point(SHPObject *object, float *lon, float *lat);
 void initialize_rendering_variables(void);

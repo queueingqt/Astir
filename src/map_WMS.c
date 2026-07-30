@@ -135,8 +135,7 @@
  * draw_WMS_map()
  **********************************************************/
 #ifdef HAVE_MAGICK
-void draw_WMS_map (Widget w,
-                   char *filenm,
+void draw_WMS_map (char *filenm,
                    int destination_pixmap,
                    char *URL,
                    transparent_color_record *c_trans_color_head,

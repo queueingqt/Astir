@@ -359,8 +359,7 @@ int read_fgd_file ( char* tif_filename,
  * 'k': Good from x??? to x???.
  * 'o': Good from x064 to x004.  Not very readable at x64.
  ***********************************************************/
-void draw_geotiff_image_map (Widget w,
-                             char *dir,
+void draw_geotiff_image_map (char *dir,
                              char *filenm,
                              alert_entry * UNUSED(alert),
                              u_char UNUSED(alert_color),

@@ -103,7 +103,7 @@ extern int mag;
  * then it draws filled polygons in the color of
  * "object_behavior"?  Weird.
  **********************************************************/
-void map_plot (Widget w, long max_x, long max_y, long x_long_cord,
+void map_plot (long max_x, long max_y, long x_long_cord,
                long y_lat_cord, unsigned char color, long object_behavior,
                int destination_pixmap, int draw_filled)
 {
@@ -356,8 +356,7 @@ void map_plot (Widget w, long max_x, long max_y, long x_long_cord,
 
 
 
-void draw_dos_map(Widget w,
-                  char *dir,
+void draw_dos_map(char *dir,
                   char *filenm,
                   alert_entry * UNUSED(alert),
                   u_char alert_color,
@@ -861,7 +860,7 @@ process:
               LongHld = ((double)LongHld * 360000.0) / points_per_degree;
               x_long_cord = LongHld + left_boundary;
               y_lat_cord = LatHld + top_boundary;
-              map_plot (w,
+              map_plot (
                         max_x,
                         max_y,
                         (long)x_long_cord,
@@ -871,7 +870,7 @@ process:
                         destination_pixmap,
                         draw_filled);
             }
-            map_plot (w,
+            map_plot (
                       max_x,
                       max_y,
                       (long)x_long_cord,
@@ -921,7 +920,7 @@ process:
             if (LongHld == 0 && LatHld == 0)
             {
               color = 0;
-              map_plot (w,
+              map_plot (
                         max_x,
                         max_y,
                         (long)x_long_cord,
@@ -934,7 +933,7 @@ process:
             else if (LongHld == 0 && LatHld == -1)
             {
               dos_labels = (int)TRUE;
-              map_plot (w,
+              map_plot (
                         max_x,
                         max_y,
                         (long)x_long_cord,
@@ -950,7 +949,7 @@ process:
               LongHld = ((double)LongHld * 360000.0) / points_per_degree;
               x_long_cord = LongHld + left_boundary;
               y_lat_cord = LatHld + top_boundary;
-              map_plot (w,
+              map_plot (
                         max_x,
                         max_y,
                         (long)x_long_cord,
@@ -1000,7 +999,7 @@ process:
             if (LongHld == 0 && LatHld == 0)
             {
               color = 0;
-              map_plot (w,
+              map_plot (
                         max_x,
                         max_y,
                         (long)x_long_cord,
@@ -1013,7 +1012,7 @@ process:
             else if (LongHld == 0 && LatHld == -1)
             {
               dos_labels = (int)TRUE;
-              map_plot (w,
+              map_plot (
                         max_x,
                         max_y,
                         (long)x_long_cord,
@@ -1047,7 +1046,7 @@ process:
                 LongHld = ((double)LongHld * 360000.0) / points_per_degree;
                 x_long_cord = LongHld + left_boundary;
                 y_lat_cord = LatHld + top_boundary;
-                map_plot (w,
+                map_plot (
                           max_x,
                           max_y,
                           (long)x_long_cord,
@@ -1175,7 +1174,7 @@ process:
 
       if (alert_color && last_behavior & 0x80 && (int)vector_start == 0xff)
       {
-        map_plot (w,
+        map_plot (
                   max_x,
                   max_y,
                   (long)x_long_cord,
@@ -1186,7 +1185,7 @@ process:
                   draw_filled);
         //special_fill = TRUE;
       }
-      map_plot (w,
+      map_plot (
                 max_x,
                 max_y,
                 (long)x_long_cord,
@@ -1199,7 +1198,7 @@ process:
   }
   if (alert_color)
   {
-    map_plot (w,
+    map_plot (
               max_x,
               max_y,
               0,
@@ -1211,7 +1210,7 @@ process:
   }
   else
   {
-    map_plot (w,
+    map_plot (
               max_x,
               max_y,
               0,
@@ -1347,12 +1346,12 @@ process:
                   if (embedded_object)
                   {
                     // NOTE: 0x21 is the first color for the area object or "DOS" colors
-                    draw_label_text (w, x+10, y+5, label_length,colors[0x21 + symbol_color],label_text);
+                    draw_label_text (x+10, y+5, label_length,colors[0x21 + symbol_color],label_text);
                     symbol(0,symbol_table,symbol_id,' ',pixmap,1,x-10,y-10,' ');
                   }
                   else
                   {
-                    draw_label_text (w, x, y, label_length,colors[(int)(label_type[0] & 0x7f)],label_text);
+                    draw_label_text (x, y, label_length,colors[(int)(label_type[0] & 0x7f)],label_text);
                   }
                 }
               }
@@ -1526,13 +1525,13 @@ process:
                 // Note: We're not drawing the labels in the right colors
                 if (rotation == 0)      // Non-rotated label
                 {
-//                                    draw_label_text (w,
+//                                    draw_label_text (
 //                                        x,
 //                                        y,
 //                                        label_length,
 //                                        colors[(int)(label_type_1[0] & 0x7f)],
 //                                        label_text);
-                  draw_rotated_label_text (w,
+                  draw_rotated_label_text (
                                            -90.0,
                                            x,
                                            y,
@@ -1543,7 +1542,7 @@ process:
                 }
                 else    // Rotated label
                 {
-                  draw_rotated_label_text (w,
+                  draw_rotated_label_text (
                                            rotation,
                                            x,
                                            y,
@@ -1651,7 +1650,7 @@ process:
           }
 
           // NOTE: 0x21 is the first color for the area object or "DOS" colors
-          draw_label_text (w, x+10, y+5, strlen(label_text),colors[0x21 + label_text_color],label_text);
+          draw_label_text (x+10, y+5, strlen(label_text),colors[0x21 + label_text_color],label_text);
           symbol(0,label_symbol_del,label_symbol_char,' ',pixmap,1,x-10,y-10,' ');
 
           if (debug_level & 512)

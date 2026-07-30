@@ -185,7 +185,7 @@ int check_interrupt(
   }
 }
 
-void draw_geo_image_map (Widget w, char *dir, char *filenm,
+void draw_geo_image_map (char *dir, char *filenm,
                          alert_entry *alert, u_char alert_color, int destination_pixmap,
                          map_draw_flags *mdf);
 
@@ -304,8 +304,7 @@ int check_trans (XColor c, transparent_color_record *c_trans_color_head)
 // width/height depend on our window size.  The "set" parameter
 // decides whether we're fetching 50k or 250k maps.
 //
-void draw_toporama_map (Widget w,
-                        char * UNUSED(dir),
+void draw_toporama_map (char * UNUSED(dir),
                         char *filenm,
                         alert_entry *alert,
                         u_char alert_color,
@@ -509,7 +508,7 @@ void draw_toporama_map (Widget w,
   // Call draw_geo_image_map() with our newly-fetched .geo file,
   // passing it most of the parameters that we were originally
   // passed in order to effect the map draw.
-  draw_geo_image_map (w,
+  draw_geo_image_map (
                       get_user_base_dir("tmp", temp_file_path, sizeof(temp_file_path)),
                       "map.geo",
                       alert,
@@ -535,8 +534,7 @@ void draw_toporama_map (Widget w,
  * (not rotated) and rectangular.
  **********************************************************/
 
-void draw_geo_image_map (Widget w,
-                         char *dir,
+void draw_geo_image_map (char *dir,
                          char *filenm,
                          alert_entry *alert,
                          u_char alert_color,
@@ -1163,7 +1161,7 @@ void draw_geo_image_map (Widget w,
     // latest map and replacing the bad map in the cache.
     //
     // fileimg is the server URL, if specified.
-    draw_OSM_map(w, filenm, destination_pixmap, fileimg, OSMstyle, nocache);
+    draw_OSM_map(filenm, destination_pixmap, fileimg, OSMstyle, nocache);
 
 #endif  // HAVE_MAGICK
 
@@ -1174,7 +1172,7 @@ void draw_geo_image_map (Widget w,
 #ifdef HAVE_MAGICK
 
     // fileimg is the server URL, if specified.
-    draw_OSM_tiles(w, filenm, destination_pixmap, fileimg, tileCache, OSMstyle, OSMtileExt);
+    draw_OSM_tiles(filenm, destination_pixmap, fileimg, tileCache, OSMstyle, OSMtileExt);
 
 #endif  // HAVE_MAGICK
 
@@ -1191,7 +1189,7 @@ void draw_geo_image_map (Widget w,
 
 #ifdef HAVE_MAGICK
     // Pass the URL in "fileimg"
-    draw_WMS_map(w,
+    draw_WMS_map(
                  filenm,
                  destination_pixmap,
                  fileimg,
@@ -1212,7 +1210,7 @@ void draw_geo_image_map (Widget w,
     // to call draw_geo_image_map() again shortly, after we
     // fetch the remote .geo file.
     //
-    draw_toporama_map(w,
+    draw_toporama_map(
                       dir,
                       filenm,
                       alert,

@@ -516,7 +516,6 @@ static long pixelLon2xastirLon(long osm_lon, int osm_zoom)
  * draw_image() - copy a image onto the display
  **********************************************************/
 static void draw_image(
-  Widget w,
   Image *image,
   ExceptionInfo *except_ptr,
   unsigned offsetx,
@@ -1053,7 +1052,6 @@ static void render_OSM_image_pixels(
  * then flushes the whole buffer with a single XPutImage.
  **********************************************************/
 static void draw_OSM_image(
-  Widget w,
   Image *image,
   ExceptionInfo *except_ptr,
   tiepoint *tpNW,
@@ -1087,8 +1085,7 @@ static void draw_OSM_image(
 // MaxTextExtent is an ImageMagick/GraphicMagick constant
 #define MAX_TMPSTRING MaxTextExtent
 
-void draw_OSM_tiles (Widget w,
-                     char *filenm,           // this is the name of the xastir map file
+void draw_OSM_tiles (char *filenm,           // this is the name of the xastir map file
                      int destination_pixmap,
                      char *server_url,      // if specified in xastir map file
                      char *tileCacheDir,    // if specified in xastir map file
@@ -1402,7 +1399,7 @@ void draw_OSM_tiles (Widget w,
     }
     else
     {
-      draw_image(w, tile, &exception, 4, 4);
+      draw_image(tile, &exception, 4, 4);
       DestroyImage(tile);
     }
   }
@@ -1429,8 +1426,7 @@ void draw_OSM_tiles (Widget w,
 /**********************************************************
  * draw_OSM_map() - retrieve an image that is the size of the display
  **********************************************************/
-void draw_OSM_map (Widget w,
-                   char *filenm,
+void draw_OSM_map (char *filenm,
                    int destination_pixmap,
                    char *url,
                    char *style,
@@ -1738,7 +1734,7 @@ void draw_OSM_map (Widget w,
     fprintf(stderr,"image matte is %i\n", image->matte);
   } // debug_level & 512
 
-  draw_OSM_image(w, image, &exception, &(tp[0]), &(tp[1]), osm_zl);
+  draw_OSM_image(image, &exception, &(tp[0]), &(tp[1]), osm_zl);
   DestroyImage(image);
 
   // Display the OpenStreetMap attribution
@@ -1752,7 +1748,7 @@ void draw_OSM_map (Widget w,
   }
   else
   {
-    draw_image(w, image, &exception, 4, 4);
+    draw_image(image, &exception, 4, 4);
   }
 
 

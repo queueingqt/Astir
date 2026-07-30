@@ -34,15 +34,13 @@ void adj_to_OSM_level(
   long *new_scale_x,
   long *new_scale_y);
 
-void draw_OSM_map(Widget w,
-                  char *filenm,
+void draw_OSM_map(char *filenm,
                   int destination_pixmap,
                   char *url,
                   char *style,
                   int nocache);
 
-void draw_OSM_tiles(Widget w,
-                    char *filenm,
+void draw_OSM_tiles(char *filenm,
                     int destination_pixmap,
                     char *server_url,
                     char *tileCacheDir,

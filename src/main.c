@@ -3305,13 +3305,13 @@ int create_image(Widget w)
     if (map_auto_maps && !disable_all_maps)
     {
       xa_perf_begin(XA_ZONE_LOAD_MAPS);
-      load_auto_maps(w,AUTO_MAP_DIR);
+      load_auto_maps(AUTO_MAP_DIR);
       xa_perf_end(XA_ZONE_LOAD_MAPS);
     }
     else if (!disable_all_maps)
     {
       xa_perf_begin(XA_ZONE_LOAD_MAPS);
-      load_maps(w);
+      load_maps();
       xa_perf_end(XA_ZONE_LOAD_MAPS);
     }
   }
@@ -3344,7 +3344,7 @@ int create_image(Widget w)
   if (!wx_alert_style && !disable_all_maps)
   {
     xa_perf_begin(XA_ZONE_ALERT_MAPS);
-      load_alert_maps(w, ALERT_MAP_DIR);
+      load_alert_maps(ALERT_MAP_DIR);
       xa_perf_end(XA_ZONE_ALERT_MAPS);  // These write onto pixmap_alerts
   }
 
@@ -3430,7 +3430,7 @@ int create_image(Widget w)
   }
 
   xa_perf_begin(XA_ZONE_DRAW_GRID);
-      draw_grid(w);
+      draw_grid();
       xa_perf_end(XA_ZONE_DRAW_GRID);                       // Draw grid if enabled
 
   HandlePendingEvents(app_context);
@@ -3536,7 +3536,7 @@ void refresh_image(Widget w)
   if (!wx_alert_style && !disable_all_maps)
   {
     statusline(langcode("BBARSTA034"),1);
-    load_alert_maps(w, ALERT_MAP_DIR);  // These write onto pixmap_alerts
+    load_alert_maps(ALERT_MAP_DIR);  // These write onto pixmap_alerts
   }
 
   /* copy over map and alert data to final pixmap */
@@ -3599,7 +3599,7 @@ void refresh_image(Widget w)
                       sizeof(temp_course) );
 
   // Draw grid if enabled
-  draw_grid(w);
+  draw_grid();
 
   HandlePendingEvents(app_context);
   if (interrupt_drawing_now)
@@ -3655,7 +3655,7 @@ void redraw_symbols(Widget w)
 
     xa_copy_area(pixmap_alerts, pixmap_final, gc, 0, 0, (unsigned int)screen_width, (unsigned int)screen_height, 0, 0);
 
-    draw_grid(w);           // draw grid if enabled
+    draw_grid();           // draw grid if enabled
 
     HandlePendingEvents(app_context);
     if (interrupt_drawing_now)

@@ -305,7 +305,7 @@ typedef struct _transparent_color_record
 
 extern int check_trans (XColor c, transparent_color_record *c_trans_color_head);
 
-extern void draw_WMS_map (Widget w, char *filenm, int destination_pixmap, char *URL, transparent_color_record *c_trans_color_head, int nocache);
+extern void draw_WMS_map (char *filenm, int destination_pixmap, char *URL, transparent_color_record *c_trans_color_head, int nocache);
 
 extern void locate_gui_init(void);
 extern void geocoder_gui_init(void);
