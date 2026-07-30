@@ -780,7 +780,7 @@ void draw_shapefile_map (Widget w,
   int             numXPoints;
   int             polygon_hole_flag;
   int             *polygon_hole_storage;
-  GC              gc_temp = NULL;
+  xa_pen          gc_temp = NULL;
   int             gps_flag = 0;
   char            gps_label[100];
   int             gps_color = 0x0c;
@@ -1134,9 +1134,6 @@ void draw_shapefile_map (Widget w,
   if (weather_alert_flag)
   {
     char xbm_path[MAX_FILENAME];
-    unsigned int _w, _h;
-    int _xh, _yh;
-    int ret_val;
 
     // This GC is used for weather alerts (writing to the
     // pixmap: pixmap_alerts)
@@ -1152,18 +1149,12 @@ void draw_shapefile_map (Widget w,
     // set the stipple GC to the pattern we found in the alert xbm
     xa_pen_line(gc_tint, 0, XA_LINE_SOLID, XA_CAP_BUTT, XA_JOIN_MITER);
     xa_surface_destroy(pixmap_wx_stipple);
-    ret_val = XReadBitmapFile(XtDisplay(w),
-                              DefaultRootWindow(XtDisplay(w)),
-                              xbm_path,
-                              &_w,
-                              &_h,
-                              &pixmap_wx_stipple,
-                              &_xh,
-                              &_yh);
+    // The size and hotspot the old call filled in were never read.
+    pixmap_wx_stipple = xa_bitmap_load(xbm_path, NULL, NULL);
 
-    if (ret_val != 0)
+    if (pixmap_wx_stipple == XA_SURFACE_NONE)
     {
-      fprintf(stderr,"XReadBitmapFile() failed: Bitmap not found? %s\n",xbm_path);
+      fprintf(stderr,"xa_bitmap_load() failed: Bitmap not found? %s\n",xbm_path);
 
       // We shouldn't exit on this one, as it's not so severe
       // that we should kill Xastir.  I've seen this happen
@@ -1678,9 +1669,9 @@ void draw_shapefile_map (Widget w,
             // rectangle with all the holes cut out of it as its clipping
             // mask.  We'll draw our filled polygons in that GC and the holes
             // won't get filled
-            gc_temp = get_hole_clipping_context(w,object,
-                                                polygon_hole_storage,
-                                                &high_water_mark_index);
+            gc_temp = get_hole_clipping_context(object,
+                                               polygon_hole_storage,
+                                               &high_water_mark_index);
           }
 
           // Read the vertices for each ring in this Shape
@@ -2771,19 +2762,18 @@ int preprocess_shp_polygon_holes(SHPObject *object, int *polygon_hole_storage)
 
 
 // This function takes a SHPT_POLYGON object and a vector of ints of length
-// equal to the number of parts in the polygon and returns a graphics context
-// with a clipping region set to mask out the holes.
+// equal to the number of parts in the polygon and returns a pen with a
+// clipping region set to mask out the holes.
 //
 // high_water_mark_index is used for debugging and marks the maximum number
 // of points we've ever encountered in a shape.
-GC get_hole_clipping_context(Widget w, SHPObject *object,
-                             int *polygon_hole_storage,
-                             int *high_water_mark_index)
+xa_pen get_hole_clipping_context(SHPObject *object,
+                                 int *polygon_hole_storage,
+                                 int *high_water_mark_index)
 {
-  XRectangle rectangle;
   long width, height;
   double top_ll, left_ll, bottom_ll, right_ll;
-  Region region[3];
+  xa_region region[3];
   int temp_region1;
   int temp_region2;
   int temp_region3;
@@ -2792,9 +2782,8 @@ GC get_hole_clipping_context(Widget w, SHPObject *object,
   int ring;
   int index;
   int i;
-  XPoint points[MAX_MAP_POINTS];
-  GC gc_temp = NULL;
-  XGCValues gc_temp_values;
+  xa_point points[MAX_MAP_POINTS];
+  xa_pen gc_temp = NULL;
 
   //WE7U3
   ////////////////////////////////////////////////////////////////////////
@@ -2818,14 +2807,14 @@ GC get_hole_clipping_context(Widget w, SHPObject *object,
 
 
   // Create three regions and rotate between them, due to the
-  // XSubtractRegion() needing three parameters.  If we later find
+  // subtract needing three parameters.  If we later find
   // that two of the parameters can be repeated, we can simplify our
   // code.  We'll rotate through them mod 3.
 
   temp_region1 = 0;
 
   // Create empty region
-  region[temp_region1] = XCreateRegion();
+  region[temp_region1] = xa_region_create();
 
   // Draw a rectangular clip-mask inside the Region.  Use the same
   // extents as the full Shape.
@@ -2864,15 +2853,9 @@ GC get_hole_clipping_context(Widget w, SHPObject *object,
   // Perhaps we'll need to work with something other than screen
   // coordinates?  Perhaps truncating the values will be adequate.
 
-  rectangle.x      = (short) x;
-  rectangle.y      = (short) y;
-  rectangle.width  = (unsigned short) width;
-  rectangle.height = (unsigned short) height;
-
   // Create the initial region containing a filled rectangle.
-  XUnionRectWithRegion(&rectangle,
-                       region[temp_region1],
-                       region[temp_region1]);
+  xa_region_add_rect(region[temp_region1], (int)x, (int)y,
+                     (int)width, (int)height);
 
   // Create a region for each set of hole vertices (CCW rotation of
   // the vertices) and subtract each from the rectangle region.
@@ -2954,32 +2937,32 @@ GC get_hole_clipping_context(Widget w, SHPObject *object,
         temp_region3 = (temp_region1 + 2) % 3;
 
         // Create empty regions.
-        region[temp_region2] = XCreateRegion();
-        region[temp_region3] = XCreateRegion();
+        region[temp_region2] = xa_region_create();
+        region[temp_region3] = xa_region_create();
 
         // Draw the hole polygon
         if (num_vertices >= 3)
         {
-          XDestroyRegion(region[temp_region2]); // Release the old
-          region[temp_region2] = XPolygonRegion(points,
-                                                num_vertices,
-                                                WindingRule);
+          xa_region_destroy(region[temp_region2]); // Release the old
+          region[temp_region2] = xa_region_from_polygon(points,
+                                                       num_vertices,
+                                                       XA_WINDING);
         }
         else
         {
           fprintf(stderr,
-                  "draw_shapefile_map:XPolygonRegion with too few vertices:%d\n",
+                  "draw_shapefile_map:region from polygon with too few vertices:%d\n",
                   num_vertices);
         }
 
         // Subtract region2 from region1 and put the result into
         // region3.
-        XSubtractRegion(region[temp_region1], region[temp_region2],
-                        region[temp_region3]);
+        xa_region_subtract(region[temp_region1], region[temp_region2],
+                           region[temp_region3]);
 
         // Get rid of the two regions we no longer need
-        XDestroyRegion(region[temp_region1]);
-        XDestroyRegion(region[temp_region2]);
+        xa_region_destroy(region[temp_region1]);
+        xa_region_destroy(region[temp_region2]);
 
         // Indicate the final result region for the next iteration or
         // the exit of the loop.
@@ -2995,19 +2978,16 @@ GC get_hole_clipping_context(Widget w, SHPObject *object,
   // the regions, but we'll need it when we draw the filled polygons
   // onto the map pixmap using the final region as a clip-mask.
 
-  gc_temp = xa_pen_create(XtWindow(w));
+  gc_temp = xa_pen_create(xa_screen_target());
   // now copy the fill style and stipple from gc.
-  XCopyGC(XtDisplay(w),
-          gc,
-          (GCFillStyle|GCStipple),
-          gc_temp);
+  xa_pen_copy_fill(gc_temp, gc);
 
   // Set the clip-mask into the GC.  This GC
   // is now ruined for other purposes, so
   // destroy it when we're done drawing this
   // one shape.
-  XSetRegion(XtDisplay(w), gc_temp, region[temp_region1]);
-  XDestroyRegion(region[temp_region1]);
+  xa_pen_clip_region(gc_temp, region[temp_region1]);
+  xa_region_destroy(region[temp_region1]);
 
   return (gc_temp);
 }

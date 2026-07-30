@@ -298,6 +298,51 @@ void          xa_surface_destroy(xa_surface_id s);
 // Create a bitmap from packed 1-bit-per-pixel data (X bitmap / .xbm format).
 xa_surface_id xa_bitmap_from_data(const char *bits, int width, int height);
 
+/*
+ * Load a 1-bit bitmap from a file, for use as a stipple or a clip mask.
+ *
+ * The weather-alert shading in map_shp.c reads its pattern from an .xbm on
+ * disk.  Width and height may be NULL; both are left alone on failure, which is
+ * reported as XA_SURFACE_NONE rather than by a status code, so that a caller
+ * cannot use the surface without having looked.  The X hotspot the underlying
+ * call also returns is not exposed -- no caller ever read it.
+ */
+xa_surface_id xa_bitmap_load(const char *path, int *width, int *height);
+
+
+/* ---- regions ---------------------------------------------------------- */
+
+/*
+ * A region: an arbitrary set of pixels, used here only to build a clip mask.
+ *
+ * map_shp.c draws polygons with holes in them by starting from a rectangle
+ * covering the shape and subtracting one region per hole, then clipping the
+ * fill to what is left -- a "swiss-cheese rectangle", in the comment that has
+ * been there since the method was chosen.  That is the whole use of regions in
+ * the tree, and the reason this is a narrow interface rather than a general one:
+ * six operations, one consumer.
+ *
+ * Opaque, and a pointer today because X's Region is one.
+ */
+typedef void *xa_region;
+
+#define XA_REGION_NONE ((xa_region)0)
+
+// Winding rules for turning a polygon into a region.  Same numeric values as
+// X11's, static-asserted in the backend like the style constants above.
+#define XA_EVEN_ODD 0
+#define XA_WINDING  1
+
+xa_region xa_region_create(void);
+void      xa_region_destroy(xa_region r);
+
+// A region covering one rectangle, built from a polygon, and the two combining
+// operations.  xa_region_add_rect() grows r in place; xa_region_subtract()
+// writes a - b into dst, which must be a third region distinct from both.
+xa_region xa_region_from_polygon(xa_point *points, int npoints, int rule);
+void      xa_region_add_rect(xa_region r, int x, int y, int width, int height);
+void      xa_region_subtract(xa_region a, xa_region b, xa_region dst);
+
 
 /* ---- pens ------------------------------------------------------------- */
 
@@ -344,6 +389,20 @@ void xa_pen_ts_origin(xa_pen pen, int x, int y);
 void xa_pen_function(xa_pen pen, int func);
 void xa_pen_clip_mask(xa_pen pen, xa_surface_id mask);
 void xa_pen_clip_origin(xa_pen pen, int x, int y);
+
+// Clip a pen to a region.  There is no way to undo this, so the one caller
+// makes a throwaway pen, clips it, draws one shape and destroys it.
+void xa_pen_clip_region(xa_pen pen, xa_region r);
+
+/*
+ * Copy the fill style and stipple from one pen to another.
+ *
+ * Deliberately not a general "copy pen state": the single caller wants exactly
+ * these two attributes, and an interface that took a mask of which attributes to
+ * copy would be handing every backend a set of X11 GC component names to
+ * implement.
+ */
+void xa_pen_copy_fill(xa_pen dst, xa_pen src);
 
 
 /* ---- drawing ---------------------------------------------------------- */

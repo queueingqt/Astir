@@ -848,6 +848,115 @@ xa_surface_id xa_bitmap_from_data(const char *bits, int width, int height)
 }
 
 
+xa_surface_id xa_bitmap_load(const char *path, int *width, int *height)
+{
+  Display *dpy = xa_dpy();
+  Pixmap bm = None;
+  unsigned int w = 0, h = 0;
+  int hot_x, hot_y;   // XReadBitmapFile insists on these; no caller wants them.
+
+  if (dpy == NULL || path == NULL)
+  {
+    return XA_SURFACE_NONE;
+  }
+  if (XReadBitmapFile(dpy, RootWindowOfScreen(xa_scr()), path,
+                      &w, &h, &bm, &hot_x, &hot_y) != BitmapSuccess)
+  {
+    return XA_SURFACE_NONE;
+  }
+  if (width)
+  {
+    *width = (int)w;
+  }
+  if (height)
+  {
+    *height = (int)h;
+  }
+  return (xa_surface_id)bm;
+}
+
+
+/* ---- regions ---------------------------------------------------------- */
+
+XA_CHECK(XA_EVEN_ODD == EvenOddRule);
+XA_CHECK(XA_WINDING == WindingRule);
+
+
+xa_region xa_region_create(void)
+{
+  return (xa_region)XCreateRegion();
+}
+
+
+void xa_region_destroy(xa_region r)
+{
+  if (r != XA_REGION_NONE)
+  {
+    (void)XDestroyRegion((Region)r);
+  }
+}
+
+
+xa_region xa_region_from_polygon(xa_point *points, int npoints, int rule)
+{
+  if (points == NULL || npoints < 3)
+  {
+    return XA_REGION_NONE;
+  }
+  // xa_point is layout-compatible with XPoint; asserted at the top of this file.
+  return (xa_region)XPolygonRegion((XPoint *)points, npoints, rule);
+}
+
+
+void xa_region_add_rect(xa_region r, int x, int y, int width, int height)
+{
+  XRectangle rect;
+
+  if (r == XA_REGION_NONE)
+  {
+    return;
+  }
+  // Truncation to 16 bits is X's, and the caller already knows: map_shp.c
+  // carries a TODO about exceeding these values when zoomed well in.
+  rect.x      = (short)x;
+  rect.y      = (short)y;
+  rect.width  = (unsigned short)width;
+  rect.height = (unsigned short)height;
+  (void)XUnionRectWithRegion(&rect, (Region)r, (Region)r);
+}
+
+
+void xa_region_subtract(xa_region a, xa_region b, xa_region dst)
+{
+  if (a != XA_REGION_NONE && b != XA_REGION_NONE && dst != XA_REGION_NONE)
+  {
+    (void)XSubtractRegion((Region)a, (Region)b, (Region)dst);
+  }
+}
+
+
+void xa_pen_clip_region(xa_pen pen, xa_region r)
+{
+  Display *dpy = xa_dpy();
+
+  if (dpy != NULL && pen != NULL && r != XA_REGION_NONE)
+  {
+    (void)XSetRegion(dpy, (GC)pen, (Region)r);
+  }
+}
+
+
+void xa_pen_copy_fill(xa_pen dst, xa_pen src)
+{
+  Display *dpy = xa_dpy();
+
+  if (dpy != NULL && dst != NULL && src != NULL)
+  {
+    (void)XCopyGC(dpy, (GC)src, (GCFillStyle | GCStipple), (GC)dst);
+  }
+}
+
+
 xa_pen xa_pen_create(xa_surface_id for_surface)
 {
   Display *dpy = xa_dpy();
