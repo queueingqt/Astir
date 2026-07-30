@@ -7,120 +7,151 @@ re-deriving anything. Branch `perf-and-gui`. Everything below is committed.
 
 The goal is a core that links without the Motif front end, so a replacement
 front end can be written. The measure is `tools/link_core.py`, which actually
-links the 62 core objects with no front end and reports what fails.
+links the 63 core objects with no front end and reports what fails.
 
-| | start of session | now |
+**It now reports `LINKED CLEANLY`.** `core_boundary.py` agrees and `nm` finds no
+core object needing anything from a GUI object.
+
+| | two sessions ago | last session | now |
+|---|---|---|---|
+| symbols the core cannot link without | 46, across 12 objects | 1, in main.o | **0** |
+| objects referencing a front-end symbol | 12 | 2 | **0** |
+| map drivers naming `Widget` | all | all | **0** |
+| drawing Xlib call sites outside the backend | — | — | 7 |
+| lines of GTK4 front end written | 0 | 0 | **0** |
+
+Last session's count of "1 symbol" was misleading: `link_core.py` counts distinct
+symbols, and *two* objects needed `da` — `maps.o` as recorded, and
+`xa_draw_x11.o`, which read main.c's global directly in about forty places. Both
+are fixed.
+
+## What is left, and where
+
+`audit_x11.py` now reports 34 drawing call sites in **3** files and 49 other
+Xlib call sites in core files. Both numbers are concentrated in code that is
+itself platform implementation rather than application logic:
+
+| file | what it is | why Xlib is there |
 |---|---|---|
-| symbols the core cannot link without | 46, across 12 objects | **1, in main.o** |
-| front-end callbacks (`xa_ui.h`) | 2 | 16 |
-| `maps.c` GUI by volume | 55% | 0% |
-| `draw_symbols.c` GUI by volume | 14% | 0% |
-| `cad_objects.c` GUI by volume | 74% | 0% |
-| lines of GTK4 front end written | 0 | 0 |
+| `xa_draw_x11.c` | **the backend** | 27 drawing + most of the rest. Expected: this is the file a GTK4 backend replaces. |
+| `rotated.c` | rotated-text renderer, predates Xft | 5 drawing + ~15 other. Replaced wholesale by Pango, not converted. |
+| `cairo_text.c` | the Cairo text path | 2 |
+| `color.c` | visual detection, `pack_pixel_bits` | 4 |
+| `main.c` | front end | 2 |
 
-Eleven of the twelve GUI objects no longer supply anything to the core:
-`popup_gui`, `bulletin_gui`, `view_message_gui`, `wx_gui`, `interface_gui`,
-`list_gui`, `locate_gui`, `messages_gui`, `db_gui`, `objects_gui`,
-`cad_objects_gui`.
+So the seam is in the right place now. The remaining work is not "convert more
+call sites"; it is "write a second backend".
 
-Four files were split, all verified rendering-identical:
-`cad_objects.c`/`cad_objects_gui.c`, `draw_symbols.c`/`draw_symbols_gui.c`,
-`maps.c`/`maps_gui.c`, and `db_gui.c` → new `station_draw.c`.
+## What this does NOT mean
 
-## The one remaining symbol
+**The interface has not changed, and no line of a replacement front end exists.**
+`main.c` is ~30,800 lines and the front end is ~69,000 lines across 16 files.
+Nothing in this session altered a pixel — every commit is verified not to.
 
-`da`, the drawing area widget, at `src/maps.c:6952`:
+The abstractions still have exactly one consumer each. "The core is portable" is
+a claim `link_core.py` tests one specific way: that the core objects compile and
+link with no front-end object present. That is now true, and it is all that is
+true. A GTK4 backend is what would test the rest.
 
-```c
-void fill_in_new_alert_entries(void)   // maps.c:6890
-{
-    ...
-    map_search (da, alert_scan, temp, &alert_count, ...);
-```
+Two abstractions are **not covered by any test**:
 
-**It is blocked on the image and colour calls, not on anything structural.**
-`map_search` threads its widget to `draw_map`, which threads it to the map
-drivers, and four of those genuinely read it:
+- `xa_image_*` — the OSM path never executes in the A/B scenario. Measured, not
+  assumed: counters on all six entry points report zero across a full render,
+  even though `Online/OSM_tiled_mapnik.geo` is one of the three selected maps.
+- `xa_bitmap_load` — the weather-alert block runs zero times. Needs an active
+  alert.
+- `xa_image_load` and `map_geo.c`'s XPM branch are `#ifdef`'d out entirely,
+  because `HAVE_MAGICK` is defined. They compile; nothing runs them.
+  `audit_x11.py` counts call sites without knowing they are unreachable here.
 
-| file | why it needs the Widget |
-|---|---|
-| `map_WMS.c` | `XtDisplay(w)` |
-| `map_geo.c` | `XtDisplay(w)` — `XGetImage`, `XPutImage`, `XAllocColor` |
-| `map_shp.c` | `XtDisplay(w)` — region/clip calls |
-| `map_tif.c` | `XtDisplay(w)` — `XAllocColor` |
-
-Two dead ends already checked, so don't retry them:
-
-- **Pushing the reference up to the front end does not work.**
-  `fill_in_new_alert_entries()` is called from `db.c` and `log_utils.c`, both
-  core, so giving it a Widget parameter moves the reference to another core file.
-- **Stripping the Widget from the map-loading chain does not work yet**, because
-  the drivers above read it.
-
-So the next step is to abstract images and colours into `xa_draw.h`, the same way
-fonts were, then the chain strips and the count reaches zero. `audit_x11.py`
-reports 68 non-drawing Xlib calls left in core files; the relevant clusters are
-18 image calls (`XDestroyImage`, `XCreateImage`, `XGetPixel`, `XPutPixel`,
-`XGetSubImage`), 15 colour calls (`XAllocColor`, `XQueryColor`, `XGetVisualInfo`)
-and 13 region/clip calls in `map_shp.c`.
-
-## Then what — the honest picture
-
-Reaching zero means the core *links* without Motif. It does not mean the
-interface changes. **No line of a replacement front end exists.** `main.c` is
-still ~30,700 lines of mixed Motif and application logic, and the front end as a
-whole is ~68,000 lines across 16 files with ~1,376 widget creations. Nothing in
-this session altered a single pixel — every commit is verified not to.
-
-The abstractions are also still unvalidated by anything but Motif. The 16-entry
-callback table and `xa_draw.h` have exactly one consumer each. "The core is
-portable" is a claim the measurement scripts make, not a demonstrated fact, and
-this session found the scripts wrong three times.
-
-## How to verify a change (this matters)
+## How to verify a change (read this first)
 
 Two harnesses, and picking the wrong one gives a confident wrong answer.
 
+- **`tools/snapshot_ab.sh <out.xpm>`** — pixels, via Xastir's own snapshot
+  facility, so window stacking is irrelevant. Required for anything touching
+  text, colour, images or drawing. `SNAP_BIN=<path>` runs a different binary,
+  which is the only way to A/B a change that is already committed (build a
+  worktree at the older commit — and diff its `config.h` against this tree's
+  before believing the result).
 - **`./bench-attrib.sh 1.0 4 <tag>`** — counters. Identical output means
   identical geometry: `shapes_read 7444`, `vertices 219817`, `draw_calls 3458`
-  cumulative at `lod=1.0 zoomout=4`. **Blind to text and colour** — a font
-  change moves every label while all three stay identical.
-- **`tools/snapshot_ab.sh`** — pixels. Uses Xastir's own snapshot facility
-  (`SNAPSHOTS_ENABLED:1` writes `pixmap_final` to `~/.xastir/tmp/snapshot.xpm`),
-  so it does not care what window is on top. Run against each build and `cmp`.
-  Required for anything touching text, colour or drawing.
+  cumulative at `lod=1.0 zoomout=4`. **Blind to text and colour.**
 
-Do **not** use `ab-shot.sh` for A/B comparison. It screenshots the whole screen,
-so it captures whatever window happens to be in front — one attempt this session
-returned a blank Xastir window on one side and a browser on the other, and the
-comparison reported a 7% difference. `xwd`/`xwininfo`/`xdotool` are not installed.
+Do **not** use `ab-shot.sh` for A/B. It screenshots the whole screen.
 
-`tools/README.md` has the full set of cautions, including three ways to get a
-confidently wrong measurement that all happened this session.
+### The harness was broken until this session, and silently
+
+`snapshot_ab.sh` deleted the snapshot before starting Xastir and took the first
+one that appeared. Snapshots fire the moment they are enabled — before the maps
+finish drawing — so the captured frame could be **partial**, with features simply
+absent, reading as background grey.
+
+It cost most of a session. A correct change appeared to alter 17.6% of the frame,
+in exactly the shape of a broken clip region. Two things made it convincing: the
+geometry counters were identical, which reads as "same draw calls, pixels
+suppressed"; and it *reproduced*, because the race resolved the same way every
+time. Three baseline captures were byte-identical — byte-identical **partial
+renders**. The settled frame has 822 colours; every capture the harness had ever
+produced had 792.
+
+The fix: discard everything written before the render settles, then require two
+consecutive fresh snapshots to be byte-identical before emitting one. If it never
+settles, no file is written and the script fails.
+
+**The lesson generalises: "reproducible" is not "correct".** A deterministic
+measurement of the wrong thing is the most expensive kind, because it survives
+every retry. When a result and the code disagree, probe the runtime values before
+believing either.
+
+## Two techniques that worked
+
+1. **Measure coverage, don't assume it.** Counters in the code under test, run
+   once, answer "did the A/B exercise this at all?" That is what showed
+   `get_hole_clipping_context` runs 83 times per 300 shapefile draws (covered)
+   while every image entry point runs zero times (not covered). Without it, four
+   commits would have claimed verification they had not earned.
+
+2. **Enumerate the set, then let the compiler backstop the sweep.** The
+   40-function Widget strip — 67 signatures, 99 call sites, 15 files — was
+   uneventful because every call site's first argument was extracted with
+   balanced-paren parsing (comments and strings stripped) *before* editing,
+   giving three distinct values: `w` ×90, `NULL` ×2, `da` ×1. The rewrite only
+   drops an argument that is one of those, and reports what it declines to touch.
+   C then refuses to compile a call with the wrong argument count, which caught
+   the two things a name-based sweep cannot see: leftover `(void)w;` statements,
+   and `map_driver_ptr->func(w, ...)`, called through a function pointer.
+
+   The previous hand attempt at this cascaded into unrelated call sites and left
+   two files unrecoverable.
 
 ## Tools
 
-All in `tools/`, all take the source dir as an argument, all documented in
-`tools/README.md`.
+All in `tools/` except three at the root, all documented in `tools/README.md`.
 
 | tool | use |
 |---|---|
 | `link_core.py` | **ground truth** for the boundary — actually links the core |
 | `../core_boundary.py` | cheap nm version of the same question |
-| `../audit_x11.py` | Xlib call sites, two numbers: Stage 2 scope, and everything else |
+| `../audit_x11.py` | Xlib call sites. Counts `#ifdef`'d-out code as live — see above |
 | `split_scope.py` | where the GUI/core seam runs inside one file, transitively |
 | `split_file.py` | performs a split; refuses unless the bytes reassemble |
 | `drop_first_arg.py` | removes a leading argument from calls, not definitions |
 | `extract_settings.py` | relocates plain-data definitions between files |
-| `snapshot_ab.sh` | pixel-level A/B |
+| `snapshot_ab.sh` | pixel-level A/B. `SNAP_BIN=` to run another binary |
+| `snapshot/snap.cnf` | the exact configuration the pixel A/B runs under |
 
-## Two process rules earned the hard way this session
+## Where to pick up
 
-1. **Compute the set before editing it.** An attempt at the last change tried to
-   strip 24 functions — everything `split_scope.py` listed — and cascaded into
-   unrelated call sites until two files were unrecoverable and had to be
-   reverted. The transitive closure from the three entry points that mattered is
-   11 functions, and that pass was uneventful.
-2. **When a sweep is wrong, revert everything it touched and redo.** Twice this
-   session a script produced code that compiled and was still wrong. Patching
-   its output would have left the rest of the damage in place.
+The boundary work is done; the next step is the first thing that tests it.
+
+1. **Write a second backend.** `xa_draw.h` is ~40 entry points and the X11 one is
+    ~1000 lines. A backend that only implements the drawing and pen calls, with
+    text stubbed, is enough to find out whether the interface is actually
+    sufficient — which is the open question, not the call-site count.
+2. **Or get the untested paths under test first**, since they are cheap: a
+    scenario with OSM tiles rendering, and one with an active weather alert.
+    `xa_image_*` and `xa_bitmap_load` are inspection-only today.
+3. `rotated.c` is the one core file with real Xlib left that is not the backend.
+    It is not a conversion target — Pango does rotated text natively — so it
+    belongs to whichever backend comes next, not to this layer.

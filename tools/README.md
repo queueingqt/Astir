@@ -18,6 +18,8 @@ Run the measurement scripts against a **built** tree — several read `src/*.o`.
 | `convert_draw.py src <file.c>... [--apply]` | Rewrites Xlib drawing calls to `xa_draw`. Parses calls with balanced parens (they span many lines) and skips comments/strings. Dry run by default. |
 | `extract_settings.py src <outbase> [--apply]` | Relocates plain-data definitions out of `main.c` into a core file, reading the target symbol list on stdin. Moves definitions verbatim so no call site changes. |
 | `split_file.py <src.c> <dest.c> <fn,fn,...> [--header=f] [--apply]` | Performs the split: moves the named functions, with their doc comments and any `#if` that wraps one, into a new file. Dry run by default. Refuses to write unless the moved and kept spans reassemble the original byte for byte. |
+| `drop_first_arg.py <file.c> <fn,fn,...>` | Removes a leading argument from *calls*, not definitions, parsing the argument list with balanced parens. Skips definitions (`{` after the closing paren) and declarations (only a type before the name). See the caution below before using it on signatures that have already been edited. |
+| `snapshot_ab.sh <out.xpm>` | Pixel-level A/B, via Xastir's own snapshot facility. `SNAP_BIN=` runs another binary. Requires `snapshot/snap.cnf`, which is committed so the comparison configuration is fixed rather than whatever happened to be in `~/.xastir`. |
 | `split_scope.py [--gui=fn,fn] src <file.c>...` | Where the GUI/core seam runs inside one file: which functions have Motif in the **body**, which are pulled in transitively by *calling* one that does, which merely carry a `Widget` in the signature, and which file-scope names both halves touch. `--gui=` adds known-GUI names defined in other files (`redraw_symbols`, `pos_dialog`, `resize_dialog`). |
 
 ## The file splits were blocked on fonts, not on dialogs
@@ -47,16 +49,23 @@ blocker.
 
 ## Reading the Xlib numbers
 
-`audit_x11.py` reports 35 remaining drawing call sites and 122 Xlib call sites
-reachable from core code. Both are true and they answer different questions —
-the first is "how much of the Stage 2 conversion is done", the second is "how
-much Xlib is left". Quote the first one only with its scope attached.
+`audit_x11.py` reports two numbers that answer different questions — "how much
+of the Stage 2 conversion is done" and "how much Xlib is left". Quote either one
+only with its scope attached.
 
-The 122 is not a to-do list of 122 conversions. Roughly a quarter of it is in
-`rotated.c` and `color.c`, which a GTK4 backend replaces outright rather than
-converts — Pango does rotated text natively, and colour allocation is a
-backend concern. The number to act on is the Xlib in the map drivers and
-`draw_symbols.c`.
+As of the map-driver work they are 34 drawing call sites in **3** files and 49
+other Xlib call sites in core files, and both are now concentrated in code that
+is platform implementation rather than application logic: `xa_draw_x11.c` (the
+backend — expected, this is the file a second backend replaces), `rotated.c`,
+`cairo_text.c` and `color.c`. The map drivers are at zero. So neither number is
+a to-do list any more; the remaining work is writing a second backend, not
+converting more call sites.
+
+**It counts code that is not compiled.** `map_geo.c`'s XPM branch is inside
+`#else` of `#ifdef HAVE_MAGICK`, and `HAVE_MAGICK` is defined here, so those
+call sites are unreachable in this configuration while still appearing in the
+totals. Check the `#ifdef` nesting before treating a cluster as live — the same
+caution as the object-file scripts below, for the same reason.
 
 A name starting with `X` is not evidence it is Xlib: `XTIFFClose` is libtiff,
 `XRotDrawAlignedString` is `rotated.c`'s own API, and `XA_CHECK` is a local
@@ -75,6 +84,49 @@ rendered map itself.
 `SNAPSHOTS_ENABLED:1` makes it write `pixmap_final` to
 `~/.xastir/tmp/snapshot.xpm`, which is the finished frame with no window
 involved. Run it against each build and `cmp` the two files.
+
+`SNAP_BIN=<path>` runs a binary from somewhere else instead of `./src/xastir`.
+Without it there is no way to A/B a change that is already committed; with it,
+build a `git worktree` at the older commit and point at that. Diff the
+worktree's `config.h` against this tree's before believing the result — a
+differently configured baseline is a differently rendered one.
+
+### The fourth way to get a worthless result: capture the frame too early
+
+This one is worse than the three below, because it is *reproducible*.
+
+Snapshots fire the moment they are enabled, which is before the maps have
+finished drawing. The script used to delete the snapshot before starting Xastir
+and take the first one that appeared, so the captured frame could be partial —
+features simply missing, reading as background grey. That is indistinguishable
+from a broken clip region.
+
+It cost most of a session. A correct change appeared to alter 17.6% of the frame.
+The geometry counters were identical, which reads as "same draw calls issued,
+pixels suppressed". And three separate baseline captures were byte-identical, so
+the harness looked trustworthy — they were byte-identical *partial renders*. The
+settled frame has 822 colours; every capture the harness had produced until then
+had 792, including the ones four commits had already been verified against.
+
+The script now discards everything written before the render settles and requires
+two consecutive fresh snapshots to be byte-identical before emitting one. If it
+never settles it writes nothing and exits non-zero, rather than leaving the
+previous run's file for `cmp` to find and pass.
+
+**"Reproducible" is not "correct".** A deterministic measurement of the wrong
+thing survives every retry, which is exactly what makes it expensive. When a
+measurement and the code disagree, probe the runtime values — the pen state, the
+window id, the actual arguments — before believing either one.
+
+### Measure coverage, or the A/B is verifying nothing
+
+An identical A/B only means something if the changed code ran. Put counters in
+the code under test and run once. That is what showed
+`get_hole_clipping_context()` runs 83 times per 300 shapefile draws (covered),
+while every `xa_image_*` entry point runs zero times (not covered) even though an
+OSM map is selected, and the weather-alert block runs zero times too.
+
+Cheap, and it is the difference between "verified" and "verified something else".
 
 Three other approaches were tried first and all three produced worthless
 results rather than failing:
@@ -160,6 +212,23 @@ repeating rather than rediscovering:
   was that the function became a global symbol in a build where the guard
   should have excluded it — worth checking `nm` against the source function
   list after any move, not just that the tree builds.
+
+- **Enumerate the values before rewriting them, and let the compiler backstop
+  the sweep.** The 40-function Widget strip — 67 signatures, 99 call sites, 15
+  files — was uneventful for two reasons. Every call site's first argument was
+  extracted with balanced-paren parsing and comments/strings stripped *first*,
+  which showed exactly three distinct values (`w` ×90, `NULL` ×2, `da` ×1); the
+  rewrite then dropped only an argument that was one of those three, and printed
+  anything it declined to touch. And C will not compile a call with the wrong
+  argument count, which caught the two things no name-based sweep can see:
+  leftover `(void)w;` statements, and `map_driver_ptr->func(w, ...)`, called
+  through a function pointer and so having no name to match. The table's own
+  type had to lose its `Widget` too.
+
+  Note the ordering hazard: once the `Widget` is gone from the definitions,
+  `drop_first_arg.py` run blindly would drop the first *real* parameter from any
+  definition its skip heuristics miss. Match on the argument's value, not just
+  the function's name.
 
 When a script that edits hundreds of sites turns out to be wrong, revert every
 file it touched and redo — do not patch its output. Some of the corruption it
