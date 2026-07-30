@@ -86,6 +86,8 @@
 
 #include "xa_ui.h"
 
+#include "xa_trace.h"
+
 
 #include "station_draw.h"
 
@@ -1710,11 +1712,19 @@ void update_messages(int force)
 
         //fprintf(stderr,"found send_message_dialog\n");
 
+        // One traced block per window per render.  update_messages() clears and
+        // rebuilds the whole window every time it runs, so a block is a
+        // self-contained statement of what the window now shows -- which is
+        // what makes it comparable across a change of interface.  See
+        // tools/trace_ab.sh for why the repetitions are collapsed.
+        xa_trace("msg_render_begin win=%d", mw_p);
+
         // Clear the text from message window
         XmTextReplace(mw[mw_p].send_message_text,
                       (XmTextPosition) 0,
                       XmTextGetLastPosition(mw[mw_p].send_message_text),
                       "");
+        xa_trace("msg_clear win=%d", mw_p);
 
         // Snag the callsign you're dealing with from the message dialogue
         if (mw[mw_p].send_message_call_data != NULL)
@@ -1725,6 +1735,13 @@ void update_messages(int force)
                           "%s",
                           temp_ptr);
           XtFree(temp_ptr);
+
+          if (xa_trace_enabled())
+          {
+            char q[MAX_CALLSIGN*4+8];
+            xa_trace("msg_callsign win=%d call=%s", mw_p,
+                     xa_trace_quote(temp1, q, sizeof(q)));
+          }
 
           new_message_data--;
           if (new_message_data<0)
@@ -1955,6 +1972,13 @@ void update_messages(int force)
                                pos,
                                temp2);
 
+                  if (xa_trace_enabled())
+                  {
+                    char q[sizeof(temp2)*4+8];
+                    xa_trace("msg_insert win=%d pos=%ld text=%s", mw_p,
+                             (long)pos, xa_trace_quote(temp2, q, sizeof(q)));
+                  }
+
                   // Set highlighting based on the
                   // "acked" field.  Callsign
                   // match here includes SSID.
@@ -1968,6 +1992,9 @@ void update_messages(int force)
                                        pos+strlen(temp2),
                                        //XmHIGHLIGHT_SECONDARY_SELECTED); // Underlining
                                        XmHIGHLIGHT_SELECTED);         // Reverse Video
+                    xa_trace("msg_highlight win=%d from=%ld to=%ld mode=selected",
+                             mw_p, (long)(pos+offset),
+                             (long)(pos+strlen(temp2)));
                   }
                   else    // Message was acked, get rid of highlighting
                   {
@@ -1976,6 +2003,9 @@ void update_messages(int force)
                                        pos+offset,
                                        pos+strlen(temp2),
                                        XmHIGHLIGHT_NORMAL);
+                    xa_trace("msg_highlight win=%d from=%ld to=%ld mode=normal",
+                             mw_p, (long)(pos+offset),
+                             (long)(pos+strlen(temp2)));
                   }
 
                   //fprintf(stderr,"Text: %s\n",temp2);
@@ -2024,8 +2054,11 @@ void update_messages(int force)
             // Show the last added message in the window
             XmTextShowPosition(mw[mw_p].send_message_text,
                                pos);
+            xa_trace("msg_show win=%d pos=%ld", mw_p, (long)pos);
           }
         }
+
+        xa_trace("msg_render_end win=%d", mw_p);
       }
 
       end_critical_section(&send_message_dialog_lock, "db.c:update_messages" );

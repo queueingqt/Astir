@@ -58,6 +58,8 @@
 
 #include "xa_ui.h"
 
+#include "xa_trace.h"
+
 // Must be last include file
 #include "leak_detection.h"
 
@@ -98,6 +100,7 @@ void clear_message_windows(void)
     if (mw[i].send_message_dialog)
     {
       XtDestroyWidget(mw[i].send_message_dialog);
+      xa_trace("msg_destroy win=%d", i);
     }
 
     mw[i].send_message_dialog = (Widget)NULL;
@@ -314,6 +317,13 @@ int look_for_open_group_data(char *to)
                       temp_ptr);
       XtFree(temp_ptr);
 
+      if (xa_trace_enabled())
+      {
+        char q[MAX_CALLSIGN*4+8];
+        xa_trace("msg_scan_call fn=look_for_open_group_data win=%d call=%s",
+                 i, xa_trace_quote(temp1, q, sizeof(q)));
+      }
+
       (void)to_upper(temp1);
       /*fprintf(stderr,"Looking at call <%s> for <%s>\n",temp1,to);*/
       if(strcmp(temp1,to)==0)
@@ -370,6 +380,13 @@ int check_popup_window(char *from_call_sign, int group)
                       "%s",
                       temp_ptr);
       XtFree(temp_ptr);
+
+      if (xa_trace_enabled())
+      {
+        char q[MAX_CALLSIGN*4+8];
+        xa_trace("msg_scan_call fn=check_popup_window win=%d call=%s",
+                 i, xa_trace_quote(temp1, q, sizeof(q)));
+      }
 
       /*fprintf(stderr,"Looking at call <%s> for <%s>\n",temp1,from_call_sign);*/
       if (strcasecmp(temp1, from_call_sign) == 0)
@@ -428,6 +445,12 @@ int check_popup_window(char *from_call_sign, int group)
 
       if (!disable_all_popups)
       {
+        if (xa_trace_enabled())
+        {
+          char q[MAX_CALLSIGN*4+8];
+          xa_trace("msg_open win=%d to=%s", i,
+                   xa_trace_quote(temp1, q, sizeof(q)));
+        }
         xa_ui_open_message_window(temp1);
       }
 
@@ -450,6 +473,7 @@ int check_popup_window(char *from_call_sign, int group)
   if (found != -1)    // Already have a window
   {
     XtPopup(mw[i].send_message_dialog,XtGrabNone);
+    xa_trace("msg_popup win=%d", i);
   }
 
   return(ret);
@@ -1646,6 +1670,13 @@ void clear_acked_message(char *from, char *to, char *seq)
                                   "%s",
                                   temp_ptr);
                   XtFree(temp_ptr);
+
+                  if (xa_trace_enabled())
+                  {
+                    char q[MAX_CALLSIGN*4+8];
+                    xa_trace("msg_scan_call fn=clear_acked_message win=%d call=%s",
+                             ii, xa_trace_quote(temp1, q, sizeof(q)));
+                  }
 
                   (void)to_upper(temp1);
                   //fprintf(stderr,"%s\t%s\n",temp1,from);

@@ -21,6 +21,84 @@ Run the measurement scripts against a **built** tree — several read `src/*.o`.
 | `drop_first_arg.py <file.c> <fn,fn,...>` | Removes a leading argument from *calls*, not definitions, parsing the argument list with balanced parens. Skips definitions (`{` after the closing paren) and declarations (only a type before the name). See the caution below before using it on signatures that have already been edited. |
 | `snapshot_ab.sh <out.xpm>` | Pixel-level A/B, via Xastir's own snapshot facility. `SNAP_BIN=` runs another binary. Requires `snapshot/snap.cnf`, which is committed so the comparison configuration is fixed rather than whatever happened to be in `~/.xastir`. |
 | `split_scope.py [--gui=fn,fn] src <file.c>...` | Where the GUI/core seam runs inside one file: which functions have Motif in the **body**, which are pulled in transitively by *calling* one that does, which merely carry a `Widget` in the signature, and which file-scope names both halves touch. `--gui=` adds known-GUI names defined in other files (`redraw_symbols`, `pos_dialog`, `resize_dialog`). |
+| `trace_ab.sh <out.trace>` | Operation-level A/B for the **message windows**, which the pixel harness cannot see at all. Replays `trace/messages.log` and records what the core asks the windows to do. `SNAP_BIN=`, `SNAP_DIR=`, `TRACE_LOG=` as for `snapshot_ab.sh`. |
+| `trace_norm.py <raw.trace>` | Normalises a raw trace so two runs of the same build compare equal. Prints what it collapsed and masked, and an operation histogram, on stderr — read that, it is the coverage report. |
+
+## The message windows need a different harness
+
+`snapshot_ab.sh` compares `pixmap_final`, the finished map canvas. The Send
+Message windows are separate Motif dialogs and appear in it nowhere, so every
+change to `update_messages()` in `db.c` and to the window management in
+`messages.c` is invisible to it. "Verified" would have meant "compiled".
+
+`trace_ab.sh` is the answer: the code under test says what it is doing
+(`src/xa_trace.h`), the same packets are replayed through both builds, and the
+records are diffed. It does not depend on the change being visible.
+
+Getting messages into a headless run needed a driver. `XASTIR_REPLAY=<file>`
+sets `read_file_ptr`/`read_file` exactly as `File > Open Log File` does and lets
+the existing main-loop replay do the rest; `main.c` prints `[replay] done` when
+`read_file_line()` hits EOF, so the script waits on a condition rather than a
+guessed duration. **Do not reach for `-m` to skip map loading**: it `unlink`s
+`selected_maps.sys`, which is shared state the pixel baseline depends on.
+
+Two things in a raw trace vary between runs of the same binary, and both are
+handled in `trace_norm.py` rather than by hoping:
+
+- **Redraw count.** `update_messages()` clears and rebuilds the whole window
+  every call, on a timer as well as on arrival, so identical blocks repeat an
+  arbitrary number of times. Consecutive identical blocks for one window
+  collapse to one. The cost: a change that only alters *how often* a window is
+  redrawn cannot be seen — that was never deterministic to begin with.
+- **The clock.** `db.c` composes each line from `packet_time`, which is the wall
+  clock at reception, so two runs a minute apart differ. The `NN/NN NN:NN`
+  field is masked. The timestamp *values* are therefore uncovered; the format
+  is not, because the mask matches only that exact shape and the highlight
+  offsets that follow are absolute positions computed from its length.
+
+### What the scenario does and does not reach
+
+Measured from the operation histogram, not assumed. `trace/messages.log`
+receives messages from three stations and covers `update_messages` end to end
+(clear, callsign read, insert, highlight, show), the auto-open path,
+`check_popup_window` (13 scans) and `look_for_open_group_data` (4). Reaching
+the second one needed a message addressed to *someone else*: traffic to our own
+callsign takes the "to me" branch in `db.c` and never calls it.
+
+It does **not** reach:
+
+| never fires | needs |
+|---|---|
+| `msg_destroy` (`clear_message_windows`) | shutdown or a station reset |
+| `msg_scan_call fn=clear_acked_message` | an *outgoing* message being acked |
+| `msg_highlight mode=selected` | an outgoing message not yet acked — the reverse-video branch keys on `is_my_call(from)` |
+
+All three are outbound-message paths, which a receive-only replay cannot reach.
+A scenario that sends as well as receives would close the gap; until one exists
+those three are inspection-only, and a clean `trace_ab.sh` diff says nothing
+about them.
+
+`clear_acked_message`'s share of that is smaller than it looks. Its loop reads
+the callsign out of every open window, uppercases it, and then does nothing
+with it — the only statement that used the result is commented out
+(`XtSetSensitive(mw[ii].button_ok,TRUE)`). It is two Motif calls kept alive by
+dead code, not behaviour that has to be preserved.
+
+### Proving the harness works before trusting it
+
+Done once, and worth redoing if any of it is changed, because a harness that
+cannot tell A from B reports success either way:
+
+1. **Deterministic** — two runs of the same build produced byte-identical
+   normalised traces, from identical raw record counts.
+2. **Sensitive** — changing `int offset = 22` to `23` in `update_messages()`
+   (the highlight offset, exactly the kind of detail a refactor drops) moved 28
+   lines in the diff, all of them `msg_highlight from=`, and nothing else.
+3. **Necessary** — the *same* defective binary produced a `snapshot_ab.sh`
+   capture byte-identical to the baseline. The pixel harness cannot see this
+   class of change: `pixmap_final` is the map canvas, the Send Message windows
+   are separate top-level dialogs, and the pixel scenario replays no packets so
+   no window is ever opened in it.
 
 ## The file splits were blocked on fonts, not on dialogs
 

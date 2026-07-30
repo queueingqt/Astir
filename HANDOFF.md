@@ -7,24 +7,26 @@ re-deriving anything. Branch `perf-and-gui`. Everything below is committed.
 
 The goal is a core that links without the Motif front end, so a replacement
 front end can be written. The measure is `tools/link_core.py`, which actually
-links the 63 core objects with no front end and reports what fails.
+links the core objects with no front end and reports what fails.
 
-**It now reports `LINKED CLEANLY`.** `core_boundary.py` agrees and `nm` finds no
-core object needing anything from a GUI object.
+**It still reports `LINKED CLEANLY`**, now across 64 core objects.
+`core_boundary.py` agrees and `nm` finds no core object needing anything from a
+GUI object.
 
 | | two sessions ago | last session | now |
 |---|---|---|---|
 | symbols the core cannot link without | 46, across 12 objects | 1, in main.o | **0** |
 | objects referencing a front-end *symbol* | 12 | 2 | **0** |
-| core objects still *calling* Motif directly | ? | ? | 2 (`db.o`, `messages.o`) |
+| core objects still *calling* Motif directly | ? | 2 (`db.o`, `messages.o`) | 2 — unchanged |
 | map drivers naming `Widget` | all | all | **0** |
-| drawing Xlib call sites outside the backend | — | — | 7 |
+| drawing Xlib call sites outside the backend | — | 7 | 7 |
+| harnesses that can see the message windows | 0 | 0 | **1** |
 | lines of GTK4 front end written | 0 | 0 | **0** |
 
-Last session's count of "1 symbol" was misleading: `link_core.py` counts distinct
-symbols, and *two* objects needed `da` — `maps.o` as recorded, and
-`xa_draw_x11.o`, which read main.c's global directly in about forty places. Both
-are fixed.
+This session moved no boundary. It built the thing that makes the next two moves
+verifiable, and proved it works — which the previous session's notes identified
+as the highest-value next step precisely because four commits had nearly claimed
+verification they had not earned.
 
 ## The next boundary: two core objects still call Motif
 
@@ -55,18 +57,21 @@ widgets directly. Both statements are true, and the second is the next job.
 `db.c` is one function from toolkit-free. That function was deliberately left
 alone, for a reason that should survive:
 
-- **Nothing here can verify it.** `snapshot_ab.sh` captures `pixmap_final`, the
-  map canvas. The message window is a separate Motif dialog and does not appear
-  in the snapshot at all. So a change to `update_messages()` is unverifiable by
-  the only pixel harness that exists.
-- **It has state that is easy to get subtly wrong.** `pos` is a
-  `static XmTextPosition` that is never reset — the `//pos=0;` is commented out —
-  and the highlight calls depend on it (`pos+offset` to `pos+strlen`). Whatever
-  that accumulation does today, an interface change has to reproduce it.
-- **The obvious move is the wrong one.** The function cannot simply move to
-  `messages_gui.c`: it reads `msg_data`, `msg_index`, `msg_index_end`, which are
-  `static` in `db.c` on purpose. Moving it means exporting the message store,
-  which trades a layering problem for a worse one.
+- ~~**Nothing here can verify it.**~~ **Fixed this session.** `snapshot_ab.sh`
+  captures `pixmap_final`, the map canvas, and the message window is a separate
+  Motif dialog that does not appear in it at all. `tools/trace_ab.sh` now covers
+  it — see below. This was the blocker and it is gone.
+- ~~**`pos` is never reset.**~~ **That was wrong, and it made the job look
+  harder than it is.** There are two resets, not one: the commented-out
+  `//pos=0;` at the top of the per-window loop, *and* a live `pos = 0;` at
+  `db.c:1777`, inside `if(strlen(temp1)>0)` and before the message list is
+  built. Every read of `pos` is dominated by that assignment, so despite being
+  `static` it behaves exactly as a local. There is no cross-call accumulation to
+  reproduce.
+- **The obvious move is still the wrong one.** The function cannot simply move
+  to `messages_gui.c`: it reads `msg_data`, `msg_index`, `msg_index_end`, which
+  are `static` in `db.c` on purpose. Moving it means exporting the message
+  store, which trades a layering problem for a worse one.
 
 Two designs, neither attempted:
 
@@ -80,12 +85,9 @@ Two designs, neither attempted:
    renders from that. Cleaner, larger, and the highlighting logic (`acked` 0/2/3,
    reverse video, `is_my_call`) has to come across exactly.
 
-**Before either, build a harness that can see it.** The cheap version is a trace
-comparison rather than a pixel one: log every message-window operation with its
-arguments, drive the same input through both builds, and diff. Messages
-auto-open a window (`check_popup_window(call, 2)` on receipt), so replaying a log
-containing a message addressed to the configured callsign should be enough to
-drive it without GUI interaction.
+**That harness now exists.** `tools/trace_ab.sh`, built and proven this session
+— see "The message windows have a harness now" below. Both designs above are
+unblocked.
 
 `messages.c` is the easier half and a reasonable first move: its 4 Motif
 functions are all window management, they belong in `messages_gui.c` outright,
@@ -93,6 +95,66 @@ and `split_file.py` refuses to write unless the bytes reassemble. The cost the
 tool reports is 3 shared file-scope names (`last_check_and_transmit`,
 `message_pool`, `send_message_dialog_lock`) and one call to invert
 (`check_and_transmit_messages` → `clear_acked_message`).
+
+## The message windows have a harness now
+
+`tools/trace_ab.sh`. The code under test says what it is doing, the same packets
+are replayed through both builds, and the records are diffed. It does not depend
+on the change being visible, which is why it reaches what the pixel harness
+cannot.
+
+A record looks like this, and the whole point is that it survives an interface
+change — the same values have to come out whether the call is `XmTextInsert` or
+a front-end callback:
+
+```
+msg_render_begin win=0
+msg_clear win=0
+msg_callsign win=0 call="N7XYZ-1"
+msg_insert win=0 pos=0 text="NN/NN NN:NN N7XYZ-1  >First message from N7XYZ\n"
+msg_highlight win=0 from=22 to=47 mode=normal
+msg_show win=0 pos=47
+msg_render_end win=0
+```
+
+Three pieces: `src/xa_trace.[ch]` (inert unless `XASTIR_TRACE` names a file),
+trace points at the message-window operations in `db.c` and `messages.c`, and
+`XASTIR_REPLAY=<file>` in `main.c`, which sets `read_file_ptr`/`read_file`
+exactly as `File > Open Log File` does so a scenario can run without a human.
+
+**It was proven three ways before being used for anything**, because a harness
+that cannot tell A from B reports success either way:
+
+| | result |
+|---|---|
+| deterministic | two runs, byte-identical normalised traces, identical raw counts (239) |
+| sensitive | `offset = 22` → `23` in `update_messages()` moved 28 diff lines, all `msg_highlight from=`, nothing else |
+| necessary | the *same* defective binary gave a `snapshot_ab.sh` capture byte-identical to the baseline |
+
+That third row is the one that matters. The pixel harness does not merely miss
+this defect by luck: `pixmap_final` is the map canvas, the Send Message windows
+are separate top-level dialogs, and the pixel scenario replays no packets so no
+window is ever opened in it.
+
+Two things had to be normalised rather than wished away, both in
+`tools/trace_norm.py`, which prints everything it collapsed:
+
+- `update_messages()` rebuilds the whole window on a timer as well as on
+  arrival, so identical blocks repeat an arbitrary number of times.
+- Each line embeds `packet_time`, the wall clock at reception, so two runs a
+  minute apart differ. The `NN/NN NN:NN` field is masked, which leaves the
+  timestamp *values* uncovered but not its format or width.
+
+**Read `tools/README.md` for what the scenario does not reach.** Three paths
+never fire — `clear_message_windows`, `clear_acked_message`'s scan, and the
+`mode=selected` reverse-video branch — all of them outbound-message paths that a
+receive-only replay cannot get to. A clean diff says nothing about those three.
+
+One of them matters less than it looks: **`clear_acked_message`'s Motif loop is
+dead code.** It reads the callsign out of every open window, uppercases it, and
+discards it; the only statement that used the result is commented out. Those are
+two of the four Motif calls that make `messages.o` non-portable, and they are
+holding up nothing.
 
 ## What is left, and where
 
@@ -160,6 +222,20 @@ harness has regressed.
 Then `./bench-attrib.sh 1.0 4 base` should give `shapes_read 7444`,
 `vertices 219817`, `draw_calls 3458`.
 
+If the work touches the message windows, take a trace baseline the same way and
+for the same reason — two runs, and they must match:
+
+```bash
+./tools/trace_ab.sh /tmp/tbase1.trace     # ~4 min each
+./tools/trace_ab.sh /tmp/tbase2.trace
+diff /tmp/tbase1.trace /tmp/tbase2.trace  # MUST be empty
+```
+
+A correct baseline here is **239 raw records normalising to 89**, and the stderr
+histogram should show `msg_insert 49` and `msg_scan_call 17`. Read that
+histogram rather than trusting the diff: it is the only statement of what the
+scenario actually reached.
+
 Do not run Xastir while building — `build.sh` explains why (a saturated compile
 plus a GUI app hung the GPU on this machine and corrupted five object files).
 
@@ -169,7 +245,7 @@ Nothing here has been pushed.
 
 ## How to verify a change (read this first)
 
-Two harnesses, and picking the wrong one gives a confident wrong answer.
+Three harnesses, and picking the wrong one gives a confident wrong answer.
 
 - **`tools/snapshot_ab.sh <out.xpm>`** — pixels, via Xastir's own snapshot
   facility, so window stacking is irrelevant. Required for anything touching
@@ -180,6 +256,12 @@ Two harnesses, and picking the wrong one gives a confident wrong answer.
 - **`./bench-attrib.sh 1.0 4 <tag>`** — counters. Identical output means
   identical geometry: `shapes_read 7444`, `vertices 219817`, `draw_calls 3458`
   cumulative at `lod=1.0 zoomout=4`. **Blind to text and colour.**
+- **`tools/trace_ab.sh <out.trace>`** — message-window operations, with
+  arguments. Required for anything touching `update_messages()` or the window
+  management in `messages.c`, because the other two are blind to all of it —
+  measured, not assumed: a planted defect there left the pixel capture
+  byte-identical. **Blind to everything else**; its stderr histogram says which
+  paths the scenario actually reached, and three do not run at all.
 
 Do **not** use `ab-shot.sh` for A/B. It screenshots the whole screen.
 
@@ -243,28 +325,41 @@ All in `tools/` except three at the root, all documented in `tools/README.md`.
 | `extract_settings.py` | relocates plain-data definitions between files |
 | `snapshot_ab.sh` | pixel-level A/B. `SNAP_BIN=` to run another binary |
 | `snapshot/snap.cnf` | the exact configuration the pixel A/B runs under |
+| `trace_ab.sh` | operation-level A/B for the **message windows**, which the pixel harness cannot see |
+| `trace_norm.py` | normalises a raw trace; its stderr is the coverage report — read it |
+| `trace/messages.log` | the replayed scenario |
 
 ## Where to pick up
 
 In rough order of value per unit of risk:
 
-1. **Build a harness that can see something other than the map canvas.** Three
-    of this session's abstractions and all of the remaining Motif-in-core work
-    are unverifiable without it, and the one thing this session proves is how
-    expensive an unverifiable "verification" is. A trace comparison — log
-    operations with arguments, diff between builds — is cheaper than a pixel one
-    and catches more, because it does not depend on the change being visible.
-2. **`messages.c`** — move `mw[]` and the 4 window-management functions to
-    `messages_gui.c`. Smallest well-understood piece of real coupling left.
-3. **`db.c`'s `update_messages()`** — needs (1) first. See above for the two
-    designs and the `static pos` trap.
+1. ~~**Build a harness that can see something other than the map canvas.**~~
+    **Done.** `tools/trace_ab.sh`, proven deterministic, sensitive, and
+    necessary. This unblocks 2 and 3.
+2. **`messages.c`** — the smallest well-understood piece of real coupling left,
+    and now verifiable. Its 4 Motif functions reduce to three operations the
+    core actually needs (`is_open`, `callsign`, `raise`) plus a `close_all`,
+    which is the same narrow-callback shape as the existing 16 in `xa_ui.h`.
+    Do not move `check_popup_window` to `messages_gui.c` as previously
+    suggested: most of it is core logic, and only the field read and the
+    `XtPopup` belong to the view. Two of the four Motif calls, in
+    `clear_acked_message`, are dead code and can simply go.
+    **Coverage caveat**: the scenario reaches `check_popup_window` and
+    `look_for_open_group_data` but not `clear_message_windows` — check the
+    histogram, do not assume.
+3. **`db.c`'s `update_messages()`** — now verifiable, and easier than recorded:
+    the `static pos` trap does not exist (see above). The trace records
+    `msg_clear` / `msg_insert` / `msg_highlight` / `msg_show` with their exact
+    arguments, so a faithful move produces an identical diff.
 4. **Write a second backend.** `xa_draw.h` is ~40 entry points and the X11 one is
     ~1000 lines. A backend implementing only the drawing and pen calls, with text
     stubbed, is enough to find out whether the interface is actually sufficient —
     which is the open question, and one the call-site count cannot answer.
 5. **Get the untested abstractions exercised**: a scenario that renders OSM
     tiles, and one with an active weather alert. Cheap, and `xa_image_*` and
-    `xa_bitmap_load` are inspection-only until then.
+    `xa_bitmap_load` are inspection-only until then. `XASTIR_REPLAY` is now the
+    tool for building scenarios like these — it drives Xastir from a packet log
+    with no GUI interaction, which is how the weather-alert case gets its alert.
 
 `rotated.c` is the one core file with real Xlib left that is not the backend. It
 is not a conversion target — Pango does rotated text natively — so it belongs to

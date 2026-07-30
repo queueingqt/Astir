@@ -12425,6 +12425,47 @@ static void xa_zoomout_tick( XtPointer clientData, XtIntervalId *UNUSED(id) )
   (void)XtAppAddTimeOut(app_context, 8000, xa_zoomout_tick, clientData);
 }
 
+
+// Replay a packet log without the file-selection dialog (XASTIR_REPLAY=<file>).
+//
+// File > Open Log File sets exactly these two variables and the main loop does
+// the rest, one line per pass; this is the same thing with no human in it.  It
+// exists so a scenario can be driven from a script -- tools/trace_ab.sh needs
+// message traffic to reach the Send Message windows, and there is no other way
+// to get a message into a headless run.
+//
+// The first tick starts the replay; later ticks only watch for it to finish.
+// read_file_line() clears read_file at EOF, so that transition is the honest
+// "all input consumed" marker, and printing it lets the harness wait for a
+// condition instead of guessing at a duration.
+static void xa_replay_tick( XtPointer UNUSED(clientData), XtIntervalId *UNUSED(id) )
+{
+  static int started = 0;
+
+  if (!started)
+  {
+    const char *path = getenv("XASTIR_REPLAY");
+
+    started = 1;
+    read_file_ptr = fopen(path, "r");
+    if (read_file_ptr == NULL)
+    {
+      fprintf(stderr, "[replay] cannot open %s\n", path);
+      return;
+    }
+    read_file = 1;
+    fprintf(stderr, "[replay] reading %s\n", path);
+  }
+  else if (!read_file)
+  {
+    fprintf(stderr, "[replay] done\n");
+    return;
+  }
+
+  (void)XtAppAddTimeOut(app_context, 1000, xa_replay_tick, NULL);
+}
+
+
 static int xa_bench_step_num = 0;
 
 static void xa_bench_tick( XtPointer clientData, XtIntervalId *UNUSED(id) )
@@ -30802,6 +30843,15 @@ int main(int argc, char *argv[], char *envp[])
       {
         fprintf(stderr, "[bench] scripted pan/zoom benchmark starting\n");
         (void)XtAppAddTimeOut(app_context, 5000, xa_bench_tick, (XtPointer)da);
+      }
+
+      // Started late on purpose: replayed packets create stations, which the
+      // map draws.  Letting the initial render finish first keeps the replay
+      // out of the map-loading path, where it would compete for the same main
+      // loop and make the arrival order depend on how long a map file took.
+      if (getenv("XASTIR_REPLAY"))
+      {
+        (void)XtAppAddTimeOut(app_context, 20000, xa_replay_tick, NULL);
       }
 
       XtAppMainLoop(app_context);
