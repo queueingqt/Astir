@@ -153,7 +153,7 @@ int check_interrupt(
 #ifdef HAVE_MAGICK
   Image *image, ImageInfo *image_info, ExceptionInfo *exception
 #else // HAVE_MAGICK
-  XImage *xi
+  xa_image xi
 #endif // HAVE_MAGICK
 )
 {
@@ -170,10 +170,7 @@ int check_interrupt(
       DestroyImageInfo(image_info);
     }
 #else   // HAVE_MAGICK
-    if (xi)
-    {
-      XDestroyImage (xi);
-    }
+    xa_image_destroy(xi);
 #endif // HAVE_MAGICK
     // Update to screen
     xa_present_full(pixmap);
@@ -567,7 +564,7 @@ void draw_geo_image_map (Widget w,
 
   int width,height;
 #ifndef NO_XPM
-  XpmAttributes atb;              // Map attributes after map's read into an XImage
+  int xpm_width, xpm_height;       // Size of the map image, as loaded
 #endif  // NO_XPM
 
   tiepoint tp[2];                 // Calibration points for map, read in from .geo file
@@ -649,7 +646,7 @@ void draw_geo_image_map (Widget w,
   char zstr0[8];
   char zstr1[8];
 #else   // HAVE_MAGICK
-  XImage *xi;                 // Temp XImage used for reading in current image
+  xa_image xi;                // Temp pixel buffer holding the current image
 #endif // HAVE_MAGICK
 
   int terraserver_flag = 0;   // U.S. satellite images/topo/reflectivity/urban
@@ -1778,10 +1775,6 @@ void draw_geo_image_map (Widget w,
                   short_filenm);
   xa_ui_status(map_it);       // Loading/Indexing ...
 
-#ifndef NO_XPM
-  atb.valuemask = 0;
-#endif  // NO_XPM
-
   xa_ui_pump_events();
   if (interrupt_drawing_now)
   {
@@ -2483,19 +2476,16 @@ void draw_geo_image_map (Widget w,
    *  check above to see whether the image is inside our viewport,
    *  and if not we skip loading the image.
    */
-  if (! XpmReadFileToImage (XtDisplay (w), file, &xi, NULL, &atb) == XpmSuccess)
+  xi = xa_image_load(file, &xpm_width, &xpm_height);
+  if (xi == XA_IMAGE_NONE)
   {
     fprintf(stderr,"ERROR loading %s\n", file);
-    if (xi)
-    {
-      XDestroyImage (xi);
-    }
     return;
   }
 
   if (debug_level & 16)
   {
-    fprintf(stderr,"Image size %d %d\n", (int)atb.width, (int)atb.height);
+    fprintf(stderr,"Image size %d %d\n", xpm_width, xpm_height);
     fprintf(stderr,"XX: %ld YY:%ld Sx %f %d Sy %f %d\n",
             map_c_L,
             map_c_T,
@@ -2508,17 +2498,14 @@ void draw_geo_image_map (Widget w,
   xa_ui_pump_events();
   if (interrupt_drawing_now)
   {
-    if (xi)
-    {
-      XDestroyImage (xi);
-    }
+    xa_image_destroy(xi);
     // Update to screen
     xa_present_full(pixmap);
     return;
   }
 
-  width  = atb.width;
-  height = atb.height;
+  width  = xpm_width;
+  height = xpm_height;
 #else // NO_XPM
   fprintf(stderr,"Xastir was configured with neither XPM library nor (Image/Graphics)Magick, cannot display map %s\n",filenm);
 #endif // NO_XPM
@@ -2782,7 +2769,7 @@ void draw_geo_image_map (Widget w,
               }
             }
 #else   // HAVE_MAGICK
-            xa_pen_color(gc, XGetPixel (xi, map_x, map_y));
+            xa_pen_color(gc, xa_image_get_pixel(xi, map_x, map_y));
 #endif  // HAVE_MAGICK
 
 
@@ -2817,7 +2804,7 @@ void draw_geo_image_map (Widget w,
 #else   // HAVE_MAGICK
   if (xi)
   {
-  XDestroyImage (xi);
+  xa_image_destroy(xi);
   }
 #endif // HAVE_MAGICK
 

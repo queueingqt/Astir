@@ -310,6 +310,60 @@ xa_surface_id xa_bitmap_from_data(const char *bits, int width, int height);
 xa_surface_id xa_bitmap_load(const char *path, int *width, int *height);
 
 
+/* ---- pixel buffers ---------------------------------------------------- */
+
+/*
+ * A client-side buffer of pixels that can be read and written one at a time,
+ * then handed to a surface in one go.  An XImage today.
+ *
+ * This exists for speed, not convenience, and the reason is worth keeping: the
+ * OSM drivers used to draw each map pixel with its own fill-a-1x1-rectangle
+ * call, which is a round trip to the X server per pixel and was the dominant
+ * cost on slow or remote displays.  They now capture the frame once, write into
+ * the buffer, and put it back once.  So this is the one part of the drawing
+ * interface where per-pixel cost matters, and a backend should treat
+ * xa_image_put_pixel() as something that must not become a round trip.
+ *
+ * Opaque, and a pointer today because XImage is one.
+ */
+typedef void *xa_image;
+
+#define XA_IMAGE_NONE ((xa_image)0)
+
+/*
+ * Read a rectangle of a surface back into a buffer.
+ *
+ * The OSM drivers seed their buffer this way rather than starting from blank, so
+ * that areas no tile covers keep whatever was already drawn there -- the
+ * lower-zoom fallback tiles underneath.  Starting blank would erase them.
+ */
+xa_image xa_image_capture(xa_surface_id src, int x, int y,
+                          int width, int height);
+
+// A zero-filled buffer at canvas depth, for when a capture is not possible.
+xa_image xa_image_create(int width, int height);
+
+/*
+ * Load an image file into a buffer, reporting its size.  XPM today.
+ *
+ * Only reachable in a build without ImageMagick, which is not the build here, so
+ * this path compiles but is untested -- said plainly because the alternative is
+ * to imply otherwise.  Returns XA_IMAGE_NONE on failure; width and height may
+ * be NULL and are untouched unless the load succeeds.
+ */
+xa_image xa_image_load(const char *path, int *width, int *height);
+
+void xa_image_destroy(xa_image img);
+
+void     xa_image_put_pixel(xa_image img, int x, int y, xa_color c);
+xa_color xa_image_get_pixel(xa_image img, int x, int y);
+
+// Hand the buffer to a surface.
+void xa_image_to_surface(xa_surface_id dst, xa_pen pen, xa_image img,
+                         int src_x, int src_y, int dst_x, int dst_y,
+                         int width, int height);
+
+
 /* ---- regions ---------------------------------------------------------- */
 
 /*

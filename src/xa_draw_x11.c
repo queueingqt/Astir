@@ -13,7 +13,13 @@
 #include "config.h"
 #endif
 
+#include <stdlib.h>   // calloc(), for the pixel-buffer fallback
+
 #include <X11/Intrinsic.h>
+
+#ifdef HAVE_X11_XPM_H
+  #include <X11/xpm.h>   // XpmReadFileToImage, for xa_image_load()
+#endif
 
 #include "xastir.h"
 #include "main.h"
@@ -873,6 +879,139 @@ xa_surface_id xa_bitmap_load(const char *path, int *width, int *height)
     *height = (int)h;
   }
   return (xa_surface_id)bm;
+}
+
+
+/* ---- pixel buffers ---------------------------------------------------- */
+
+xa_image xa_image_capture(xa_surface_id src, int x, int y,
+                          int width, int height)
+{
+  Display *dpy = xa_dpy();
+
+  if (dpy == NULL || src == XA_SURFACE_NONE || width <= 0 || height <= 0)
+  {
+    return XA_IMAGE_NONE;
+  }
+  return (xa_image)XGetImage(dpy, (Drawable)src, x, y,
+                             (unsigned int)width, (unsigned int)height,
+                             AllPlanes, ZPixmap);
+}
+
+
+xa_image xa_image_create(int width, int height)
+{
+  Display *dpy = xa_dpy();
+  XImage *img;
+
+  if (dpy == NULL || width <= 0 || height <= 0)
+  {
+    return XA_IMAGE_NONE;
+  }
+  img = XCreateImage(dpy,
+                     DefaultVisualOfScreen(xa_scr()),
+                     DefaultDepthOfScreen(xa_scr()),
+                     ZPixmap, 0, NULL,
+                     (unsigned int)width, (unsigned int)height, 32, 0);
+  if (img == NULL)
+  {
+    return XA_IMAGE_NONE;
+  }
+  // XCreateImage does not allocate the pixel storage; it only works out the
+  // layout, which is why bytes_per_line is read back rather than computed.
+  img->data = calloc((size_t)img->bytes_per_line * (size_t)height, 1);
+  if (img->data == NULL)
+  {
+    XDestroyImage(img);
+    return XA_IMAGE_NONE;
+  }
+  return (xa_image)img;
+}
+
+
+xa_image xa_image_load(const char *path, int *width, int *height)
+{
+#ifdef HAVE_X11_XPM_H
+  Display *dpy = xa_dpy();
+  XImage *img = NULL;
+  XpmAttributes atb;
+
+  if (dpy == NULL || path == NULL)
+  {
+    return XA_IMAGE_NONE;
+  }
+  atb.valuemask = 0;
+  if (XpmReadFileToImage(dpy, (char *)path, &img, NULL, &atb) != XpmSuccess)
+  {
+    // XpmReadFileToImage can allocate before failing.
+    if (img != NULL)
+    {
+      XDestroyImage(img);
+    }
+    return XA_IMAGE_NONE;
+  }
+  if (width)
+  {
+    *width = (int)atb.width;
+  }
+  if (height)
+  {
+    *height = (int)atb.height;
+  }
+  return (xa_image)img;
+#else
+  (void)path;
+  (void)width;
+  (void)height;
+  return XA_IMAGE_NONE;
+#endif
+}
+
+
+void xa_image_destroy(xa_image img)
+{
+  if (img != XA_IMAGE_NONE)
+  {
+    // Frees the pixel storage too, including the calloc above -- XDestroyImage
+    // releases whatever is in ->data.
+    XDestroyImage((XImage *)img);
+  }
+}
+
+
+void xa_image_put_pixel(xa_image img, int x, int y, xa_color c)
+{
+  if (img != XA_IMAGE_NONE)
+  {
+    (void)XPutPixel((XImage *)img, x, y, (unsigned long)c);
+  }
+}
+
+
+xa_color xa_image_get_pixel(xa_image img, int x, int y)
+{
+  if (img == XA_IMAGE_NONE)
+  {
+    return (xa_color)0;
+  }
+  return (xa_color)XGetPixel((XImage *)img, x, y);
+}
+
+
+void xa_image_to_surface(xa_surface_id dst, xa_pen pen, xa_image img,
+                         int src_x, int src_y, int dst_x, int dst_y,
+                         int width, int height)
+{
+  Display *dpy = xa_dpy();
+
+  if (dpy == NULL || dst == XA_SURFACE_NONE || pen == NULL
+      || img == XA_IMAGE_NONE || width <= 0 || height <= 0)
+  {
+    return;
+  }
+  (void)XPutImage(dpy, (Drawable)dst, (GC)pen, (XImage *)img,
+                  src_x, src_y, dst_x, dst_y,
+                  (unsigned int)width, (unsigned int)height);
 }
 
 

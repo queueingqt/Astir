@@ -713,13 +713,12 @@ static void draw_image(
  * XGetImage and XPutImage happen exactly once per redraw, not once per tile.
  **********************************************************/
 static void render_OSM_image_pixels(
-  Widget w,
   Image *image,
   ExceptionInfo *except_ptr,
   tiepoint *tpNW,
   tiepoint *tpSE,
   int osm_zl,
-  XImage *ximg)    // XImage to write into; may be NULL (fallback to X11 calls)
+  xa_image ximg)   // buffer to write into; XA_IMAGE_NONE falls back to per-pixel
 {
   int l;
   XColor my_colors[256];
@@ -1010,10 +1009,10 @@ static void render_OSM_image_pixels(
                               &my_colors[0].pixel);
               fill_pixel = my_colors[0].pixel;
             }
-            // Write pixel(s) to the screen. Use XImage bulk transfer when
+            // Write pixel(s) to the screen. Use the bulk pixel buffer when
             // available to avoid per-pixel X11 round-trips (major bottleneck
             // on Raspberry Pi and slow/remote displays).
-            if (ximg)
+            if (ximg != XA_IMAGE_NONE)
             {
               int ix, iy;
               for (iy = (int)scr_y; iy < (int)scr_y + scr_dy && iy < screen_height; iy++)
@@ -1022,7 +1021,7 @@ static void render_OSM_image_pixels(
                 {
                   if (ix >= 0 && iy >= 0)
                   {
-                    XPutPixel(ximg, ix, iy, fill_pixel);
+                    xa_image_put_pixel(ximg, ix, iy, fill_pixel);
                   }
                 }
               }
@@ -1061,32 +1060,23 @@ static void draw_OSM_image(
   tiepoint *tpSE,
   int osm_zl)
 {
-  // Seed XImage from current pixmap so missing-tile areas show the
+  // Seed the buffer from the current pixmap so missing-tile areas show the
   // previously-rendered content (e.g. lower-zoom fallback tiles).
-  XImage *ximg = XGetImage(XtDisplay(w), pixmap, 0, 0,
-                            (unsigned)screen_width, (unsigned)screen_height,
-                            AllPlanes, ZPixmap);
-  if (!ximg)
+  xa_image ximg = xa_image_capture(pixmap, 0, 0,
+                                   (int)screen_width, (int)screen_height);
+  if (ximg == XA_IMAGE_NONE)
   {
     // Fallback: zeroed buffer (better than nothing)
-    ximg = XCreateImage(XtDisplay(w),
-                        DefaultVisualOfScreen(XtScreen(w)),
-                        DefaultDepthOfScreen(XtScreen(w)), ZPixmap, 0, NULL,
-                        (unsigned)screen_width, (unsigned)screen_height, 32, 0);
-    if (ximg)
-    {
-      ximg->data = calloc(ximg->bytes_per_line * screen_height, 1);
-      if (!ximg->data) { XDestroyImage(ximg); ximg = NULL; }
-    }
+    ximg = xa_image_create((int)screen_width, (int)screen_height);
   }
 
-  render_OSM_image_pixels(w, image, except_ptr, tpNW, tpSE, osm_zl, ximg);
+  render_OSM_image_pixels(image, except_ptr, tpNW, tpSE, osm_zl, ximg);
 
-  if (ximg)
+  if (ximg != XA_IMAGE_NONE)
   {
-    XPutImage(XtDisplay(w), pixmap, gc, ximg, 0, 0, 0, 0,
-              (unsigned)screen_width, (unsigned)screen_height);
-    XDestroyImage(ximg);
+    xa_image_to_surface(pixmap, gc, ximg, 0, 0, 0, 0,
+                        (int)screen_width, (int)screen_height);
+    xa_image_destroy(ximg);
   }
 }  // end draw_OSM_image()
 
@@ -1317,28 +1307,18 @@ void draw_OSM_tiles (Widget w,
 
     tile_info = CloneImageInfo((ImageInfo *)NULL);
 
-    // Allocate a single shared XImage for all tiles.
+    // Allocate a single shared pixel buffer for all tiles.
     // Seeded from the current pixmap so that areas without a tile (missing or
     // not-yet-downloaded) preserve the previously-rendered content, e.g.
     // lower-zoom fallback tiles — the same behaviour as the original canvas.
     // Each tile's pixels are written into this buffer with render_OSM_image_pixels()
-    // and the whole screen is flushed to the pixmap in one XPutImage at the end.
-    XImage *shared_ximg = XGetImage(XtDisplay(w), pixmap, 0, 0,
-                                    (unsigned)screen_width, (unsigned)screen_height,
-                                    AllPlanes, ZPixmap);
-    if (!shared_ximg)
+    // and the whole screen is handed to the pixmap in one operation at the end.
+    xa_image shared_ximg = xa_image_capture(pixmap, 0, 0,
+                                           (int)screen_width,
+                                           (int)screen_height);
+    if (shared_ximg == XA_IMAGE_NONE)
     {
-      shared_ximg = XCreateImage(XtDisplay(w),
-                                 DefaultVisualOfScreen(XtScreen(w)),
-                                 DefaultDepthOfScreen(XtScreen(w)),
-                                 ZPixmap, 0, NULL,
-                                 (unsigned)screen_width,
-                                 (unsigned)screen_height, 32, 0);
-      if (shared_ximg)
-      {
-        shared_ximg->data = calloc(shared_ximg->bytes_per_line * screen_height, 1);
-        if (!shared_ximg->data) { XDestroyImage(shared_ximg); shared_ximg = NULL; }
-      }
+      shared_ximg = xa_image_create((int)screen_width, (int)screen_height);
     }
 
     tile_info = CloneImageInfo((ImageInfo *)NULL);
@@ -1394,19 +1374,19 @@ void draw_OSM_tiles (Widget w,
 
           if (tile)
           {
-            render_OSM_image_pixels(w, tile, &exception, &tpTileNW, &tpTileSE, osm_zl,
+            render_OSM_image_pixels(tile, &exception, &tpTileNW, &tpTileSE, osm_zl,
                                     shared_ximg);
             DestroyImage(tile);
           }
         }
       }
 
-    // Flush all tiles to the pixmap in one bulk X11 transfer
-    if (shared_ximg)
+    // Hand all tiles to the pixmap in one bulk transfer
+    if (shared_ximg != XA_IMAGE_NONE)
     {
-      XPutImage(XtDisplay(w), pixmap, gc, shared_ximg, 0, 0, 0, 0,
-                (unsigned)screen_width, (unsigned)screen_height);
-      XDestroyImage(shared_ximg);
+      xa_image_to_surface(pixmap, gc, shared_ximg, 0, 0, 0, 0,
+                          (int)screen_width, (int)screen_height);
+      xa_image_destroy(shared_ximg);
     }
 
     // Display the OpenStreetMap attribution
