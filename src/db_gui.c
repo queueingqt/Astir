@@ -36,6 +36,7 @@
 #include "xa_draw.h"
 
 
+#include "messages_gui.h"
 #include "station_draw.h"
 
 // Must be last include file

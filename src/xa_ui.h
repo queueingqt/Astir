@@ -128,6 +128,61 @@ typedef struct
   // core falls back to its default path exactly as it does today when no window
   // matches the callsign.
   void (*send_message_path)(const char *callsign, char *path, int path_size);
+
+  /* ---- the Send Message windows ------------------------------------------ */
+
+  // The core drives these windows -- it decides a conversation exists, which
+  // messages belong in it and in what order -- but it must not know they are
+  // made of Motif text widgets.  These are the whole of what it needs.
+  //
+  // Windows are addressed by index, 0..MAX_MESSAGE_WINDOWS-1, because that is
+  // how the core already tracks them.  A front end that keeps its windows some
+  // other way still has to map an index to one.
+  //
+  // Every one of these is a no-op (or a zero answer) when unregistered, so a
+  // headless build simply has no message windows.
+
+  // Is window i open?  The core uses this both to skip closed windows and to
+  // find a free slot for a new one.
+  int (*msg_window_is_open)(int i);
+
+  // Was window i opened for a *group* conversation?  Group windows show every
+  // message to the group, not just the ones to and from us.
+  int (*msg_window_is_group)(int i);
+
+  // The callsign window i is holding a conversation with.  Writes at most n
+  // bytes.  Returns zero if the window has no callsign field at all, which the
+  // core distinguishes from an empty one -- the two took different paths in
+  // the original and still do.
+  int (*msg_window_callsign)(int i, char *out, int n);
+
+  // Raise window i.
+  void (*msg_window_raise)(int i);
+
+  // Close every open message window, releasing whatever they hold.
+  void (*msg_window_close_all)(void);
+
+  /* ---- and rendering a conversation into one ----------------------------- */
+
+  // The core rebuilds a window's whole contents on every update: clear, then
+  // one append per message in time order, then show.  It is not a diffing
+  // interface because the original was not one either.
+
+  // Empty window i's transcript.
+  void (*msg_window_clear)(int i);
+
+  // Append `text` at `pos` in window i's transcript, and highlight the range
+  // [hl_from, hl_to) -- reverse video when `hl_selected`, plain otherwise.
+  //
+  // The core passes absolute positions rather than letting the front end track
+  // them, because it is the core that knows a message line's prefix should not
+  // be highlighted.  Returns zero if there is no transcript to append to, in
+  // which case the core does not advance `pos` -- as the original did not.
+  int (*msg_window_append)(int i, long pos, const char *text,
+                           long hl_from, long hl_to, int hl_selected);
+
+  // Scroll window i so that `pos` is visible.
+  void (*msg_window_show)(int i, long pos);
 } xa_ui_callbacks;
 
 // Install the front end's implementations.  Passing NULL, or leaving a member
@@ -154,5 +209,15 @@ void xa_ui_message_logged(char from, const char *call_sign,
                           const char *from_call, const char *message);
 void xa_ui_locate_station(int emergency);
 void xa_ui_send_message_path(const char *callsign, char *path, int path_size);
+
+int  xa_ui_msg_window_is_open(int i);
+int  xa_ui_msg_window_is_group(int i);
+int  xa_ui_msg_window_callsign(int i, char *out, int n);
+void xa_ui_msg_window_raise(int i);
+void xa_ui_msg_window_close_all(void);
+void xa_ui_msg_window_clear(int i);
+int  xa_ui_msg_window_append(int i, long pos, const char *text,
+                             long hl_from, long hl_to, int hl_selected);
+void xa_ui_msg_window_show(int i, long pos);
 
 #endif // XA_UI_H

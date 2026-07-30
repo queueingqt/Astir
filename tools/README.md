@@ -69,7 +69,7 @@ It does **not** reach:
 
 | never fires | needs |
 |---|---|
-| `msg_destroy` (`clear_message_windows`) | shutdown or a station reset |
+| `msg_destroy` (the destroy branch of `close_all`) | a window actually being open when it runs — `clear_message_windows()` *is* called, once, at startup, when they all still are closed |
 | `msg_scan_call fn=clear_acked_message` | an *outgoing* message being acked |
 | `msg_highlight mode=selected` | an outgoing message not yet acked — the reverse-video branch keys on `is_my_call(from)` |
 
@@ -83,6 +83,24 @@ the callsign out of every open window, uppercases it, and then does nothing
 with it — the only statement that used the result is commented out
 (`XtSetSensitive(mw[ii].button_ok,TRUE)`). It is two Motif calls kept alive by
 dead code, not behaviour that has to be preserved.
+
+### What it was built for, and what that found
+
+The first use was moving `mw[]` out of `messages.c` and the Motif calls out of
+`db.c`'s `update_messages()` — eight `msg_window_*` callbacks in `xa_ui.h`. The
+trace came back **byte-identical**: same 239 raw records, same 89 normalised,
+same histogram. That is the whole argument that the move is faithful, and there
+was no way to make it before.
+
+Two details it would have caught had they been got wrong, both of which are
+easy to miss by reading:
+
+- `pos += strlen(temp2)` sat *inside* `if (mw[..].send_message_text != NULL)`,
+  so a window with no transcript did not advance the insert position. A callback
+  returning `void` silently changes that; `msg_window_append` returns a value.
+- The original distinguished "no callsign field" from "empty callsign" —
+  `new_message_data--` happens for the first and not the second. Hence
+  `msg_window_callsign` returning a value too.
 
 ### Proving the harness works before trusting it
 

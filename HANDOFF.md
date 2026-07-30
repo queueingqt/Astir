@@ -17,84 +17,144 @@ GUI object.
 |---|---|---|---|
 | symbols the core cannot link without | 46, across 12 objects | 1, in main.o | **0** |
 | objects referencing a front-end *symbol* | 12 | 2 | **0** |
-| core objects still *calling* Motif directly | ? | 2 (`db.o`, `messages.o`) | 2 — unchanged |
+| core objects still *calling* Motif directly | ? | 2 (`db.o`, `messages.o`) | **0** |
+| core `.c` files including a Motif header | ? | 2 | **0** |
 | map drivers naming `Widget` | all | all | **0** |
 | drawing Xlib call sites outside the backend | — | 7 | 7 |
 | harnesses that can see the message windows | 0 | 0 | **1** |
+| core headers pulling in X11 | ? | ? | 1 — `xastir.h`, and it is the next job |
 | lines of GTK4 front end written | 0 | 0 | **0** |
 
-This session moved no boundary. It built the thing that makes the next two moves
-verifiable, and proved it works — which the previous session's notes identified
-as the highest-value next step precisely because four commits had nearly claimed
-verification they had not earned.
+Two things happened. First the harness the previous notes asked for, because the
+remaining work was unverifiable without it. Then the work itself: `mw[]` and the
+whole of the Motif coupling in `db.c` and `messages.c` moved behind eight
+callbacks, and `nm` now reports **zero** `Xm*`/`Xt*` symbols needed by either
+object. Both were verified against the harness rather than by compiling.
 
-## The next boundary: two core objects still call Motif
+## That boundary is crossed: no core object calls Motif
 
-`link_core.py` cannot see this, and it is worth understanding why. It links the
-core against the *full* library set, so a Motif call inside a core object
-resolves happily from `-lXm` and the link stays clean. Asking `nm` about the
-individual objects asks a different question, and the answer is:
+`link_core.py` cannot see this on its own, and it is worth understanding why. It
+links the core against the *full* library set, so a Motif call inside a core
+object resolves happily from `-lXm` and the link stays clean. Asking `nm` about
+the individual objects asks a different question. It used to answer:
+
+| object | needed | what it was |
+|---|---|---|
+| `db.o` | 7 `XmText*` / `XtFree` | `update_messages()` — renders the message window |
+| `messages.o` | `XmTextFieldGetString`, `XtDestroyWidget`, `XtFree`, `XtPopup` | 4 window-management functions, and `mw[]` itself |
+
+Both are now **zero**, and `nm -u` on either object finds no `Xm*` or `Xt*` name
+at all. `messages.c` includes no X header; neither does `db.c`. What remains is
+the backend and the files a backend replaces:
 
 | object | needs | what it is |
 |---|---|---|
-| `db.o` | 7 `XmText*` / `XtFree` | **`update_messages()`** — renders the message window |
-| `messages.o` | `XmTextFieldGetString`, `XtDestroyWidget`, `XtFree`, `XtPopup` | 4 window-management functions, and `mw[]` itself |
 | `xa_draw_x11.o` | 50 | the backend. Expected. |
 | `rotated.o`, `cairo_text.o`, `color.o` | 19 | renderer/platform implementation |
 
 `map_tif.o`'s `XTIFFOpen`/`XTIFFClose` are **libtiff**, not Xlib — the trap
 `tools/README.md` warns about, which a first pass here fell into anyway.
 
-So: the core links without the front end, and two core objects still drive Motif
-widgets directly. Both statements are true, and the second is the next job.
+### How it was done
 
-`Message_Window mw[MAX_MESSAGE_WINDOWS+1]`, an array of Motif widgets, is
-**defined in `messages.c`** — a core file. 245 of its uses are in
-`messages_gui.c`, where it belongs; 27 are in `messages.c` and 15 in `db.c`.
+`Message_Window mw[MAX_MESSAGE_WINDOWS+1]`, an array of Motif widgets, was
+**defined in `messages.c`** — a core file — and declared in `xastir.h`, which
+every core file includes. It now lives in `messages_gui.c`, declared in a new
+`messages_gui.h` that only the front end includes. That move is what forced the
+rest, and it is also what makes `link_core.py` a real test of it: `mw` is now
+defined in an object the core link omits, so any core file still naming it fails
+to link rather than failing silently.
 
-### Why `update_messages()` was not done, and what it needs
+The core turned out to need eight operations, added to `xa_ui.h` alongside the
+existing sixteen:
 
-`db.c` is one function from toolkit-free. That function was deliberately left
-alone, for a reason that should survive:
+| callback | replaces |
+|---|---|
+| `msg_window_is_open` | `mw[i].send_message_dialog != NULL` |
+| `msg_window_is_group` | `mw[i].message_group` |
+| `msg_window_callsign` | `XmTextFieldGetString` + copy + `XtFree` |
+| `msg_window_raise` | `XtPopup` |
+| `msg_window_close_all` | the whole of `clear_message_windows()` |
+| `msg_window_clear` | `XmTextReplace(..., "")` |
+| `msg_window_append` | `XmTextInsert` + `XmTextSetHighlight` |
+| `msg_window_show` | `XmTextShowPosition` |
 
-- ~~**Nothing here can verify it.**~~ **Fixed this session.** `snapshot_ab.sh`
-  captures `pixmap_final`, the map canvas, and the message window is a separate
-  Motif dialog that does not appear in it at all. `tools/trace_ab.sh` now covers
-  it — see below. This was the blocker and it is gone.
-- ~~**`pos` is never reset.**~~ **That was wrong, and it made the job look
-  harder than it is.** There are two resets, not one: the commented-out
-  `//pos=0;` at the top of the per-window loop, *and* a live `pos = 0;` at
-  `db.c:1777`, inside `if(strlen(temp1)>0)` and before the message list is
-  built. Every read of `pos` is dominated by that assignment, so despite being
-  `static` it behaves exactly as a local. There is no cross-call accumulation to
-  reproduce.
-- **The obvious move is still the wrong one.** The function cannot simply move
-  to `messages_gui.c`: it reads `msg_data`, `msg_index`, `msg_index_end`, which
-  are `static` in `db.c` on purpose. Moving it means exporting the message
-  store, which trades a layering problem for a worse one.
+Three details that had to be right, and would have been easy to get wrong:
 
-Two designs, neither attempted:
+- **`msg_window_callsign` returns a value.** The original distinguished "this
+  window has no callsign field" from "the field is empty" and took different
+  paths — `new_message_data--` happens for the first but not the second. The
+  return preserves that.
+- **`msg_window_append` returns a value.** In the original, `pos +=
+  strlen(temp2)` sat *inside* `if (mw[..].send_message_text != NULL)`, so a
+  window with no transcript did not advance the position. The caller now guards
+  on the return for the same reason.
+- **The highlight decision stayed in the core.** Whether a line is reverse video
+  depends on `acked` and `is_my_call`, which read the message store. Only the
+  drawing moved; the core passes a boolean.
 
-1. **Narrow view callbacks** in `xa_ui.h` — `msg_window_is_open(i)`,
-   `msg_window_callsign(i, out, n)`, `msg_window_clear(i)`,
-   `msg_window_append(i, text, hl_from, hl)`, `msg_window_show_end(i)`. Matches
-   the existing 16-callback pattern, keeps the message store private, leaves the
-   core pushing view updates.
-2. **Model/view split** — `db.c` grows an accessor returning the time-sorted
-   messages for a callsign, and `update_messages()` moves to `messages_gui.c` and
-   renders from that. Cleaner, larger, and the highlighting logic (`acked` 0/2/3,
-   reverse video, `is_my_call`) has to come across exactly.
+`update_messages()` was not moved to `messages_gui.c`, and should not be: it
+reads `msg_data`, `msg_index`, `msg_index_end`, which are `static` in `db.c` on
+purpose. Moving it means exporting the message store, which trades a layering
+problem for a worse one. Pushing view updates through callbacks keeps the store
+private.
 
-**That harness now exists.** `tools/trace_ab.sh`, built and proven this session
-— see "The message windows have a harness now" below. Both designs above are
-unblocked.
+`static XmTextPosition pos` became `static long pos` — `XmTextPosition` *is*
+`long` (`Xm/Xm.h:1152`), so that is the same variable with the toolkit's name
+taken off it.
 
-`messages.c` is the easier half and a reasonable first move: its 4 Motif
-functions are all window management, they belong in `messages_gui.c` outright,
-and `split_file.py` refuses to write unless the bytes reassemble. The cost the
-tool reports is 3 shared file-scope names (`last_check_and_transmit`,
-`message_pool`, `send_message_dialog_lock`) and one call to invert
-(`check_and_transmit_messages` → `clear_acked_message`).
+**The recorded `static pos` trap did not exist, and it is worth saying why it
+looked like one.** The previous notes said `pos` is never reset, pointing at the
+commented-out `//pos=0;` at the top of the per-window loop. There is a second
+reset: a live `pos = 0;` further down, inside `if(strlen(temp1)>0)` and before
+the message list is built. Every read of `pos` is dominated by that assignment,
+so despite the `static` it behaves exactly as a local, and there was no
+cross-call accumulation to reproduce. One commented-out line four hundred lines
+from the live one was enough to make a mechanical change look risky for two
+sessions. Grep for *all* the assignments before believing a note like that.
+
+### One thing was deleted rather than converted
+
+`clear_acked_message()` held a loop that read the callsign out of every open
+window, uppercased it into a local, and dropped it. The only statement that used
+the result — `XtSetSensitive(mw[ii].button_ok,TRUE)`, "clear the send button" —
+has been commented out for as long as the history goes back; the local had one
+writer and no reader. Two of the four Motif calls in `messages.o` were held up
+by nothing at all. Deleting it also retired two now-unused locals.
+
+This is the one change in the set that the harness does **not** cover — the
+scenario never reaches `clear_acked_message`, which the operation histogram says
+plainly. It rests on reading, not on measurement.
+
+### What this cost, and what it did not
+
+Verified three ways, all of which had to pass before it was committed:
+
+- `link_core.py` — `LINKED CLEANLY`, 64 core objects, with `mw` now defined in
+  an omitted object.
+- `trace_ab.sh` — **byte-identical** to the pre-change capture. Same 239 raw
+  records, same 89 normalised, same histogram. Every message-window operation
+  the scenario reaches produced the same arguments through the callbacks as it
+  did through the direct Motif calls.
+- `snapshot_ab.sh` — byte-identical to the baseline.
+
+### The next boundary is the headers
+
+`db.c` and `messages.c` name no X type and include no Motif header, but `db.c`
+still pulls in **106** X headers transitively, and nine of its includes are
+responsible. The root is one line:
+
+```
+xastir.h:54:#include <X11/Intrinsic.h>
+```
+
+`xastir.h` is included by every core file in the tree, and it still needs that
+line itself: 11 `Widget`, 10 `Pixmap`, 7 `XtPointer`, an `XtAppContext` and a
+`Colormap`. Removing it is the same job just done for `messages.h` — move the
+widget-typed declarations to a GUI-side header — but at the scale of the file
+everything includes. That is what stands between "no core object calls Motif"
+and "the core compiles on a machine with no X headers installed", and only the
+second one is what a GTK4 port actually needs.
 
 ## The message windows have a harness now
 
@@ -145,10 +205,14 @@ Two things had to be normalised rather than wished away, both in
   minute apart differ. The `NN/NN NN:NN` field is masked, which leaves the
   timestamp *values* uncovered but not its format or width.
 
-**Read `tools/README.md` for what the scenario does not reach.** Three paths
-never fire — `clear_message_windows`, `clear_acked_message`'s scan, and the
-`mode=selected` reverse-video branch — all of them outbound-message paths that a
-receive-only replay cannot get to. A clean diff says nothing about those three.
+**Read `tools/README.md` for what the scenario does not reach.** Three records
+never appear: `msg_destroy`, `msg_scan_call fn=clear_acked_message`, and
+`msg_highlight mode=selected`. Two of the three need an *outgoing* message,
+which a receive-only replay cannot produce. The third is narrower than it looks:
+`clear_message_windows()` *is* called, once, at startup — it simply finds every
+window already closed, so the loop and the null-out run and the
+`XtDestroyWidget` inside them does not. A clean diff says nothing about those
+three branches.
 
 One of them matters less than it looks: **`clear_acked_message`'s Motif loop is
 dead code.** It reads the callsign out of every open window, uppercases it, and
@@ -335,31 +399,31 @@ In rough order of value per unit of risk:
 
 1. ~~**Build a harness that can see something other than the map canvas.**~~
     **Done.** `tools/trace_ab.sh`, proven deterministic, sensitive, and
-    necessary. This unblocks 2 and 3.
-2. **`messages.c`** — the smallest well-understood piece of real coupling left,
-    and now verifiable. Its 4 Motif functions reduce to three operations the
-    core actually needs (`is_open`, `callsign`, `raise`) plus a `close_all`,
-    which is the same narrow-callback shape as the existing 16 in `xa_ui.h`.
-    Do not move `check_popup_window` to `messages_gui.c` as previously
-    suggested: most of it is core logic, and only the field read and the
-    `XtPopup` belong to the view. Two of the four Motif calls, in
-    `clear_acked_message`, are dead code and can simply go.
-    **Coverage caveat**: the scenario reaches `check_popup_window` and
-    `look_for_open_group_data` but not `clear_message_windows` — check the
-    histogram, do not assume.
-3. **`db.c`'s `update_messages()`** — now verifiable, and easier than recorded:
-    the `static pos` trap does not exist (see above). The trace records
-    `msg_clear` / `msg_insert` / `msg_highlight` / `msg_show` with their exact
-    arguments, so a faithful move produces an identical diff.
+    necessary.
+2. ~~**`messages.c`**~~ and ~~**`db.c`'s `update_messages()`**~~ — **both done**,
+    in one move, because `mw[]` could not leave `messages.c` until `db.c` had
+    stopped naming it. Eight callbacks; trace byte-identical.
+3. **Get `xastir.h` off `X11/Intrinsic.h`.** This is now the boundary — see
+    "The next boundary is the headers" above. It is the same job just finished
+    for `messages.h`, at the scale of the header every core file includes: 11
+    `Widget`, 10 `Pixmap`, 7 `XtPointer`, one `XtAppContext`, one `Colormap` to
+    relocate. Until it is done, "no core object calls Motif" is true and "the
+    core builds without X headers" is not, and it is the second that a GTK4 port
+    needs. Expect the compiler to find the files that were relying on getting
+    `Intrinsic.h` transitively; that is the sweep working, not a problem.
 4. **Write a second backend.** `xa_draw.h` is ~40 entry points and the X11 one is
     ~1000 lines. A backend implementing only the drawing and pen calls, with text
     stubbed, is enough to find out whether the interface is actually sufficient —
     which is the open question, and one the call-site count cannot answer.
-5. **Get the untested abstractions exercised**: a scenario that renders OSM
-    tiles, and one with an active weather alert. Cheap, and `xa_image_*` and
-    `xa_bitmap_load` are inspection-only until then. `XASTIR_REPLAY` is now the
-    tool for building scenarios like these — it drives Xastir from a packet log
-    with no GUI interaction, which is how the weather-alert case gets its alert.
+5. **Get the untested paths exercised.** Three message-window records still
+    never appear — `msg_destroy`, `clear_acked_message`'s scan, and
+    `mode=selected` — and two of them need an *outgoing* message. A send-capable
+    scenario would close both at once and is the cheapest coverage available;
+    the third needs a window open when the windows are cleared. Same for
+    `xa_image_*` (needs OSM
+    tiles) and `xa_bitmap_load` (needs an active alert); `XASTIR_REPLAY` is now
+    the tool for building all of them, since it drives Xastir from a packet log
+    with no GUI interaction.
 
 `rotated.c` is the one core file with real Xlib left that is not the backend. It
 is not a conversion target — Pango does rotated text natively — so it belongs to

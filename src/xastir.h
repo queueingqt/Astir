@@ -174,7 +174,8 @@ extern void clear_outgoing_messages(void);
 extern void reset_outgoing_messages(void);
 extern void output_message(char *from, char *to, char *message, char *path);
 extern void check_and_transmit_messages(time_t time);
-extern Message_Window mw[MAX_MESSAGE_WINDOWS+1];
+// mw[] moved to messages_gui.h -- it is an array of widgets, and this header is
+// included by every core file in the tree.
 extern void clear_message_windows(void);
 
 

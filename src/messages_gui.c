@@ -43,6 +43,10 @@
 
 #include "xa_settings.h"
 
+#include "messages_gui.h"
+#include "xa_ui.h"
+#include "xa_trace.h"
+
 // Must be last include file
 #include "leak_detection.h"
 
@@ -2873,3 +2877,183 @@ void Auto_msg_set( Widget UNUSED(w), XtPointer UNUSED(clientData), XtPointer UNU
 }
 
 
+
+
+
+
+// ---------------------------------------------------------------------------
+// The Send Message windows, as xa_ui sees them.
+//
+// mw[] and every widget in it live here now; it used to be defined in
+// messages.c, which is a core file, and that single definition is most of what
+// kept messages.o and db.o tied to Motif.  What the core actually needed turned
+// out to be eight operations, and they are these.
+//
+// The trace points moved across with the calls they describe, deliberately.
+// They record the same records with the same arguments as when this code was in
+// db.c and messages.c, so tools/trace_ab.sh can compare across the move -- that
+// is what makes this change verifiable rather than merely compiled.
+// ---------------------------------------------------------------------------
+
+Message_Window mw[MAX_MESSAGE_WINDOWS+1];   // Send Message widgets
+
+
+static int motif_msg_window_is_open(int i)
+{
+  if (i < 0 || i >= MAX_MESSAGE_WINDOWS)
+  {
+    return 0;
+  }
+  return (mw[i].send_message_dialog != NULL);
+}
+
+
+static int motif_msg_window_is_group(int i)
+{
+  if (i < 0 || i >= MAX_MESSAGE_WINDOWS)
+  {
+    return 0;
+  }
+  return mw[i].message_group;
+}
+
+
+static int motif_msg_window_callsign(int i, char *out, int n)
+{
+  char *temp_ptr;
+
+  if (i < 0 || i >= MAX_MESSAGE_WINDOWS || mw[i].send_message_call_data == NULL)
+  {
+    return 0;
+  }
+
+  temp_ptr = XmTextFieldGetString(mw[i].send_message_call_data);
+  xastir_snprintf(out, n, "%s", temp_ptr);
+  XtFree(temp_ptr);
+  return 1;
+}
+
+
+static void motif_msg_window_raise(int i)
+{
+  if (i < 0 || i >= MAX_MESSAGE_WINDOWS || mw[i].send_message_dialog == NULL)
+  {
+    return;
+  }
+  XtPopup(mw[i].send_message_dialog, XtGrabNone);
+  xa_trace("msg_popup win=%d", i);
+}
+
+
+static void motif_msg_window_close_all(void)
+{
+  int i;
+
+  // The lock is taken here rather than by the caller: it protects mw[], which
+  // is now this file's business.  clear_message_windows() in messages.c held it
+  // around exactly this loop.
+  begin_critical_section(&send_message_dialog_lock,
+                         "messages_gui.c:motif_msg_window_close_all" );
+
+  for (i = 0;  i < MAX_MESSAGE_WINDOWS; i++)
+  {
+
+    if (mw[i].send_message_dialog)
+    {
+      XtDestroyWidget(mw[i].send_message_dialog);
+      xa_trace("msg_destroy win=%d", i);
+    }
+
+    mw[i].send_message_dialog = (Widget)NULL;
+    mw[i].to_call_sign[0] = '\0';
+    mw[i].send_message_call_data = (Widget)NULL;
+    mw[i].D700_mode = (Widget)NULL;
+    mw[i].D7_mode = (Widget)NULL;
+    mw[i].HamHUD_mode = (Widget)NULL;
+    mw[i].message_data_line1 = (Widget)NULL;
+    mw[i].message_data_line2 = (Widget)NULL;
+    mw[i].message_data_line3 = (Widget)NULL;
+    mw[i].message_data_line4 = (Widget)NULL;
+    mw[i].send_message_text = (Widget)NULL;
+  }
+
+  end_critical_section(&send_message_dialog_lock,
+                       "messages_gui.c:motif_msg_window_close_all" );
+}
+
+
+static void motif_msg_window_clear(int i)
+{
+  if (i < 0 || i >= MAX_MESSAGE_WINDOWS)
+  {
+    return;
+  }
+  XmTextReplace(mw[i].send_message_text,
+                (XmTextPosition) 0,
+                XmTextGetLastPosition(mw[i].send_message_text),
+                "");
+  xa_trace("msg_clear win=%d", i);
+}
+
+
+static int motif_msg_window_append(int i, long pos, const char *text,
+                                   long hl_from, long hl_to, int hl_selected)
+{
+  if (i < 0 || i >= MAX_MESSAGE_WINDOWS || mw[i].send_message_text == NULL)
+  {
+    // The caller must not advance its position when this happens, which is why
+    // this returns a value at all -- the original had `pos += strlen(temp2)`
+    // inside the same NULL check.
+    return 0;
+  }
+
+  XmTextInsert(mw[i].send_message_text,
+               (XmTextPosition)pos,
+               (char *)text);
+
+  if (xa_trace_enabled())
+  {
+    char q[500*4+8];
+    xa_trace("msg_insert win=%d pos=%ld text=%s", i, pos,
+             xa_trace_quote(text, q, sizeof(q)));
+  }
+
+  XmTextSetHighlight(mw[i].send_message_text,
+                     (XmTextPosition)hl_from,
+                     (XmTextPosition)hl_to,
+                     hl_selected
+                     //XmHIGHLIGHT_SECONDARY_SELECTED); // Underlining
+                     ? XmHIGHLIGHT_SELECTED             // Reverse Video
+                     : XmHIGHLIGHT_NORMAL);
+  xa_trace("msg_highlight win=%d from=%ld to=%ld mode=%s", i, hl_from, hl_to,
+           hl_selected ? "selected" : "normal");
+
+  return 1;
+}
+
+
+static void motif_msg_window_show(int i, long pos)
+{
+  if (i < 0 || i >= MAX_MESSAGE_WINDOWS)
+  {
+    return;
+  }
+  XmTextShowPosition(mw[i].send_message_text, (XmTextPosition)pos);
+  xa_trace("msg_show win=%d pos=%ld", i, pos);
+}
+
+
+// Fill in the message-window half of the callback table.  Kept here rather than
+// in main.c so that the widgets and the functions that touch them stay in one
+// file; main.c calls this while assembling the rest, before it registers.
+void messages_gui_register_ui(xa_ui_callbacks *cb)
+{
+  cb->msg_window_is_open   = motif_msg_window_is_open;
+  cb->msg_window_is_group  = motif_msg_window_is_group;
+  cb->msg_window_callsign  = motif_msg_window_callsign;
+  cb->msg_window_raise     = motif_msg_window_raise;
+  cb->msg_window_close_all = motif_msg_window_close_all;
+  cb->msg_window_clear     = motif_msg_window_clear;
+  cb->msg_window_append    = motif_msg_window_append;
+  cb->msg_window_show      = motif_msg_window_show;
+}

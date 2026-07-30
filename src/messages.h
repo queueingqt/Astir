@@ -59,35 +59,11 @@ typedef struct
 
 #define MAX_MESSAGE_WINDOWS 25
 
-typedef struct
-{
-  char win[10];
-  char to_call_sign[MAX_CALLSIGN+1];
-  int message_group;
-  Widget send_message_dialog;
-  Widget send_message_call_data;
-  Widget D700_mode;
-  Widget D7_mode;
-  Widget HamHUD_mode;
-  Widget message_data_line1;
-  Widget message_data_line2;
-  Widget message_data_line3;
-  Widget message_data_line4;
-  Widget send_message_text;
-  Widget send_message_path;
-  Widget send_message_reverse_path;
-  Widget send_message_change_path;
-  Widget pane, form, button_ok, button_cancel;
-  Widget button_clear_old_msgs, button_submit_call;
-  Widget button_clear_pending_msgs;
-  Widget button_kick_timer;
-  Widget call, message, path, reverse_path_label;
-} Message_Window;
-
+// The Message_Window struct, the mw[] array and the Send Message callbacks
+// moved to messages_gui.h.  They are made of widgets, and this header is
+// included by core files that have no business seeing one.
 
 extern Message_transmit message_pool[MAX_OUTGOING_MESSAGES+1];
-
-extern Widget auto_msg_on, auto_msg_off;
 
 extern int auto_reply;
 extern char auto_reply_message[100];
@@ -111,11 +87,8 @@ extern void change_path_outgoing_messages_to(char *callsign, char *new_path);
 extern xastir_mutex send_message_dialog_lock;
 extern void messages_gui_init(void);
 extern void get_send_message_path(char *callsign, char *path, int path_size);
-extern void Send_message(Widget w, XtPointer clientData, XtPointer callData);
-extern void Show_pending_messages(Widget w, XtPointer clientData, XtPointer callData);
-extern void Clear_messages(Widget w, XtPointer clientData, XtPointer callData);
 void kick_outgoing_timer(char *callsign);
-extern void Send_message_call(Widget w, XtPointer clientData, XtPointer callData);
+// The Widget-taking callbacks moved to messages_gui.h.
 
 // view_message_gui.c
 extern int vm_range;

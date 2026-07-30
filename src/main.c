@@ -165,6 +165,7 @@ char *xastir_version=VERSION;
 #include "xa_draw_x11.h"  // xa_x11_set_canvas(): the front end names the backend
 #include "xa_settings.h"
 #include "xa_ui.h"
+#include "messages_gui.h"
 
 
 #include "station_draw.h"
@@ -4160,6 +4161,8 @@ void xa_ui_register_motif(void)
   cb.message_logged = motif_ui_message_logged;
   cb.locate_station = motif_ui_locate_station;
   cb.send_message_path = motif_ui_send_message_path;
+  // The message-window half is filled in by the file that owns the widgets.
+  messages_gui_register_ui(&cb);
   xa_ui_set_callbacks(&cb);
 }
 

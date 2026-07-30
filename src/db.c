@@ -52,7 +52,9 @@
 
 #include <math.h>
 
-#include <Xm/XmAll.h>
+// No Motif header.  update_messages() was the last thing here that needed one,
+// and it goes through the msg_window_* callbacks in xa_ui.h now.  Every
+// remaining Xm* name in this file is inside a comment.
 
 #include "xastir.h"
 #include "globals.h"
@@ -1680,13 +1682,16 @@ void alert_data_add(char *call_sign, char *from_call, char *data,
 // no matter what message_update_time() says.
 void update_messages(int force)
 {
-  static XmTextPosition pos;
+  // Was `static XmTextPosition pos`.  XmTextPosition is `long` (Xm/Xm.h), so
+  // this is the same variable with the toolkit's name taken off it; `static` is
+  // kept rather than reasoned away, even though the reset at the top of the
+  // loop below means it never carries a value between calls.
+  static long pos;
   char temp1[MAX_CALLSIGN+1];
   char temp2[500];
   char stemp[20];
   long i;
   int mw_p;
-  char *temp_ptr;
 
 
   if ( message_update_time() || force)
@@ -1705,7 +1710,7 @@ void update_messages(int force)
 
       begin_critical_section(&send_message_dialog_lock, "db.c:update_messages" );
 
-      if (mw[mw_p].send_message_dialog!=NULL/* && mw[mw_p].message_group==1*/)
+      if (xa_ui_msg_window_is_open(mw_p)/* && xa_ui_msg_window_is_group(mw_p)*/)
       {
 
         //fprintf(stderr,"\n");
@@ -1720,22 +1725,11 @@ void update_messages(int force)
         xa_trace("msg_render_begin win=%d", mw_p);
 
         // Clear the text from message window
-        XmTextReplace(mw[mw_p].send_message_text,
-                      (XmTextPosition) 0,
-                      XmTextGetLastPosition(mw[mw_p].send_message_text),
-                      "");
-        xa_trace("msg_clear win=%d", mw_p);
+        xa_ui_msg_window_clear(mw_p);
 
         // Snag the callsign you're dealing with from the message dialogue
-        if (mw[mw_p].send_message_call_data != NULL)
+        if (xa_ui_msg_window_callsign(mw_p, temp1, sizeof(temp1)))
         {
-          temp_ptr = XmTextFieldGetString(mw[mw_p].send_message_call_data);
-          xastir_snprintf(temp1,
-                          sizeof(temp1),
-                          "%s",
-                          temp_ptr);
-          XtFree(temp_ptr);
-
           if (xa_trace_enabled())
           {
             char q[MAX_CALLSIGN*4+8];
@@ -1784,7 +1778,7 @@ void update_messages(int force)
                       || strcmp(temp1,msg_data[msg_index[i]].call_sign) == 0)
                   && (is_my_call(msg_data[msg_index[i]].from_call_sign, 1)
                       || is_my_call(msg_data[msg_index[i]].call_sign, 1)
-                      || mw[mw_p].message_group ) )
+                      || xa_ui_msg_window_is_group(mw_p) ) )
               {
                 int done = 0;
 
@@ -1958,56 +1952,27 @@ void update_messages(int force)
                 {
                   fprintf(stderr,"update_messages: %s|%s\n", temp1, temp2);
                 }
-                // Replace the text from pos to pos+strlen(temp2) by the string "temp2"
-                if (mw[mw_p].send_message_text != NULL)
+                // Append temp2, highlighted from pos+offset to its end.
+                //
+                // Highlighting is set from the "acked" field: a message of ours
+                // that has not been acked yet is shown in reverse video, and
+                // anything else plain.  That decision reads the message store,
+                // so it stays here; only the drawing of it moved.  Callsign
+                // match here includes SSID.
+                //
+                // The return value matters.  The append does nothing if the
+                // window has no transcript widget, and in that case `pos` must
+                // not advance -- in the original, `pos += strlen(temp2)` sat
+                // inside the same NULL check.
+                //fprintf(stderr,"acked: %d\t",msg_data[msg_index[j]].acked);
+                if (xa_ui_msg_window_append(mw_p,
+                                            (long)pos,
+                                            temp2,
+                                            (long)(pos+offset),
+                                            (long)(pos+strlen(temp2)),
+                                            (msg_data[msg_index[j]].acked == 0)
+                                            && is_my_call(msg_data[msg_index[j]].from_call_sign, 1)))
                 {
-
-                  // Insert the text at the end
-                  //                                    XmTextReplace(mw[mw_p].send_message_text,
-                  //                                            pos,
-                  //                                            pos+strlen(temp2),
-                  //                                            temp2);
-
-                  XmTextInsert(mw[mw_p].send_message_text,
-                               pos,
-                               temp2);
-
-                  if (xa_trace_enabled())
-                  {
-                    char q[sizeof(temp2)*4+8];
-                    xa_trace("msg_insert win=%d pos=%ld text=%s", mw_p,
-                             (long)pos, xa_trace_quote(temp2, q, sizeof(q)));
-                  }
-
-                  // Set highlighting based on the
-                  // "acked" field.  Callsign
-                  // match here includes SSID.
-                  //fprintf(stderr,"acked: %d\t",msg_data[msg_index[j]].acked);
-                  if ( (msg_data[msg_index[j]].acked == 0)    // Not acked yet
-                       && ( is_my_call(msg_data[msg_index[j]].from_call_sign, 1)) )
-                  {
-                    //fprintf(stderr,"Setting underline\t");
-                    XmTextSetHighlight(mw[mw_p].send_message_text,
-                                       pos+offset,
-                                       pos+strlen(temp2),
-                                       //XmHIGHLIGHT_SECONDARY_SELECTED); // Underlining
-                                       XmHIGHLIGHT_SELECTED);         // Reverse Video
-                    xa_trace("msg_highlight win=%d from=%ld to=%ld mode=selected",
-                             mw_p, (long)(pos+offset),
-                             (long)(pos+strlen(temp2)));
-                  }
-                  else    // Message was acked, get rid of highlighting
-                  {
-                    //fprintf(stderr,"Setting normal\t");
-                    XmTextSetHighlight(mw[mw_p].send_message_text,
-                                       pos+offset,
-                                       pos+strlen(temp2),
-                                       XmHIGHLIGHT_NORMAL);
-                    xa_trace("msg_highlight win=%d from=%ld to=%ld mode=normal",
-                             mw_p, (long)(pos+offset),
-                             (long)(pos+strlen(temp2)));
-                  }
-
                   //fprintf(stderr,"Text: %s\n",temp2);
 
                   pos += strlen(temp2);
@@ -2052,9 +2017,7 @@ void update_messages(int force)
             }
 
             // Show the last added message in the window
-            XmTextShowPosition(mw[mw_p].send_message_text,
-                               pos);
-            xa_trace("msg_show win=%d pos=%ld", mw_p, (long)pos);
+            xa_ui_msg_window_show(mw_p, (long)pos);
           }
         }
 

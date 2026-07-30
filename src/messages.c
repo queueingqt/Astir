@@ -27,9 +27,8 @@
 
 #include "snprintf.h"
 
-#include <Xm/XmAll.h>
-#include <X11/Xatom.h>
-#include <X11/Shell.h>
+// No X11, Xt or Motif headers.  Everything this file used them for -- the mw[]
+// array and the four calls that drove it -- is behind xa_ui.h now.
 
 #include <stdio.h>
 #include <fcntl.h>
@@ -80,7 +79,9 @@ char message_counter[5+1];
 int auto_reply;
 char auto_reply_message[100];
 
-Message_Window mw[MAX_MESSAGE_WINDOWS+1];   // Send Message widgets
+// mw[] moved to messages_gui.c.  It was defined here -- in a core file -- and
+// being an array of Motif widgets it is the single reason this file, and db.c
+// through it, could not be built without the toolkit.
 
 Message_transmit message_pool[MAX_OUTGOING_MESSAGES+1]; // Transmit message queue
 
@@ -90,34 +91,11 @@ Message_transmit message_pool[MAX_OUTGOING_MESSAGES+1]; // Transmit message queu
 
 void clear_message_windows(void)
 {
-  int i;
-
-  begin_critical_section(&send_message_dialog_lock, "messages.c:clear_message_windows" );
-
-  for (i = 0;  i < MAX_MESSAGE_WINDOWS; i++)
-  {
-
-    if (mw[i].send_message_dialog)
-    {
-      XtDestroyWidget(mw[i].send_message_dialog);
-      xa_trace("msg_destroy win=%d", i);
-    }
-
-    mw[i].send_message_dialog = (Widget)NULL;
-    mw[i].to_call_sign[0] = '\0';
-    mw[i].send_message_call_data = (Widget)NULL;
-    mw[i].D700_mode = (Widget)NULL;
-    mw[i].D7_mode = (Widget)NULL;
-    mw[i].HamHUD_mode = (Widget)NULL;
-    mw[i].message_data_line1 = (Widget)NULL;
-    mw[i].message_data_line2 = (Widget)NULL;
-    mw[i].message_data_line3 = (Widget)NULL;
-    mw[i].message_data_line4 = (Widget)NULL;
-    mw[i].send_message_text = (Widget)NULL;
-  }
-
-  end_critical_section(&send_message_dialog_lock, "messages.c:clear_message_windows" );
-
+  // Every line of this used to be here: destroy the dialog, then null out the
+  // eleven widgets behind it.  All of it is view state, so all of it moved to
+  // messages_gui.c -- including the lock, which protects mw[] and belongs with
+  // it.
+  xa_ui_msg_window_close_all();
 }
 
 
@@ -298,7 +276,6 @@ int look_for_open_group_data(char *to)
 {
   int i,found;
   char temp1[MAX_CALLSIGN+1];
-  char *temp_ptr;
 
 
   begin_critical_section(&send_message_dialog_lock, "messages.c:look_for_open_group_data" );
@@ -307,15 +284,10 @@ int look_for_open_group_data(char *to)
   for(i = 0; i < MAX_MESSAGE_WINDOWS; i++)
   {
     /* find station  */
-    if(mw[i].send_message_dialog != NULL)
+    if(xa_ui_msg_window_is_open(i))
     {
 
-      temp_ptr = XmTextFieldGetString(mw[i].send_message_call_data);
-      xastir_snprintf(temp1,
-                      sizeof(temp1),
-                      "%s",
-                      temp_ptr);
-      XtFree(temp_ptr);
+      xa_ui_msg_window_callsign(i, temp1, sizeof(temp1));
 
       if (xa_trace_enabled())
       {
@@ -355,7 +327,6 @@ int check_popup_window(char *from_call_sign, int group)
 {
   int i,found,j,ret;
   char temp1[MAX_CALLSIGN+1];
-  char *temp_ptr;
 
 
 //fprintf(stderr,"\tcheck_popup_window()\n");
@@ -371,15 +342,10 @@ int check_popup_window(char *from_call_sign, int group)
   for (i = 0; i < MAX_MESSAGE_WINDOWS; i++)
   {
 
-    if (mw[i].send_message_dialog != NULL)   // If dialog created
+    if (xa_ui_msg_window_is_open(i))   // If dialog created
     {
 
-      temp_ptr = XmTextFieldGetString(mw[i].send_message_call_data);
-      xastir_snprintf(temp1,
-                      sizeof(temp1),
-                      "%s",
-                      temp_ptr);
-      XtFree(temp_ptr);
+      xa_ui_msg_window_callsign(i, temp1, sizeof(temp1));
 
       if (xa_trace_enabled())
       {
@@ -417,7 +383,7 @@ int check_popup_window(char *from_call_sign, int group)
     i= -1;
     for (j=0; j<MAX_MESSAGE_WINDOWS; j++)
     {
-      if (!mw[j].send_message_dialog)
+      if (!xa_ui_msg_window_is_open(j))
       {
         i=j;
         break;
@@ -472,8 +438,9 @@ int check_popup_window(char *from_call_sign, int group)
 
   if (found != -1)    // Already have a window
   {
-    XtPopup(mw[i].send_message_dialog,XtGrabNone);
-    xa_trace("msg_popup win=%d", i);
+    // `i` and `found` are the same index here: the search loop above breaks on
+    // the match, so `i` still holds it whenever found != -1.
+    xa_ui_msg_window_raise(i);
   }
 
   return(ret);
@@ -1561,10 +1528,9 @@ void check_and_transmit_messages(time_t time)
 //
 void clear_acked_message(char *from, char *to, char *seq)
 {
-  int i,ii;
+  int i;
   int found;
   char lowest[3];
-  char temp1[MAX_CALLSIGN+1];
   char *temp_ptr;
   char msg_id[5+1];
 
@@ -1652,44 +1618,17 @@ void clear_acked_message(char *from, char *to, char *seq)
             {
               message_pool[found].wait_on_first_ack=0;
             }
-            else
-            {
-              /* if no more clear the send button */
-
-              begin_critical_section(&send_message_dialog_lock, "messages.c:clear_acked_message" );
-
-              for (ii=0; ii<MAX_MESSAGE_WINDOWS; ii++)
-              {
-                /* find station  */
-                if (mw[ii].send_message_dialog!=NULL)
-                {
-
-                  temp_ptr = XmTextFieldGetString(mw[ii].send_message_call_data);
-                  xastir_snprintf(temp1,
-                                  sizeof(temp1),
-                                  "%s",
-                                  temp_ptr);
-                  XtFree(temp_ptr);
-
-                  if (xa_trace_enabled())
-                  {
-                    char q[MAX_CALLSIGN*4+8];
-                    xa_trace("msg_scan_call fn=clear_acked_message win=%d call=%s",
-                             ii, xa_trace_quote(temp1, q, sizeof(q)));
-                  }
-
-                  (void)to_upper(temp1);
-                  //fprintf(stderr,"%s\t%s\n",temp1,from);
-//                                    if (strcmp(temp1,from)==0) {
-                  /*clear submit*/
-//                                        XtSetSensitive(mw[ii].button_ok,TRUE);
-//                                    }
-                }
-              }
-
-              end_critical_section(&send_message_dialog_lock, "messages.c:clear_acked_message" );
-
-            }
+            // There was a loop here, and it did nothing.  It read the callsign
+            // out of every open message window, uppercased it into a local, and
+            // dropped it: the only statement that used the result --
+            // XtSetSensitive(mw[ii].button_ok,TRUE), "clear the send button" --
+            // has been commented out for as long as the history goes back.  The
+            // local had one writer and no reader.
+            //
+            // It is deleted rather than converted because there is nothing to
+            // convert.  Two of the four Motif calls that kept messages.o tied
+            // to the toolkit were held up by this, and no behaviour depends on
+            // it, which is also why the trace shows no records for it.
           }
           else
           {

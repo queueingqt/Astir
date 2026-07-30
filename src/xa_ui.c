@@ -216,3 +216,79 @@ void xa_ui_send_message_path(const char *callsign, char *path, int path_size)
     ui.send_message_path(callsign, path, path_size);
   }
 }
+
+
+// The Send Message windows.  With no front end registered every window is
+// closed, which makes the core's loops over them do nothing -- the same shape a
+// headless run already has for the popups.
+
+int xa_ui_msg_window_is_open(int i)
+{
+  return (ui.msg_window_is_open != NULL) ? ui.msg_window_is_open(i) : 0;
+}
+
+
+int xa_ui_msg_window_is_group(int i)
+{
+  return (ui.msg_window_is_group != NULL) ? ui.msg_window_is_group(i) : 0;
+}
+
+
+int xa_ui_msg_window_callsign(int i, char *out, int n)
+{
+  if (out == NULL || n <= 0)
+  {
+    return 0;
+  }
+  // Cleared first so an unregistered front end and a window with no callsign
+  // field look the same to the caller, as in xa_ui_send_message_path().
+  out[0] = '\0';
+  return (ui.msg_window_callsign != NULL) ? ui.msg_window_callsign(i, out, n) : 0;
+}
+
+
+void xa_ui_msg_window_raise(int i)
+{
+  if (ui.msg_window_raise != NULL)
+  {
+    ui.msg_window_raise(i);
+  }
+}
+
+
+void xa_ui_msg_window_close_all(void)
+{
+  if (ui.msg_window_close_all != NULL)
+  {
+    ui.msg_window_close_all();
+  }
+}
+
+
+void xa_ui_msg_window_clear(int i)
+{
+  if (ui.msg_window_clear != NULL)
+  {
+    ui.msg_window_clear(i);
+  }
+}
+
+
+int xa_ui_msg_window_append(int i, long pos, const char *text,
+                            long hl_from, long hl_to, int hl_selected)
+{
+  if (ui.msg_window_append == NULL || text == NULL)
+  {
+    return 0;
+  }
+  return ui.msg_window_append(i, pos, text, hl_from, hl_to, hl_selected);
+}
+
+
+void xa_ui_msg_window_show(int i, long pos)
+{
+  if (ui.msg_window_show != NULL)
+  {
+    ui.msg_window_show(i, pos);
+  }
+}

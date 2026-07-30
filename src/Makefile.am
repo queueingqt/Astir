@@ -67,6 +67,7 @@ XASTIR_SRC = \
     map_tif.c \
     map_WMS.c \
     messages.c messages.h \
+    messages_gui.h \
     messages_gui.c \
     mgrs_utils.c mgrs_utils.h \
     mutex_utils.c mutex_utils.h \
