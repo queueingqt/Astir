@@ -358,9 +358,8 @@ for the same reason — two runs, and they must match:
 diff /tmp/tbase1.trace /tmp/tbase2.trace  # MUST be empty
 ```
 
-A correct baseline here is **307 raw records normalising to 110**, and the stderr
-histogram should show `msg_insert 61`, `msg_scan_call 22` and exactly one
-`msg_highlight ... mode=selected`. Read that
+A correct baseline here is **239 raw records normalising to 89**, and the stderr
+histogram should show `msg_insert 49` and `msg_scan_call 17`. Read that
 histogram rather than trusting the diff: it is the only statement of what the
 scenario actually reached.
 
@@ -514,12 +513,12 @@ In rough order of value per unit of risk:
     `color.c`'s visual detection and `cairo_text.c`'s two calls are small.
     And note the first thing that actually stops a no-X link is **not Xastir**:
     GraphicsMagick is itself linked against libX11.
-5. ~~**Get the untested message-window paths exercised.**~~ **Two of three
-    done** — `mode=selected` now fires (replay a packet that appears to come
-    *from* the configured callsign; auto-reply does *not* work, see
-    `tools/README.md`), and `clear_acked_message`'s scan closed by deleting the
-    dead loop. Only `msg_destroy` is left and it needs GUI interaction. Still
-    open for
+5. **Get the untested message-window paths exercised.** One of three done, by
+    deletion: `clear_acked_message`'s scan is gone with its dead loop. Two
+    remain. `msg_destroy` needs GUI interaction. `mode=selected` was covered for
+    one commit and the coverage was **withdrawn** — the only way found to reach
+    it makes the scenario's sort order non-deterministic, and a flaky baseline
+    is worse than an uncovered branch. See `tools/README.md`. Still open for
     `xa_image_*` (needs OSM
     tiles) and `xa_bitmap_load` (needs an active alert); `XASTIR_REPLAY` is now
     the tool for building all of them, since it drives Xastir from a packet log

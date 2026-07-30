@@ -625,7 +625,7 @@ void draw_WMS_map (char *filenm,
   // try to reduce the number of colors in an image.
   // This may take some time, so it would be best to do ahead of
   // time if it is a static image.
-  if (visual_type == NOT_TRUE_NOR_DIRECT && GetNumberColors(image, NULL, &exception) > 128)
+  if (!xa_color_is_direct() && GetNumberColors(image, NULL, &exception) > 128)
   {
 
     if (image->storage_class == PseudoClass)
@@ -983,10 +983,9 @@ void draw_WMS_map (char *filenm,
               }
               // NOW my_colors has the right r,g,b range for
               // pack_pixel_bits
-              pack_pixel_bits(my_colors[0].red * raster_map_intensity,
+              xa_color_pack(my_colors[0].red * raster_map_intensity,
                               my_colors[0].green * raster_map_intensity,
-                              my_colors[0].blue * raster_map_intensity,
-                              &my_colors[0].pixel);
+                              my_colors[0].blue * raster_map_intensity, &my_colors[0].pixel);
               if ( c_trans_color_head &&
                    check_trans(my_colors[0].pixel,c_trans_color_head))
               {

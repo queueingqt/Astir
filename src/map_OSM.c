@@ -545,7 +545,7 @@ static void draw_image(
   // try to reduce the number of colors in an image.
   // This may take some time, so it would be best to do ahead of
   // time if it is a static image.
-  if (visual_type == NOT_TRUE_NOR_DIRECT && GetNumberColors(image, NULL, except_ptr) > 128)
+  if (!xa_color_is_direct() && GetNumberColors(image, NULL, except_ptr) > 128)
   {
     if (image->storage_class == PseudoClass)
     {
@@ -688,10 +688,9 @@ static void draw_image(
         }
         // NOW my_colors has the right r,g,b range for
         // pack_pixel_bits
-        pack_pixel_bits(my_colors[0].red * raster_map_intensity,
+        xa_color_pack(my_colors[0].red * raster_map_intensity,
                         my_colors[0].green * raster_map_intensity,
-                        my_colors[0].blue * raster_map_intensity,
-                        &my_colors[0].pixel);
+                        my_colors[0].blue * raster_map_intensity, &my_colors[0].pixel);
         xa_pen_color(gc, my_colors[0].pixel);
       }
       // write the pixel from the map image to the
@@ -752,7 +751,7 @@ static void render_OSM_image_pixels(
   // try to reduce the number of colors in an image.
   // This may take some time, so it would be best to do ahead of
   // time if it is a static image.
-  if (visual_type == NOT_TRUE_NOR_DIRECT && GetNumberColors(image, NULL, except_ptr) > 128)
+  if (!xa_color_is_direct() && GetNumberColors(image, NULL, except_ptr) > 128)
   {
     if (image->storage_class == PseudoClass)
     {
@@ -1002,10 +1001,9 @@ static void render_OSM_image_pixels(
               }
               // NOW my_colors has the right r,g,b range for
               // pack_pixel_bits
-              pack_pixel_bits(my_colors[0].red * raster_map_intensity,
+              xa_color_pack(my_colors[0].red * raster_map_intensity,
                               my_colors[0].green * raster_map_intensity,
-                              my_colors[0].blue * raster_map_intensity,
-                              &my_colors[0].pixel);
+                              my_colors[0].blue * raster_map_intensity, &my_colors[0].pixel);
               fill_pixel = my_colors[0].pixel;
             }
             // Write pixel(s) to the screen. Use the bulk pixel buffer when

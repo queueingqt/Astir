@@ -112,33 +112,41 @@ receives messages from three stations and covers `update_messages` end to end
 the second one needed a message addressed to *someone else*: traffic to our own
 callsign takes the "to me" branch in `db.c` and never calls it.
 
-It also covers the **reverse-video highlight** (`msg_highlight mode=selected`),
-which took some finding. `update_messages()` picks that branch by `acked == 0 &&
-is_my_call(from_call_sign)` — a message *we* sent that has not been acked.
-
-The obvious route was auto-reply, and it does not work: enabling `auto_reply`
-headlessly produced no trace change at all, because an outgoing message only
-enters `msg_data` from inside the transmit path (`messages.c`, "so queued
-messages will appear in the Send Message box as unacked messages"), and a
-scripted run has no transmit-capable interface. The scaffolding for it was
-removed again rather than left in place looking useful.
-
-What does work is replaying a packet that appears to come *from* the configured
-callsign. The branch keys on `from_call_sign`, not on how the record got there.
-One log line.
-
-It still does **not** reach:
+It does **not** reach:
 
 | never fires | needs |
 |---|---|
-| `msg_destroy` (the destroy branch of `close_all`) | a window open when it runs — `clear_message_windows()` *is* called, once, at startup, when they are all still closed. Reaching it needs the Messages menu, so it is GUI-interactive and out of reach of a replay. |
+| `msg_destroy` (the destroy branch of `close_all`) | a window open when it runs — `clear_message_windows()` *is* called, once, at startup, when they are all still closed. Only the Messages menu reaches it otherwise, so it is GUI-interactive. |
+| `msg_highlight mode=selected` | a message from us that is not yet acked. See below — this was covered for one commit and the coverage was withdrawn. |
 
-That is the whole remaining gap, down from three. One of the other two closed by
-covering it; the third closed by deleting the dead loop in `clear_acked_message`
-that was the only thing in it.
+**Baseline: 239 raw records normalising to 89**, with `msg_insert 49` and
+`msg_scan_call 17`.
 
-**Baseline: 307 raw records normalising to 110**, with `msg_insert 61`,
-`msg_scan_call 22` and exactly one `mode=selected`.
+### The reverse-video branch: covered, then uncovered again
+
+Worth recording, because the mistake is a tempting one.
+
+`update_messages()` picks reverse video by `acked == 0 &&
+is_my_call(from_call_sign)`. Auto-reply cannot produce that headlessly — an
+outgoing message only enters `msg_data` from inside the transmit path, and a
+scripted run has no transmit-capable interface. What did work was replaying a
+packet that appears to come *from* the configured callsign: the branch keys on
+`from_call_sign`, not on how the record got there. One log line, and
+`mode=selected` fired.
+
+It was committed on the strength of two runs agreeing. Four runs do not: the
+record sorted to `pos=0`, `146`, `193` and `0` again. A message from our own
+callsign does not get a `sec_heard` comparable with the received ones, so its
+place in the time-sorted list is a coin toss — and every message after it shifts
+position, so 20 lines of the diff move with it.
+
+**A harness whose baseline moves is worse than a branch that is not covered.**
+An uncovered branch makes one thing unverifiable; a flaky baseline makes
+*everything* unverifiable, and it does it quietly. The line was reverted and the
+baseline is back to the 239/89 that two builds agree on.
+
+Two runs agreeing is not evidence of determinism when the thing that varies is a
+sort order over near-equal timestamps. That needs four, or a reason.
 
 ### Proving the harness works before trusting it
 

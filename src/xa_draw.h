@@ -518,6 +518,34 @@ extern xa_surface_id pixmap_wx_stipple;
 
 extern xa_color colors[256];    // the allocated screen colours
 
+/*
+ * How this display turns a colour into a pixel value.
+ *
+ * The raster map drivers need to know one thing about the visual: whether a
+ * pixel value can be computed from r/g/b directly, or whether it has to be
+ * allocated from a colormap.  They used to ask `visual_type` and call
+ * `pack_pixel_bits()`, both declared in color.h -- which is how three map
+ * drivers ended up naming an X11 concept.  These two calls are the whole of
+ * what they actually needed.
+ */
+
+// Nonzero on a true- or direct-colour visual, where xa_color_pack() works.
+// Zero means colours must be allocated, and the drivers take their slow path.
+int xa_color_is_direct(void);
+
+// Pack 16-bit r/g/b into a pixel value for this display.
+//
+// Writes through the pointer, and deliberately so: on a visual that is not
+// true- or direct-colour there is no packing to do, and *pixel is left
+// UNTOUCHED so the caller's existing value stands.  Returning a value instead
+// would have to invent one, and the two unguarded call sites in map_OSM.c
+// would then get a zero where they used to keep an allocated pixel.  That
+// difference is invisible on a true-colour display, which is the only kind
+// anyone here has -- so the signature carries the semantics rather than a
+// comment asking callers to remember them.
+void xa_color_pack(unsigned short r, unsigned short g, unsigned short b,
+                   xa_color *pixel);
+
 // Station trail colours.  Declared in main.h until now, which meant a core file
 // drawing a trail had to include the front end's header to name the array.
 #define MAX_TRAIL_COLORS 32

@@ -22,10 +22,18 @@ import subprocess, sys, os, re, glob, collections, tempfile
 
 GUI_SUFFIX = "_gui.o"
 STANDALONE = {"xastir_udp_client.o", "testdbfawk.o", "callpass.o"}
-# Replaced by the null backend.  color.c/rotated.c/cairo_text.c are renderer
-# implementation that a second backend replaces too, but they are *not* dropped
-# here: leaving them in is what makes the report say so.
-X11_BACKEND = "xa_draw_x11.o"
+# The X11 backend, all four files of it.  xa_draw_x11.c is the obvious one;
+# the other three are the same thing wearing different names:
+#
+#   rotated.c     rotated text, predating Xft.  Pango does this natively, so a
+#                 second backend replaces it rather than porting it.
+#   color.c       visual detection and colour allocation.
+#   cairo_text.c  the Cairo text path.
+#
+# Calling them "core" was a filing error, not a finding: nm says no core object
+# references any symbol any of them defines.  Verified, not assumed -- see
+# tools/README.md.
+X11_BACKEND = {"xa_draw_x11.o", "rotated.o", "color.o", "cairo_text.o"}
 
 X_LIB = re.compile(r'^-l(X[a-zA-Z0-9]*|Xm|Xt|ICE|SM|Xext|Xpm|xcb.*)$')
 
@@ -57,7 +65,7 @@ def main():
   objs = sorted(os.path.basename(p) for p in glob.glob(os.path.join(srcdir, "*.o")))
   core = [o for o in objs
           if not o.endswith(GUI_SUFFIX) and o not in STANDALONE
-          and o != "main.o" and o != X11_BACKEND
+          and o != "main.o" and o not in X11_BACKEND
           and o != "xa_draw_null.o"]   # appended explicitly below
 
   # Compiled here rather than by make, because it must never end up in the
@@ -97,7 +105,8 @@ def main():
   if not placed:
     raise SystemExit("no objects found on the link line")
 
-  print("core objects : %d  (+ xa_draw_null.o, without %s)" % (len(core), X11_BACKEND))
+  print("core objects : %d  (+ xa_draw_null.o, without %s)"
+        % (len(core), " ".join(sorted(X11_BACKEND))))
   print("X libs dropped: %s" % (" ".join(sorted(set(dropped))) or "(none found!)"))
 
   with tempfile.TemporaryDirectory() as td:
@@ -131,9 +140,14 @@ def main():
     # for a reason that has nothing to do with X.
     r = subprocess.run(args, capture_output=True, text=True, cwd=srcdir)
 
-  if r.returncode == 0:
-    print("\nLINKED CLEANLY -- the core needs nothing from X.")
-    return
+    # Ask the binary what it ended up needing, while it still exists.  A
+    # successful link is weaker evidence than it looks: striking -lX11 off the
+    # command line does not make libX11 unavailable, because GraphicsMagick
+    # lists it in DT_NEEDED and the linker will happily resolve against it.
+    xdeps = []
+    if r.returncode == 0 and os.path.exists(out):
+      ldd = subprocess.run(["ldd", out], capture_output=True, text=True).stdout
+      xdeps = sorted(set(re.findall(r'\b(lib(?:X[A-Za-z0-9]*|ICE|SM)\.so[^\s]*)', ldd)))
 
   # Whatever the linker said, ask the objects directly.  A successful link is
   # not the only useful answer and it is not the one available today: the first
@@ -168,11 +182,24 @@ def main():
         need[o].add(sym)
 
   if r.returncode == 0:
-    print("\nLINKED CLEANLY -- the core needs nothing from X.")
+    if xdeps:
+      print("\nLinked -- but NOT proof of anything on its own: the binary still")
+      print("pulls in %d X libraries transitively (%s ...)."
+            % (len(xdeps), ", ".join(xdeps[:3])))
+      print("They arrive through GraphicsMagick's DT_NEEDED, not through Xastir.")
+      print("The number below is the real result: it comes from nm, not the link.")
+    else:
+      print("\nLINKED, and the binary has no X library in its dependencies at all.")
   else:
-    first = re.search(r'^/usr/bin/ld: (.+)$', r.stderr, re.M)
-    print("\nlink failed; first blocker: %s"
-          % (first.group(1) if first else "(see stderr)"))
+    # The first *error*, not the first ld line -- relocation warnings come
+    # first and are not why it failed.
+    errs = [l for l in r.stderr.splitlines()
+            if "undefined reference" in l or ("error" in l and "warning" not in l)]
+    print("\nlink failed. blockers:")
+    for l in errs[:4]:
+      print("   " + l.strip()[:110])
+    if len(errs) > 4:
+      print("   ... and %d more" % (len(errs) - 4))
 
   total = len(set().union(*need.values())) if need else 0
   print("\nX symbols Xastir's own core objects still need: %d, across %d objects\n"

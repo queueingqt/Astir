@@ -55,11 +55,18 @@ KD7ABC>APX200,WIDE2-2::N7XYZ-1  :Message between two other stations{008
 
 W1AW-9>APX200,WIDE2-2::XASTIR   :Group message to XASTIR{009
 
-# A message that appears to come FROM our own callsign.  This is the only way a
-# receive-only replay reaches the reverse-video highlight: update_messages()
-# picks it by `acked == 0 && is_my_call(from_call_sign)`, which normally means
-# a message we sent and that has not been acked yet.  Outgoing messages only
-# enter the store when they are actually transmitted, and a scripted run has no
-# transmit-capable interface, so replaying one is the cheap way in.
-
-WZ1EEE-10>APX200,WIDE2-2::N7XYZ-1  :Unacked reply from us{010
+# NOT HERE: a message appearing to come from our own callsign.
+#
+# It was, briefly.  It is the only way found so far to reach the reverse-video
+# highlight in update_messages() (`acked == 0 && is_my_call(from_call_sign)`),
+# and it worked -- but it makes the whole scenario non-deterministic.  Across
+# four runs of one build the record sorted to pos=0, 146, 193 and 0 again: a
+# message from our own callsign does not get a sec_heard comparable with the
+# received ones, so its place in the time-sorted list is a coin toss.
+#
+# Two runs happened to agree when it was added, which is exactly how a flaky
+# baseline gets committed.  A harness whose baseline moves is worse than a
+# branch that is not covered, because it makes every later comparison
+# unreliable rather than just this one incomplete.  So: reverted, and the
+# reverse-video branch is uncovered again until there is a way to reach it that
+# keeps the ordering stable.

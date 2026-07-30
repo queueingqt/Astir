@@ -45,6 +45,22 @@ static int null_canvas_w = 640;
 static int null_canvas_h = 425;
 static char null_font_token;
 
+/*
+ * The shared drawing objects xa_draw.h declares.  A backend owns these, not
+ * just the entry points -- they are as much part of the contract as any call,
+ * and a backend that defines only the functions leaves ~450 undefined
+ * references behind.  Nothing here dereferences them; they exist so that core
+ * code which passes `gc` and `pixmap` around has something to pass.
+ */
+xa_pen gc, gc2, gc_tint, gc_stipple, gc_bigfont;
+
+xa_surface_id pixmap, pixmap_final, pixmap_alerts;
+xa_surface_id pixmap_50pct_stipple, pixmap_25pct_stipple;
+xa_surface_id pixmap_13pct_stipple, pixmap_wx_stipple;
+
+xa_color colors[256];
+xa_color trail_colors[MAX_TRAIL_COLORS];
+
 static long null_calls;
 
 static void null_record(const char *op)
@@ -173,6 +189,30 @@ static xa_color null_color_hash(const char *name)
   }
   return h & 0xffffff;
 }
+
+int xa_color_is_direct(void)
+{
+  null_record("xa_color_is_direct");
+  return 1;               // no colormap here, so packing always works
+}
+
+
+void xa_color_pack(unsigned short r, unsigned short g, unsigned short b,
+                   xa_color *pixel)
+{
+  null_record("xa_color_pack");
+  if (pixel == NULL)
+  {
+    return;
+  }
+  // Always writes: xa_color_is_direct() is 1 here, so the "leave it alone"
+  // case cannot arise.  Same 8-bits-per-channel packing xa_color_rgb()
+  // unpacks, so a value through both comes back unchanged.
+  *pixel = (((xa_color)(r >> 8) & 0xff) << 16)
+           | (((xa_color)(g >> 8) & 0xff) << 8)
+           | ((xa_color)(b >> 8) & 0xff);
+}
+
 
 // How much the core asked to have drawn.  For a harness, not for the core.
 long xa_null_call_count(void)

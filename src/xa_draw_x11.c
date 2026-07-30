@@ -28,6 +28,7 @@
 #include "snprintf.h" // xastir_snprintf, for the font-name cache
 #include "xa_draw.h"
 #include "xa_draw_x11.h"
+#include "xa_trace.h"
 
 #ifdef HAVE_CAIRO
   #include "cairo_text.h"
@@ -1160,3 +1161,22 @@ xa_color colors[256];           /* screen colors */
 xa_color trail_colors[MAX_TRAIL_COLORS]; /* station trail colors, duh */
 Pixel_Format visual_type = NOT_TRUE_NOR_DIRECT;
 Colormap cmap;                  /* current colormap */
+
+
+/*
+ * The visual's colour layout.  color.c already works this out at startup and
+ * packs the bits; this only puts a toolkit-neutral name on the two questions
+ * the map drivers ask, so that they stop naming Pixel_Format and
+ * pack_pixel_bits directly.
+ */
+int xa_color_is_direct(void)
+{
+  return (visual_type != NOT_TRUE_NOR_DIRECT);
+}
+
+
+void xa_color_pack(unsigned short r, unsigned short g, unsigned short b,
+                   xa_color *pixel)
+{
+  pack_pixel_bits(r, g, b, (unsigned long *)pixel);
+}
