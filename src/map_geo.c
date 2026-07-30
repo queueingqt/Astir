@@ -1037,8 +1037,13 @@ void draw_geo_image_map (Widget w,
               junk.green = g<<8;
               junk.blue = b<<8;
             }
-            XAllocColor(XtDisplay(w),cmap,&junk);
-            temp_trans_color = junk.pixel;
+            // Kept as an if/else rather than collapsed into one resolve call
+            // like the other eight sites, because the two arms do not agree on
+            // their input: this one shifts r,g,b up by 8 when QuantumDepth is
+            // not 16, and the pack arm below uses them unshifted.  Whether that
+            // is deliberate or a bug, it is not this change's to settle.
+            (void)xa_color_resolve(&junk.red, &junk.green, &junk.blue,
+                                   &temp_trans_color);
           }
           else
           {
@@ -2372,16 +2377,8 @@ void draw_geo_image_map (Widget w,
           //fprintf(stderr,"Checking for transparency\n");
 
           // Get the color allocated on < 8bpp displays. pixel color is written to my_colors.pixel
-          if (visual_type == NOT_TRUE_NOR_DIRECT)
-          {
-            //                    XFreeColors(XtDisplay(w), cmap, &(my_colors[l].pixel),1,0);
-            XAllocColor(XtDisplay(w), cmap, &my_colors[l]);
-          }
-          else
-          {
-            pack_pixel_bits(my_colors[l].red, my_colors[l].green, my_colors[l].blue,
-                            &my_colors[l].pixel);
-          }
+          (void)xa_color_resolve(&my_colors[l].red, &my_colors[l].green, &my_colors[l].blue,
+                                 &my_colors[l].pixel);
 
           if (check_trans(my_colors[l],trans_color_head) )
           {
@@ -2404,16 +2401,8 @@ void draw_geo_image_map (Widget w,
 
 
         // Get the color allocated on < 8bpp displays. pixel color is written to my_colors.pixel
-        if (visual_type == NOT_TRUE_NOR_DIRECT)
-        {
-          //                XFreeColors(XtDisplay(w), cmap, &(my_colors[l].pixel),1,0);
-          XAllocColor(XtDisplay(w), cmap, &my_colors[l]);
-        }
-        else
-        {
-          pack_pixel_bits(my_colors[l].red, my_colors[l].green, my_colors[l].blue,
-                          &my_colors[l].pixel);
-        }
+        (void)xa_color_resolve(&my_colors[l].red, &my_colors[l].green, &my_colors[l].blue,
+                               &my_colors[l].pixel);
 
         if (debug_level & 16)
           fprintf(stderr,"Color allocated is %li  %i  %i  %i \n", my_colors[l].pixel,

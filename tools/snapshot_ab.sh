@@ -32,5 +32,13 @@ w=0
 until [ -s ~/.xastir/tmp/snapshot.xpm ]; do sleep 5; w=$((w+5)); [ $w -ge 180 ] && { echo "no snapshot in 180s"; break; }; done
 if [ -s ~/.xastir/tmp/snapshot.xpm ]; then cp ~/.xastir/tmp/snapshot.xpm "$OUT"; echo "captured $OUT ($(stat -c%s "$OUT") bytes)"; fi
 kill -TERM "$(pgrep -x xastir | head -1)" 2>/dev/null || true
-until ! pgrep -x xastir >/dev/null; do sleep 2; done
+# Bounded.  Xastir does not always act on SIGTERM -- one run sat for six minutes
+# after the snapshot was already captured -- and an unbounded wait here stalls
+# the whole verification loop for a process whose output is already on disk.
+t=0
+while pgrep -x xastir >/dev/null; do
+  sleep 2; t=$((t+2))
+  [ $t -ge 20 ] && pkill -KILL -x xastir 2>/dev/null
+  [ $t -ge 40 ] && break
+done
 [ -s "$OUT" ] || { echo "FAILED: no snapshot captured; do not A/B this run" >&2; exit 1; }

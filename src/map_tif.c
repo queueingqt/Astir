@@ -1959,16 +1959,8 @@ void draw_geotiff_image_map (Widget w,
           my_colors[l].green = (uint16_t)(green_orig[l] * raster_map_intensity);
           my_colors[l].blue  =  (uint16_t)(blue_orig[l] * raster_map_intensity);
 
-          if (visual_type == NOT_TRUE_NOR_DIRECT)
-          {
-            //                    XFreeColors(XtDisplay(w), cmap, &(my_colors[l].pixel),1,0);
-            XAllocColor(XtDisplay(w), cmap, &my_colors[l]);
-          }
-          else
-          {
-            pack_pixel_bits(my_colors[l].red, my_colors[l].green, my_colors[l].blue,
-                            &my_colors[l].pixel);
-          }
+          (void)xa_color_resolve(&my_colors[l].red, &my_colors[l].green, &my_colors[l].blue,
+                                 &my_colors[l].pixel);
         }
         break;
       case PHOTOMETRIC_MINISBLACK:
@@ -1978,16 +1970,8 @@ void draw_geotiff_image_map (Widget w,
           my_colors[l].red = my_colors[l].green = my_colors[l].blue =
               (uint16_t)(v * raster_map_intensity) << 8;
 
-          if (visual_type == NOT_TRUE_NOR_DIRECT)
-          {
-            //                    XFreeColors(XtDisplay(w), cmap, &(my_colors[l].pixel),1,0);
-            XAllocColor(XtDisplay(w), cmap, &my_colors[l]);
-          }
-          else
-          {
-            pack_pixel_bits(my_colors[l].red, my_colors[l].green, my_colors[l].blue,
-                            &my_colors[l].pixel);
-          }
+          (void)xa_color_resolve(&my_colors[l].red, &my_colors[l].green, &my_colors[l].blue,
+                                 &my_colors[l].pixel);
         }
         break;
       case PHOTOMETRIC_MINISWHITE:
@@ -1997,16 +1981,8 @@ void draw_geotiff_image_map (Widget w,
           my_colors[l].red = my_colors[l].green = my_colors[l].blue =
               (uint16_t)(v * raster_map_intensity) << 8;
 
-          if (visual_type == NOT_TRUE_NOR_DIRECT)
-          {
-            //                    XFreeColors(XtDisplay(w), cmap, &(my_colors[l].pixel),1,0);
-            XAllocColor(XtDisplay(w), cmap, &my_colors[l]);
-          }
-          else
-          {
-            pack_pixel_bits(my_colors[l].red, my_colors[l].green, my_colors[l].blue,
-                            &my_colors[l].pixel);
-          }
+          (void)xa_color_resolve(&my_colors[l].red, &my_colors[l].green, &my_colors[l].blue,
+                                 &my_colors[l].pixel);
         }
         break;
     }

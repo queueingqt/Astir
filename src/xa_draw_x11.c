@@ -504,6 +504,63 @@ void xa_color_rgb(xa_color c, unsigned short *r, unsigned short *g,
 }
 
 
+int xa_color_resolve(unsigned short *r, unsigned short *g, unsigned short *b,
+                     xa_color *pixel)
+{
+  if (r == NULL || g == NULL || b == NULL || pixel == NULL)
+  {
+    return 0;
+  }
+
+  /*
+   * A true-colour or direct-colour visual has no colormap to allocate from;
+   * the channels go straight into the visual's bit fields.  pack_pixel_bits()
+   * cannot fail and does not disturb the channels.
+   */
+  if (visual_type != NOT_TRUE_NOR_DIRECT)
+  {
+    unsigned long p = (unsigned long)*pixel;
+
+    pack_pixel_bits(*r, *g, *b, &p);
+    *pixel = (xa_color)p;
+    return 1;
+  }
+
+  /*
+   * A palette visual.  XAllocColor() rewrites the XColor with the colour it
+   * actually granted, which is why the channels are copied back -- callers read
+   * them.  It is asked through a temporary rather than the caller's storage so
+   * that a failure leaves everything untouched, instead of half-written.
+   *
+   * Note this path is unexercised on this machine: the display is true colour,
+   * so every map driver takes the branch above.  It is a transcription of what
+   * the call sites did, not something that has been observed running.
+   */
+  {
+    Display *dpy = xa_dpy();
+    XColor want;
+
+    if (dpy == NULL)
+    {
+      return 0;
+    }
+    want.red   = *r;
+    want.green = *g;
+    want.blue  = *b;
+    want.flags = DoRed | DoGreen | DoBlue;
+    if (!XAllocColor(dpy, cmap, &want))
+    {
+      return 0;
+    }
+    *r     = want.red;
+    *g     = want.green;
+    *b     = want.blue;
+    *pixel = (xa_color)want.pixel;
+    return 1;
+  }
+}
+
+
 xa_surface_id xa_surface_create(int width, int height, int depth)
 {
   Display *dpy = xa_dpy();

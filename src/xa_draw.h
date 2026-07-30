@@ -259,6 +259,32 @@ void xa_color_rgb(xa_color c, unsigned short *r, unsigned short *g,
  */
 xa_color xa_color_by_name(const char *name);
 
+/*
+ * Resolve an RGB triple to a drawable colour.  The inverse of xa_color_rgb(),
+ * and the call every raster map driver needs.
+ *
+ * Channels are 0-65535, as X reports them.  All four arguments are in/out and
+ * none may be NULL, because this reproduces XAllocColor's contract exactly: on
+ * a palette display the backend hands back the nearest colour it could actually
+ * obtain, which is not necessarily the one asked for.  Callers depend on that.
+ * map_geo.c reads the resolved channels straight back and multiplies them by
+ * raster_map_intensity, so a version that only returned a pixel would quietly
+ * change what that driver draws on such a display.
+ *
+ * Returns non-zero on success.  On failure nothing is written -- again as
+ * XAllocColor behaves -- so *pixel keeps whatever the caller had in it.  The
+ * eight call sites all ignored the old return value and still do; the value is
+ * exposed because throwing it away is what left them unable to tell a colour
+ * they got from a colour they did not.
+ *
+ * Which of the two mechanisms runs -- allocation against the colormap, or
+ * packing the channels into the visual's bit fields -- is the backend's
+ * business.  Every call site used to make that choice itself by testing
+ * visual_type, an X visual classification, in the middle of a map driver.
+ */
+int xa_color_resolve(unsigned short *r, unsigned short *g, unsigned short *b,
+                     xa_color *pixel);
+
 
 /* ---- surfaces --------------------------------------------------------- */
 
