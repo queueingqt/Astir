@@ -226,6 +226,12 @@ typedef struct
   int usgs_drg;
 } map_draw_flags;
 
+// Derive the x scale from the y scale and the position, so that a distance is
+// the same number of pixels in both directions.  Was declared in main.h, which
+// is the Motif front end's header; it is defined here in maps.c and a second
+// front end needs it.
+extern long get_x_scale(long x, long y, long ysc);
+
 #endif /* __XASTIR_MAPS_H */
 
 

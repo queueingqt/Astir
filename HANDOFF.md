@@ -276,7 +276,8 @@ spine.
 ### It draws maps
 
 OSM tiles, the TIGER shapefile overlay and the lat/lon grid, with the status
-line live in the header bar. `XASTIR_GTK4_SCALE=2000` gives a Los Angeles view;
+line live in the header bar. It renders at the config's own zoom with no override; `XASTIR_GTK4_SCALE`
+remains only as a scripted-render convenience.
 `XASTIR_GTK4_RENDER_TO=<file.png>` renders one frame and exits.
 
     [perf] gtk4_render 544.8 ms | shp_read 119.1 shp_draw 26.1 dbfawk 280.0 |
@@ -292,6 +293,25 @@ found, three drivers selected, nothing drawn.
 It took Xastir's own `debug_level & 16` tracing to find: the trace prints the
 map path *after* the visibility test, so the geo map printed its path and the
 two shapefiles did not. That asymmetry was the whole clue.
+
+**scale_x is derived, not chosen.** `get_x_scale()` computes it from `scale_y`
+and the position so a mile is the same number of pixels both ways, and it
+carries two guards: it returns `scale_y` unchanged near the poles and above
+`scale_y` 50000. The first version here multiplied `scale_y` by
+`calc_dscale_x()`, which is neither that formula nor the right shape --
+`calc_dscale_x` is metres per Xastir unit and the ratio wanted is `sc_y/sc_x`.
+Below 50000 that gave a wildly wrong x scale; at or above it the guard hid the
+error completely, which is why the config's own zoom looked fine and zooming in
+did not. It is re-derived on a pan too, since moving north or south changes it.
+
+`get_x_scale()` moved from `main.h` to `maps.h` on the way: it is defined in
+`maps.c`, takes nothing but longs, and a second front end needs it.
+
+Maps not drawing at some zooms is **not** a bug: `maps.c:4213` gates every map
+on `scale_y <= max_zoom`, per map, from the index. At `scale_y` 8000 the TIGER
+roads file is outside its range and `shp_transform`/`shp_draw` never run at
+all; at 2000 they do. That is the core's own layer logic and both front ends get
+it.
 
 Menus are a `GMenu` model behind a hamburger `GtkMenuButton` -- View (zoom,
 redraw), Maps (grid, labels, filled, as stateful toggles synced to the config

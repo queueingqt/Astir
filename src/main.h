@@ -286,7 +286,8 @@ extern void geocoder_gui_init(void);
 extern void location_gui_init(void);
 extern void view_message_gui_init(void);
 extern void wx_gui_init(void);
-extern long get_x_scale(long x, long y, long ysc);
+// get_x_scale() moved to maps.h -- it is defined in maps.c, takes nothing but
+// longs, and a second front end needs it to derive scale_x.
 
 extern void display_zoom_status(void);
 extern int center_zoom_override;

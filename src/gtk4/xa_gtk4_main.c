@@ -190,10 +190,36 @@ static void xa_resized(GtkDrawingArea *area, int width, int height,
  * scale_y -- exactly what the Motif front end does, because it is the only
  * thing either front end *can* do.
  */
+/*
+ * scale_x is not a free variable: it is derived from scale_y and the position,
+ * by get_x_scale(), so that a mile is the same number of pixels in both
+ * directions.  It also carries two guards worth not reinventing -- it gives up
+ * and returns scale_y near the poles (where sc_x collapses) and above
+ * scale_y 50000 (where big parts of the world are on screen).
+ *
+ * The first version here multiplied scale_y by calc_dscale_x(), which is not
+ * that formula and not even the right shape -- calc_dscale_x is metres per
+ * Xastir unit, and the ratio wanted is sc_y/sc_x.  Below 50000 that produced a
+ * wildly wrong x scale; at or above it the guard hid the error entirely, which
+ * is why the config's own zoom looked fine and zooming in did not.
+ */
+static void xa_rescale(void)
+{
+  scale_x = get_x_scale(center_longitude, center_latitude, scale_y);
+  if (scale_x < 1)
+  {
+    scale_x = 1;
+  }
+}
+
+
 static void xa_recentre(long dx_px, long dy_px)
 {
   center_longitude += dx_px * scale_x;
   center_latitude  += dy_px * scale_y;
+  // Moving north or south changes the x scale, so it is re-derived on a pan
+  // and not only on a zoom.
+  xa_rescale();
   xa_render();
   gtk_widget_queue_draw(xa_area);
 }
@@ -212,11 +238,7 @@ static void xa_zoom(double factor)
     s = 500000;
   }
   scale_y = s;
-  scale_x = (long)(scale_y * calc_dscale_x(center_longitude, center_latitude));
-  if (scale_x < 1)
-  {
-    scale_x = 1;
-  }
+  xa_rescale();
   xa_render();
   gtk_widget_queue_draw(xa_area);
 }
@@ -456,8 +478,7 @@ static int init_core(void)
   if (getenv("XASTIR_GTK4_SCALE") != NULL)
   {
     scale_y = atol(getenv("XASTIR_GTK4_SCALE"));
-    scale_x = (long)(scale_y * calc_dscale_x(center_longitude, center_latitude));
-    if (scale_x < 1) { scale_x = 1; }
+    xa_rescale();
   }
 
   init_station_data();
