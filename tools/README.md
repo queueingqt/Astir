@@ -10,9 +10,9 @@ Run the measurement scripts against a **built** tree — several read `src/*.o`.
 
 | script | what it answers |
 |---|---|
-| `../audit_x11.py src` | Xlib call sites, by file and primitive. Strips comments and string literals, which a plain grep does not. Reports **two** numbers: the Stage 2 drawing scope, and everything else Xlib (fonts, colours, images, regions, cursors). Read the second one before claiming the tree is nearly toolkit-independent. |
+| `audit_x11.py src` | Xlib call sites, by file and primitive. Strips comments and string literals, which a plain grep does not. Reports **two** numbers: the Stage 2 drawing scope, and everything else Xlib (fonts, colours, images, regions, cursors). Read the second one before claiming the tree is nearly toolkit-independent. |
 | `link_core.py [src]` | **Ground truth.** Actually links the core objects with no front end and reports what fails, attributed to the object that would have to provide it. Slower than the nm scripts and the only one that cannot be wrong about the answer. |
-| `../core_boundary.py src` | What each object needs from `main.o` *and* from the rest of the front end, split into data and functions. The cheap version of `link_core.py`. |
+| `core_boundary.py src` | What each object needs from `main.o` *and* from the rest of the front end, split into data and functions. The cheap version of `link_core.py`. |
 | `classify_syms.py src <obj.o>...` | For one object, *which* symbols it needs and whether they are GUI-typed (Widget, GC, Pixmap...) or plain data. Turns a bare count into a decision. |
 | `find_dupes.py [minlines]` | Repeated code blocks touching drawing or the interrupt idiom — how the duplicate `XCopyArea` and settings families were found. |
 | `convert_draw.py src <file.c>... [--apply]` | Rewrites Xlib drawing calls to `xa_draw`. Parses calls with balanced parens (they span many lines) and skips comments/strings. Dry run by default. |

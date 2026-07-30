@@ -7,7 +7,7 @@
 # profile covers steady-state redraws rather than startup and index building.
 set -eu
 LOD="$1"; ZOOM="$2"; SECS="$3"
-cd "$(dirname "$0")"
+cd "$(dirname "$0")/.."
 export XAUTHORITY=/run/user/1000/xauth_ZUnYLn DISPLAY=:0
 
 LOG="bench-perf.log"

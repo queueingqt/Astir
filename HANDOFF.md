@@ -571,7 +571,7 @@ capture race immediately, and it costs one run. A correct baseline here is
 `"640 425 822 2"`. If it says 792, the render was captured half-drawn and the
 harness has regressed.
 
-Then `./bench-attrib.sh 1.0 4 base` should give `shapes_read 7444`,
+Then `./tools/bench-attrib.sh 1.0 4 base` should give `shapes_read 7444`,
 `vertices 219817`, `draw_calls 3458`.
 
 If the work touches the message windows, take a trace baseline the same way and
@@ -605,7 +605,7 @@ Three harnesses, and picking the wrong one gives a confident wrong answer.
   which is the only way to A/B a change that is already committed (build a
   worktree at the older commit — and diff its `config.h` against this tree's
   before believing the result).
-- **`./bench-attrib.sh 1.0 4 <tag>`** — counters. Identical output means
+- **`./tools/bench-attrib.sh 1.0 4 <tag>`** — counters. Identical output means
   identical geometry: `shapes_read 7444`, `vertices 219817`, `draw_calls 3458`
   cumulative at `lod=1.0 zoomout=4`. **Blind to text and colour.**
 - **`tools/trace_ab.sh <out.trace>`** — message-window operations, with
@@ -691,13 +691,13 @@ believing either.
 
 ## Tools
 
-All in `tools/` except three at the root, all documented in `tools/README.md`.
+All in `tools/`, all documented in `tools/README.md`.
 
 | tool | use |
 |---|---|
 | `link_core.py` | **ground truth** for the boundary — actually links the core |
-| `../core_boundary.py` | cheap nm version of the same question |
-| `../audit_x11.py` | Xlib call sites. Counts `#ifdef`'d-out code as live — see above |
+| `core_boundary.py` | cheap nm version of the same question |
+| `audit_x11.py` | Xlib call sites. Counts `#ifdef`'d-out code as live — see above |
 | `split_scope.py` | where the GUI/core seam runs inside one file, transitively |
 | `split_file.py` | performs a split; refuses unless the bytes reassemble |
 | `drop_first_arg.py` | removes a leading argument from calls, not definitions |

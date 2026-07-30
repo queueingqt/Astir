@@ -7,7 +7,7 @@
 # binary can produce both sides of an A/B comparison.
 set -eu
 LOD="$1"; ZOOM="$2"; OUT="$3"
-cd "$(dirname "$0")"
+cd "$(dirname "$0")/.."
 export XAUTHORITY=/run/user/1000/xauth_ZUnYLn DISPLAY=:0
 
 TAG="lod${LOD}-z${ZOOM}"

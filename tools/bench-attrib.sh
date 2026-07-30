@@ -7,7 +7,7 @@
 # Example:  ./bench-attrib.sh 1.0 4 attrib XASTIR_FORCE_INDEX=1
 set -eu
 LOD="$1"; ZOOM="$2"; TAG="$3"; shift 3
-cd "$(dirname "$0")"
+cd "$(dirname "$0")/.."
 export XAUTHORITY=/run/user/1000/xauth_ZUnYLn DISPLAY=:0
 
 LOG="bench-${TAG}.log"

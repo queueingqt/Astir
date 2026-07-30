@@ -1,4 +1,8 @@
-# build products and benchmark artefacts
+# build products and benchmark artefacts.  Harnesses write under artifacts/;
+# nothing generated belongs at the top level.
+artifacts/
+__pycache__/
+*.pyc
 build-*.log
 shot-*.log
 bench-*.log
