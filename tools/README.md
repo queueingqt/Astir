@@ -205,6 +205,23 @@ repeating rather than rediscovering:
 - **Watch the end index.** Replacing up to `i - 1` when `i` is already past the
   closing paren re-emits it: `xa_ui_status(st));`
 
+- **A brace in a string literal will silently move every function boundary
+  after it.** `split_scope.py` stripped comments but not string or char
+  literals, and `db.c` line 993 is `'}'` — the APRS message-acknowledgement
+  character. One unbalanced brace, and the tool reported `alert_data_add` as
+  spanning lines 1554-17480 with 42673 bytes and 12 Motif references. It is 102
+  lines long and contains no Motif; what it had swallowed was
+  `update_messages()`, the file's actual GUI function.
+
+  Nothing about the output looked wrong — a big function full of Motif in a big
+  file is exactly what you expect to find. Fixed by blanking literals as well as
+  comments, after which `db.c` reports the useful answer: 2 functions contain
+  Motif, not 6, and 9 more are pulled in transitively by calling them.
+
+  This is the same tool the README credits with finding that fonts, not dialogs,
+  were blocking the file splits. Any file with a `'{'` or `'}'` literal in it got
+  a wrong answer from it until now.
+
 - **A function can be wrapped in a preprocessor conditional.** `split_file.py`
   moved `clsd_menuCallback` out of `cad_objects.c` and left its
   `#ifndef USE_COMBO_BOX` behind: an empty conditional in the source file, and

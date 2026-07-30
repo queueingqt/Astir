@@ -42,7 +42,18 @@ DEF_RE = re.compile(r'^(?:static\s+)?[A-Za-z_][\w\s\*\[\]]*?\b(\w+)\s*(?:\[[^\]]
 
 
 def strip_comments(src):
-  """Remove comments, keeping newlines so line numbers survive."""
+  """Remove comments AND string/char literals, keeping newlines.
+
+  The literals matter, and leaving them in made this tool confidently wrong.
+  Function boundaries here are found by counting braces, and db.c line 993 is
+  the char literal '}' -- the APRS message-acknowledgement character.  That one
+  unbalanced brace shifted every function boundary after it, so alert_data_add
+  was reported as spanning lines 1554-17480 and holding 42673 bytes and 12 Motif
+  references.  It is 102 lines long and contains no Motif at all; what it had
+  swallowed was update_messages(), the actual GUI function in the file.
+
+  A tool used to decide where to cut a file has to survive a brace in a string.
+  """
   out, i, n = [], 0, len(src)
   while i < n:
     c = src[i]
@@ -54,6 +65,22 @@ def strip_comments(src):
     elif c == '/' and i + 1 < n and src[i + 1] == '/':
       j = src.find('\n', i)
       i = n if j < 0 else j
+    elif c == '"' or c == "'":
+      # Replace the literal with an empty one of the same kind, so that code
+      # like `if (c == '}')` still parses as an expression but contributes no
+      # brace.  Newlines inside (continued string literals) are preserved.
+      quote, j = c, i + 1
+      while j < n:
+        if src[j] == '\\':
+          j += 2
+          continue
+        if src[j] == quote:
+          j += 1
+          break
+        j += 1
+      seg = src[i:j]
+      out.append(quote + quote + '\n' * seg.count('\n'))
+      i = j
     else:
       out.append(c)
       i += 1
