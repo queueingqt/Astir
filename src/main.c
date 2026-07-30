@@ -296,7 +296,8 @@ int  restart_xastir_now = 0;
 
 // A count of the stations currently on the screen.  Counted by
 // db.c:display_file() routine.
-int currently_selected_stations_save = 0;
+// currently_selected_stations_save moved to xa_settings.c, beside
+// currently_selected_stations, which was already there.
 
 // If my_trail_diff_color is 0, all my calls (SSIDs) will use MY_TRAIL_COLOR.
 // If my_trail_diff_color = 1 then each different ssid for my callsign will use a different color.
@@ -3449,7 +3450,7 @@ int create_image(Widget w)
   }
 
   xa_perf_begin(XA_ZONE_DISPLAY_FILE);
-      display_file(w);
+      display_file();
       xa_perf_end(XA_ZONE_DISPLAY_FILE);                    // display stations (symbols, info, trails)
 
   last_alert_redraw=sec_now();        // set last time of screen redraw
@@ -3616,7 +3617,7 @@ void refresh_image(Widget w)
   }
 
   /* display icons */
-  display_file(w);
+  display_file();
 
   /* set last time of screen redraw*/
   last_alert_redraw=sec_now();
@@ -3671,7 +3672,7 @@ void redraw_symbols(Widget w)
       return;
     }
 
-    display_file(w);        // display stations (symbols, info, trails)
+    display_file();        // display stations (symbols, info, trails)
 
     xa_present_full(pixmap_final);
   }

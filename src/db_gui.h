@@ -22,11 +22,8 @@ void db_gui_init(void);
 // ------------------------------------------------------------------------
 // DRAWING AND RENDERING FUNCTIONS
 // ------------------------------------------------------------------------
-void draw_test_line(Widget w, long x, long y, long dx, long dy, long ofs);
-void draw_ruler_text(Widget w, char * text, long ofs);
-void draw_range_scale(Widget w);
-void draw_ruler(Widget w);
-void display_file(Widget w);
+// draw_ruler_text/draw_ruler/display_file moved to station_draw.h: none of
+// them ever used the Widget they carried.
 
 
 // ------------------------------------------------------------------------

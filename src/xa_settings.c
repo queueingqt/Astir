@@ -116,6 +116,10 @@ int   my_argc;
 char **my_argv;
 char **my_envp;
 int currently_selected_stations      = 0;
+// The previous frame's count, so the status line only updates on a change.
+// Was in main.c while its twin was here; display_file() needs both, and it
+// is core code now.
+int currently_selected_stations_save = 0;
 char dangerous_operation[200];
 int emergency_beacon = 0;
 int re_sort_maps = 1;

@@ -168,6 +168,7 @@ extern int my_argc;
 extern char **my_argv;
 extern char **my_envp;
 extern int currently_selected_stations;
+extern int currently_selected_stations_save;
 extern char dangerous_operation[200];
 extern int emergency_beacon;
 extern int re_sort_maps;

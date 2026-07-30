@@ -34,6 +34,7 @@
 #include <Xm/XmAll.h>
 
 #include "xastir.h"
+#include "maps.h"   // get_x_scale()
 #include "main.h"
 #include "db_funcs.h"
 #include "track_gui.h"

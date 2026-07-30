@@ -22,4 +22,18 @@ void draw_trail(DataRow *fill, int solid);
 void track_station(char *call_tracked, DataRow *p_station);
 void set_map_position(long lat, long lon);
 
+/*
+ * Drawing every station, and the ruler.
+ *
+ * These were in db_gui.c and each took a Widget it never used -- display_file()
+ * is 241 lines and names `w` only in its own signature.  They are the station
+ * half of composing a frame, they contain no toolkit call at all, and a second
+ * front end needs them, so they belong on this side.
+ */
+void display_file(void);
+void draw_ruler(void);
+void draw_ruler_text(char *text, long ofs);
+void draw_test_line(long x, long y, long dx, long dy, long ofs);
+void draw_range_scale(void);
+
 #endif // XASTIR_STATION_DRAW_H

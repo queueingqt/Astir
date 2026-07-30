@@ -44,6 +44,8 @@
 #include "lang.h"
 #include "util.h"
 #include "db_funcs.h"
+#include "station_draw.h"
+#include "draw_symbols.h"
 #include "snprintf.h"
 #include "xa_perf.h"
 
@@ -131,6 +133,11 @@ static void xa_render(void)
   {
     draw_grid();
   }
+
+  // Stations, symbols, trails and the range rings, onto pixmap_final over the
+  // map.  display_file() used to live in db_gui.c and take a Widget it never
+  // touched, which is the only reason a second front end could not call it.
+  display_file();
 
   xa_present_full(pixmap_final);
   xa_perf_frame_end("gtk4_render");
@@ -481,7 +488,33 @@ static int init_core(void)
     xa_rescale();
   }
 
+  // The symbol icons.  Without this every station draws as a bare callsign,
+  // because draw_symbol() has no pixmaps to blit -- which is exactly what it
+  // did until this line existed.
+  load_pixmap_symbol_file("symbols.dat", 0);
+
   init_station_data();
+
+  // Packets, without an interface.  main.c does this from its event loop for
+  // File > Open Log File; here it runs to completion before the first render,
+  // which is what a one-shot render needs and is good enough for an
+  // interactive run to start with something on screen.
+  if (getenv("XASTIR_REPLAY") != NULL)
+  {
+    // A local, not main.c's read_file_ptr global: that pointer is the Motif
+    // front end's own state, and only the `read_file` flag is core.
+    FILE *replay = fopen(getenv("XASTIR_REPLAY"), "r");
+
+    if (replay != NULL)
+    {
+      read_file = 1;
+      while (read_file)
+      {
+        read_file_line(replay);
+      }
+      g_print("replayed %s\n", getenv("XASTIR_REPLAY"));
+    }
+  }
   index_restore_from_file();     // the map index
 
   return 1;

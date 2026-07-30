@@ -1,0 +1,13 @@
+# Stations around Los Angeles, for the GTK4 front end to draw.
+#
+# Positions are near 34.0N 118.3W so they land in the default view.  The symbol
+# table/code is the two characters after the longitude: /- house, /> car,
+# /k truck, /_ weather, /' small aircraft, /Y yacht, \# digipeater.
+N6ABC-1>APX200,WIDE2-2:=3403.00N/11821.00W-Home station
+K6DEF-9>APX200,WIDE2-2:=3358.50N/11815.20W>Mobile unit
+W6GHI>APX200,WIDE2-2:=3410.10N/11828.40Wk Truck rolling
+N6JKL-2>APX200,WIDE2-2:=3355.20N/11840.00W_Weather station
+K6MNO-7>APX200,WIDE2-2:=3418.00N/11810.50W'Aircraft inbound
+W6PQR>APX200,WIDE2-2:=3345.00N/11825.00WYHarbor yacht
+N6STU-3>APX200,WIDE2-2:=3407.50N/11845.00W\#Digipeater site
+K6VWX-5>APX200,WIDE2-2:=3350.00N/11805.00W-Second home

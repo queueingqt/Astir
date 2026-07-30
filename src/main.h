@@ -177,8 +177,7 @@ extern int emergency_beacon;
 // structs of display/selection filters with nothing GUI about them, and the
 // core needs them without main.h.  Their externs live in xa_settings.h.
 
-extern int currently_selected_stations;
-extern int currently_selected_stations_save;
+// both moved to xa_settings.h
 // colors[], MAX_TRAIL_COLORS and trail_colors[] moved to xa_draw.h.  colors[]
 // was declared both here and in xastir.h; core drawing code uses all three.
 extern int current_trail_color;
