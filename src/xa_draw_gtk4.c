@@ -671,7 +671,6 @@ void xa_region_subtract(xa_region a, xa_region b, xa_region dst)
 {
   gtk4_region *ga = (gtk4_region *)a, *gb = (gtk4_region *)b,
               *gd = (gtk4_region *)dst;
-  gtk4_shape *s;
 
   if (gd == NULL) { return; }
   shape_free(gd->head);

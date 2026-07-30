@@ -49,3 +49,6 @@ scripts/icontable.pl
 src/compiledate.c
 tests/atconfig
 tests/atlocal
+
+# built by tools/build_gtk4.sh, not by make
+src/xastir-gtk4

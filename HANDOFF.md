@@ -26,7 +26,7 @@ GUI object.
 | core headers rooting the X include tree | many | many | **0** |
 | X symbols the core needs, against a **non-X backend** | untested | untested | **18, in 3 renderer files** |
 | backends implementing `xa_draw.h` | 1 (X11) | 1 (X11) | **3** (X11, null, GTK4) |
-| lines of GTK4 front end written | 0 | 0 | **0** |
+| lines of GTK4 front end written | 0 | 0 | **~470, and it renders** |
 
 Two things happened. First the harness the previous notes asked for, because the
 remaining work was unverifiable without it. Then the work itself: `mw[]` and the
@@ -255,6 +255,61 @@ dead code.** It reads the callsign out of every open window, uppercases it, and
 discards it; the only statement that used the result is commented out. Those are
 two of the four Motif calls that make `messages.o` non-portable, and they are
 holding up nothing.
+
+## There is a GTK4 front end
+
+`src/gtk4/xa_gtk4_main.c`, built by `tools/build_gtk4.sh`: 60 core objects plus
+the GTK4 backend, no Motif, every X library struck off the link line. One object
+set, two binaries -- and not a line of the core compiled differently for either.
+
+Modern GTK4 rather than a port of main.c's shape: GtkApplicationWindow, header
+bar, GtkDrawingArea, GAction with accelerators, `GtkGestureDrag` for panning and
+`GtkEventControllerScroll` for zoom. Panning and zooming are arithmetic on
+`center_longitude`/`scale_y`, which is core state, because that is the only
+thing either front end can do.
+
+**It is not a replacement for the Motif front end** -- that is ~69,000 lines
+across 16 files plus main.c's 30,800. No dialogs, no menus, no interfaces, no
+message windows, no station list, no configuration UI. What is here is the
+spine.
+
+### What it does and does not draw
+
+`XASTIR_GTK4_RENDER_TO=<file.png>` renders one frame and exits. The output has
+the OSM driver's attribution logo and CC-BY-SA badge on the correct
+`colors[0xfd]` background, so the path from core through `xa_draw.h` through
+Cairo to a PNG is live.
+
+**No map content yet.** Measured with the project's own counters, not guessed:
+
+    [perf] gtk4_render 50.4 ms | map_one 13.4 map_onscreen 0.0 |
+    cumulative counts:
+      (empty)
+
+One `map_one` where there should be three, and `shapes_read`/`vertices`/
+`draw_calls` all zero. The two TIGER shapefiles are on disk and named in
+`selected_maps.sys`; they are not being reached. `index_restore_from_file()` is
+called and the selected-maps file is found and read, so the thread to pull is
+what else `load_maps()` needs that main.c sets up and this does not -- most
+likely map-directory resolution or a map-index population step still living in
+main.c. That is the next job and it is a narrow one.
+
+### Startup the core needs and does not do itself
+
+Three things main.c did that a second front end has to repeat, each of which
+failed loudly and unhelpfully when missing:
+
+- `user_dir` from `getpwuid()`. `get_user_base_dir()` reads it and nothing in
+  the core fills it in, so every path came out as `/.xastir/...`.
+- `InitializeMagick()` and `curl_global_init()`. Missing the first shows up as
+  an assertion inside GraphicsMagick the first time a raster map loads.
+- The colour palette. `colors[]` is indexed by number by core drawing code, so
+  the 102 entries and 32 trail colours were extracted from main.c's
+  `GetPixelByName()` calls into `src/gtk4/xa_gtk4_palette.c` and resolved
+  through `xa_color_by_name()`. Modern mechanism, identical values.
+
+These are worth a note because they are the real shape of "what a front end
+owes the core", and none of them is visible in any header.
 
 ## There is a GTK4 backend
 

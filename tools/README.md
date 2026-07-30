@@ -26,6 +26,50 @@ Run the measurement scripts against a **built** tree — several read `src/*.o`.
 | `link_null.py [src] [--backend=null\|gtk4]` | **Can the core link without X?** Swaps in `xa_draw_null.o` and strikes every X library off the link line. Reports the X symbols Xastir's own objects still need, per object, via `nm` rather than the linker. |
 | `trace_norm.py <raw.trace>` | Normalises a raw trace so two runs of the same build compare equal. Prints what it collapsed and masked, and an operation histogram, on stderr — read that, it is the coverage report. |
 
+## There is a GTK4 front end, and it draws
+
+`src/gtk4/` -- `xa_gtk4_main.c` and a generated palette table. Built by
+`tools/build_gtk4.sh`, which links **60 core objects + the GTK4 backend** with
+no Motif and every X library struck off the line. One object set, two binaries.
+
+It is not a replacement for the Motif front end (~69,000 lines across 16 files
+plus main.c's 30,800). There are no dialogs, no menus, no interfaces, no message
+windows, no station list, no configuration UI. What is here is the spine:
+GtkApplicationWindow, header bar, GtkDrawingArea, the render loop, gesture pan
+and scroll zoom, and the `xa_ui` callbacks -- the part nobody could write until
+the core stopped requiring Motif.
+
+`XASTIR_GTK4_RENDER_TO=<file.png>` renders one frame and exits, so it can be
+tested without a human looking at it -- the same reason `XASTIR_REPLAY` exists
+on the Motif side.
+
+### What works, and what does not
+
+**Works.** It initialises the core, reads the same `~/.xastir/config/xastir.cnf`,
+loads the map index, and drives `load_maps()`. The output is a 1024x700 PNG with
+the OSM driver's attribution logo and CC-BY-SA badge drawn on the correct
+`colors[0xfd]` background. The whole path -- core to `xa_draw.h` to Cairo to PNG
+-- is demonstrably live.
+
+**Does not, yet.** Only one of the three selected maps produces a `map_one`
+call, and the geometry counters read **zero**: `shapes_read`, `vertices` and
+`draw_calls` are all absent from the perf summary. The two TIGER shapefiles are
+present on disk and named in `selected_maps.sys`, and they are not being drawn.
+So: the pipeline is proven, the map content is not there.
+
+That is measured, not guessed -- `XASTIR_PERF=1` with the render mode prints the
+same counters the Motif build uses:
+
+    [perf] gtk4_render 50.4 ms | map_one 13.4 map_onscreen 0.0 |
+    cumulative counts:
+      (empty)
+
+**Next step**, and it is a narrow one: find what `load_maps()` needs that main.c
+sets up and this does not. `index_restore_from_file()` is called; the selected
+maps file is found and read. The likely candidates are the map-directory
+resolution or a map-index population step that still lives in main.c. One
+`map_one` where there should be three is the thread to pull.
+
 ## There is a GTK4 backend
 
 `src/xa_draw_gtk4.c`. Cairo for drawing, Pango for text, GTK4 for the canvas.
