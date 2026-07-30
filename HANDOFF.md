@@ -256,6 +256,94 @@ discards it; the only statement that used the result is commented out. Those are
 two of the four Motif calls that make `messages.o` non-portable, and they are
 holding up nothing.
 
+## The GTK4 front end: how to run it, and what it does
+
+    ./build.sh                 # the core objects, as usual
+    ./tools/build_gtk4.sh      # links them + xa_draw_gtk4.o, no Motif, no X
+    ./src/xastir-gtk4
+
+Environment hooks, all scripted-run conveniences, all inert unset:
+
+| | |
+|---|---|
+| `XASTIR_GTK4_RENDER_TO=<f.png>` | render one frame and exit. **Use this as a gate before launching anything interactively** |
+| `XASTIR_GTK4_SCALE=<n>` | start at a given `scale_y`; 1200 is a Los Angeles view |
+| `XASTIR_REPLAY=<log>` | ingest packets with no interface; `tools/trace/stations-la.log` has eight stations around that view |
+| `XASTIR_GTK4_SHOW_MENU=1` | pop the menu open, for screenshots |
+| `XASTIR_GTK4_TRACE_ZOOM=1` | log every zoom step and every render |
+| `XASTIR_DEBUG=<n>` | set `debug_level`; 16 traces map loading |
+
+**Works**: OSM tiles, TIGER shapefiles, the lat/lon grid, station symbols and
+labels, the range-scale bar, the status line, pan by drag, scroll and button
+zoom, a GMenu with working toggles. On Wayland under KWin.
+
+**Does not**: dialogs, interfaces, message windows, station list, configuration
+UI, weather alerts. It does not write the config back on exit, deliberately --
+`~/.xastir/config/xastir.cnf` is what the Motif pixel baseline depends on.
+
+### Known broken: grey boxes behind station icons
+
+`draw_symbol()` blits an icon through a per-pixel coverage mask.
+`xa_draw_gtk4.c`'s `begin()` clips to the mask's **bounding rectangle** only,
+so every symbol sits on an opaque square.
+
+The obvious fix -- push a Cairo group in `begin()`, pop it through
+`cairo_mask_surface()` in a matching `finish()` -- was written, and reverted.
+It is correct and it is catastrophic: **a pen keeps its clip mask until
+something clears it**, so once a symbol set one, every subsequent draw call paid
+a full group allocation and mask composite. All 747 shapefile draws. The app
+pegged a core and never showed a window.
+
+The X11 backend never had this problem because a server-side clip mask is free
+to leave set. That cost difference is invisible in the interface.
+
+**Do it by masking only `xa_copy_area()`**, which is what symbol blitting
+actually uses, or by clearing the pen's mask after the symbol draw. Gate it on
+`XASTIR_GTK4_RENDER_TO` before it goes near a window.
+
+### The render scheduler, and three bugs in it
+
+Rendering is deferred and coalesced: handlers move the position and call
+`render_soon()`, which arms a 150 ms timer; `render_now()` does one render.
+Gestures meanwhile transform the frame already on screen -- `view_dx`/`view_dy`
+slide it, `view_scale` scales it about the window centre -- so a drag tracks the
+pointer and a scroll responds instantly, blurry until the real frame lands.
+
+Three bugs found here in one sitting, all worth remembering because none is
+visible in a headless render:
+
+1. **Rendering inline from the handler.** `xa_render()` is 0.5-1 s. Called
+   directly it blocks the main loop, so `gtk_widget_queue_draw()` cannot be
+   serviced and the canvas keeps showing the old frame *until some later event
+   lets the loop run*. That presents as "grey areas render if I click after",
+   which sounds like a drawing bug and is a scheduling one.
+2. **`xa_render()` is re-entrant.** The core calls `xa_ui_pump_events()` every
+   64 shapes so a slow redraw can be interrupted, and this front end services
+   the main loop there -- so scroll events run *inside* a render. Resetting
+   `view_scale` to 1 afterwards discarded every step that arrived while it ran,
+   which presented as zoom "snapping back to one level out". Divide out only
+   what the finished frame accounts for.
+3. **A returned-early timer id.** The re-entrancy guard returned before clearing
+   `render_timer`, so `render_soon()` believed a render was pending forever and
+   **nothing ever rendered again**. One skipped frame stopped the map
+   permanently. Clear the timer first, unconditionally.
+
+`dy` from a scroll event is not comparable across devices -- a wheel notch may
+report 1, a high-resolution wheel or touchpad tens -- so the per-event zoom is
+clamped to +/-1 and applied as `pow(1.15, step)`.
+
+Zoom-out stops once the whole world fits (`32400000 / screen_height`, 180
+degrees of latitude). Xastir's 500000 is not a view limit, only the largest
+value the config can store.
+
+### Station symbols are raster, by design
+
+The APRS symbol set, 20x20 pixmaps from `symbols.dat` via
+`load_pixmap_symbol_file()`, drawn at fixed pixel size regardless of zoom. They
+are not vectors and do not scale with the map. Pixelation *during* a zoom
+gesture is the preview transform scaling the whole composed frame; it resolves
+when the render lands.
+
 ## There is a GTK4 front end
 
 `src/gtk4/xa_gtk4_main.c`, built by `tools/build_gtk4.sh`: 60 core objects plus

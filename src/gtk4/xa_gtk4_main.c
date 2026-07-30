@@ -144,6 +144,100 @@ static void xa_render(void)
 }
 
 
+/*
+ * Rendering is deferred and coalesced.
+ *
+ * xa_render() re-reads every map: half a second to a second.  Calling it
+ * straight from an event handler blocks the main loop for that long, which has
+ * two visible consequences.  A burst of scroll events each queue their own
+ * render, so the map runs away and every intermediate frame is wasted work.
+ * And gtk_widget_queue_draw() cannot be serviced while the handler is still
+ * inside a render, so the canvas keeps showing the previous frame until some
+ * later event lets the loop run -- which is why a stale grey area would appear
+ * to "render if you click after".
+ *
+ * So handlers change the position and ask for a render; one actually happens,
+ * shortly after the input stops.
+ */
+static guint render_timer;
+
+/*
+ * How far the view has moved since the frame on screen was composed.
+ *
+ * A full render is half a second to a second, so waiting for one before
+ * anything moves is what makes a drag or a scroll feel dead.  Instead the
+ * gesture updates these, the drawing area transforms the frame it already has
+ * -- instant, and blurry or edge-clipped in the way every map application is
+ * mid-gesture -- and the real render replaces it when it arrives.
+ */
+static double view_dx, view_dy;
+static double view_scale = 1.0;
+
+static int rendering;
+static void render_soon(void);   // defined below; render_now() re-arms itself
+
+static gboolean render_now(gpointer u)
+{
+  double dx0, dy0, s0;
+
+  (void)u;
+
+  // Cleared FIRST, and unconditionally.  Returning early with it still set
+  // leaves render_soon() believing a render is pending forever, so nothing
+  // ever renders again -- one skipped frame stops the map permanently.
+  render_timer = 0;
+
+  if (rendering)
+  {
+    render_soon();                 // re-entered; try again once this one is out
+    return G_SOURCE_REMOVE;
+  }
+
+  /*
+   * Take the preview transform as it stands *now*, because the render is not
+   * atomic: the core calls xa_ui_pump_events() every 64 shapes so a slow
+   * redraw can be interrupted, and this front end services the main loop
+   * there.  Scroll and drag events therefore run *inside* xa_render(), and
+   * they move view_scale/view_dx while it works.
+   *
+   * Resetting them to 1 and 0 afterwards, which is what this did first, threw
+   * away every one of those -- so zooming out several notches during a render
+   * committed only the part that arrived before it started, and the view
+   * snapped back to roughly one step out.  Divide out what this frame
+   * accounts for instead, and whatever accumulated meanwhile survives.
+   */
+  dx0 = view_dx;
+  dy0 = view_dy;
+  s0  = view_scale;
+
+  rendering = 1;
+  xa_render();
+  rendering = 0;
+
+  view_dx -= dx0;
+  view_dy -= dy0;
+  if (s0 != 0.0)
+  {
+    view_scale /= s0;
+  }
+  if (getenv("XASTIR_GTK4_TRACE_ZOOM"))
+  {
+    g_print("[render] scale_y=%ld view_scale=%.3f\n", scale_y, view_scale);
+  }
+  gtk_widget_queue_draw(xa_area);
+  return G_SOURCE_REMOVE;
+}
+
+static void render_soon(void)
+{
+  if (render_timer == 0)
+  {
+    // Long enough to swallow a scroll burst, short enough not to feel laggy.
+    render_timer = g_timeout_add(150, render_now, NULL);
+  }
+}
+
+
 // The drawing area paints whatever the backend has composed.  GTK4 widgets
 // render from a snapshot, so the canvas surface the backend owns is the thing
 // that persists between frames and this just blits it.
@@ -157,9 +251,18 @@ static void xa_draw_cb(GtkDrawingArea *area, cairo_t *cr,
   {
     return;
   }
+  cairo_save(cr);
+  if (view_scale != 1.0)
+  {
+    // About the centre of the window, which is what the zoom keeps fixed.
+    cairo_translate(cr, width / 2.0, height / 2.0);
+    cairo_scale(cr, view_scale, view_scale);
+    cairo_translate(cr, -width / 2.0, -height / 2.0);
+  }
+  cairo_translate(cr, view_dx, view_dy);
   cairo_set_source_surface(cr, s, 0, 0);
   cairo_paint(cr);
-  (void)width; (void)height;
+  cairo_restore(cr);
 }
 
 
@@ -220,60 +323,135 @@ static void xa_rescale(void)
 }
 
 
-static void xa_recentre(long dx_px, long dy_px)
-{
-  center_longitude += dx_px * scale_x;
-  center_latitude  += dy_px * scale_y;
-  // Moving north or south changes the x scale, so it is re-derived on a pan
-  // and not only on a zoom.
-  xa_rescale();
-  xa_render();
-  gtk_widget_queue_draw(xa_area);
-}
 
 
 static void xa_zoom(double factor)
 {
   long s = (long)(scale_y * factor);
+  long max_out;
+
+  /*
+   * Stop zooming out once the whole world already fits.
+   *
+   * Xastir's stored limit is 500000, which is not a view limit -- it is just
+   * the largest value the config will hold.  Past the point where 180 degrees
+   * of latitude spans the window there is nothing further to reveal, only a
+   * shrinking earth in a growing field of background, which is what "too far
+   * out to see anything" is.
+   *
+   * 32400000 Xastir units is 180 degrees, so the whole world fits vertically
+   * at exactly this scale.  Derived from the window height rather than fixed,
+   * because a taller window can show the same world at a smaller scale.
+   */
+  max_out = (screen_height > 0) ? (32400000L / screen_height) : 500000L;
+  if (max_out > 500000L)
+  {
+    max_out = 500000L;      // never exceed what the config can store
+  }
 
   if (s < 1)
   {
     s = 1;
   }
-  if (s > 500000)
+  if (s > max_out)
   {
-    s = 500000;
+    s = max_out;
+  }
+  if (s == scale_y)
+  {
+    return;                        // already at the limit; do not queue work
+  }
+  // The frame on screen was drawn at the old scale, so showing it that much
+  // larger or smaller is exactly right until the new one is ready.
+  view_scale *= (double)scale_y / (double)s;
+  if (getenv("XASTIR_GTK4_TRACE_ZOOM"))
+  {
+    g_print("[zoom]   scale_y %ld -> %ld  view_scale=%.3f\n",
+            scale_y, s, view_scale);
   }
   scale_y = s;
   xa_rescale();
-  xa_render();
   gtk_widget_queue_draw(xa_area);
+  render_soon();
 }
 
 
-static double drag_last_x, drag_last_y;
+/*
+ * Panning.
+ *
+ * Two things here that the first version got wrong.
+ *
+ * "drag-begin" reports the start *point*; "drag-update" reports the *offset*
+ * from that point.  Seeding the tracker with the start coordinate and then
+ * subtracting an offset from it made the first update a jump of however many
+ * pixels from the window edge the drag happened to start -- which threw the
+ * map somewhere else entirely on the first move.  The tracker is an offset now
+ * and starts at zero, like the values it is compared against.
+ *
+ * And a full xa_render() re-reads and re-draws every map, which is half a
+ * second to a second here.  Doing that per drag-update means the gesture
+ * queues behind renders and the map appears frozen.  So a drag accumulates
+ * position only and the render happens once, on release.
+ */
+static double drag_prev_ox, drag_prev_oy;
 
 static void on_drag_begin(GtkGestureDrag *g, double x, double y, gpointer u)
 {
-  (void)g; (void)u;
-  drag_last_x = x;
-  drag_last_y = y;
+  (void)g; (void)x; (void)y; (void)u;
+  drag_prev_ox = 0.0;
+  drag_prev_oy = 0.0;
 }
 
 static void on_drag_update(GtkGestureDrag *g, double ox, double oy, gpointer u)
 {
   (void)g; (void)u;
-  // Offsets are from the drag start, so take the delta since the last update.
-  xa_recentre((long)(drag_last_x - ox), (long)(drag_last_y - oy));
-  drag_last_x = ox;
-  drag_last_y = oy;
+  // Just slide the frame that is already composed.  No map work at all, so
+  // this keeps up with the pointer.
+  view_dx = ox;
+  view_dy = oy;
+  gtk_widget_queue_draw(xa_area);
 }
 
+static void on_drag_end(GtkGestureDrag *g, double ox, double oy, gpointer u)
+{
+  (void)g; (void)u;
+  // Commit the whole gesture to the map position in one step.  view_dx/dy stay
+  // where they are so the picture does not snap back while the render runs.
+  view_dx = ox;
+  view_dy = oy;
+  center_longitude -= (long)(ox * scale_x);
+  center_latitude  -= (long)(oy * scale_y);
+  xa_rescale();
+  gtk_widget_queue_draw(xa_area);
+  render_soon();
+}
+
+/*
+ * Scroll to zoom.
+ *
+ * Proportional to dy, not a fixed factor per event.  A wheel notch reports
+ * dy = +/-1 and a touchpad reports fractions of one, but a single flick of
+ * either delivers several events -- so doubling the scale per event, which is
+ * what this did first, ran from a city to the whole globe before the hand had
+ * stopped moving.  Past that point no map is in range and the screen goes
+ * grey, which reads as "zooming does not redraw" rather than as overshoot.
+ *
+ * 1.2 per notch takes about four notches to double, which is controllable.
+ * The buttons and keys still step by 2, because those are deliberate.
+ */
 static gboolean on_scroll(GtkEventControllerScroll *c, double dx, double dy,
                           gpointer u)
 {
   (void)c; (void)dx; (void)u;
-  xa_zoom(dy > 0 ? 2.0 : 0.5);
+  if (dy != 0.0)
+  {
+    // Clamped, because dy is not comparable across devices: a wheel notch may
+    // report 1, a high-resolution wheel or touchpad tens.  Without this a
+    // single notch could be a several-fold jump, which is what "still too
+    // fast" was.  Capped this way one event is at most 1.15x whatever sent it.
+    double step = (dy > 1.0) ? 1.0 : (dy < -1.0) ? -1.0 : dy;
+    xa_zoom(pow(1.15, step));
+  }
   return TRUE;
 }
 
@@ -293,8 +471,7 @@ static void act_zoom_out(GSimpleAction *a, GVariant *p, gpointer u)
 static void act_redraw(GSimpleAction *a, GVariant *p, gpointer u)
 {
   (void)a; (void)p; (void)u;
-  xa_render();
-  gtk_widget_queue_draw(xa_area);
+  render_soon();
 }
 
 // Stateful actions, so the menu shows a check mark and GTK keeps it in step
@@ -318,8 +495,7 @@ static void act_toggle(GSimpleAction *a, GVariant *state, gpointer u)
     map_color_levels = on ? 1 : 0;
   }
   g_simple_action_set_state(a, state);
-  xa_render();
-  gtk_widget_queue_draw(xa_area);
+  render_soon();
 }
 
 static void act_about(GSimpleAction *a, GVariant *p, gpointer u)
@@ -606,6 +782,7 @@ static void on_activate(GtkApplication *app, gpointer user_data)
   drag = gtk_gesture_drag_new();
   g_signal_connect(drag, "drag-begin", G_CALLBACK(on_drag_begin), NULL);
   g_signal_connect(drag, "drag-update", G_CALLBACK(on_drag_update), NULL);
+  g_signal_connect(drag, "drag-end", G_CALLBACK(on_drag_end), NULL);
   gtk_widget_add_controller(xa_area, GTK_EVENT_CONTROLLER(drag));
 
   scroll = gtk_event_controller_scroll_new(GTK_EVENT_CONTROLLER_SCROLL_VERTICAL);
