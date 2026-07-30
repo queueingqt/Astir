@@ -22,15 +22,58 @@ while pgrep -x xastir >/dev/null; do sleep 1; waited=$((waited+1)); [ $waited -g
 cp "$SC/snap.cnf" ~/.xastir/config/xastir.cnf
 rm -f ~/.xastir/tmp/snapshot.xpm
 LOG="$(mktemp -t snapshot_ab.XXXXXX.log)"
-XASTIR_PERF=1 XASTIR_LOD_PX=1.0 XASTIR_ZOOMOUT=4 ./src/xastir > "$LOG" 2>&1 &
+# Which binary to run.  Overridable so that two builds can be compared without
+# rebuilding between captures -- e.g. against a git worktree at an older commit,
+# which is the only way to A/B a change that is already committed.  Whatever
+# binary is named must come from a tree configured the same way; diff its
+# config.h against this one before believing the result.
+BIN="${SNAP_BIN:-./src/xastir}"
+[ -x "$BIN" ] || { echo "not executable: $BIN" >&2; exit 1; }
+echo "running $BIN"
+XASTIR_PERF=1 XASTIR_LOD_PX=1.0 XASTIR_ZOOMOUT=4 "$BIN" > "$LOG" 2>&1 &
 until grep -qa 'holding at final scale' "$LOG" 2>/dev/null; do
   pgrep -x xastir >/dev/null || { echo "exited early"; tail -3 "$LOG"; exit 1; }
   sleep 5
 done
-# wait for a snapshot to appear (interval is 1 min; the first fires at once)
-w=0
-until [ -s ~/.xastir/tmp/snapshot.xpm ]; do sleep 5; w=$((w+5)); [ $w -ge 180 ] && { echo "no snapshot in 180s"; break; }; done
-if [ -s ~/.xastir/tmp/snapshot.xpm ]; then cp ~/.xastir/tmp/snapshot.xpm "$OUT"; echo "captured $OUT ($(stat -c%s "$OUT") bytes)"; fi
+# Take a snapshot written AFTER the render settled, and prove it settled.
+#
+# The first snapshot fires the moment snapshots are enabled, which is before the
+# maps have finished drawing, so it can catch a half-rendered frame -- features
+# simply missing, reading as background.  That is indistinguishable from a real
+# rendering regression, and it produced exactly that false positive once: a
+# capture 17.6% different from its own baseline, with identical geometry
+# counters, blamed on a change that runtime probes then showed was equivalent.
+#
+# So: discard everything written up to now, then require two consecutive fresh
+# snapshots to be byte-identical.  One fresh snapshot only proves it was taken
+# after the hold message; two identical ones prove nothing is still being drawn.
+snap=~/.xastir/tmp/snapshot.xpm
+wait_fresh() {           # $1 = destination; waits for a newly written snapshot
+  rm -f "$snap"
+  local w=0
+  until [ -s "$snap" ]; do
+    sleep 5; w=$((w+5))
+    [ $w -ge 180 ] && { echo "no snapshot in 180s" >&2; return 1; }
+  done
+  sleep 2               # let the writer finish the file
+  cp "$snap" "$1"
+}
+TMP_A="$(mktemp -t snap_a.XXXXXX.xpm)"
+TMP_B="$(mktemp -t snap_b.XXXXXX.xpm)"
+settled=0
+for attempt in 1 2 3; do
+  wait_fresh "$TMP_A" || break
+  wait_fresh "$TMP_B" || break
+  if cmp -s "$TMP_A" "$TMP_B"; then settled=1; break; fi
+  echo "render not settled yet (attempt $attempt); retrying" >&2
+done
+if [ "$settled" = 1 ]; then
+  cp "$TMP_B" "$OUT"
+  echo "captured $OUT ($(stat -c%s "$OUT") bytes, render settled)"
+else
+  echo "FAILED: render never settled; refusing to emit a capture" >&2
+fi
+rm -f "$TMP_A" "$TMP_B"
 kill -TERM "$(pgrep -x xastir | head -1)" 2>/dev/null || true
 # Bounded.  Xastir does not always act on SIGTERM -- one run sat for six minutes
 # after the snapshot was already captured -- and an unbounded wait here stalls
