@@ -94,6 +94,28 @@ static void xa_render(void)
   }
 
   xa_perf_frame_begin();
+
+  /*
+   * The view rectangle, from the centre and the scale.
+   *
+   * This is not bookkeeping: map_onscreen_index() culls every map against these
+   * corners, so with them left at zero every map in the index reports
+   * MAP_NOT_VIS and load_maps() draws nothing at all.  That is what it did --
+   * three maps found, three drivers selected, nothing drawn, and no error
+   * anywhere, because "not visible" is a normal answer.
+   *
+   * create_image() computes them in main.c, which is exactly the kind of thing
+   * a second front end has no way to discover except by finding it missing.
+   */
+  NW_corner_longitude = center_longitude - (screen_width  * scale_x / 2);
+  NW_corner_latitude  = center_latitude  - (screen_height * scale_y / 2);
+  SE_corner_longitude = center_longitude + (screen_width  * scale_x / 2);
+  SE_corner_latitude  = center_latitude  + (screen_height * scale_y / 2);
+  convert_from_xastir_coordinates(&f_NW_corner_longitude, &f_NW_corner_latitude,
+                                  NW_corner_longitude, NW_corner_latitude);
+  convert_from_xastir_coordinates(&f_SE_corner_longitude, &f_SE_corner_latitude,
+                                  SE_corner_longitude, SE_corner_latitude);
+
   xa_pen_color(gc, colors[0xfd]);      // map background
   xa_pen_bg(gc, colors[0xfd]);
   xa_fill_rect(pixmap, gc, 0, 0, (int)screen_width, (int)screen_height);
@@ -246,6 +268,48 @@ static void act_redraw(GSimpleAction *a, GVariant *p, gpointer u)
   gtk_widget_queue_draw(xa_area);
 }
 
+// Stateful actions, so the menu shows a check mark and GTK keeps it in step
+// with the setting rather than the two drifting apart.
+static void act_toggle(GSimpleAction *a, GVariant *state, gpointer u)
+{
+  const char *name = g_action_get_name(G_ACTION(a));
+  gboolean on = g_variant_get_boolean(state);
+
+  (void)u;
+  if (!g_strcmp0(name, "grid"))
+  {
+    long_lat_grid = on ? 1 : 0;
+  }
+  else if (!g_strcmp0(name, "map-labels"))
+  {
+    map_labels = on ? 1 : 0;
+  }
+  else if (!g_strcmp0(name, "filled-maps"))
+  {
+    map_color_levels = on ? 1 : 0;
+  }
+  g_simple_action_set_state(a, state);
+  xa_render();
+  gtk_widget_queue_draw(xa_area);
+}
+
+static void act_about(GSimpleAction *a, GVariant *p, gpointer u)
+{
+  GtkWidget *dlg;
+
+  (void)a; (void)p;
+  dlg = gtk_about_dialog_new();
+  gtk_about_dialog_set_program_name(GTK_ABOUT_DIALOG(dlg), "Xastir");
+  gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(dlg),
+                                "GTK4 front end.\n"
+                                "The same core as the Motif build, drawing "
+                                "through xa_draw.h on Cairo and Pango.");
+  gtk_about_dialog_set_license_type(GTK_ABOUT_DIALOG(dlg), GTK_LICENSE_GPL_2_0);
+  gtk_window_set_transient_for(GTK_WINDOW(dlg), GTK_WINDOW(u));
+  gtk_window_set_modal(GTK_WINDOW(dlg), TRUE);
+  gtk_window_present(GTK_WINDOW(dlg));
+}
+
 
 /* ---- the xa_ui callbacks ----------------------------------------------- */
 
@@ -356,6 +420,13 @@ static int init_core(void)
     return 0;
   }
 
+  // Xastir's own map tracing, which is the fastest way to see why a map is not
+  // drawn: bit 16 reports every name it reads and every one it skips.
+  if (getenv("XASTIR_DEBUG") != NULL)
+  {
+    debug_level = atoi(getenv("XASTIR_DEBUG"));
+  }
+
   xa_gtk4_load_palette();
 
   load_data_or_default();        // the config file, into the core's settings
@@ -380,6 +451,15 @@ static int init_core(void)
     return 0;
   }
 
+  // Let a scripted render pick the scale, so "are the maps culled by zoom?"
+  // is one run rather than a guess.  scale_y is 1/100 second per pixel.
+  if (getenv("XASTIR_GTK4_SCALE") != NULL)
+  {
+    scale_y = atol(getenv("XASTIR_GTK4_SCALE"));
+    scale_x = (long)(scale_y * calc_dscale_x(center_longitude, center_latitude));
+    if (scale_x < 1) { scale_x = 1; }
+  }
+
   init_station_data();
   index_restore_from_file();     // the map index
 
@@ -392,11 +472,17 @@ static void on_activate(GtkApplication *app, gpointer user_data)
   GtkWidget *win, *header, *box;
   GtkGesture *drag;
   GtkEventController *scroll;
+  GMenu *menu, *view, *maps, *help;
+  GtkWidget *hamburger;
   static const GActionEntry acts[] =
   {
-    { "zoom-in",  act_zoom_in,  NULL, NULL, NULL, {0} },
-    { "zoom-out", act_zoom_out, NULL, NULL, NULL, {0} },
-    { "redraw",   act_redraw,   NULL, NULL, NULL, {0} },
+    { "zoom-in",     act_zoom_in,  NULL, NULL,    NULL, {0} },
+    { "zoom-out",    act_zoom_out, NULL, NULL,    NULL, {0} },
+    { "redraw",      act_redraw,   NULL, NULL,    NULL, {0} },
+    { "about",       act_about,    NULL, NULL,    NULL, {0} },
+    { "grid",        NULL, NULL, "false", act_toggle, {0} },
+    { "map-labels",  NULL, NULL, "false", act_toggle, {0} },
+    { "filled-maps", NULL, NULL, "false", act_toggle, {0} },
   };
 
   (void)user_data;
@@ -417,6 +503,36 @@ static void on_activate(GtkApplication *app, gpointer user_data)
     gtk_header_bar_pack_start(GTK_HEADER_BAR(header), zi);
     gtk_header_bar_pack_start(GTK_HEADER_BAR(header), zo);
   }
+  // A GMenu rather than a menu bar: one model, described once, and GTK builds
+  // the popover from it.  The Motif build spends several hundred lines on
+  // XmCreatePulldownMenu calls to say less than this.
+  menu = g_menu_new();
+
+  view = g_menu_new();
+  g_menu_append(view, "Zoom In", "win.zoom-in");
+  g_menu_append(view, "Zoom Out", "win.zoom-out");
+  g_menu_append(view, "Redraw", "win.redraw");
+  g_menu_append_section(menu, "View", G_MENU_MODEL(view));
+  g_object_unref(view);
+
+  maps = g_menu_new();
+  g_menu_append(maps, "Lat/Long Grid", "win.grid");
+  g_menu_append(maps, "Map Labels", "win.map-labels");
+  g_menu_append(maps, "Filled Maps", "win.filled-maps");
+  g_menu_append_section(menu, "Maps", G_MENU_MODEL(maps));
+  g_object_unref(maps);
+
+  help = g_menu_new();
+  g_menu_append(help, "About Xastir", "win.about");
+  g_menu_append_section(menu, NULL, G_MENU_MODEL(help));
+  g_object_unref(help);
+
+  hamburger = gtk_menu_button_new();
+  gtk_menu_button_set_icon_name(GTK_MENU_BUTTON(hamburger), "open-menu-symbolic");
+  gtk_menu_button_set_menu_model(GTK_MENU_BUTTON(hamburger), G_MENU_MODEL(menu));
+  gtk_header_bar_pack_end(GTK_HEADER_BAR(header), hamburger);
+  g_object_unref(menu);
+
   gtk_window_set_titlebar(GTK_WINDOW(win), header);
 
   xa_area = gtk_drawing_area_new();
@@ -436,7 +552,16 @@ static void on_activate(GtkApplication *app, gpointer user_data)
   gtk_widget_add_controller(xa_area, scroll);
 
   g_action_map_add_action_entries(G_ACTION_MAP(win), acts,
-                                  G_N_ELEMENTS(acts), NULL);
+                                  G_N_ELEMENTS(acts), win);
+
+  // The toggles start wherever the config left them, so the menu reflects the
+  // real setting on the first open rather than after the first click.
+  g_action_change_state(g_action_map_lookup_action(G_ACTION_MAP(win), "grid"),
+                        g_variant_new_boolean(long_lat_grid != 0));
+  g_action_change_state(g_action_map_lookup_action(G_ACTION_MAP(win), "map-labels"),
+                        g_variant_new_boolean(map_labels != 0));
+  g_action_change_state(g_action_map_lookup_action(G_ACTION_MAP(win), "filled-maps"),
+                        g_variant_new_boolean(map_color_levels != 0));
   gtk_application_set_accels_for_action(app, "win.zoom-in",
                                         (const char *[]){ "plus", "equal", NULL });
   gtk_application_set_accels_for_action(app, "win.zoom-out",

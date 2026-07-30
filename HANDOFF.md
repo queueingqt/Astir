@@ -273,7 +273,31 @@ across 16 files plus main.c's 30,800. No dialogs, no menus, no interfaces, no
 message windows, no station list, no configuration UI. What is here is the
 spine.
 
-### What it does and does not draw
+### It draws maps
+
+OSM tiles, the TIGER shapefile overlay and the lat/lon grid, with the status
+line live in the header bar. `XASTIR_GTK4_SCALE=2000` gives a Los Angeles view;
+`XASTIR_GTK4_RENDER_TO=<file.png>` renders one frame and exits.
+
+    [perf] gtk4_render 544.8 ms | shp_read 119.1 shp_draw 26.1 dbfawk 280.0 |
+           maps 2 shapes_read 122678 vertices 145799 draw_calls 576
+
+**The bug was one missing assignment.** `map_onscreen_index()` culls every map
+against `NW_corner_longitude`/`SE_corner_*`, and those are computed by
+`create_image()` in main.c -- not by anything in the core. Left at zero, every
+map reports `MAP_NOT_VIS`, `load_maps()` draws nothing, and there is no error
+anywhere, because "not visible" is a perfectly normal answer. Three maps were
+found, three drivers selected, nothing drawn.
+
+It took Xastir's own `debug_level & 16` tracing to find: the trace prints the
+map path *after* the visibility test, so the geo map printed its path and the
+two shapefiles did not. That asymmetry was the whole clue.
+
+Menus are a `GMenu` model behind a hamburger `GtkMenuButton` -- View (zoom,
+redraw), Maps (grid, labels, filled, as stateful toggles synced to the config
+values), and About. One model, described once.
+
+### What it does and does not draw (superseded above)
 
 `XASTIR_GTK4_RENDER_TO=<file.png>` renders one frame and exits. The output has
 the OSM driver's attribution logo and CC-BY-SA badge on the correct
