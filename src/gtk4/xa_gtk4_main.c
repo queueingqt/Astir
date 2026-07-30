@@ -488,6 +488,13 @@ static int init_core(void)
 }
 
 
+static gboolean popup_menu_once(gpointer button)
+{
+  gtk_menu_button_popup(GTK_MENU_BUTTON(button));
+  return G_SOURCE_REMOVE;
+}
+
+
 static void on_activate(GtkApplication *app, gpointer user_data)
 {
   GtkWidget *win, *header, *box;
@@ -596,6 +603,14 @@ static void on_activate(GtkApplication *app, gpointer user_data)
 
   xa_gtk4_set_canvas(xa_area, xa_w, xa_h);
   gtk_window_present(GTK_WINDOW(win));
+
+  // Open the menu shortly after startup, for screenshots and UI tests.  There
+  // is no input automation on this Wayland session, so a popover cannot
+  // otherwise be captured at all.
+  if (getenv("XASTIR_GTK4_SHOW_MENU") != NULL)
+  {
+    g_timeout_add_seconds(2, (GSourceFunc)popup_menu_once, hamburger);
+  }
 }
 
 
