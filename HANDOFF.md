@@ -136,6 +136,37 @@ Two abstractions are **not covered by any test**:
   because `HAVE_MAGICK` is defined. They compile; nothing runs them.
   `audit_x11.py` counts call sites without knowing they are unreachable here.
 
+## Starting a new session: do this first
+
+**There is no baseline snapshot in the tree.** The golden capture this work was
+verified against lived in a session scratch directory and is gone. Do not skip
+re-establishing one — comparing against a stale or absent baseline is how this
+branch lost most of a session.
+
+```bash
+./build.sh                                  # incremental; -j3 on purpose, see build.sh
+python3 tools/link_core.py src              # expect: LINKED CLEANLY
+./tools/snapshot_ab.sh /tmp/base1.xpm       # ~3-6 min each
+./tools/snapshot_ab.sh /tmp/base2.xpm
+cmp /tmp/base1.xpm /tmp/base2.xpm           # MUST match, or the harness cannot tell A from B
+```
+
+The second capture is not optional. It is the check that would have caught the
+capture race immediately, and it costs one run. A correct baseline here is
+**822 colours** — `head -3 /tmp/base1.xpm | tail -1` should read
+`"640 425 822 2"`. If it says 792, the render was captured half-drawn and the
+harness has regressed.
+
+Then `./bench-attrib.sh 1.0 4 base` should give `shapes_read 7444`,
+`vertices 219817`, `draw_calls 3458`.
+
+Do not run Xastir while building — `build.sh` explains why (a saturated compile
+plus a GUI app hung the GPU on this machine and corrupted five object files).
+
+**The branch is local-only.** `perf-and-gui` has no upstream tracking branch and
+is 11 commits ahead of nothing. `origin` is the fork, `upstream` is Xastir/Xastir.
+Nothing here has been pushed.
+
 ## How to verify a change (read this first)
 
 Two harnesses, and picking the wrong one gives a confident wrong answer.
