@@ -772,12 +772,12 @@ void msg_input_database(Message *m_fill)
       }
       else
       {
-        XtWarning("Unable to allocate more space for message index.\n");
+        xa_ui_warn("Unable to allocate more space for message index.\n");
       }
     }
     else
     {
-      XtWarning("Unable to allocate more space for message database.\n");
+      xa_ui_warn("Unable to allocate more space for message database.\n");
     }
   }
   if (msg_index_end < msg_index_max)
