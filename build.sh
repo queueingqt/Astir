@@ -43,7 +43,13 @@ fi
 # property is easy to lose by adding one convenient #include, and nothing else
 # would report it, so check it on every build.
 core_hdr_fail=""
-for h in xa_state.h xa_settings.h xa_draw.h globals.h; do
+#
+# xastir.h and interface.h are in this list because they are included by core
+# files and used to name Widget/Pixmap/GC.  xastir.h in particular opened with
+# #include <X11/Intrinsic.h>, which put Xt in front of the shapefile reader and
+# the APRS parser.  One convenient #include puts it back, and nothing else would
+# report it, so it is checked here.
+for h in xa_state.h xa_settings.h xa_draw.h globals.h xastir.h interface.h; do
   [ -f "src/$h" ] || continue
   probe="$(mktemp -t xacore.XXXXXX.c)"
   printf '#include "%s"\nint main(void){return 0;}\n' "$h" > "$probe"

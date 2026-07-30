@@ -102,6 +102,48 @@ easy to miss by reading:
   `new_message_data--` happens for the first and not the second. Hence
   `msg_window_callsign` returning a value too.
 
+### The fifth way to get a worthless result: colormap contention
+
+This one cost a bisect, and it is the second time the *pixel* harness has been
+confidently wrong.
+
+Xastir allocates its palette with `XAllocColor` against the shared colormap. If
+the previous Xastir has only just exited, the server may still be holding its
+entries, and `XAllocColor` then returns *approximations* rather than the exact
+colours. The frame still renders, still settles, and still passes the
+two-identical-snapshots check -- it simply has about 180 extra near-black and
+near-grey shades in it.
+
+It presented as a clean, reproducible regression:
+
+| capture | colours | when |
+|---|---|---|
+| baseline | 822 | after a build |
+| after a header change | 964 | straight after a trace run |
+| repeat | 964 | straight after the previous capture |
+| repeat | **967** | straight after that one |
+| change reverted | 822 | after a five-minute rebuild |
+| change restored | 822 | after a five-minute rebuild |
+
+Two things made it convincing: it reproduced, and reverting appeared to fix it.
+Both were artefacts of *when* the runs happened -- every "good" capture followed
+a long rebuild, which is ample time for the colormap to settle, and every "bad"
+one followed another Xastir within seconds.
+
+The tell was in the data the whole time: **964 and 967 differ from each other.**
+A real rendering difference is deterministic. Two runs of one build disagreeing
+is not a regression, it is a broken measurement -- the same rule that caught the
+half-drawn-frame race, applied to the other end of the run.
+
+Guarded now. `snapshot_ab.sh` sleeps 5 s after killing the previous instance, and
+always prints the colour count, warning when it is not the expected 822.
+`SNAP_EXPECT_COLORS=any` when a change is meant to alter the palette.
+
+**Do not start a bisect on a pixel difference until a re-run, spaced out, has
+reproduced it.** A bisect on a flaky measurement is a machine for producing
+wrong conclusions: it will confidently name whichever change happened to be in
+the tree when the flake fired.
+
 ### Proving the harness works before trusting it
 
 Done once, and worth redoing if any of it is changed, because a harness that

@@ -1129,24 +1129,34 @@ void xa_pen_destroy(xa_pen pen)
  * These were defined in main.c, which meant every core object that draws had
  * to link the Motif GUI to get them.  They are the renderer's resources, so
  * they live with the renderer; a different backend defines its own.
- * Declarations stay in xastir.h/main.h so no call site changed.
+ * Declared in xa_draw.h now, in the neutral types -- they used to be declared
+ * in xastir.h and main.h as Pixmap/GC/Pixel, which is what put <X11/Intrinsic.h>
+ * in front of every core file in the tree.  Defined here in those same neutral
+ * types so the declaration and the definition agree exactly rather than merely
+ * being layout-compatible.
+ *
+ * Pixmap and Pixel *are* unsigned long, so nothing changes for them.  GC is a
+ * pointer and xa_pen is void *, so the five below are now void * -- which C
+ * converts to GC implicitly at every Xlib call in this file, no cast needed.
+ * That implicit conversion is the reason xa_pen was made void * rather than an
+ * opaque struct pointer in the first place.
  */
-GC gc=0;                // Used for drawing maps
-GC gc2=0;               // Used for drawing symbols
-GC gc_tint=0;           // Used for tinting maps & symbols
-GC gc_stipple=0;        // Used for drawing symbols
-GC gc_bigfont=0;
-Pixmap  pixmap;
-Pixmap  pixmap_alerts;
-Pixmap  pixmap_final;
-Pixmap  pixmap_50pct_stipple; // 50% pixels used for position ambiguity, DF circle, etc.
-Pixmap  pixmap_25pct_stipple; // 25% pixels used for large position ambiguity
-Pixmap  pixmap_13pct_stipple; // 12.5% pixels used for larger position ambiguity
-Pixmap  pixmap_wx_stipple;  // Used for weather alerts
+xa_pen gc=0;                // Used for drawing maps
+xa_pen gc2=0;               // Used for drawing symbols
+xa_pen gc_tint=0;           // Used for tinting maps & symbols
+xa_pen gc_stipple=0;        // Used for drawing symbols
+xa_pen gc_bigfont=0;
+xa_surface_id  pixmap;
+xa_surface_id  pixmap_alerts;
+xa_surface_id  pixmap_final;
+xa_surface_id  pixmap_50pct_stipple; // 50% pixels used for position ambiguity, DF circle, etc.
+xa_surface_id  pixmap_25pct_stipple; // 25% pixels used for large position ambiguity
+xa_surface_id  pixmap_13pct_stipple; // 12.5% pixels used for larger position ambiguity
+xa_surface_id  pixmap_wx_stipple;  // Used for weather alerts
 
 // Colour resources: the allocated palette, the trail palette, the colormap
 // and the visual class.  Renderer state, for the same reason as the GCs.
-Pixel colors[256];              /* screen colors */
+xa_color colors[256];           /* screen colors */
 Pixel trail_colors[MAX_TRAIL_COLORS]; /* station trail colors, duh */
 Pixel_Format visual_type = NOT_TRUE_NOR_DIRECT;
 Colormap cmap;                  /* current colormap */

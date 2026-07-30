@@ -479,4 +479,43 @@ void xa_fill_arc(xa_surface_id dst, xa_pen pen,
 void xa_draw_string(xa_surface_id dst, xa_pen pen,
                     int x, int y, const char *text, int length);
 
+
+/* ---- the surfaces and pens the application draws with ------------------ */
+
+/*
+ * These are the long-lived drawing objects the whole application shares.  They
+ * are defined by the backend (xa_draw_x11.c) and every core drawing site passes
+ * them straight to the calls above.
+ *
+ * They were declared in `xastir.h` and `main.h` as `Pixmap`, `GC` and `Pixel`,
+ * which is why `xastir.h` needed <X11/Intrinsic.h> and therefore why every core
+ * file in the tree got X11 whether it wanted it or not.  Declared here in the
+ * neutral types instead, which is what the call sites already treat them as --
+ * no core file ever passed one of these to an Xlib function.
+ *
+ * The types are not merely compatible, they are identical: X11's `Pixmap` and
+ * `Pixel` are both `unsigned long`, matching `xa_surface_id` and `xa_color`, so
+ * the backend's own definitions agree with these declarations exactly.  `GC` is
+ * a pointer, and `xa_pen` is `void *`, which a GC converts to implicitly -- so
+ * the backend keeps using them with Xlib and needs no cast.
+ */
+
+extern xa_pen gc;               // maps
+extern xa_pen gc2;              // symbols
+extern xa_pen gc_tint;          // tinting maps and symbols
+extern xa_pen gc_stipple;       // stippled symbols
+extern xa_pen gc_bigfont;
+
+extern xa_surface_id pixmap;            // the map being composed
+extern xa_surface_id pixmap_final;      // the finished frame, what is presented
+extern xa_surface_id pixmap_alerts;     // weather alert overlay
+
+// Stipple patterns: position ambiguity at three sizes, and weather alerts.
+extern xa_surface_id pixmap_50pct_stipple;
+extern xa_surface_id pixmap_25pct_stipple;
+extern xa_surface_id pixmap_13pct_stipple;
+extern xa_surface_id pixmap_wx_stipple;
+
+extern xa_color colors[256];    // the allocated screen colours
+
 #endif // XA_DRAW_H

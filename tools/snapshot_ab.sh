@@ -19,6 +19,12 @@ export XAUTHORITY="${XAUTHORITY:-/run/user/1000/xauth_ZUnYLn}" DISPLAY="${DISPLA
 pkill -x xastir 2>/dev/null || true
 waited=0
 while pgrep -x xastir >/dev/null; do sleep 1; waited=$((waited+1)); [ $waited -ge 10 ] && pkill -KILL -x xastir; [ $waited -ge 20 ] && exit 1; done
+# Let the X server reclaim the previous instance's colours before starting the
+# next one.  Back-to-back runs otherwise contend for the shared colormap:
+# XAllocColor returns approximate matches instead of the exact entries, and the
+# capture comes out with a couple of hundred extra near-black shades.  See the
+# colour-count check at the end for how that presented.
+sleep 5
 cp "$SC/snap.cnf" ~/.xastir/config/xastir.cnf
 rm -f ~/.xastir/tmp/snapshot.xpm
 LOG="$(mktemp -t snapshot_ab.XXXXXX.log)"
@@ -85,3 +91,34 @@ while pgrep -x xastir >/dev/null; do
   [ $t -ge 40 ] && break
 done
 [ -s "$OUT" ] || { echo "FAILED: no snapshot captured; do not A/B this run" >&2; exit 1; }
+
+# How many colours the frame ended up with.  Always printed, because it is the
+# cheapest single number that says whether the capture is trustworthy, and both
+# ways this harness has produced a confident wrong answer showed up in it.
+#
+#   792 -- the render was captured half-drawn (the race fixed above)
+#   822 -- correct, for tools/snapshot/snap.cnf
+#   960+ -- the colormap was still held by the previous Xastir when this one
+#           started, so XAllocColor returned approximations.  Roughly 180
+#           near-black and near-grey shades appear that are not in a good
+#           capture, and consecutive bad runs differ from each other by a
+#           handful, which a correct capture never does.
+#
+# That third case cost a bisect: a change was blamed for a 142-colour
+# difference, reproduced twice, and turned out to be innocent -- the two "clean"
+# comparison runs had simply each followed a five-minute rebuild, which is long
+# enough for the colormap to settle.  Override with SNAP_EXPECT_COLORS, or set
+# it to `any` when a change is *meant* to alter the palette.
+expect="${SNAP_EXPECT_COLORS:-822}"
+got="$(sed -n '3p' "$OUT" | tr -dc '0-9 ' | awk '{print $3}')"
+echo "colours: $got"
+if [ "$expect" != "any" ] && [ -n "$got" ] && [ "$got" != "$expect" ]; then
+  echo "" >&2
+  echo "WARNING: $got colours, expected $expect." >&2
+  echo "  Either this change really does alter the palette, or the capture hit" >&2
+  echo "  the colormap-contention flake.  Re-run it once with a minute's gap" >&2
+  echo "  before believing a difference -- and do not start a bisect until a" >&2
+  echo "  spaced-out re-run reproduces it." >&2
+  echo "  SNAP_EXPECT_COLORS=$got to accept this as the new baseline." >&2
+  echo "" >&2
+fi

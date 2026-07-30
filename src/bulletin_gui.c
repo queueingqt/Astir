@@ -52,6 +52,7 @@
 #include <X11/Shell.h>
 
 #include "xastir.h"
+#include "xastir_gui.h"
 #include "main.h"
 #include "bulletin_gui.h"
 #include "interface.h"

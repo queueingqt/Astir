@@ -40,6 +40,7 @@
 #include <math.h>
 
 #include "xastir.h"
+#include "xastir_gui.h"
 #include "wx.h"
 #include "main.h"
 #include "db_funcs.h"

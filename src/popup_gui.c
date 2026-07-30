@@ -32,6 +32,7 @@
 #include <Xm/XmAll.h>
 
 #include "xastir.h"
+#include "xastir_gui.h"
 #include "main.h"
 #include "popup.h"
 #include "main.h"

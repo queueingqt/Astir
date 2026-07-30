@@ -28,10 +28,8 @@
 
 
 
-// Macros that help us avoid warnings on 64-bit CPU's.
-// Borrowed from the freeciv project (also a GPL project).
-#define INT_TO_XTPOINTER(m_i)  ((XtPointer)((long)(m_i)))
-#define XTPOINTER_TO_INT(m_p)  ((int)((long)(m_p)))
+// INT_TO_XTPOINTER / XTPOINTER_TO_INT moved to xastir_gui.h -- they name an
+// Xt type, and this header is included by every file in the tree.
 
 
 // Defines we can use to mark functions and parameters as "unused" to the compiler
@@ -51,7 +49,11 @@
 #define SERIAL_KISS_RELAY_DIGI
 
 
-#include <X11/Intrinsic.h>
+// No X11 header.  This file is included by every core file in the tree, so an
+// include here puts Xt in front of the shapefile reader and the APRS parser.
+// The widget-typed declarations that needed it are in xastir_gui.h; the drawing
+// objects are in xa_draw.h, in neutral types.
+#include "xa_draw.h"
 
 //#include "database.h"
 #include "util.h"
@@ -63,12 +65,8 @@
 #define MAX_CALLSIGN 9       // Objects are up to 9 chars
 
 
-// black
-#define MY_FG_COLOR             colors[0x08]
-#define MY_FOREGROUND_COLOR     XmNforeground,colors[0x08]
-// gray73
-#define MY_BG_COLOR             colors[0xff]
-#define MY_BACKGROUND_COLOR     XmNbackground,colors[0xff]
+// MY_FG_COLOR and friends moved to xastir_gui.h: two of them expand to Motif
+// resource names.
 
 #ifndef M_PI                      /* if not defined in math.h */
   #define M_PI 3.14159265358979323846
@@ -76,25 +74,14 @@
 
 /* GLOBAL DEFINES */
 extern char dangerous_operation[200];
-extern GC gc;
-extern Pixmap  pixmap;
-extern Pixmap  pixmap_final;
-extern Pixmap  pixmap_alerts;
-extern Pixmap  pixmap_50pct_stipple;
-extern Pixmap  pixmap_25pct_stipple;
-extern Pixmap  pixmap_13pct_stipple;
-extern Pixmap  pixmap_wx_stipple;
 
-extern Widget appshell;
-
+// gc, the pixmaps and colors[] moved to xa_draw.h, in the neutral types the
+// call sites already use.  `gc` was declared twice here.
+// appshell and resize_dialog() moved to xastir_gui.h.
 
 extern int wait_to_redraw;
 
-void resize_dialog( Widget form, Widget dialog);
-
 extern int debug_level;
-extern GC gc;
-extern Pixel colors[];
 
 
 extern float f_center_longitude;   // Floating point map center longitude
@@ -117,8 +104,8 @@ extern long scale_y;               // y scaling in 1/100 sec per pixel
 
 extern long screen_width;
 extern long screen_height;
-extern Position screen_x_offset;
-extern Position screen_y_offset;
+// screen_x_offset / screen_y_offset moved to xastir_gui.h -- Position is an Xt
+// type and nothing outside main.c uses them.
 extern int long_lat_grid;
 //extern Pixmap  pixmap;
 //extern Pixmap  pixmap_final;
@@ -129,9 +116,7 @@ extern int map_lock_pan_zoom;
 extern int map_auto_maps;
 extern int auto_maps_skip_raster;
 extern time_t sec_remove;
-extern Widget da;
-extern Widget text;
-extern XtAppContext app_context;
+// da, text and app_context moved to xastir_gui.h.
 extern int redraw_on_new_data;
 //extern Widget hidden_shell;
 extern int index_maps_on_startup;
@@ -158,10 +143,10 @@ extern char rotated_label_fontname[FONT_MAX][MAX_LABEL_FONTNAME];
 
 extern int net_map_timeout;
 
-extern void sort_list(char *filename,int size, Widget list, int *item);
-extern void redraw_symbols(Widget w);
+// sort_list() and redraw_symbols() moved to xastir_gui.h -- both take a Widget.
 
-extern Colormap cmap;
+// cmap moved to xa_draw_x11.h.  Only the backend and the two renderer files
+// (color.c, cairo_text.c) use it, and all three include X11 themselves.
 
 
 
@@ -190,8 +175,7 @@ extern void map_pos_last_position(void);
 
 /* from location_gui.c */
 extern char locate_station_call[30];
-extern void Last_location(Widget w, XtPointer clientData, XtPointer callData);
-extern void Jump_location(Widget w, XtPointer clientData, XtPointer callData);
+// Last_location() and Jump_location() moved to xastir_gui.h.
 extern void map_pos(long mid_y, long mid_x, long sz);
 extern char locate_gnis_filename[200];
 
@@ -216,7 +200,7 @@ extern void popup_ID_message(char *banner, char *message);
 
 /* from view_messages.c */
 extern void all_messages(char from, char *call_sign, char *from_call, char *message);
-extern void view_all_messages(Widget w, XtPointer clientData, XtPointer callData);
+// view_all_messages() moved to xastir_gui.h.
 
 
 #endif /* XASTIR_H */

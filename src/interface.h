@@ -247,14 +247,15 @@ extern ioparam devices[];
 
 /* from interface_gui.c */
 extern void interface_gui_init(void);
-extern void Configure_interface_destroy_shell(Widget widget, XtPointer clientData, XtPointer callData);
-extern void Configure_interface(Widget w, XtPointer clientData, XtPointer callData);
 extern void output_my_aprs_data(void);
-extern void control_interface(Widget w, XtPointer clientData, XtPointer callData);
 extern void dtr_all_set(int dtr);
-extern void interface_status(Widget w);
 extern void update_interface_list(void);
 extern int WX_rain_gauge_type;
+// The four Widget-taking declarations that were here moved to interface_gui.h.
+// This header is included by core files -- interface.c itself is one -- and
+// naming a Widget in it made them compile only because some *other* header
+// happened to have pulled in Xt first.  db_gui.c includes db_gis.h before
+// xastir.h and so did not, which is how it surfaced.
 
 /* interface.c */
 extern int is_local_interface(int port);

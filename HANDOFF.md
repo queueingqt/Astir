@@ -22,7 +22,8 @@ GUI object.
 | map drivers naming `Widget` | all | all | **0** |
 | drawing Xlib call sites outside the backend | — | 7 | 7 |
 | harnesses that can see the message windows | 0 | 0 | **1** |
-| core headers pulling in X11 | ? | ? | 1 — `xastir.h`, and it is the next job |
+| core `.c` files pulling in **no** X header at all | 0 | 0 | **28 of 65** |
+| core headers rooting the X include tree | 3 | 3 | 1 (`main.h`) + two `_gui.h` included by core |
 | lines of GTK4 front end written | 0 | 0 | **0** |
 
 Two things happened. First the harness the previous notes asked for, because the
@@ -138,23 +139,52 @@ Verified three ways, all of which had to pass before it was committed:
   did through the direct Motif calls.
 - `snapshot_ab.sh` — byte-identical to the baseline.
 
-### The next boundary is the headers
+### xastir.h is off X11; main.h is the next root
 
-`db.c` and `messages.c` name no X type and include no Motif header, but `db.c`
-still pulls in **106** X headers transitively, and nine of its includes are
-responsible. The root is one line:
+`xastir.h` opened with `#include <X11/Intrinsic.h>` and is included by every
+core file in the tree, so the shapefile reader and the APRS parser got Xt
+whether they wanted it or not. That line is gone.
 
-```
-xastir.h:54:#include <X11/Intrinsic.h>
-```
+What was in there split three ways:
 
-`xastir.h` is included by every core file in the tree, and it still needs that
-line itself: 11 `Widget`, 10 `Pixmap`, 7 `XtPointer`, an `XtAppContext` and a
-`Colormap`. Removing it is the same job just done for `messages.h` — move the
-widget-typed declarations to a GUI-side header — but at the scale of the file
-everything includes. That is what stands between "no core object calls Motif"
-and "the core compiles on a machine with no X headers installed", and only the
-second one is what a GTK4 port actually needs.
+- **Drawing objects** — `gc`, `gc2`, `gc_tint`, `gc_stipple`, `gc_bigfont`, the
+  seven pixmaps and `colors[]` — moved to `xa_draw.h` in the neutral types.
+  This is not a widening: `Pixmap` and `Pixel` *are* `unsigned long`, matching
+  `xa_surface_id` and `xa_color`, and `GC` converts implicitly to `xa_pen`'s
+  `void *`, which is why `xa_pen` was made `void *` in the first place. Core
+  drawing code already treated them this way — no core file ever passed one to
+  an Xlib call. The backend's definitions were changed to match, so declaration
+  and definition agree exactly rather than merely being layout-compatible.
+- **Widget-typed declarations** — `appshell`, `da`, `text`, `app_context`,
+  `screen_x_offset/y_offset`, `resize_dialog()`, `sort_list()`,
+  `redraw_symbols()`, `Last_location()`, `Jump_location()`,
+  `view_all_messages()`, `INT_TO_XTPOINTER` and the `MY_*_COLOR` macros — moved
+  to a new `xastir_gui.h`. None had a core caller.
+- **`cmap`** moved to `xa_draw_x11.h`. Only the backend and the two renderer
+  files beside it use it, and all three include X11 themselves.
+
+`interface.h` had to follow: it declared four Widget-taking functions from
+`interface_gui.c` and is included by core files, `interface.c` among them. It
+compiled only because something else had already pulled in Xt — `db_gui.c`
+includes `db_gis.h` before `xastir.h` and so had not, which is how it surfaced.
+Those four are in `interface_gui.h` now.
+
+`build.sh` checks `xastir.h` and `interface.h` for X-freedom on every build, so
+one convenient `#include` cannot put it back unnoticed.
+
+**What this did and did not achieve.** 28 of the 65 core `.c` files now compile
+without pulling in a single X header. The other 37 still do, and `db.c`'s count
+is unchanged at 106, because there are two more roots:
+
+| root | what it is |
+|---|---|
+| `main.h:27` `#include <X11/Intrinsic.h>` | the front-end header, but core files include it for non-GUI declarations. 45 X-type mentions of its own. |
+| `db_gui.h`, `objects_gui.h` | GUI headers *included by core files* — `db.c` includes `db_gui.h`, which pulls all of Motif |
+
+So the honest statement is that one of three roots is gone and the mechanism is
+proven; "the core builds on a machine with no X headers" is still false. `main.h`
+is the same job again at a larger scale, and the two `_gui.h` includes in `db.c`
+are a layering question rather than a header one.
 
 ## The message windows have a harness now
 
@@ -329,6 +359,33 @@ Three harnesses, and picking the wrong one gives a confident wrong answer.
 
 Do **not** use `ab-shot.sh` for A/B. It screenshots the whole screen.
 
+### The pixel harness is flaky, and it fakes a regression
+
+Found the hard way this session, after it produced a clean, reproducible,
+completely false regression that triggered a bisect.
+
+Xastir allocates its palette with `XAllocColor` from the shared colormap. Start
+it seconds after the previous instance exited and the server may still hold
+those entries, so allocation returns *approximations*. The frame renders,
+settles, passes the two-identical-snapshots check, and carries about 180 extra
+near-black shades. 822 colours becomes 964.
+
+It survived a revert-and-restore, because every "good" run happened to follow a
+five-minute rebuild and every "bad" one followed another Xastir within seconds.
+
+**The tell was in the numbers all along: the bad runs were 964 and 967.** Two
+runs of one build disagreeing is not a regression, it is a broken measurement.
+The same rule that caught the half-drawn-frame race, at the other end of the run.
+
+`snapshot_ab.sh` now sleeps 5 s after killing the previous instance and always
+prints the colour count, warning when it is not 822. `SNAP_EXPECT_COLORS=any`
+when a change is meant to alter the palette.
+
+**Do not bisect a pixel difference until a spaced-out re-run reproduces it.** A
+bisect on a flaky measurement will confidently name whichever change happened to
+be in the tree when the flake fired — here it named an innocent one, and the
+`.text` sections of every object were byte-identical across it.
+
 ### The harness was broken until this session, and silently
 
 `snapshot_ab.sh` deleted the snapshot before starting Xastir and took the first
@@ -403,14 +460,14 @@ In rough order of value per unit of risk:
 2. ~~**`messages.c`**~~ and ~~**`db.c`'s `update_messages()`**~~ — **both done**,
     in one move, because `mw[]` could not leave `messages.c` until `db.c` had
     stopped naming it. Eight callbacks; trace byte-identical.
-3. **Get `xastir.h` off `X11/Intrinsic.h`.** This is now the boundary — see
-    "The next boundary is the headers" above. It is the same job just finished
-    for `messages.h`, at the scale of the header every core file includes: 11
-    `Widget`, 10 `Pixmap`, 7 `XtPointer`, one `XtAppContext`, one `Colormap` to
-    relocate. Until it is done, "no core object calls Motif" is true and "the
-    core builds without X headers" is not, and it is the second that a GTK4 port
-    needs. Expect the compiler to find the files that were relying on getting
-    `Intrinsic.h` transitively; that is the sweep working, not a problem.
+3. ~~**Get `xastir.h` off `X11/Intrinsic.h`.**~~ **Done** — 28 of 65 core `.c`
+    files now pull in no X header. **Two roots remain**, and they are the next
+    job: `main.h:27` includes `<X11/Intrinsic.h>` and core files include
+    `main.h` for non-GUI declarations; and `db.c` includes `db_gui.h`, a Motif
+    header, which is a layering question rather than a header one. Same
+    technique both times — move the widget-typed declarations to a `_gui.h`,
+    let the compiler find the callers, and add the header to `build.sh`'s
+    neutrality check so it cannot come back.
 4. **Write a second backend.** `xa_draw.h` is ~40 entry points and the X11 one is
     ~1000 lines. A backend implementing only the drawing and pen calls, with text
     stubbed, is enough to find out whether the interface is actually sufficient —

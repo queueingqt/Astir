@@ -113,6 +113,7 @@ char *xastir_version=VERSION;
 #endif
 
 #include "xastir.h"
+#include "xastir_gui.h"
 #include "globals.h"
 #include "draw_symbols.h"
 #include "main.h"
@@ -121,6 +122,7 @@ char *xastir_version=VERSION;
 #include "xa_perf.h"
 #include "alert.h"
 #include "interface.h"
+#include "interface_gui.h"
 #include "wx.h"
 #include "popup.h"
 #include "track_gui.h"

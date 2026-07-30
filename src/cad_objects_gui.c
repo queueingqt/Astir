@@ -44,6 +44,7 @@
 #include "snprintf.h"
 
 #include "xastir.h"
+#include "xastir_gui.h"
 #include "globals.h"
 #include "main.h"
 #include "xa_config.h"

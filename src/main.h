@@ -243,10 +243,10 @@ extern int my_last_course;
 extern int my_last_speed;   // in knots
 extern unsigned igate_msgs_tx;
 extern int symbols_loaded;
-extern GC gc2;
-extern GC gc_tint;
-extern GC gc_stipple;
-extern GC gc_bigfont;
+// gc2, gc_tint, gc_stipple and gc_bigfont moved to xa_draw.h, as xa_pen.  Core
+// drawing code uses all four and only ever passes them to xa_draw calls, so
+// declaring them here made every such file depend on a front-end header for a
+// type it never actually needed.
 extern int read_file;
 extern float x_screen_distance;
 extern time_t max_transmit_time;

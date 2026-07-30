@@ -75,6 +75,7 @@
 #endif // HAVE_XM_XPMI_H
 
 #include "xastir.h"
+#include "xastir_gui.h"
 #include "globals.h"
 #include "main.h"
 #include "maps.h"

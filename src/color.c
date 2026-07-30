@@ -31,6 +31,7 @@
 #include <Xm/XmAll.h>
 
 #include "xastir.h"
+#include "xa_draw_x11.h"
 #include "color.h"
 #include "xa_config.h"
 

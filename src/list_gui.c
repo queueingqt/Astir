@@ -41,6 +41,7 @@
 #endif  // HAVE_XBAE_MATRIX_H
 
 #include "xastir.h"
+#include "xastir_gui.h"
 #include "main.h"
 #include "mutex_utils.h"
 #include "messages.h"

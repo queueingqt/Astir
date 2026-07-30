@@ -47,6 +47,7 @@
 #include <time.h>
 
 #include "xastir.h"
+#include "xastir_gui.h"
 #include "main.h"
 #include "db_funcs.h"
 #include "util.h"

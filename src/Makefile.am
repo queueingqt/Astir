@@ -40,7 +40,7 @@ XASTIR_SRC = \
     hashtable_itr.c hashtable_itr.h \
     igate.c igate.h \
     interface.c interface.h \
-    interface_gui.c \
+    interface_gui.c interface_gui.h \
     lang.c lang.h \
     leak_detection.h \
     list_gui.c list_gui.h \
@@ -57,6 +57,7 @@ XASTIR_SRC = \
     xa_state.c xa_state.h \
     xa_settings.c xa_settings.h \
     xa_ui.c xa_ui.h \
+    xastir_gui.h \
     map_cache.c map_cache.h \
     map_dos.c \
     map_geo.c \

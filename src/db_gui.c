@@ -7,6 +7,7 @@
 #include "db_gui.h"
 #include "snprintf.h"
 #include "xastir.h"
+#include "xastir_gui.h"
 #include "main.h"
 #include "draw_symbols.h"
 #include "alert.h"

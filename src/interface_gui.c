@@ -34,9 +34,11 @@
 #include <Xm/XmAll.h>
 
 #include "xastir.h"
+#include "xastir_gui.h"
 #include "main.h"
 #include "xa_config.h"
 #include "interface.h"
+#include "interface_gui.h"
 #include "wx.h"
 #include "draw_symbols.h"
 #include "util.h"

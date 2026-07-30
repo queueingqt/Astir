@@ -35,6 +35,7 @@
 #endif  // HAVE_XBAE_MATRIX_H
 
 #include "xastir.h"
+#include "xastir_gui.h"
 #include "main.h"
 #include "lang.h"
 #include "maps.h"

@@ -34,6 +34,7 @@
 #include <Xm/XmAll.h>
 
 #include "xastir.h"
+#include "xastir_gui.h"
 #include "main.h"
 #include "lang.h"
 #include "db_gui.h"
