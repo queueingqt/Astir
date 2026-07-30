@@ -108,8 +108,11 @@ itself platform implementation rather than application logic:
 | `color.c` | visual detection, `pack_pixel_bits` | 4 |
 | `main.c` | front end | 2 |
 
-So the seam is in the right place now. The remaining work is not "convert more
-call sites"; it is "write a second backend".
+So the *Xlib* seam is in the right place: what is left is either the backend or
+files a backend replaces outright. That is a different question from the Motif
+coupling above — `audit_x11.py` checks names against `<X11/Xlib.h>` and
+`<X11/Xutil.h>`, so `XmTextReplace` and `XtPopup` are not in these numbers at
+all. `db.o` and `messages.o` look clean here and are not.
 
 ## What this does NOT mean
 
