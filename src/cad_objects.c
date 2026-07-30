@@ -25,6 +25,9 @@
   #include "config.h"
 #endif  // HAVE_CONFIG_H
 
+// Came in via <X11/Xos.h> until the headers gave up their X includes.
+#include <string.h>
+#include <strings.h>
 #include "snprintf.h"
 
 #include "xastir.h"
@@ -54,7 +57,7 @@ int polygon_last_y = -1;        // Draw CAD Objects functions
 // route mouse clicks.  A plain flag, so it stays with the model.
 int draw_CAD_objects_flag = 0;
 
-void Draw_All_CAD_Objects(Widget w);
+void Draw_All_CAD_Objects(void);
 void Save_CAD_Objects_to_file(void);
 void CAD_object_set_raw_probability(CADRow *object_ptr, float probability, int as_percent);
 void Format_area_for_output(double *area_km2, char *area_description, int sizeof_area_description);
@@ -158,7 +161,7 @@ void CAD_object_allocate(long latitude, long longitude)
   p_new->creation_time = sec_now();
   p_new->start = NULL;
   p_new->line_color = colors[0x27];
-  p_new->line_type = 2;  // LineOnOffDash;
+  p_new->line_type = 2;  // XA_LINE_ON_OFF_DASH;
   p_new->line_width = 4;
   p_new->computed_area = 0;
   CAD_object_set_raw_probability(p_new,0.0,FALSE);
@@ -1077,7 +1080,7 @@ void Restore_CAD_Objects_from_file(void)
 // Function called by UpdateTime when doing screen refresh.  Draws
 // all CAD objects onto the screen again.
 //
-void Draw_All_CAD_Objects(Widget w)
+void Draw_All_CAD_Objects(void)
 {
   CADRow *object_ptr = CAD_list_head;
   long x_long, y_lat;
@@ -1086,7 +1089,7 @@ void Draw_All_CAD_Objects(Widget w)
   char probability_string[8];
   VerticeRow *vertice;
   double area;
-  int actual_line_type = LineOnOffDash;
+  int actual_line_type = XA_LINE_ON_OFF_DASH;
   static int sizeof_area_description = 50; // define here as local static to limit size of display on map
   // independent of size as shown on form
   char area_description[sizeof_area_description];
@@ -1178,21 +1181,21 @@ void Draw_All_CAD_Objects(Widget w)
       {
 
         case 1:
-          actual_line_type = LineSolid;
+          actual_line_type = XA_LINE_SOLID;
           break;
 
         case 2:
-          actual_line_type = LineOnOffDash;
+          actual_line_type = XA_LINE_ON_OFF_DASH;
           dash[0] = dash[1]  = 8;
           break;
 
         case 3:
-          actual_line_type = LineDoubleDash;
+          actual_line_type = XA_LINE_DOUBLE_DASH;
           dash[0] = dash[1]  = 16;
           break;
 
         default:
-          actual_line_type = LineOnOffDash;
+          actual_line_type = XA_LINE_ON_OFF_DASH;
           dash[0] = dash[1]  = 8;
           break;
       }

@@ -35,6 +35,10 @@
 
 #include "xastir.h"
 #include "xastir_gui.h"
+#include "wx_gui.h"
+#include "main_gui.h"
+#include "draw_symbols_gui.h"
+#include "cad_objects_gui.h"
 #include "main.h"
 #include "xa_config.h"
 #include "interface.h"

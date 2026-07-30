@@ -952,7 +952,7 @@ void draw_WMS_map (char *filenm,
             if (image->storage_class == PseudoClass)
             {
               if ( c_trans_color_head &&
-                   check_trans(my_colors[(int)index_pack[l]],c_trans_color_head))
+                   check_trans(my_colors[(int)index_pack[l]].pixel,c_trans_color_head))
               {
                 trans_skip = 1; // skip it
               }
@@ -988,7 +988,7 @@ void draw_WMS_map (char *filenm,
                               my_colors[0].blue * raster_map_intensity,
                               &my_colors[0].pixel);
               if ( c_trans_color_head &&
-                   check_trans(my_colors[0],c_trans_color_head))
+                   check_trans(my_colors[0].pixel,c_trans_color_head))
               {
                 trans_skip = 1; // skip it
               }

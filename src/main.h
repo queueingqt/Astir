@@ -24,7 +24,11 @@
 #ifndef XASTIR_MAIN_H
 #define XASTIR_MAIN_H
 
-#include <X11/Intrinsic.h>
+#include <sys/types.h>   // uid_t/gid_t, which used to arrive via Xos.h
+
+// No X11 header.  Core files include main.h for its non-GUI declarations, so
+// an include here puts Xt in front of them.  The widget-typed declarations
+// are in main_gui.h; the drawing objects are in xa_draw.h.
 
 // For mutex debugging with Linux threads only
 //#ifdef __linux__
@@ -70,7 +74,6 @@ extern int enable_server_port;
 
 extern char altnet_call[MAX_CALLSIGN+1];
 extern int altnet;
-extern Widget iface_da;
 extern FILE *read_file_ptr;
 extern int interrupt_drawing_now;
 
@@ -130,8 +133,6 @@ extern int skip_dupe_checking;
 extern int serial_char_pacing;  // Inter-character delay in ms.
 extern int disable_all_maps;
 extern int re_sort_maps;
-extern Widget trackme_button;
-extern Widget CAD_close_polygon_menu_item;
 extern int debug_level;
 extern int my_position_valid;
 extern int using_gps_position;
@@ -178,9 +179,8 @@ extern int emergency_beacon;
 
 extern int currently_selected_stations;
 extern int currently_selected_stations_save;
-extern Pixel colors[256];
-#define MAX_TRAIL_COLORS 32
-extern Pixel trail_colors[MAX_TRAIL_COLORS];
+// colors[], MAX_TRAIL_COLORS and trail_colors[] moved to xa_draw.h.  colors[]
+// was declared both here and in xastir.h; core drawing code uses all three.
 extern int current_trail_color;
 extern int english_units;
 extern int do_dbstatus;
@@ -266,36 +266,8 @@ extern int coordinate_system;
 #define USE_UTM_SPECIAL 4
 #define USE_MGRS        5
 
-typedef struct
-{
-  Widget calling_dialog;  // NULL if the calling dialog has been closed.
-  Widget input_lat_deg;   // Pointers to calling dialog's widgets
-  Widget input_lat_min;   // (Where to get/put the data)
-  Widget input_lat_dir;
-  Widget input_lon_deg;
-  Widget input_lon_min;
-  Widget input_lon_dir;
-} coordinate_calc_array_type;
-extern coordinate_calc_array_type coordinate_calc_array;
-extern void Coordinate_calc(Widget w, XtPointer clientData, XtPointer callData);
-
-
-extern void HandlePendingEvents(XtAppContext app);
-extern void create_gc(Widget w);
-extern void Station_List(Widget w, XtPointer clientData, XtPointer calldata);
-extern void Tracks_All_Clear(Widget w, XtPointer clientData, XtPointer callData);
-extern void Locate_station(Widget w, XtPointer clientData, XtPointer callData);
-extern void Locate_place(Widget w, XtPointer clientData, XtPointer callData);
-extern void Geocoder_place(Widget w, XtPointer clientData, XtPointer callData);
-extern void Configure_geocoder_settings(Widget w, XtPointer clientData, XtPointer callData);
-extern void Display_Wx_Alert(Widget w, XtPointer clientData, XtPointer callData);
-extern void Auto_msg_option(Widget w, XtPointer clientData, XtPointer calldata);
-extern void Auto_msg_set(Widget w, XtPointer clientData, XtPointer calldata);
-extern void Bulletins(Widget w, XtPointer clientData, XtPointer callData);
-extern void on_off_switch(int switchpos, Widget first, Widget second);
-extern void busy_cursor(Widget w);
-extern void pos_dialog(Widget w);
-extern int create_image(Widget w);
+// The coordinate-calculator dialog and the Widget-taking callbacks moved to
+// main_gui.h.
 
 typedef struct _transparent_color_record
 {
@@ -303,7 +275,9 @@ typedef struct _transparent_color_record
   struct _transparent_color_record *next;
 } transparent_color_record;
 
-extern int check_trans (XColor c, transparent_color_record *c_trans_color_head);
+// Takes the pixel value, not an XColor: the body only ever read c.pixel, and
+// an X11 struct by value in a core signature is what kept this header on Xt.
+extern int check_trans (unsigned long pixel, transparent_color_record *c_trans_color_head);
 
 extern void draw_WMS_map (char *filenm, int destination_pixmap, char *URL, transparent_color_record *c_trans_color_head, int nocache);
 
@@ -314,32 +288,17 @@ extern void view_message_gui_init(void);
 extern void wx_gui_init(void);
 extern long get_x_scale(long x, long y, long ysc);
 
-extern Widget Display_data_dialog;
-extern Widget Display_data_text;
-extern Widget text3;
-extern Widget text4;
-extern Widget log_indicator;
 extern void display_zoom_status(void);
-extern void Center_Zoom(Widget w, XtPointer clientData, XtPointer calldata);
 extern int center_zoom_override;
 extern void statusline(char *status_text,int update);
 extern void stderr_and_statusline(char *message);
 extern int SayTextInit(void);
 extern int SayText(char *text);
-extern Widget auto_msg_toggle;
 
 // Symbol update stuff
-extern Widget configure_station_dialog;
-extern Widget station_config_group_data;
-extern Widget station_config_symbol_data;
-extern void updateSymbolPictureCallback(Widget w,XtPointer clientData,XtPointer callData);
 
-extern Widget object_dialog;
-extern Widget object_group_data;
-extern Widget object_symbol_data;
-extern void updateObjectPictureCallback(Widget w,XtPointer clientData,XtPointer callData);
 
-extern void Draw_All_CAD_Objects(Widget w);
+extern void Draw_All_CAD_Objects(void);
 
 // Nominatim geocoding configuration
 extern char nominatim_server_url[400];

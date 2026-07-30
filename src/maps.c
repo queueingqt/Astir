@@ -149,7 +149,7 @@ extern XmFontList fontlist1;    // Menu/System fontlist
 #endif  // !(HAVE_LIBXPM || HAVE_LIBXPM_IN_XM)
 
 
-void draw_rotated_label_text_to_target (int rotation, int x, int y, int label_length, int color, char *label_text, int fontsize, Pixmap target_pixmap, int draw_outline, int outline_bg_color);
+void draw_rotated_label_text_to_target (int rotation, int x, int y, int label_length, int color, char *label_text, int fontsize, xa_surface_id target_pixmap, int draw_outline, int outline_bg_color);
 int get_rotated_label_text_height_pixels(char *label_text, int fontsize);
 
 // Constants defining the color of the labeled grid border.
@@ -420,7 +420,7 @@ void maps_init(void)
 #endif  // HAVE_LIBGEOTIFF
 
 #ifndef NO_XPM
-  fprintf(stderr,"%10s   X Pixmap Maps (XPM library)\n","xpm");
+  fprintf(stderr,"%10s   X xa_surface_id Maps (XPM library)\n","xpm");
 #endif  // NO_XPM
 
   init_critical_section( &print_properties_dialog_lock );
@@ -1020,8 +1020,8 @@ int clip2d_screen(unsigned int *x0, unsigned int *y0, unsigned int *x1, unsigned
 void draw_point(
                 unsigned long x1,
                 unsigned long y1,
-                GC gc,
-                Pixmap which_pixmap,
+                xa_pen gc,
+                xa_surface_id which_pixmap,
                 int skip_duplicates)
 {
 
@@ -1078,8 +1078,8 @@ void draw_point(
 //
 void draw_point_ll(float y1,   // lat1
                    float x1,   // long1
-                   GC gc,
-                   Pixmap which_pixmap,
+                   xa_pen gc,
+                   xa_surface_id which_pixmap,
                    int skip_duplicates)
 {
 
@@ -1120,8 +1120,8 @@ void draw_vector(
                  unsigned long y1,
                  unsigned long x2,
                  unsigned long y2,
-                 GC gc,
-                 Pixmap which_pixmap,
+                 xa_pen gc,
+                 xa_surface_id which_pixmap,
                  int skip_duplicates)
 {
 
@@ -1181,8 +1181,8 @@ void draw_vector_ll(
                     float x1,   // long1
                     float y2,   // lat2
                     float x2,   // long2
-                    GC gc,
-                    Pixmap which_pixmap,
+                    xa_pen gc,
+                    xa_surface_id which_pixmap,
                     int skip_duplicates)
 {
 
@@ -3854,7 +3854,7 @@ char rotated_label_fontname[FONT_MAX][MAX_LABEL_FONTNAME];
  **********************************************************/
 /* common code used by the two entries --- a result of retrofitting a new
    feature (centered) */
-static void draw_rotated_label_text_common (float my_rotation, int x, int y, int UNUSED(label_length), int color, char *label_text, int align, int fontsize, Pixmap target_pixmap, int draw_outline, int outline_bg_color)
+static void draw_rotated_label_text_common (float my_rotation, int x, int y, int UNUSED(label_length), int color, char *label_text, int align, int fontsize, xa_surface_id target_pixmap, int draw_outline, int outline_bg_color)
 {
   // Do some sanity checking
   if (fontsize < 0 || fontsize >= FONT_MAX)
@@ -3932,7 +3932,7 @@ int get_rotated_label_text_height_pixels(char *label_text, int fontsize)
 
 // Draw a rotated label onto the specified pixmap.
 // Wrapper for draw_rotated_label_text-common().
-void draw_rotated_label_text_to_target (int rotation, int x, int y, int label_length, int color, char *label_text, int fontsize, Pixmap target_pixmap, int draw_outline, int outline_bg_color)
+void draw_rotated_label_text_to_target (int rotation, int x, int y, int label_length, int color, char *label_text, int fontsize, xa_surface_id target_pixmap, int draw_outline, int outline_bg_color)
 {
   float my_rotation = (float)((-rotation)-90);
 

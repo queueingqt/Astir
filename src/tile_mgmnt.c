@@ -23,6 +23,8 @@
   #include "config.h"
 #endif  // HAVE_CONFIG_H
 
+// Came in via <X11/Xos.h> until the headers gave up their X includes.
+#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>

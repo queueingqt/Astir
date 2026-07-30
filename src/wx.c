@@ -67,7 +67,7 @@
 
 #include <string.h>
 
-#include <Xm/XmAll.h>
+// removed: #include <Xm/XmAll.h>   (no longer needed here)
 
 #include "wx.h"
 #include "main.h"

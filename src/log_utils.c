@@ -29,6 +29,9 @@
 #if HAVE_SYS_TIME_H
   #include <sys/time.h>
 #endif // HAVE_SYS_TIME_H
+// Came in via <X11/Xos.h> until the headers gave up their X includes.
+#include <string.h>
+#include <strings.h>
 #include <time.h>
 
 #include <stdlib.h>

@@ -47,11 +47,13 @@
   #define strtof(a,b) atof(a)
 #endif
 
+#include <string.h>
 #include "snprintf.h"
 
 #include <stdio.h>
 #include <ctype.h>
-#include <Xm/XmAll.h>
+// removed: #include <Xm/XmAll.h>   (this file names no X type;
+//          what it actually needed from it was the C library headers below)
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/types.h>

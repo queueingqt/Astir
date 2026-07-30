@@ -49,7 +49,7 @@
 #endif // HAVE_SYS_TIME_H
 #include <time.h>
 
-#include <Xm/XmAll.h>
+// removed: #include <Xm/XmAll.h>   (no longer needed here)
 
 #include "xastir.h"
 #include "rac_data.h"

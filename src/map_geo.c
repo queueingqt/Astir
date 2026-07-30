@@ -252,7 +252,7 @@ void new_trans_color(unsigned long trans_color)
  * ok to use IM calls.
  ******************************************(************************/
 
-int check_trans (XColor c, transparent_color_record *c_trans_color_head)
+int check_trans (unsigned long pixel, transparent_color_record *c_trans_color_head)
 {
   transparent_color_record *p = c_trans_color_head;
 
@@ -264,7 +264,7 @@ int check_trans (XColor c, transparent_color_record *c_trans_color_head)
   //}
   while (p)
   {
-    if ( c.pixel == p->trans_color )
+    if ( pixel == p->trans_color )
     {
       return 1;
     }
@@ -2371,7 +2371,7 @@ void draw_geo_image_map (char *dir,
           (void)xa_color_resolve(&my_colors[l].red, &my_colors[l].green, &my_colors[l].blue,
                                  &my_colors[l].pixel);
 
-          if (check_trans(my_colors[l],trans_color_head) )
+          if (check_trans(my_colors[l].pixel,trans_color_head) )
           {
 
             // Found a transparent color.  Leave it alone.
@@ -2720,7 +2720,7 @@ void draw_geo_image_map (char *dir,
             if (image->storage_class == PseudoClass)
             {
               if ( trans_color_head &&
-                   check_trans(my_colors[(int)index_pack[l]],trans_color_head) )
+                   check_trans(my_colors[(int)index_pack[l]].pixel,trans_color_head) )
               {
                 trans_skip = 1; // skip it
               }
@@ -2756,7 +2756,7 @@ void draw_geo_image_map (char *dir,
                               my_colors[0].blue * raster_map_intensity,
                               &my_colors[0].pixel);
               if ( trans_color_head &&
-                   check_trans(my_colors[0],trans_color_head) )
+                   check_trans(my_colors[0].pixel,trans_color_head) )
               {
                 trans_skip = 1; // skip it
               }

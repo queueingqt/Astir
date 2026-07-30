@@ -23,7 +23,7 @@
 #ifndef DLM_H
 #define DLM_H
 
-#include <X11/X.h>           // for KeySym
+// The <X11/X.h> that was here was for a KeySym this header does not name.
 
 int DLM_wait_done(time_t timeout);
 int DLM_check_progress(void);

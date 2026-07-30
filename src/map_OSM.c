@@ -270,8 +270,8 @@ unsigned int osm_zoom_level(long scale_x)
 } // osm_zoom_level()
 
 
-static KeySym OptimizeKey = 0;
-static KeySym ReportScaleKey = 0;
+static xa_keysym OptimizeKey = 0;
+static xa_keysym ReportScaleKey = 0;
 
 void init_OSM_values(void)
 {
@@ -280,23 +280,23 @@ void init_OSM_values(void)
   return;
 }
 
-int OSM_optimize_key(KeySym key)
+int OSM_optimize_key(xa_keysym key)
 {
   return (key == OptimizeKey ? TRUE : FALSE);
 }
 
-void set_OSM_optimize_key(KeySym key)
+void set_OSM_optimize_key(xa_keysym key)
 {
   OptimizeKey = key;
   return;
 }
 
-int OSM_report_scale_key(KeySym key)
+int OSM_report_scale_key(xa_keysym key)
 {
   return (key == ReportScaleKey ? TRUE : FALSE);
 }
 
-void set_OSM_report_scale_key(KeySym key)
+void set_OSM_report_scale_key(xa_keysym key)
 {
   ReportScaleKey = key;
   return;

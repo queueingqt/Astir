@@ -8,6 +8,10 @@
 #include "snprintf.h"
 #include "xastir.h"
 #include "xastir_gui.h"
+#include "wx_gui.h"
+#include "main_gui.h"
+#include "draw_symbols_gui.h"
+#include "cad_objects_gui.h"
 #include "main.h"
 #include "draw_symbols.h"
 #include "alert.h"
@@ -790,7 +794,7 @@ void display_file(Widget w)
 
   draw_ruler(w);
 
-  Draw_All_CAD_Objects(w);        // Draw all CAD objects, duh.
+  Draw_All_CAD_Objects();        // Draw all CAD objects, duh.
 
   // Check if we should mark where we found an address
   if (mark_destination)

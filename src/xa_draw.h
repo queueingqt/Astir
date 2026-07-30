@@ -518,4 +518,9 @@ extern xa_surface_id pixmap_wx_stipple;
 
 extern xa_color colors[256];    // the allocated screen colours
 
+// Station trail colours.  Declared in main.h until now, which meant a core file
+// drawing a trail had to include the front end's header to name the array.
+#define MAX_TRAIL_COLORS 32
+extern xa_color trail_colors[MAX_TRAIL_COLORS];
+
 #endif // XA_DRAW_H

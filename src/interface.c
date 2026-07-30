@@ -31,6 +31,7 @@
   #include "config.h"
 #endif  // HAVE_CONFIG_H
 
+#include <string.h>
 #include "snprintf.h"
 
 #include <stdio.h>
@@ -68,7 +69,8 @@
 
 #include <locale.h>
 
-#include <Xm/XmAll.h>
+// removed: #include <Xm/XmAll.h>   (this file names no X type;
+//          what it actually needed from it was the C library headers below)
 
 #include "xastir.h"
 #include "symbols.h"

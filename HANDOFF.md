@@ -22,8 +22,8 @@ GUI object.
 | map drivers naming `Widget` | all | all | **0** |
 | drawing Xlib call sites outside the backend | — | 7 | 7 |
 | harnesses that can see the message windows | 0 | 0 | **1** |
-| core `.c` files pulling in **no** X header at all | 0 | 0 | **28 of 65** |
-| core headers rooting the X include tree | 3 | 3 | 1 (`main.h`) + two `_gui.h` included by core |
+| core `.c` files pulling in **no** X header at all | 0 | 0 | **48 of 59** |
+| core headers rooting the X include tree | many | many | **0** |
 | lines of GTK4 front end written | 0 | 0 | **0** |
 
 Two things happened. First the harness the previous notes asked for, because the
@@ -139,52 +139,56 @@ Verified three ways, all of which had to pass before it was committed:
   did through the direct Motif calls.
 - `snapshot_ab.sh` — byte-identical to the baseline.
 
-### xastir.h is off X11; main.h is the next root
+### The core headers are off X11
 
 `xastir.h` opened with `#include <X11/Intrinsic.h>` and is included by every
-core file in the tree, so the shapefile reader and the APRS parser got Xt
-whether they wanted it or not. That line is gone.
+core file, so the shapefile reader and the APRS parser got Xt whether they
+wanted it or not. `main.h` did the same. Both are gone, along with the same
+problem in `interface.h`, `draw_symbols.h`, `cad_objects.h`, `maps.h`, `wx.h`,
+`station_draw.h`, `dlm.h` and `map_OSM.h`.
 
-What was in there split three ways:
+**48 of the 59 core `.c` files now compile with no X header reachable at all**,
+up from none.
 
-- **Drawing objects** — `gc`, `gc2`, `gc_tint`, `gc_stipple`, `gc_bigfont`, the
-  seven pixmaps and `colors[]` — moved to `xa_draw.h` in the neutral types.
-  This is not a widening: `Pixmap` and `Pixel` *are* `unsigned long`, matching
-  `xa_surface_id` and `xa_color`, and `GC` converts implicitly to `xa_pen`'s
-  `void *`, which is why `xa_pen` was made `void *` in the first place. Core
-  drawing code already treated them this way — no core file ever passed one to
-  an Xlib call. The backend's definitions were changed to match, so declaration
-  and definition agree exactly rather than merely being layout-compatible.
-- **Widget-typed declarations** — `appshell`, `da`, `text`, `app_context`,
-  `screen_x_offset/y_offset`, `resize_dialog()`, `sort_list()`,
-  `redraw_symbols()`, `Last_location()`, `Jump_location()`,
-  `view_all_messages()`, `INT_TO_XTPOINTER` and the `MY_*_COLOR` macros — moved
-  to a new `xastir_gui.h`. None had a core caller.
-- **`cmap`** moved to `xa_draw_x11.h`. Only the backend and the two renderer
-  files beside it use it, and all three include X11 themselves.
+Three kinds of thing were in those headers, and they needed three different
+answers:
 
-`interface.h` had to follow: it declared four Widget-taking functions from
-`interface_gui.c` and is included by core files, `interface.c` among them. It
-compiled only because something else had already pulled in Xt — `db_gui.c`
-includes `db_gis.h` before `xastir.h` and so had not, which is how it surfaced.
-Those four are in `interface_gui.h` now.
+- **Drawing objects and surfaces** → `xa_draw.h`, in the neutral types. The
+  five GCs, seven pixmaps, `colors[]` and `trail_colors[]`; every `Pixmap where`
+  parameter in `draw_symbols.h`/`maps.h` became `xa_surface_id`, and `GC gc`
+  became `xa_pen`. Not a widening: `Pixmap` and `Pixel` *are* `unsigned long`,
+  and `GC` converts implicitly to `xa_pen`'s `void *`. Core drawing code already
+  treated all of them this way.
+- **Widget-typed declarations** → six new `_gui.h` headers (`xastir_gui.h`,
+  `main_gui.h`, `interface_gui.h`, `draw_symbols_gui.h`, `cad_objects_gui.h`,
+  `maps_gui.h`, `wx_gui.h`). None had a core caller.
+- **Things that were only pretending to need X** — `check_trans()` took an
+  `XColor` by value but read only `.pixel`, so it takes the pixel now;
+  `Draw_All_CAD_Objects()` carried a `Widget` it never used;
+  `station_draw.h`'s include had a comment explaining it could not be removed
+  until the font calls went through the drawing layer, which had already
+  happened two sessions earlier; `dlm.h` included `<X11/X.h>` for a `KeySym` it
+  does not name.
 
-`build.sh` checks `xastir.h` and `interface.h` for X-freedom on every build, so
-one convenient `#include` cannot put it back unnoticed.
+**The surprise was `<X11/Xos.h>`.** Ten core files stopped compiling when their
+X include went, and not one of them needed X: they needed `<string.h>`. Xt had
+been supplying `strlen`, `strcmp`, `memcpy` and friends transitively for
+decades. GCC names the header it wants in its diagnostic, which made the sweep
+mechanical -- remove the include, read the `note: include ‘<string.h>’`, add it,
+recompile.
 
-**What this did and did not achieve.** 28 of the 65 core `.c` files now compile
-without pulling in a single X header. The other 37 still do, and `db.c`'s count
-is unchanged at 106, because there are two more roots:
+`build.sh` checks `xastir.h` and `interface.h` for X-freedom on every build.
 
-| root | what it is |
-|---|---|
-| `main.h:27` `#include <X11/Intrinsic.h>` | the front-end header, but core files include it for non-GUI declarations. 45 X-type mentions of its own. |
-| `db_gui.h`, `objects_gui.h` | GUI headers *included by core files* — `db.c` includes `db_gui.h`, which pulls all of Motif |
+**11 core files still reach X**, and they are the honest remainder rather than
+oversight: `draw_symbols.c` names `Display`, `map_shp.c` uses `XPoint` in its
+vertex buffers, `xa_config.c` has `Widget` in a signature, and the raster map
+drivers (`map_dos.c`, `map_gnis.c`, `map_pop.c`, `map_tif.c`) use `XColor` and
+the XPM path. Those are conversions, not relocations, and several belong to
+whichever backend comes next.
 
-So the honest statement is that one of three roots is gone and the mechanism is
-proven; "the core builds on a machine with no X headers" is still false. `main.h`
-is the same job again at a larger scale, and the two `_gui.h` includes in `db.c`
-are a layering question rather than a header one.
+`db.c` also still includes `db_gui.h` and `objects_gui.h` -- GUI headers pulled
+in by a core file. That is a layering question, not a header one, and it is why
+`db.c` is in the 11.
 
 ## The message windows have a harness now
 

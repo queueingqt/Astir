@@ -29,8 +29,6 @@
 
 extern void fill_wx_data(void);
 
-extern Widget GetTopShell(Widget w);
-extern void pos_dialog(Widget w);
 extern char wx_station_type[];
 
 /* from wx.c */
@@ -69,9 +67,7 @@ extern void cycle_weather(void);
 /* wx_gui.c */
 extern void wx_alert_update_list(void);
 
-extern void WX_station(Widget w, XtPointer clientData, XtPointer callData);
 
-extern void wx_alert_finger_output( Widget widget, char *handle);
 
 #endif  // __XASTIR_WX_H
 

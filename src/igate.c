@@ -35,9 +35,9 @@
 #include <signal.h>
 #include <stdlib.h>
 #include <string.h>
-#include <Xm/XmAll.h>
-#include <X11/Xatom.h>
-#include <X11/Shell.h>
+// removed: #include <Xm/XmAll.h>   (no longer needed here)
+// removed: #include <X11/Xatom.h>   (no longer needed here)
+// removed: #include <X11/Shell.h>   (no longer needed here)
 
 #include "xastir.h"
 #include "igate.h"

@@ -24,9 +24,7 @@
 #define XASTIR_CAD_OBJECTS_H
 
 
-extern void Draw_All_CAD_Objects(Widget w);
-extern void Draw_CAD_Objects_erase_dialog(Widget w, XtPointer clientData, XtPointer callData);
-extern void Draw_CAD_Objects_list_dialog(Widget w, XtPointer clientData, XtPointer callData);
+extern void Draw_All_CAD_Objects(void);
 extern int draw_CAD_objects_flag;
 extern int polygon_last_x;
 extern int polygon_last_y;
@@ -36,9 +34,6 @@ extern int CAD_show_label;
 extern int CAD_show_raw_probability;
 extern int CAD_show_comment;
 extern int CAD_show_area;
-extern void Draw_CAD_Objects_mode( Widget widget, XtPointer clientData, XtPointer callData);
-extern void Draw_CAD_Objects_close_polygon(Widget w, XtPointer clientData, XtPointer calldata);
-extern void Draw_CAD_Objects_erase(Widget w, XtPointer clientData, XtPointer calldata);
 extern void CAD_vertice_allocate(long latitude, long longitude);
 extern void CAD_object_allocate(long latitude, long longitude);
 extern void Restore_CAD_Objects_from_file(void);

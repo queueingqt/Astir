@@ -26,6 +26,8 @@
   #include "config.h"
 #endif  // HAVE_CONFIG_H
 
+// Came in via <X11/Xos.h> until xastir.h/main.h gave up their X includes.
+#include <string.h>
 #include "snprintf.h"
 
 #include <stdint.h>

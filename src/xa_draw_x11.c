@@ -1157,6 +1157,6 @@ xa_surface_id  pixmap_wx_stipple;  // Used for weather alerts
 // Colour resources: the allocated palette, the trail palette, the colormap
 // and the visual class.  Renderer state, for the same reason as the GCs.
 xa_color colors[256];           /* screen colors */
-Pixel trail_colors[MAX_TRAIL_COLORS]; /* station trail colors, duh */
+xa_color trail_colors[MAX_TRAIL_COLORS]; /* station trail colors, duh */
 Pixel_Format visual_type = NOT_TRUE_NOR_DIRECT;
 Colormap cmap;                  /* current colormap */

@@ -328,7 +328,7 @@ void display_station(DataRow *p_station, int single)
   int speed_ok = 0;
   int course_ok = 0;
   int wx_ghost = 0;
-  Pixmap drawing_target;
+  xa_surface_id drawing_target;
   WeatherRow *weather = p_station->weather_data;
   time_t secs_now = sec_now();
   int ambiguity_flag;

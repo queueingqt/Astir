@@ -24,12 +24,12 @@
 #ifndef __XASTIR_MAPS_H
 #define __XASTIR_MAPS_H
 
-// Xt only, for the Widget and XtPointer in the declarations below.  <Xm/Xm.h>
+// (was: Xt only, for the Widget and XtPointer in the declarations below)
 // was here for one field of map_index_record, which is now opaque.  Of the 21
 // files that include this header, 19 include a Motif header themselves and are
 // unaffected; log_utils.c and tile_mgmnt.c reached Motif only through here, and
 // now reach none of it.
-#include <X11/Intrinsic.h>
+// The Widget-taking declarations moved to maps_gui.h.
 
 #define MAX_OUTBOUND 900
 #define MAX_MAP_POINTS 500000
@@ -116,14 +116,14 @@ typedef struct
 void draw_point(
                 unsigned long x1,
                 unsigned long y1,
-                GC gc,
-                Pixmap which_pixmap,
+                xa_pen gc,
+                xa_surface_id which_pixmap,
                 int skip_duplicates);
 
 void draw_point_ll(float y1,
                    float x1,
-                   GC gc,
-                   Pixmap which_pixmap,
+                   xa_pen gc,
+                   xa_surface_id which_pixmap,
                    int skip_duplicates);
 
 void draw_vector(
@@ -131,8 +131,8 @@ void draw_vector(
                  unsigned long y1,
                  unsigned long x2,
                  unsigned long y2,
-                 GC gc,
-                 Pixmap which_pixmap,
+                 xa_pen gc,
+                 xa_surface_id which_pixmap,
                  int skip_duplicates);
 
 void draw_vector_ll(
@@ -140,8 +140,8 @@ void draw_vector_ll(
                     float x1,
                     float y2,
                     float x2,
-                    GC gc,
-                    Pixmap which_pixmap,
+                    xa_pen gc,
+                    xa_surface_id which_pixmap,
                     int skip_duplicates);
 
 char *get_map_ext (char *filename);
@@ -182,7 +182,6 @@ extern void draw_label_text (int x, int y, int label_length, int color, char *la
 extern void draw_rotated_label_text (int rotation, int x, int y, int label_length, int color, char *label_text, int fontsize);
 extern int get_rotated_label_text_length_pixels(char *label_text, int fontsize);
 extern void draw_centered_label_text (int rotation, int x, int y, int label_length, int color, char *label_text, int fontsize);
-extern void  Monochrome( Widget widget, XtPointer clientData, XtPointer callData);
 extern void Snapshot(void);
 extern void clean_string(char *input);
 extern int print_rotated;
@@ -193,15 +192,7 @@ extern int print_invert;
 extern char printer_program[MAX_FILENAME+1];
 extern char previewer_program[MAX_FILENAME+1];
 
-extern int  gnis_locate_place(Widget w, char *name, char *state,
-                              char *county, char *quad, char* type, char *filename, int
-                              follow_case, int get_match, char match_array_name[50][200], long
-                              match_array_lat[50], long match_array_long[50]);
 
-extern int  pop_locate_place(Widget w, char *name, char *state,
-                             char *county, char *quad, char* type, char *filename, int
-                             follow_case, int get_match, char match_array_name[50][200], long
-                             match_array_lat[50], long match_array_long[50]);
 
 
 extern void maps_init(void);
@@ -222,7 +213,6 @@ extern int grid_size;
 
 extern float raster_map_intensity;
 
-extern void Print_Postscript(Widget widget, XtPointer clientData, XtPointer callData);
 
 extern void map_plot (long max_x, long max_y, long x_long_cord, long y_lat_cord, unsigned char color, long object_behavior, int destination_pixmap, int draw_filled);
 

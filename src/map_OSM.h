@@ -24,7 +24,9 @@
 #ifndef OSM_H
 #define OSM_H
 
-#include <X11/X.h>           // for KeySym
+// xa_keysym is an XID, i.e. unsigned long.  Spelled out rather than included,
+// because the front end owns key handling and this is only where it lands.
+typedef unsigned long xa_keysym;
 
 #define MAX_OSMSTYLE 1000  // max characters in the a OSM style argument
 #define MAX_OSM_URL  1000  // max characters for a OSM URL
@@ -49,9 +51,9 @@ void draw_OSM_tiles(char *filenm,
 
 unsigned int osm_zoom_level(long scale_x);
 void init_OSM_values(void);
-int OSM_optimize_key(KeySym key);
-void set_OSM_optimize_key(KeySym key);
-int OSM_report_scale_key(KeySym key);
-void set_OSM_report_scale_key(KeySym key);
+int OSM_optimize_key(xa_keysym key);
+void set_OSM_optimize_key(xa_keysym key);
+int OSM_report_scale_key(xa_keysym key);
+void set_OSM_report_scale_key(xa_keysym key);
 
 #endif //OSM_H

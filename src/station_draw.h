@@ -5,23 +5,15 @@
  * display_station() included a GUI header to do it.  None of them contains a
  * Motif reference and they belong on this side of the boundary.
  *
- * Unlike xa_ui.h, xa_state.h and xa_settings.h, this header is NOT toolkit-free,
- * and it is worth being explicit about why rather than quietly declaring the
- * parameter void *.  The Widget in these signatures is not decoration:
- * display_station() passes it to draw_symbol(), which calls
- * XQueryFont(XtDisplay(w)) to measure text.  Every caller supplies the drawing
- * area and nothing else would work, so the argument is effectively a constant --
- * but it cannot be dropped, or narrowed, until the font calls go through the
- * drawing layer.  That is the same blocker that stops maps.c and
- * draw_symbols.c being split.
- *
- * So: Xt only, no Motif, and a note to come back here when fonts are done.
+ * It used to carry <X11/Intrinsic.h> for a Widget in these signatures, with a
+ * note saying it could not be dropped until the font calls went through the
+ * drawing layer.  Both have since happened -- the Widget strip removed the
+ * parameter and xa_draw.h owns the font calls -- so the include went with them.
+ * The note outlived the reason for it by two sessions.
  */
 
 #ifndef XASTIR_STATION_DRAW_H
 #define XASTIR_STATION_DRAW_H
-
-#include <X11/Intrinsic.h>      // Widget; see the note above
 
 #include "database.h"           // DataRow
 

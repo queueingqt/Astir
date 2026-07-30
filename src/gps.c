@@ -25,11 +25,13 @@
   #include "config.h"
 #endif  // HAVE_CONFIG_H
 
+#include <string.h>
 #include "snprintf.h"
 
 #include <stdio.h>
 #include <ctype.h>
-#include <Xm/XmAll.h>
+// removed: #include <Xm/XmAll.h>   (this file names no X type;
+//          what it actually needed from it was the C library headers below)
 
 #if HAVE_SYS_TIME_H
   #include <sys/time.h>

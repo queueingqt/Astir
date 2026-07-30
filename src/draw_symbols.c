@@ -101,7 +101,7 @@ void clear_symbol_data(void)
  *  Modified to take into account the font metrics - N7IPB
  *  4/8/2016
  */
-void draw_nice_string(Pixmap where, int style, long x, long y, char *text, int bgcolor, int fgcolor, int length)
+void draw_nice_string(xa_surface_id where, int style, long x, long y, char *text, int bgcolor, int fgcolor, int length)
 {
   if (x > screen_width || x < 0 || y > screen_height || y < 0)
     return;
@@ -269,7 +269,7 @@ void draw_WP_line(DataRow *p_station,
                   int ambiguity_flag,
                   long ambiguity_coord_lon,
                   long ambiguity_coord_lat,
-                  Pixmap where)
+                  xa_surface_id where)
 {
   DataRow *transmitting_station = NULL;
   int my_course;
@@ -424,7 +424,7 @@ void draw_WP_line(DataRow *p_station,
 // range is in miles
 // x_long/y_lat are in Xastir lat/lon units
 //
-void draw_pod_circle(long x_long, long y_lat, double range, int color, Pixmap where, int sec_heard)
+void draw_pod_circle(long x_long, long y_lat, double range, int color, xa_surface_id where, int sec_heard)
 {
   double diameter;
 
@@ -495,7 +495,7 @@ void draw_precision_rectangle(long x_long,
                               unsigned int lat_precision,
                               unsigned int lon_precision,
                               int color,
-                              Pixmap where)
+                              xa_surface_id where)
 {
 
 // Prevents it from being drawn when the symbol is off-screen.
@@ -554,7 +554,7 @@ void draw_precision_rectangle(long x_long,
 
 
 
-void draw_phg_rng(long x_long, long y_lat, char *phg, time_t sec_heard, Pixmap where)
+void draw_phg_rng(long x_long, long y_lat, char *phg, time_t sec_heard, xa_surface_id where)
 {
   double range, diameter;
   int offx,offy;
@@ -722,7 +722,7 @@ void draw_phg_rng(long x_long, long y_lat, char *phg, time_t sec_heard, Pixmap w
 //
 // We change from filled circles to open circles at zoom level 128 for speed purposes.
 //
-void draw_DF_circle(long x_long, long y_lat, char *shgd, time_t sec_heard, Pixmap where)
+void draw_DF_circle(long x_long, long y_lat, char *shgd, time_t sec_heard, xa_surface_id where)
 {
   double range, diameter;
   int offx,offy;
@@ -993,7 +993,7 @@ void draw_DF_circle(long x_long, long y_lat, char *shgd, time_t sec_heard, Pixma
 // Draw the ALOHA circle
 // Identical to draw_pod_circle when this was first written, but separated
 // just in case that POD functionality ever changes per the comments in it
-void draw_aloha_circle(long x_long, long y_lat, double range, int color, Pixmap where)
+void draw_aloha_circle(long x_long, long y_lat, double range, int color, xa_surface_id where)
 {
   double diameter;
   long width, height;
@@ -1073,7 +1073,7 @@ void set_barb_parameters(void)
 
 
 
-void draw_half_barbs(int *i, int quantity, float bearing_radians, long x, long y, char * UNUSED(course), Pixmap where)
+void draw_half_barbs(int *i, int quantity, float bearing_radians, long x, long y, char * UNUSED(course), xa_surface_id where)
 {
   float barb_radians = bearing_radians + ( (45/360.0) * 2.0 * M_PI);
   int j;
@@ -1110,7 +1110,7 @@ void draw_half_barbs(int *i, int quantity, float bearing_radians, long x, long y
 
 
 
-void draw_full_barbs(int *i, int quantity, float bearing_radians, long x, long y, char * UNUSED(course), Pixmap where)
+void draw_full_barbs(int *i, int quantity, float bearing_radians, long x, long y, char * UNUSED(course), xa_surface_id where)
 {
   float barb_radians = bearing_radians + ( (45/360.0) * 2.0 * M_PI);
   int j;
@@ -1147,7 +1147,7 @@ void draw_full_barbs(int *i, int quantity, float bearing_radians, long x, long y
 
 
 
-void draw_triangle_flags(int *i, int quantity, float bearing_radians, long x, long y, char * UNUSED(course), Pixmap where)
+void draw_triangle_flags(int *i, int quantity, float bearing_radians, long x, long y, char * UNUSED(course), xa_surface_id where)
 {
   float barb_radians = bearing_radians + ( (45/360.0) * 2.0 * M_PI);
   int j;
@@ -1193,7 +1193,7 @@ void draw_triangle_flags(int *i, int quantity, float bearing_radians, long x, lo
 
 
 
-void draw_square_flags(int *i, int quantity, float bearing_radians, long x, long y, char * UNUSED(course), Pixmap where)
+void draw_square_flags(int *i, int quantity, float bearing_radians, long x, long y, char * UNUSED(course), xa_surface_id where)
 {
   float barb_radians = bearing_radians + ( (90/360.0) * 2.0 * M_PI);
   int j;
@@ -1251,7 +1251,7 @@ void draw_square_flags(int *i, int quantity, float bearing_radians, long x, long
 //     Half barb = 5 knots
 //
 void draw_wind_barb(long x_long, long y_lat, char *speed,
-                    char *course, time_t sec_heard, Pixmap where)
+                    char *course, time_t sec_heard, xa_surface_id where)
 {
   int square_flags = 0;
   int triangle_flags = 0;
@@ -1460,7 +1460,7 @@ void draw_wind_barb(long x_long, long y_lat, char *speed,
 void draw_bearing(long x_long, long y_lat, char *course,
                   char *bearing, char *NRQ, int UNUSED(color), int draw_beamwidth,
                   int draw_bearing,
-                  time_t sec_heard, Pixmap where)
+                  time_t sec_heard, xa_surface_id where)
 {
   double range = 0;
   double real_bearing = 0.0;
@@ -1627,7 +1627,7 @@ void draw_bearing(long x_long, long y_lat, char *course,
 // then add 1/2 the rectangle offsets in order to get the symbol
 // placed in the middle of the rectangle.
 //
-void draw_ambiguity(long x_long, long y_lat, char amb, long *amb_x_long, long *amb_y_lat, time_t sec_heard, Pixmap UNUSED(where) )
+void draw_ambiguity(long x_long, long y_lat, char amb, long *amb_x_long, long *amb_y_lat, time_t sec_heard, xa_surface_id UNUSED(where) )
 {
   unsigned long left, right, top, bottom;
   long offset_lat, offset_long;
@@ -1811,7 +1811,7 @@ static __inline__ int onscreen(long left, long right, long top, long bottom)
 // the bottom right and the bottom of the triangle being horizontal.
 //
 void draw_area(long x_long, long y_lat, char type, char color,
-               char sqrt_lat_off, char sqrt_lon_off, unsigned int width, time_t sec_heard, Pixmap where)
+               char sqrt_lat_off, char sqrt_lon_off, unsigned int width, time_t sec_heard, xa_surface_id where)
 {
   long left, top, right, bottom, xoff, yoff;
   int  c;
@@ -2354,7 +2354,7 @@ void load_pixmap_symbol_file(char *filename, int reloading)
 // add a symbol to the end of the symbol table.
 //
 // Here we actually draw the pixels into the SymbolData struct,
-// which contains separate Pixmap's for the icon, the transparent
+// which contains separate xa_surface_id's for the icon, the transparent
 // background, and the ghost image.
 //
 void insert_symbol(char table, char symbol, char *pixel, int deg, char orient, int reloading)
@@ -2553,7 +2553,7 @@ int nosym_index = -1;
 
 // Look through our symbol table for a match.
 //
-void symbol(int ghost, char symbol_table, char symbol_id, char symbol_overlay, Pixmap where,
+void symbol(int ghost, char symbol_table, char symbol_id, char symbol_overlay, xa_surface_id where,
             int mask, long x_offset, long y_offset, char orient)
 {
   int i;
@@ -2761,7 +2761,7 @@ long get_text_width(char *text)
 void draw_symbol(char symbol_table, char symbol_id, char symbol_overlay,
                  long x_long,long y_lat, char *callsign_text, char *alt_text, char *course_text,
                  char *speed_text, char *my_distance, char *my_course, char *wx_temp,
-                 char* wx_wind, time_t sec_heard, int temp_show_last_heard, Pixmap where,
+                 char* wx_wind, time_t sec_heard, int temp_show_last_heard, xa_surface_id where,
                  char orient, char area_type, char *signpost, char *gauge_data, int bump_count)
 {
   long x_offset,y_offset;
@@ -3154,7 +3154,7 @@ static int getLineStyle(char styleChar)
  * Draw the other points associated with the station.
  * KG4NBB
  */
-void draw_multipoints(long UNUSED(x_long), long UNUSED(y_lat), int numpoints, long mypoints[][2], char type, char style, time_t sec_heard, Pixmap where)
+void draw_multipoints(long UNUSED(x_long), long UNUSED(y_lat), int numpoints, long mypoints[][2], char type, char style, time_t sec_heard, xa_surface_id where)
 {
   int ghost;
   int skip_duplicates;
@@ -3344,7 +3344,7 @@ void draw_multipoints(long UNUSED(x_long), long UNUSED(y_lat), int numpoints, lo
 // Function to draw dead-reckoning symbols.
 //
 void draw_deadreckoning_features(DataRow *p_station,
-                                 Pixmap where)
+                                 xa_surface_id where)
 {
   double my_course;
   long x_long, y_lat;
