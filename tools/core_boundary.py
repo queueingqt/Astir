@@ -7,6 +7,9 @@ per object file, how many symbols it pulls from main.o -- and splits them into
 data (globals, the hard part) versus functions (callable, can become a vtable).
 """
 import subprocess, sys, os, glob, collections
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import srctree
 
 srcdir = sys.argv[1] if len(sys.argv) > 1 else "."
 
@@ -36,7 +39,7 @@ def syms(obj, mode):
             d[p[1]] = "U"
     return d
 
-main_o = os.path.join(srcdir, "main.o")
+main_o = srctree.main_object(srcdir)
 if not os.path.exists(main_o):
     raise SystemExit("main.o not found; build first")
 
@@ -51,7 +54,7 @@ for line in out.splitlines():
 
 rows = []
 all_needed = collections.Counter()
-for obj in sorted(glob.glob(os.path.join(srcdir, "*.o"))):
+for obj in sorted(srctree.objects(srcdir)):
     base = os.path.basename(obj)
     if base == "main.o":
         continue
@@ -77,7 +80,7 @@ print("\ncore objects needing main.o : %d" % len(core_rows))
 # accumulates over every object including the GUI ones, directly under the
 # core-object line -- so it read as the core's number and was quoted as one.
 core_syms = set()
-for obj in sorted(glob.glob(os.path.join(srcdir, "*.o"))):
+for obj in sorted(srctree.objects(srcdir)):
     base = os.path.basename(obj)
     if base == "main.o" or base in GUI_OBJS or base in STANDALONE:
         continue
@@ -91,7 +94,7 @@ print("  (all objects, GUI included, need %d -- not the same question)"
 # The globals shared by the most core objects are the ones to move first.
 print("\nmost widely shared main.o DATA symbols (core objects only):")
 shared = collections.Counter()
-for obj in sorted(glob.glob(os.path.join(srcdir, "*.o"))):
+for obj in sorted(srctree.objects(srcdir)):
     base = os.path.basename(obj)
     if base == "main.o" or base in GUI_OBJS:
         continue
@@ -121,7 +124,7 @@ print("\ndistinct main.o data symbols used by core objects: %d" % len(shared))
 # cheap version of the same question.
 # ---------------------------------------------------------------------------
 gui_defines = {}
-for obj in sorted(glob.glob(os.path.join(srcdir, "*.o"))):
+for obj in sorted(srctree.objects(srcdir)):
     base = os.path.basename(obj)
     if base not in GUI_OBJS:
         continue
@@ -133,7 +136,7 @@ for obj in sorted(glob.glob(os.path.join(srcdir, "*.o"))):
             gui_defines.setdefault(p[2], base)
 
 per_gui = collections.defaultdict(set)
-for obj in sorted(glob.glob(os.path.join(srcdir, "*.o"))):
+for obj in sorted(srctree.objects(srcdir)):
     base = os.path.basename(obj)
     if base in GUI_OBJS or base in STANDALONE:
         continue

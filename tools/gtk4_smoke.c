@@ -19,7 +19,7 @@
 #include <stdlib.h>
 #include <cairo.h>
 
-#include "xa_draw.h"
+#include "draw/xa_draw.h"
 
 // Provided by the backend; declared here so this file needs no gtk header.
 void             xa_gtk4_set_canvas(void *canvas, int width, int height);

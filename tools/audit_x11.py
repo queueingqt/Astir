@@ -20,6 +20,9 @@ xa_draw_x11.c, and XTPOINTER_TO_INT is a macro too.  All four would inflate the
 count.  A name counts only if <X11/Xlib.h> or <X11/Xutil.h> declares it.
 """
 import re, sys, glob, os, collections
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import srctree
 
 # The Stage 2 conversion scope: primitives that now go through xa_draw.h.
 DRAWING = [
@@ -107,7 +110,7 @@ def scan(srcdir):
     other_fn = collections.Counter()
     other_where = collections.defaultdict(collections.Counter)
 
-    for path in sorted(glob.glob(os.path.join(srcdir, "*.c"))):
+    for path in srctree.sources(srcdir):
         base = os.path.basename(path)
         with open(path, "r", encoding="utf-8", errors="replace") as f:
             code = strip(f.read())

@@ -4,7 +4,7 @@
 # snapshot_ab.sh compares the map canvas, which is the one thing the Send
 # Message windows are not part of.  This drives message traffic through a
 # replayed packet log instead and records what the core asks the message
-# windows to do -- see src/xa_trace.h.
+# windows to do -- see src/core/util/xa_trace.h.
 #
 #   ./tools/trace_ab.sh <out.trace>
 #

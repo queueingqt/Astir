@@ -24,16 +24,32 @@ Two ways to get a meaningless answer here, both of which happened:
 Usage: link_core.py [srcdir]     (default src/, must be built)
 """
 import subprocess, sys, os, re, glob, tempfile, collections
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import srctree
 
-GUI_SUFFIX = "_gui.o"
-STANDALONE = {"xastir_udp_client.o", "testdbfawk.o", "callpass.o"}
+# What counts as core is now a place, not a naming convention.  The old rule --
+# "not main.o, not *_gui.o, not one of three named apps" -- described the set by
+# listing everything it was not, so a new front-end file that forgot the _gui
+# suffix would have been linked into the core link and reported as clean.
+#
+# draw/ is in here with core/ deliberately, and it is the whole subtlety of this
+# tool.  The question it asks is "does the core need the FRONT END", and a
+# backend is not a front end -- the Motif build links draw/x11 and a GTK4 build
+# links draw/gtk4, but both link one.  Dropping draw/ would make this demand the
+# 59 xa_draw.h entry points from thin air and report a failure that is really
+# just "a program needs a backend".
+#
+# The stricter question -- can the core link against a backend that is not X11
+# at all -- is link_null.py's, and it is a different tool for that reason.
+CORE_DIRS = ("core", "draw")
 
 
 def link_command(srcdir):
   """The real link line for xastir, from make, so this tracks ./configure."""
   # -W pretends main.c changed, so make prints the relink without touching
   # anything.  Without it make says "up to date" and prints no link line at all.
-  mk = subprocess.run(["make", "-n", "-W", "main.c", "xastir"], cwd=srcdir,
+  mk = subprocess.run(["make", "-n", "-W", "ui/motif/main.c", "xastir"], cwd=srcdir,
                       capture_output=True, text=True).stdout
   for line in mk.splitlines():
     if " -o xastir " not in line:
@@ -50,7 +66,7 @@ def link_command(srcdir):
 
 def main():
   srcdir = sys.argv[1] if len(sys.argv) > 1 else "src"
-  if not os.path.exists(os.path.join(srcdir, "main.o")):
+  if not os.path.exists(srctree.main_object(srcdir)):
     raise SystemExit("%s not built" % srcdir)
 
   cmd = link_command(srcdir)
@@ -70,9 +86,7 @@ def main():
     i += 1
 
   core = [o for o in objs
-          if os.path.basename(o) != "main.o"
-          and not os.path.basename(o).endswith(GUI_SUFFIX)
-          and os.path.basename(o) not in STANDALONE]
+          if os.path.normpath(o).split(os.sep)[0] in CORE_DIRS]
   dropped = [o for o in objs if o not in core]
   print("core objects : %d" % len(core))
   print("omitted      : %s" % " ".join(sorted(os.path.basename(o) for o in dropped)))

@@ -10,6 +10,13 @@ Run the measurement scripts against a **built** tree — several read `src/*.o`.
 
 | script | what it answers |
 |---|---|
+**The tools depend on src/ being layered.**  `core/`, `draw/`, `ui/`, `apps/`
+are not decoration: `link_core.py` treats `core/` + `draw/` as the core,
+`link_null.py` treats `core/` alone as the core so it can supply its own
+backend, and `build_gtk4.sh` links `find src/core -name '*.o'`.  Each of those
+used to be a list of filename patterns to exclude.  A new core file now joins
+by existing.  `srctree.py` is where the walk lives, so there is one copy of it.
+
 | `audit_x11.py src` | Xlib call sites, by file and primitive. Strips comments and string literals, which a plain grep does not. Reports **two** numbers: the Stage 2 drawing scope, and everything else Xlib (fonts, colours, images, regions, cursors). Read the second one before claiming the tree is nearly toolkit-independent. |
 | `link_core.py [src]` | **Ground truth.** Actually links the core objects with no front end and reports what fails, attributed to the object that would have to provide it. Slower than the nm scripts and the only one that cannot be wrong about the answer. |
 | `core_boundary.py src` | What each object needs from `main.o` *and* from the rest of the front end, split into data and functions. The cheap version of `link_core.py`. |

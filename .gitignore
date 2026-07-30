@@ -35,6 +35,8 @@ Makefile.in
 .deps/
 .libs/
 *.o
+.dirstamp
+**/.dirstamp
 *.a
 *.lo
 *.la

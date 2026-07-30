@@ -8,7 +8,7 @@ HERE="$(cd "$(dirname "$0")" && pwd)"
 SRC="$HERE/../src"
 OUT="${1:-/tmp/xastir_gtk4_smoke}"
 gcc -I"$SRC" -I"$HERE/.." -O2 -Wall $(pkg-config --cflags gtk4) \
-    "$HERE/gtk4_smoke.c" "$SRC/xa_draw_gtk4.c" \
+    "$HERE/gtk4_smoke.c" "$SRC/draw/gtk4/xa_draw_gtk4.c" \
     $(pkg-config --libs gtk4) -lm -o "$OUT"
 echo "built $OUT"
 "$OUT"

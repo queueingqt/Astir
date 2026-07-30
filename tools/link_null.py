@@ -23,6 +23,9 @@ the null backend proves the *header* is neutral, a GTK4 backend proves the
 interface is expressive enough for a toolkit that is not X11.
 """
 import subprocess, sys, os, re, glob, collections, tempfile
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import srctree
 
 GUI_SUFFIX = "_gui.o"
 STANDALONE = {"xastir_udp_client.o", "testdbfawk.o", "callpass.o"}
@@ -44,7 +47,7 @@ X_LIB = re.compile(r'^-l(X[a-zA-Z0-9]*|Xm|Xt|ICE|SM|Xext|Xpm|xcb.*)$')
 
 def link_command(srcdir):
   """The real link line for xastir, from make, so this tracks ./configure."""
-  mk = subprocess.run(["make", "-n", "-W", "main.c", "xastir"], cwd=srcdir,
+  mk = subprocess.run(["make", "-n", "-W", "ui/motif/main.c", "xastir"], cwd=srcdir,
                       capture_output=True, text=True).stdout
   for line in mk.splitlines():
     if " -o xastir " not in line:
@@ -58,8 +61,8 @@ def link_command(srcdir):
 
 # name -> (source file, pkg-config packages)
 BACKENDS = {
-  "null": ("xa_draw_null.c", []),
-  "gtk4": ("xa_draw_gtk4.c", ["gtk4"]),
+  "null": ("draw/null/xa_draw_null.c", []),
+  "gtk4": ("draw/gtk4/xa_draw_gtk4.c", ["gtk4"]),
 }
 
 
@@ -82,7 +85,7 @@ def main():
     raise SystemExit("unknown backend %r; have %s" % (which, ", ".join(BACKENDS)))
   bsrc, bpkgs = BACKENDS[which]
   srcdir = args_in[0] if args_in else "src"
-  if not os.path.exists(os.path.join(srcdir, "main.o")):
+  if not os.path.exists(srctree.main_object(srcdir)):
     raise SystemExit("%s not built" % srcdir)
 
   cmd = link_command(srcdir)
@@ -90,17 +93,18 @@ def main():
     raise SystemExit("could not find the link command; run make first")
 
   toks = cmd.split()
-  objs = sorted(os.path.basename(p) for p in glob.glob(os.path.join(srcdir, "*.o")))
+  objs = sorted(srctree.objects(srcdir))
+  # Everything under core/, and nothing else.  Unlike link_core.py this
+  # deliberately does NOT include draw/: supplying a different backend is the
+  # entire point of the tool, and the one it supplies is compiled just below.
   core = [o for o in objs
-          if not o.endswith(GUI_SUFFIX) and o not in STANDALONE
-          and o != "main.o" and o not in X11_BACKEND
-          and o not in ("xa_draw_null.o", "xa_draw_gtk4.o")]  # appended below
+          if os.path.normpath(os.path.relpath(o, srcdir)).split(os.sep)[0] == "core"]
 
   # Compiled here rather than by make, because it must never end up in the
   # xastir binary: it defines the same symbols as the X11 backend.  Compiled
   # with no X include path on purpose -- if it ever needs one, xa_draw.h has
   # sprung a leak and this is where that shows up first.
-  nullobj = os.path.join(srcdir, bsrc[:-2] + ".o")
+  nullobj = os.path.join(srcdir, os.path.basename(bsrc)[:-2] + ".o")
   r = subprocess.run(["gcc", "-I" + srcdir,
                       "-I" + os.path.dirname(os.path.abspath(srcdir)),
                       "-O2", "-Wall"] + pkg("--cflags", bpkgs)

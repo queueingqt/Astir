@@ -7,12 +7,15 @@ entanglement) or plain data (int, long, char, float, time_t -- settings and
 state that can simply move).
 """
 import subprocess, sys, os, re, collections
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import srctree
 
 if len(sys.argv) < 3:
     raise SystemExit("usage: classify_syms.py <src-dir> <obj> [obj...]")
 srcdir, objs = sys.argv[1], sys.argv[2:]
 
-main_o = os.path.join(srcdir, "main.o")
+main_o = srctree.main_object(srcdir)
 main_c = os.path.join(srcdir, "main.c")
 
 defined = {}

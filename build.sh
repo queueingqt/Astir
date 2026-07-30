@@ -29,7 +29,7 @@ export CXXFLAGS="$CFLAGS"
 # all.  Editing them through a UTF-8 tool also silently re-encodes their
 # non-ASCII bytes.  Warn loudly if one reappears.
 bad_encoding=""
-for f in src/*.c src/*.h; do
+for f in $(find src -name '*.c' -o -name '*.h'); do
   iconv -f UTF-8 -t UTF-8 "$f" >/dev/null 2>&1 || bad_encoding="$bad_encoding $f"
 done
 if [ -n "$bad_encoding" ]; then
@@ -49,11 +49,12 @@ core_hdr_fail=""
 # #include <X11/Intrinsic.h>, which put Xt in front of the shapefile reader and
 # the APRS parser.  One convenient #include puts it back, and nothing else would
 # report it, so it is checked here.
-for h in xa_state.h xa_settings.h xa_draw.h globals.h xastir.h interface.h; do
+for h in core/state/xa_state.h core/state/xa_settings.h draw/xa_draw.h \
+         core/globals.h core/xastir.h core/io/interface.h; do
   [ -f "src/$h" ] || continue
   probe="$(mktemp -t xacore.XXXXXX.c)"
   printf '#include "%s"\nint main(void){return 0;}\n' "$h" > "$probe"
-  if ! gcc -Isrc -H -fsyntax-only "$probe" 2>"$probe.err"; then
+  if ! gcc -Isrc -I. -H -fsyntax-only "$probe" 2>"$probe.err"; then
     core_hdr_fail="$core_hdr_fail $h(does-not-compile-standalone)"
   elif grep -qiE 'X11/|Xm/|Intrinsic' "$probe.err"; then
     core_hdr_fail="$core_hdr_fail $h(pulls-in-X)"

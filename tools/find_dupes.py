@@ -7,6 +7,9 @@ Only reports blocks that touch drawing/X11 or the interrupt idiom, which is
 what Stage 2 is consolidating.
 """
 import re, glob, os, collections, sys
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import srctree
 
 MINLINES = int(sys.argv[1]) if len(sys.argv) > 1 else 4
 INTEREST = re.compile(r'X[A-Z]\w+\s*\(|interrupt_drawing_now|HandlePendingEvents')
@@ -23,7 +26,7 @@ def norm_lines(path):
     return out
 
 blocks = collections.defaultdict(list)
-files = sorted(glob.glob('/home/aevanger/github/Xastir/src/*.c'))
+files = srctree.sources(sys.argv[1] if len(sys.argv) > 1 else 'src')
 for path in files:
     lines = norm_lines(path)
     for i in range(len(lines) - MINLINES + 1):
