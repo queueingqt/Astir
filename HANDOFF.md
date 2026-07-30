@@ -15,7 +15,8 @@ core object needing anything from a GUI object.
 | | two sessions ago | last session | now |
 |---|---|---|---|
 | symbols the core cannot link without | 46, across 12 objects | 1, in main.o | **0** |
-| objects referencing a front-end symbol | 12 | 2 | **0** |
+| objects referencing a front-end *symbol* | 12 | 2 | **0** |
+| core objects still *calling* Motif directly | ? | ? | 2 (`db.o`, `messages.o`) |
 | map drivers naming `Widget` | all | all | **0** |
 | drawing Xlib call sites outside the backend | — | — | 7 |
 | lines of GTK4 front end written | 0 | 0 | **0** |
@@ -24,6 +25,74 @@ Last session's count of "1 symbol" was misleading: `link_core.py` counts distinc
 symbols, and *two* objects needed `da` — `maps.o` as recorded, and
 `xa_draw_x11.o`, which read main.c's global directly in about forty places. Both
 are fixed.
+
+## The next boundary: two core objects still call Motif
+
+`link_core.py` cannot see this, and it is worth understanding why. It links the
+core against the *full* library set, so a Motif call inside a core object
+resolves happily from `-lXm` and the link stays clean. Asking `nm` about the
+individual objects asks a different question, and the answer is:
+
+| object | needs | what it is |
+|---|---|---|
+| `db.o` | 7 `XmText*` / `XtFree` | **`update_messages()`** — renders the message window |
+| `messages.o` | `XmTextFieldGetString`, `XtDestroyWidget`, `XtFree`, `XtPopup` | 4 window-management functions, and `mw[]` itself |
+| `xa_draw_x11.o` | 50 | the backend. Expected. |
+| `rotated.o`, `cairo_text.o`, `color.o` | 19 | renderer/platform implementation |
+
+`map_tif.o`'s `XTIFFOpen`/`XTIFFClose` are **libtiff**, not Xlib — the trap
+`tools/README.md` warns about, which a first pass here fell into anyway.
+
+So: the core links without the front end, and two core objects still drive Motif
+widgets directly. Both statements are true, and the second is the next job.
+
+`Message_Window mw[MAX_MESSAGE_WINDOWS+1]`, an array of Motif widgets, is
+**defined in `messages.c`** — a core file. 245 of its uses are in
+`messages_gui.c`, where it belongs; 27 are in `messages.c` and 15 in `db.c`.
+
+### Why `update_messages()` was not done, and what it needs
+
+`db.c` is one function from toolkit-free. That function was deliberately left
+alone, for a reason that should survive:
+
+- **Nothing here can verify it.** `snapshot_ab.sh` captures `pixmap_final`, the
+  map canvas. The message window is a separate Motif dialog and does not appear
+  in the snapshot at all. So a change to `update_messages()` is unverifiable by
+  the only pixel harness that exists.
+- **It has state that is easy to get subtly wrong.** `pos` is a
+  `static XmTextPosition` that is never reset — the `//pos=0;` is commented out —
+  and the highlight calls depend on it (`pos+offset` to `pos+strlen`). Whatever
+  that accumulation does today, an interface change has to reproduce it.
+- **The obvious move is the wrong one.** The function cannot simply move to
+  `messages_gui.c`: it reads `msg_data`, `msg_index`, `msg_index_end`, which are
+  `static` in `db.c` on purpose. Moving it means exporting the message store,
+  which trades a layering problem for a worse one.
+
+Two designs, neither attempted:
+
+1. **Narrow view callbacks** in `xa_ui.h` — `msg_window_is_open(i)`,
+   `msg_window_callsign(i, out, n)`, `msg_window_clear(i)`,
+   `msg_window_append(i, text, hl_from, hl)`, `msg_window_show_end(i)`. Matches
+   the existing 16-callback pattern, keeps the message store private, leaves the
+   core pushing view updates.
+2. **Model/view split** — `db.c` grows an accessor returning the time-sorted
+   messages for a callsign, and `update_messages()` moves to `messages_gui.c` and
+   renders from that. Cleaner, larger, and the highlighting logic (`acked` 0/2/3,
+   reverse video, `is_my_call`) has to come across exactly.
+
+**Before either, build a harness that can see it.** The cheap version is a trace
+comparison rather than a pixel one: log every message-window operation with its
+arguments, drive the same input through both builds, and diff. Messages
+auto-open a window (`check_popup_window(call, 2)` on receipt), so replaying a log
+containing a message addressed to the configured callsign should be enough to
+drive it without GUI interaction.
+
+`messages.c` is the easier half and a reasonable first move: its 4 Motif
+functions are all window management, they belong in `messages_gui.c` outright,
+and `split_file.py` refuses to write unless the bytes reassemble. The cost the
+tool reports is 3 shared file-scope names (`last_check_and_transmit`,
+`message_pool`, `send_message_dialog_lock`) and one call to invert
+(`check_and_transmit_messages` → `clear_acked_message`).
 
 ## What is left, and where
 
@@ -143,15 +212,26 @@ All in `tools/` except three at the root, all documented in `tools/README.md`.
 
 ## Where to pick up
 
-The boundary work is done; the next step is the first thing that tests it.
+In rough order of value per unit of risk:
 
-1. **Write a second backend.** `xa_draw.h` is ~40 entry points and the X11 one is
-    ~1000 lines. A backend that only implements the drawing and pen calls, with
-    text stubbed, is enough to find out whether the interface is actually
-    sufficient — which is the open question, not the call-site count.
-2. **Or get the untested paths under test first**, since they are cheap: a
-    scenario with OSM tiles rendering, and one with an active weather alert.
-    `xa_image_*` and `xa_bitmap_load` are inspection-only today.
-3. `rotated.c` is the one core file with real Xlib left that is not the backend.
-    It is not a conversion target — Pango does rotated text natively — so it
-    belongs to whichever backend comes next, not to this layer.
+1. **Build a harness that can see something other than the map canvas.** Three
+    of this session's abstractions and all of the remaining Motif-in-core work
+    are unverifiable without it, and the one thing this session proves is how
+    expensive an unverifiable "verification" is. A trace comparison — log
+    operations with arguments, diff between builds — is cheaper than a pixel one
+    and catches more, because it does not depend on the change being visible.
+2. **`messages.c`** — move `mw[]` and the 4 window-management functions to
+    `messages_gui.c`. Smallest well-understood piece of real coupling left.
+3. **`db.c`'s `update_messages()`** — needs (1) first. See above for the two
+    designs and the `static pos` trap.
+4. **Write a second backend.** `xa_draw.h` is ~40 entry points and the X11 one is
+    ~1000 lines. A backend implementing only the drawing and pen calls, with text
+    stubbed, is enough to find out whether the interface is actually sufficient —
+    which is the open question, and one the call-site count cannot answer.
+5. **Get the untested abstractions exercised**: a scenario that renders OSM
+    tiles, and one with an active weather alert. Cheap, and `xa_image_*` and
+    `xa_bitmap_load` are inspection-only until then.
+
+`rotated.c` is the one core file with real Xlib left that is not the backend. It
+is not a conversion target — Pango does rotated text natively — so it belongs to
+whichever backend comes next, not to this layer.
