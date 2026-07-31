@@ -926,11 +926,11 @@ int openConnection(ioparam *anIface, Connection *connection)
     if (testConnection((Connection*)connection)==True)
     {
       returnvalue = 1;
-      xa_ui_status("Connected to database");
+      xa_ui_message(XA_MSG_INFO, NULL, "Connected to database");
     }
     else
     {
-      xa_ui_status("Incompatible database schema");
+      xa_ui_message(XA_MSG_ERROR, NULL, "Incompatible database schema");
       fprintf(stderr,"Connection OK, but incompatible schema. [%s]\n",connection->errormessage);
       astir_snprintf(anIface->database_errormessage, sizeof(anIface->database_errormessage), "%s",connection->errormessage);
       closeConnection(connection,-1);
@@ -941,7 +941,7 @@ int openConnection(ioparam *anIface, Connection *connection)
   {
     // Detailed error message should have been returned above, but make sure
     // there is at least a minimal failure message regardless of the problem.
-    xa_ui_status("Failed to connect to database");
+    xa_ui_message(XA_MSG_ERROR, NULL, "Failed to connect to database");
     fprintf(stderr,"Failed to make database connection.\n");
     //free(connection);   // not pointing to the right thing ??
     port_data[connection->interface_number].status = DEVICE_ERROR;
@@ -1119,7 +1119,7 @@ int pingConnection(Connection *aDbConnection)
   if (returnvalue==0)
   {
     fprintf(stderr,"\n[%s]\n",aDbConnection->errormessage);
-    xa_ui_status("Database Ping Failed");
+    xa_ui_message(XA_MSG_ERROR, NULL, "Database Ping Failed");
     port_data[aDbConnection->interface_number].status = DEVICE_ERROR;
   }
   return returnvalue;

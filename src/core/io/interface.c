@@ -3495,6 +3495,7 @@ int net_init(int port)
   astir_snprintf(port_num, sizeof(port_num), "%d", port_data[port].socket_port);
 
   astir_snprintf(st, sizeof(st), langcode("BBARSTA019"), port_data[port].device_host_name);
+  // Progress, not an event: only the outcome of connecting is worth keeping.
   xa_ui_status(st);   // Looking up host
 
   if(port_data[port].addr_list)
@@ -3577,7 +3578,7 @@ int net_init(int port)
       }
 
       astir_snprintf(st, sizeof(st), langcode("BBARSTA025"), wait_time - sec_now() );
-      xa_ui_status(st);           // Host found, connecting n
+      xa_ui_status(st);           // Host found, connecting -- still progress
       if (debug_level & 2)
       {
         fprintf(stderr,"%d\n", (int)(wait_time - sec_now()) );
@@ -3657,23 +3658,23 @@ int net_init(int port)
     {
       case 1: /* connection up */
         astir_snprintf(st, sizeof(st), langcode("BBARSTA020"), port_data[port].device_host_name);
-        xa_ui_status(st);               // Connected to ...
+        xa_ui_message(XA_MSG_INTERFACE, NULL, st);       // Connected to ...
         break;
 
       case 0:
         astir_snprintf(st, sizeof(st), "%s", langcode("BBARSTA021"));
-        xa_ui_status(st);               // Net Connection Failed!
+        xa_ui_message(XA_MSG_ERROR, NULL, st);           // Connection failed
         ok = -1;
         break;
 
       case -1:
         astir_snprintf(st, sizeof(st), "%s", langcode("BBARSTA022"));
-        xa_ui_status(st);               // Could not bind socket
+        xa_ui_message(XA_MSG_ERROR, NULL, st);           // Could not bind
         break;
 
       case -2:
         astir_snprintf(st, sizeof(st), "%s", langcode("BBARSTA018"));
-        xa_ui_status(st);               // Net Connection timed out
+        xa_ui_message(XA_MSG_ERROR, NULL, st);           // Timed out
         ok = 0;
         break;
 
@@ -3685,7 +3686,7 @@ int net_init(int port)
   else if (gai_rc == FAI_TIMEOUT)   /* host lookup time out */
   {
     astir_snprintf(st, sizeof(st), "%s", langcode("BBARSTA018"));
-    xa_ui_status(st);                       // Net Connection timed out
+    xa_ui_message(XA_MSG_ERROR, NULL, st);               // Timed out
     port_data[port].status = DEVICE_ERROR;
     if (debug_level & 2)
     {
@@ -3700,7 +3701,7 @@ int net_init(int port)
   else        /* Host ip look up failure (no ip address for that host) */
   {
     astir_snprintf(st, sizeof(st), "%s", langcode("BBARSTA023"));
-    xa_ui_status(st);                           // No IP for Host
+    xa_ui_message(XA_MSG_ERROR, NULL, st);                   // No IP for host
     port_data[port].status = DEVICE_ERROR;
     if (debug_level & 2)
     {

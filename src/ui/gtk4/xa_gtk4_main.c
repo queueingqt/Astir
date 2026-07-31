@@ -1117,7 +1117,20 @@ static void on_toast_clicked(GtkButton *b, gpointer win)
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll),
                                  GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
   gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scroll), box);
-  gtk_widget_set_size_request(scroll, 340, (n > 8) ? 320 : -1);
+
+  /*
+   * Be as tall as the list, up to a limit.
+   *
+   * A GtkScrolledWindow does not take its height from its child unless it is
+   * told to -- without this it asks for its minimum, which is one row, and a
+   * twelve-entry history opened as a single line you had to scroll.  A
+   * scrollbar should appear because there is more history than screen, not
+   * because the widget never asked for any height.
+   */
+  gtk_scrolled_window_set_propagate_natural_height(GTK_SCROLLED_WINDOW(scroll),
+                                                   TRUE);
+  gtk_scrolled_window_set_max_content_height(GTK_SCROLLED_WINDOW(scroll), 420);
+  gtk_widget_set_size_request(scroll, 340, -1);
 
   pop = gtk_popover_new();
   gtk_popover_set_child(GTK_POPOVER(pop), scroll);
@@ -1210,6 +1223,41 @@ static void act_about(GSimpleAction *a, GVariant *p, gpointer u)
  * useful: the toast becomes a standing "most recent activity" rather than a
  * notification you had to be looking at.  Clicking it still opens the history.
  */
+/*
+ * A classified message.
+ *
+ * The class decides whether it is worth remembering; the text is shown either
+ * way.  This replaces recovering a callsign by taking the message's first word
+ * and looking it up in the station list -- which worked only for stations, so
+ * an interface failing or a database refusing a connection was shown for a
+ * moment and then lost.
+ */
+static void ui_message(xa_msg_class cls, const char *subject, const char *text)
+{
+  switch (cls)
+  {
+    case XA_MSG_STATION:
+      // The core says which station, so nothing has to be parsed out.
+      xa_gtk4_station_note(text, subject);
+      break;
+
+    case XA_MSG_ERROR:
+    case XA_MSG_INTERFACE:
+    case XA_MSG_INFO:
+      // Kept, but with no station to open.  A failure is worth having in the
+      // history whether or not anybody was looking when it happened.
+      xa_gtk4_station_note(text, NULL);
+      break;
+
+    case XA_MSG_PROGRESS:
+    default:
+      // Shown live and not remembered.  "Loading a shapefile" is true while it
+      // is on screen and means nothing afterwards.
+      break;
+  }
+}
+
+
 static void ui_status(const char *text)
 {
   if (xa_status == NULL || text == NULL)
@@ -1221,31 +1269,6 @@ static void ui_status(const char *text)
   {
     gtk_widget_set_visible(xa_status, FALSE);
     return;
-  }
-
-  /*
-   * Keep it, and note which station it was about.
-   *
-   * The core's status strings are not structured, so the callsign is recovered
-   * by looking the first word up in the station list.  That is deliberately
-   * conservative: a word that is not a known station yields no callsign and the
-   * entry is simply not clickable, which is the right answer for "Indexing
-   * maps".  Guessing harder would make history entries that open the wrong
-   * station, and a wrong answer here is worse than none.
-   */
-  {
-    char first[MAX_CALLSIGN + 1];
-    const char *end = strpbrk(text, " \t");
-    size_t len = (end != NULL) ? (size_t)(end - text) : strlen(text);
-    DataRow *p = NULL;
-
-    if (len > MAX_CALLSIGN) { len = MAX_CALLSIGN; }
-    memcpy(first, text, len);
-    first[len] = '\0';
-
-    xa_gtk4_station_note(text,
-                         (len > 0 && search_station_name(&p, first, 1) && p)
-                           ? first : NULL);
   }
 
   gtk_label_set_text(GTK_LABEL(xa_status), text);
@@ -1417,6 +1440,7 @@ static void install_ui_callbacks(void)
   xa_ui_callbacks cb = { 0 };
 
   cb.status = ui_status;
+  cb.message = ui_message;
   cb.pump_events = ui_pump_events;
   cb.busy = ui_busy;
   cb.flush = ui_flush;

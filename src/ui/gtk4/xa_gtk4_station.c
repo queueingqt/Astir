@@ -69,10 +69,15 @@ void xa_gtk4_station_note(const char *text, const char *callsign)
   {
     return;
   }
-  if (callsign == NULL || callsign[0] == '\0')
-  {
-    return;                      // progress, not an event
-  }
+  /*
+   * A NULL callsign is allowed now, and means "an event with no station".
+   *
+   * It used to mean "progress, drop it", because the caller could not say what
+   * kind of message it was and the only way to tell an event from a progress
+   * line was whether a callsign could be recovered from the text.  The core
+   * classifies its messages now, so the front end only calls this for things
+   * worth keeping and an errored interface gets a row like anything else.
+   */
 
   /*
    * One entry per station, moved to the front when heard again.
@@ -81,7 +86,7 @@ void xa_gtk4_station_note(const char *text, const char *callsign)
    * ring to itself within the hour, and forty lines all saying the same
    * callsign is not a history either.
    */
-  for (i = 0; i < history_n; i++)
+  for (i = 0; callsign != NULL && callsign[0] != '\0' && i < history_n; i++)
   {
     int idx = (history_head + HISTORY_MAX - 1 - i) % HISTORY_MAX;
 
@@ -104,7 +109,8 @@ void xa_gtk4_station_note(const char *text, const char *callsign)
   }
 
   e = &history[history_head];
-  astir_snprintf(e->callsign, sizeof(e->callsign), "%s", callsign);
+  astir_snprintf(e->callsign, sizeof(e->callsign), "%s",
+                 callsign != NULL ? callsign : "");
 
   /*
    * Tidy the text for a list rather than a status line.
@@ -115,6 +121,12 @@ void xa_gtk4_station_note(const char *text, const char *callsign)
    * callsign and nothing else -- true, but it reads like something failed to
    * load.
    */
+  if (callsign == NULL || callsign[0] == '\0')
+  {
+    // No station: the text is already a sentence, keep it as it stands.
+    astir_snprintf(e->text, sizeof(e->text), "%s", text);
+  }
+  else
   {
     const char *rest = text + strlen(callsign);
     char tidy[sizeof(e->text)];

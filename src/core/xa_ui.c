@@ -33,14 +33,30 @@ void xa_ui_set_callbacks(const xa_ui_callbacks *cb)
 }
 
 
-void xa_ui_status(const char *text)
+void xa_ui_message(xa_msg_class cls, const char *subject, const char *text)
 {
-  // No front end registered (a headless run, or very early startup) is normal,
-  // not an error.
-  if (ui.status != NULL && text != NULL)
+  if (text == NULL)
+  {
+    return;
+  }
+  // Both, if both are wanted.  A front end taking only the text still sees
+  // every message; one taking the class sees the class as well.
+  if (ui.message != NULL)
+  {
+    ui.message(cls, subject, text);
+  }
+  if (ui.status != NULL)
   {
     ui.status(text);
   }
+}
+
+
+void xa_ui_status(const char *text)
+{
+  // Unclassified means progress.  Every call site examined turned out to be
+  // exactly that, and the ones that were not have been given a class.
+  xa_ui_message(XA_MSG_PROGRESS, NULL, text);
 }
 
 

@@ -11105,7 +11105,9 @@ int data_add(int type,
         astir_snprintf(station_id, sizeof(station_id), langcode("BBARSTA002"),p_station->call_sign);
       }
 
-      xa_ui_status(station_id);
+      // A station, and the front end is told WHICH -- so a history can offer
+      // to open it without parsing the callsign back out of the sentence.
+      xa_ui_message(XA_MSG_STATION, p_station->call_sign, station_id);
     }
 
     // announce new station with sound file or speech synthesis
@@ -11171,7 +11173,7 @@ int data_add(int type,
                           "%s < %.3f %s",p_station->call_sign,
                           distance,
                           english_units?langcode("UNIOP00004"):langcode("UNIOP00005"));
-          xa_ui_status(station_id);
+          xa_ui_message(XA_MSG_STATION, p_station->call_sign, station_id);
           play_sound(sound_command,xa_sound[XA_SOUND_PROX].file);
           /*fprintf(stderr,"%s> PROX distance %f\n",p_station->call_sign, distance);*/
         }
@@ -11220,7 +11222,7 @@ int data_add(int type,
       {
         astir_snprintf(station_id, sizeof(station_id), "%s %s %.1f %s",p_station->call_sign, langcode("UMBNDO0001"),
                         distance, english_units?langcode("UNIOP00004"):langcode("UNIOP00005"));
-        xa_ui_status(station_id);
+        xa_ui_message(XA_MSG_STATION, p_station->call_sign, station_id);
         play_sound(sound_command,xa_sound[XA_SOUND_BAND_OPEN].file);
         /*fprintf(stderr,"%s> BO distance %f\n",p_station->call_sign, distance);*/
       }
@@ -16980,7 +16982,9 @@ void search_tracked_station(DataRow **p_tracked)
           sprintf(station_id,"%s < %.3f %s from %s",t->call_sign, distance,
                   english_units?langcode("UNIOP00004"):langcode("UNIOP00005"),
                   curr->call_sign);
-          xa_ui_status(station_id);
+          // The subject is the station that came close, not the one it came
+          // close to -- that is the one worth opening.
+          xa_ui_message(XA_MSG_STATION, t->call_sign, station_id);
           play_sound(sound_command,xa_sound[XA_SOUND_PROX].file);
         }
 #ifdef HAVE_FESTIVAL
@@ -17318,7 +17322,7 @@ void calc_aloha(int secs_now)
                         langcode("BBARSTA044"),
                         (english_units) ? (int)aloha_radius : (int)(aloha_radius * cvt_mi2len),
                         (english_units) ? " miles" : " km");
-        xa_ui_status(status_text);
+        xa_ui_message(XA_MSG_INFO, NULL, status_text);
       }
       aloha_status_time = secs_now + ALOHA_STATUS_INTERVAL;
     }

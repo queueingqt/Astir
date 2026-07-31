@@ -17,12 +17,64 @@
 #ifndef XA_UI_H
 #define XA_UI_H
 
+/*
+ * What kind of thing a message is.
+ *
+ * Every message the core sends says what it is, so a front end can decide what
+ * to do with it instead of guessing from the text.  Guessing is what this
+ * replaces: the status history used to recover a callsign by taking the first
+ * word and looking it up in the station list, which worked for stations and
+ * could not work at all for anything else -- an interface failing, a database
+ * refusing a connection -- so those simply were not kept.
+ *
+ * Classes are about WHAT HAPPENED, not about how it should look.  Where it is
+ * shown, how long for, and whether it is worth remembering are the front end's
+ * decisions, and different front ends may reasonably differ.
+ */
+typedef enum
+{
+  // Work in progress: loading a map, indexing a shapefile, fetching a tile.
+  // True while it is on screen and meaningless afterwards.  The overwhelming
+  // majority of messages, and the reason a history that kept everything was
+  // useless.
+  XA_MSG_PROGRESS = 0,
+
+  // A station was heard, or changed.  `subject` is its callsign.
+  XA_MSG_STATION,
+
+  // An interface opened, closed, or changed state.  `subject` is its name if
+  // there is one.
+  XA_MSG_INTERFACE,
+
+  // Something failed.  Worth keeping whether or not anybody was looking.
+  XA_MSG_ERROR,
+
+  // Something worth saying that is not progress, not a failure, and not about
+  // one station: a file finished loading, a cache was cleared.
+  XA_MSG_INFO
+} xa_msg_class;
+
+
 typedef struct
 {
   // Show a short progress or status message.  Called from map loading, the
   // interfaces and the station database -- roughly 45 sites.  May be called
   // very frequently during a redraw, so an implementation should be cheap.
   void (*status)(const char *text);
+
+  /*
+   * The same thing, classified.
+   *
+   * `subject` is what the message is ABOUT -- a callsign, an interface name --
+   * or NULL.  Having it here is the point: a front end that wants to offer
+   * "open that station" should not have to parse it back out of a sentence
+   * assembled for a status bar.
+   *
+   * A front end may implement this, or `status`, or both.  xa_ui_message()
+   * calls whichever exists, so a front end that only wants the text still gets
+   * every message and one that wants the class gets that too.
+   */
+  void (*message)(xa_msg_class cls, const char *subject, const char *text);
 
   // Give the front end a chance to process pending input.  The map drawing
   // code calls this every 64 shapes and between map files so that a pan or
@@ -207,6 +259,13 @@ void xa_ui_set_callbacks(const xa_ui_callbacks *cb);
 
 // Core-side entry point.  Safe to call before any front end has registered.
 void xa_ui_status(const char *text);
+
+/*
+ * Send a classified message.  xa_ui_status(text) is exactly
+ * xa_ui_message(XA_MSG_PROGRESS, NULL, text) -- progress is what an
+ * unclassified message turns out to be, in every case that has been looked at.
+ */
+void xa_ui_message(xa_msg_class cls, const char *subject, const char *text);
 void xa_ui_pump_events(void);
 void xa_ui_busy(void);
 void xa_ui_flush(void);
