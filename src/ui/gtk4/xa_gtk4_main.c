@@ -1273,7 +1273,33 @@ int main(int argc, char **argv)
     g_print("centre %ld,%ld  scale %ld/%ld  maps selected from %s\n",
             center_longitude, center_latitude, scale_x, scale_y,
             SELECTED_MAP_DATA);
-    xa_render();
+
+    /*
+     * Render more than once when asked.
+     *
+     * The first frame pays every one-time cost -- building the shapefile
+     * R-tree indexes, compiling the dbfawk rules, filling the tile cache --
+     * and this harness rendered exactly one frame and exited, so every number
+     * it ever produced was a COLD frame.  Optimising against those numbers
+     * means optimising startup while the thing people complain about is
+     * panning, which is always warm.
+     */
+    {
+      const char *nf = getenv("ASTIR_GTK4_RENDER_FRAMES");
+      int frames = (nf != NULL) ? atoi(nf) : 1;
+      int f;
+
+      if (frames < 1) { frames = 1; }
+      for (f = 0; f < frames; f++)
+      {
+        if (frames > 1)
+        {
+          g_print("--- frame %d of %d (%s) ---\n", f + 1, frames,
+                  f == 0 ? "cold" : "warm");
+        }
+        xa_render();
+      }
+    }
     s = xa_gtk4_canvas_surface();
 
     /*
