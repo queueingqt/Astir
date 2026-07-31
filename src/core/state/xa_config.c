@@ -271,13 +271,60 @@ int get_string(char *option, char *value, int value_size)
 
 // Read a string option, falling back to a default when the option is absent or
 // empty.  This idiom was written out eighteen times, six lines each.
+/*
+ * A stored path that names a DIFFERENT application's data directory.
+ *
+ * Astir and Xastir are separate programs that may both be installed, and they
+ * share nothing.  The code honours that: every data path in the tree resolves
+ * through get_data_base_dir(), under ASTIR_DATA_BASE.  The config file does
+ * not, because it stores paths ABSOLUTELY -- so a config inherited from Xastir
+ * keeps pointing at Xastir's files no matter what Astir is told.
+ *
+ * That is not hypothetical.  A config seeded by copying ~/.xastir carried six
+ * such keys, and the effect was that Astir indexed and drew maps out of
+ * /usr/share/xastir/maps while ASTIR_DATA_BASE pointed somewhere else -- so a
+ * map placed in Astir's own directory was invisible, with no error anywhere,
+ * because the indexer had never looked there.  It cost an afternoon.
+ *
+ * Refusing the value would be wrong: pointing at a shared map COLLECTION is
+ * legitimate, and map data belongs to the user rather than to either program.
+ * So this warns and continues, which is enough to turn a silent wrong answer
+ * into a visible one.
+ */
+static void warn_if_foreign_data_path(const char *option, const char *value)
+{
+  static const char *foreign[] = { "/xastir/", "/.xastir/" };
+  size_t i;
+
+  if (value == NULL || value[0] != '/')
+  {
+    return;                      // relative paths resolve under our own base
+  }
+  for (i = 0; i < sizeof(foreign) / sizeof(foreign[0]); i++)
+  {
+    if (strstr(value, foreign[i]) != NULL)
+    {
+      fprintf(stderr,
+              "warning: %s points into another application's data:\n"
+              "           %s\n"
+              "         Astir resolves its own data under ASTIR_DATA_BASE.\n"
+              "         Remove that key from the config to use Astir's copy.\n",
+              option, value);
+      return;
+    }
+  }
+}
+
+
 static void get_string_default(char *option, char *value, int value_size,
                                const char *dflt)
 {
   if (!get_string(option, value, value_size) || value[0] == '\0')
   {
     astir_snprintf(value, value_size, "%s", dflt);
+    return;
   }
+  warn_if_foreign_data_path(option, value);
 }
 
 

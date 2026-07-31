@@ -58,7 +58,10 @@ ln -s "$REL/../NaturalEarthVector"       "$OUT/maps/NaturalEarth"
 # it has not.
 mkdir -p "$OUT/maps/Online"
 for g in OSM_tiled_mapnik.geo OSM_tiled_cycle.geo OSM_tiled_fosm.geo; do
-  [ -f "$g" ] && ln -s "$REL/../$g" "$OUT/maps/Online/$g"
+  # One level deeper than maps/, so one more ".." than the entries above.
+  # Getting this wrong produced dangling links that went unnoticed because the
+  # config was still pointing at another application's map directory.
+  [ -f "$g" ] && ln -s "$REL/../../$g" "$OUT/maps/Online/$g"
 done
 
 # The user's own map collection, wherever they keep it.
