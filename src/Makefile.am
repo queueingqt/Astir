@@ -179,6 +179,8 @@ astir_SOURCES = \
     draw/gtk4/xa_draw_gtk4.c \
     ui/gtk4/xa_gtk4_main.c \
     ui/gtk4/xa_gtk4_interfaces.c \
+    ui/gtk4/xa_gtk4_station.c \
+    ui/gtk4/xa_gtk4_station.h \
     ui/gtk4/xa_gtk4_interfaces.h \
     ui/gtk4/xa_gtk4_palette.c
 

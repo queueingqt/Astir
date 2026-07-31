@@ -45,6 +45,7 @@
 #include "core/io/incoming.h"
 #include "core/io/interface.h"
 #include "ui/gtk4/xa_gtk4_interfaces.h"
+#include "ui/gtk4/xa_gtk4_station.h"
 #include "core/xa_ui.h"
 #include "core/map/maps.h"
 #include "core/util/lang.h"
@@ -986,6 +987,148 @@ static void act_interfaces(GSimpleAction *a, GVariant *p, gpointer u)
 }
 
 
+/*
+ * A click on the map: open whichever station is under it.
+ *
+ * The press position is remembered so the release can tell a click from a pan.
+ * The same button does both, and a drag that happens to finish near a symbol
+ * must not open it.  Judged here from the two positions rather than from a flag
+ * the drag gesture sets, because both gestures see the same button release and
+ * nothing promises which of them is told first.
+ */
+static double click_press_x, click_press_y;
+
+
+/*
+ * The toast's history, as a popover of recent messages.
+ *
+ * Entries naming a station are buttons onto that station; the rest are plain
+ * text.  Newest at the top, because the reason for opening this is something
+ * seen a moment ago and missed.
+ */
+static void on_history_row(GtkButton *b, gpointer win)
+{
+  const char *call = g_object_get_data(G_OBJECT(b), "callsign");
+  GtkWidget *pop = gtk_widget_get_ancestor(GTK_WIDGET(b), GTK_TYPE_POPOVER);
+
+  if (pop != NULL)
+  {
+    gtk_popover_popdown(GTK_POPOVER(pop));
+  }
+  if (call != NULL)
+  {
+    xa_gtk4_station_show(GTK_WINDOW(win), call);
+  }
+}
+
+
+static void on_toast_clicked(GtkButton *b, gpointer win)
+{
+  const char *text[24];
+  const char *call[24];
+  int n = xa_gtk4_station_history(text, call, 24);
+  GtkWidget *pop, *box, *scroll;
+  int i;
+
+  box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 2);
+
+  if (n == 0)
+  {
+    GtkWidget *l = gtk_label_new("Nothing recent.");
+
+    gtk_widget_add_css_class(l, "dim-label");
+    gtk_widget_set_margin_top(l, 12);
+    gtk_widget_set_margin_bottom(l, 12);
+    gtk_widget_set_margin_start(l, 12);
+    gtk_widget_set_margin_end(l, 12);
+    gtk_box_append(GTK_BOX(box), l);
+  }
+
+  for (i = 0; i < n; i++)
+  {
+    GtkWidget *row;
+
+    if (call[i] != NULL)
+    {
+      GtkWidget *child;
+
+      row = gtk_button_new_with_label(text[i]);
+      gtk_button_set_has_frame(GTK_BUTTON(row), FALSE);
+      // Copied: the history ring can be overwritten while this is open.
+      g_object_set_data_full(G_OBJECT(row), "callsign", g_strdup(call[i]),
+                             g_free);
+      g_signal_connect(row, "clicked", G_CALLBACK(on_history_row), win);
+      gtk_widget_set_tooltip_text(row, "Open this station");
+
+      child = gtk_button_get_child(GTK_BUTTON(row));
+      if (GTK_IS_LABEL(child))
+      {
+        gtk_label_set_xalign(GTK_LABEL(child), 0.0);
+        gtk_label_set_ellipsize(GTK_LABEL(child), PANGO_ELLIPSIZE_END);
+      }
+    }
+    else
+    {
+      row = gtk_label_new(text[i]);
+      gtk_label_set_xalign(GTK_LABEL(row), 0.0);
+      gtk_label_set_ellipsize(GTK_LABEL(row), PANGO_ELLIPSIZE_END);
+      gtk_widget_add_css_class(row, "dim-label");
+      gtk_widget_set_margin_start(row, 8);
+      gtk_widget_set_margin_end(row, 8);
+    }
+    gtk_box_append(GTK_BOX(box), row);
+  }
+
+  scroll = gtk_scrolled_window_new();
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll),
+                                 GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+  gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scroll), box);
+  gtk_widget_set_size_request(scroll, 340, (n > 8) ? 320 : -1);
+
+  pop = gtk_popover_new();
+  gtk_popover_set_child(GTK_POPOVER(pop), scroll);
+  gtk_widget_set_parent(pop, GTK_WIDGET(b));
+  gtk_popover_set_position(GTK_POPOVER(pop), GTK_POS_TOP);
+  g_signal_connect(pop, "closed", G_CALLBACK(gtk_widget_unparent), NULL);
+  gtk_popover_popup(GTK_POPOVER(pop));
+}
+
+
+static void on_map_press(GtkGestureClick *g, int n_press, double x, double y,
+                         gpointer u)
+{
+  (void)g; (void)n_press; (void)u;
+  click_press_x = x;
+  click_press_y = y;
+}
+
+static void on_map_click(GtkGestureClick *g, int n_press, double x, double y,
+                         gpointer win)
+{
+  DataRow *st;
+  double dx = x - click_press_x;
+  double dy = y - click_press_y;
+
+  (void)g;
+  (void)n_press;
+
+  // A few pixels of slop: a hand resting on a trackpad moves a little between
+  // press and release, and that is still a click.
+  if ((dx * dx + dy * dy) > 25.0)
+  {
+    return;                      // that was a pan
+  }
+
+  // 18 px: a symbol is about 20 across and people aim at the middle of the
+  // picture rather than at the point it is anchored to.
+  st = station_at_screen_pos((long)x, (long)y, 18);
+  if (st != NULL)
+  {
+    xa_gtk4_station_show(GTK_WINDOW(win), st->call_sign);
+  }
+}
+
+
 static void act_about(GSimpleAction *a, GVariant *p, gpointer u)
 {
   GtkWidget *dlg;
@@ -1053,6 +1196,31 @@ static void ui_status(const char *text)
   {
     gtk_widget_set_visible(xa_status, FALSE);
     return;
+  }
+
+  /*
+   * Keep it, and note which station it was about.
+   *
+   * The core's status strings are not structured, so the callsign is recovered
+   * by looking the first word up in the station list.  That is deliberately
+   * conservative: a word that is not a known station yields no callsign and the
+   * entry is simply not clickable, which is the right answer for "Indexing
+   * maps".  Guessing harder would make history entries that open the wrong
+   * station, and a wrong answer here is worse than none.
+   */
+  {
+    char first[MAX_CALLSIGN + 1];
+    const char *end = strpbrk(text, " \t");
+    size_t len = (end != NULL) ? (size_t)(end - text) : strlen(text);
+    DataRow *p = NULL;
+
+    if (len > MAX_CALLSIGN) { len = MAX_CALLSIGN; }
+    memcpy(first, text, len);
+    first[len] = '\0';
+
+    xa_gtk4_station_note(text,
+                         (len > 0 && search_station_name(&p, first, 1) && p)
+                           ? first : NULL);
   }
 
   gtk_label_set_text(GTK_LABEL(xa_status), text);
@@ -1472,6 +1640,29 @@ static gboolean on_tick(gpointer user_data)
 }
 
 
+static gboolean show_station_once(gpointer win)
+{
+  const char *call = getenv("ASTIR_GTK4_SHOW_STATION");
+
+  // "*" means whichever station is first in the list, so a test does not have
+  // to know a callsign that happens to be on the air right now.
+  if (call != NULL && strcmp(call, "*") == 0)
+  {
+    call = (n_first != NULL) ? n_first->call_sign : NULL;
+  }
+  if (call != NULL && call[0] != '\0')
+  {
+    g_print("opening station window for %s\n", call);
+    xa_gtk4_station_show(GTK_WINDOW(win), call);
+  }
+  else
+  {
+    g_print("no stations heard yet\n");
+  }
+  return G_SOURCE_REMOVE;
+}
+
+
 static gboolean show_interfaces_once(gpointer win)
 {
   const char *what = getenv("ASTIR_GTK4_SHOW_INTERFACES");
@@ -1621,6 +1812,22 @@ static void on_activate(GtkApplication *app, gpointer user_data)
   g_signal_connect(xa_area, "notify::scale-factor",
                    G_CALLBACK(xa_scale_changed), NULL);
 
+  /*
+   * A click on the map opens the station under it.
+   *
+   * Attached before the drag gesture so a plain click is seen as a click.  The
+   * radius is generous: a symbol is about 20 px across and people aim at the
+   * middle of a picture, not at its anchor point.
+   */
+  {
+    GtkGesture *tap = gtk_gesture_click_new();
+
+    gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(tap), GDK_BUTTON_PRIMARY);
+    g_signal_connect(tap, "pressed", G_CALLBACK(on_map_press), NULL);
+    g_signal_connect(tap, "released", G_CALLBACK(on_map_click), win);
+    gtk_widget_add_controller(xa_area, GTK_EVENT_CONTROLLER(tap));
+  }
+
   drag = gtk_gesture_drag_new();
   g_signal_connect(drag, "drag-begin", G_CALLBACK(on_drag_begin), NULL);
   g_signal_connect(drag, "drag-update", G_CALLBACK(on_drag_update), NULL);
@@ -1659,6 +1866,13 @@ static void on_activate(GtkApplication *app, gpointer user_data)
     g_timeout_add_seconds(2, (GSourceFunc)show_interfaces_once, win);
   }
 
+  // ASTIR_GTK4_SHOW_STATION=CALL opens that station's window, so what a click
+  // does can be checked without a pointer.  Late, so traffic has arrived first.
+  if (getenv("ASTIR_GTK4_SHOW_STATION") != NULL)
+  {
+    g_timeout_add_seconds(20, (GSourceFunc)show_station_once, win);
+  }
+
   /*
    * The map, with the status toast floating over its bottom right corner.
    *
@@ -1676,13 +1890,6 @@ static void on_activate(GtkApplication *app, gpointer user_data)
 
     xa_status = gtk_label_new("");
     gtk_label_set_ellipsize(GTK_LABEL(xa_status), PANGO_ELLIPSIZE_END);
-    gtk_widget_set_halign(xa_status, GTK_ALIGN_END);
-    gtk_widget_set_valign(xa_status, GTK_ALIGN_END);
-    gtk_widget_set_margin_end(xa_status, 12);
-    // Clear of the scale bar and the attribution, which the map draws along the
-    // bottom edge.  A toast that covers the scale is a toast that makes you wait
-    // for it to go away before you can read the map.
-    gtk_widget_set_margin_bottom(xa_status, 40);
     // Never wide enough to cover the map, never so narrow it says nothing.
     gtk_label_set_max_width_chars(GTK_LABEL(xa_status), 48);
     gtk_widget_set_visible(xa_status, FALSE);
@@ -1703,7 +1910,35 @@ static void on_activate(GtkApplication *app, gpointer user_data)
       GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
     g_object_unref(css);
 
-    gtk_overlay_add_overlay(GTK_OVERLAY(overlay), xa_status);
+    /*
+     * The toast is a button onto its own history.
+     *
+     * A message shows for four seconds and goes.  That is right for a progress
+     * line and wrong for "a station was heard" -- by the time you look up, the
+     * thing worth clicking has gone.  Clicking the toast reopens the last few,
+     * and any that names a station opens it.
+     */
+    {
+      GtkWidget *toast_btn = gtk_button_new();
+      GtkGesture *unused_g = NULL;
+
+      (void)unused_g;
+      gtk_button_set_child(GTK_BUTTON(toast_btn), xa_status);
+      gtk_widget_set_halign(toast_btn, GTK_ALIGN_END);
+      gtk_widget_set_valign(toast_btn, GTK_ALIGN_END);
+      gtk_widget_set_margin_end(toast_btn, 12);
+      gtk_widget_set_margin_bottom(toast_btn, 40);
+      gtk_widget_add_css_class(toast_btn, "flat");
+      gtk_widget_set_tooltip_text(toast_btn, "Recent activity");
+      g_signal_connect(toast_btn, "clicked", G_CALLBACK(on_toast_clicked), win);
+
+      // The label's own visibility is what ui_status() toggles; the button
+      // follows it, so an empty status leaves nothing on screen to press.
+      g_object_bind_property(xa_status, "visible", toast_btn, "visible",
+                             G_BINDING_SYNC_CREATE);
+
+      gtk_overlay_add_overlay(GTK_OVERLAY(overlay), toast_btn);
+    }
     gtk_widget_set_hexpand(overlay, TRUE);
     gtk_widget_set_vexpand(overlay, TRUE);
     gtk_box_append(GTK_BOX(box), overlay);

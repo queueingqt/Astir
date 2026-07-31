@@ -17468,3 +17468,47 @@ int stations_types(int type)
   }
   return(st);
 }
+
+
+/*
+ * Which station is at this point on the screen?  See db_funcs.h.
+ */
+DataRow *station_at_screen_pos(long screen_x, long screen_y, int radius)
+{
+  DataRow *p_station = n_first;
+  DataRow *best = NULL;
+  long best_d2 = (long)radius * (long)radius;
+
+  if (scale_x <= 0 || scale_y <= 0)
+  {
+    return NULL;
+  }
+
+  while (p_station != NULL)
+  {
+    /*
+     * Same test the drawing pass uses, so what can be clicked and what can be
+     * seen are the same set.  A station filtered out of the display is not
+     * hidden behind the map; it is not there.
+     */
+    if (ok_to_draw_station(p_station))
+    {
+      long sx = (p_station->coord_lon - NW_corner_longitude) / scale_x;
+      long sy = (p_station->coord_lat - NW_corner_latitude) / scale_y;
+      long dx = sx - screen_x;
+      long dy = sy - screen_y;
+      long d2 = dx * dx + dy * dy;
+
+      // <= so that a later station exactly as close as an earlier one wins,
+      // which puts the most recently added on top -- the same order they are
+      // drawn in, so the one you can see is the one you get.
+      if (d2 <= best_d2)
+      {
+        best_d2 = d2;
+        best = p_station;
+      }
+    }
+    p_station = p_station->n_next;
+  }
+  return best;
+}

@@ -127,6 +127,21 @@ extern time_t aloha_status_time;
 extern double aloha_radius;  // in miles
 extern aloha_stats the_aloha_stats;
 
+/*
+ * Which station is at this point on the screen?
+ *
+ * Takes a pixel position in the map canvas and returns the nearest station whose
+ * symbol is within `radius` pixels of it, or NULL.  Nearest rather than first:
+ * symbols overlap constantly in a city, and taking whichever came first in the
+ * list would mean clicking a callsign and getting its neighbour.
+ *
+ * In the core because it is arithmetic over the view and the station list with
+ * no toolkit in it -- a front end should not have to know how a longitude
+ * becomes an x.  Only stations that would actually be drawn are considered, so
+ * a click can never select something the map is not showing.
+ */
+DataRow *station_at_screen_pos(long screen_x, long screen_y, int radius);
+
 // stations
 extern int st_direct_timeout;   // Interval that ST_DIRECT flag stays set
 extern int station_count;       // Count of stations in the database
