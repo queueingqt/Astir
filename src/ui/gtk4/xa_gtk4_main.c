@@ -240,6 +240,52 @@ static void render_soon(void)
 }
 
 
+/*
+ * The credit the drawn maps require, painted over the finished frame.
+ *
+ * After cairo_restore, deliberately.  Everything before it is inside the
+ * scheduler's preview transform -- view_scale and view_dx/view_dy show the
+ * previous frame stretched and slid while the next one is composed -- so a
+ * credit drawn with the map zoomed with the map and slid with a drag.  It is
+ * chrome: fixed corner, fixed size, whatever the map underneath is doing.
+ *
+ * Pango rather than the core's text helper, because the core's helper draws
+ * into a surface and this has to land on the widget.
+ */
+static void draw_attribution(cairo_t *cr, int width, int height)
+{
+  PangoLayout *layout;
+  int tw, th;
+
+  (void)width;
+  if (map_attribution[0] == '\0')
+  {
+    return;                      // no map on screen asks for one
+  }
+
+  layout = pango_cairo_create_layout(cr);
+  pango_layout_set_text(layout, map_attribution, -1);
+  {
+    PangoFontDescription *d = pango_font_description_from_string("Sans 9");
+    pango_layout_set_font_description(layout, d);
+    pango_font_description_free(d);
+  }
+  pango_layout_get_pixel_size(layout, &tw, &th);
+
+  // Bottom left; the range scale sits bottom right.  A translucent plate
+  // rather than an outline, so the text stays legible over a light coastline
+  // and a dark forest without eight redraws of every glyph.
+  cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.72);
+  cairo_rectangle(cr, 0, height - th - 6, tw + 12, th + 6);
+  cairo_fill(cr);
+
+  cairo_set_source_rgb(cr, 0.15, 0.15, 0.15);
+  cairo_move_to(cr, 6, height - th - 3);
+  pango_cairo_show_layout(cr, layout);
+  g_object_unref(layout);
+}
+
+
 // The drawing area paints whatever the backend has composed.  GTK4 widgets
 // render from a snapshot, so the canvas surface the backend owns is the thing
 // that persists between frames and this just blits it.
@@ -265,6 +311,9 @@ static void xa_draw_cb(GtkDrawingArea *area, cairo_t *cr,
   cairo_set_source_surface(cr, s, 0, 0);
   cairo_paint(cr);
   cairo_restore(cr);
+
+  // Chrome goes on after the restore, so it does not move with the frame.
+  draw_attribution(cr, width, height);
 }
 
 
@@ -939,6 +988,22 @@ int main(int argc, char **argv)
             SELECTED_MAP_DATA);
     xa_render();
     s = xa_gtk4_canvas_surface();
+
+    // Draw the chrome onto the canvas before writing it out.
+    //
+    // Chrome normally goes on the widget, after the frame is painted, which is
+    // what keeps it still while the map zooms.  Headless there is no widget and
+    // no draw callback, so without this the one thing that can check the
+    // attribution -- the scripted render -- is the one thing that cannot see
+    // it.  A gate blind to a feature is how the feature breaks unnoticed.
+    if (s != NULL)
+    {
+      cairo_t *cr = cairo_create(s);
+
+      draw_attribution(cr, xa_w, xa_h);
+      cairo_destroy(cr);
+    }
+
     if (s == NULL
         || cairo_surface_write_to_png(s, path) != CAIRO_STATUS_SUCCESS)
     {

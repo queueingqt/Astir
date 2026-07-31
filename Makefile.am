@@ -20,7 +20,6 @@ EXTRA_DIST = config.guess config.sub install-sh \
         worldhi.map \
         Davis LaCrosse \
         OSM_template \
-        CC_OpenStreetMap_logo.png CC_OpenStreetMap_txt.png \
         COPYING COPYING.LIB.LESSTIF AUTHORS NaturalEarthVector
 
 MAINTAINERCLEANFILES = configure aclocal.m4 Makefile.in Makefile \
@@ -36,7 +35,7 @@ gnisdir=${pkgdatadir}/GNIS
 gnis_DATA=placeholder
 
 mapdir=${pkgdatadir}/maps
-map_DATA=worldhi.map CC_OpenStreetMap_logo.png CC_OpenStreetMap_txt.png
+map_DATA=worldhi.map
 
 onlinedir=${pkgdatadir}/maps/Online
 online_DATA=OSM_tiled_cycle.geo OSM_tiled_mapnik.geo \
@@ -57,11 +56,6 @@ doc_DATA=AUTHORS FAQ ChangeLog LICENSE README README.GIT.md README.CYGWIN \
         README.OSM_maps CONTRIBUTING.md FORK.md \
         COPYING.LIB.LESSTIF
 
-install-data-hook:
-	cd $(DESTDIR)$(mapdir) && \
-	rm -f CC_OpenStreetMap.png && \
-	$(LN_S) CC_OpenStreetMap_logo.png CC_OpenStreetMap.png
- 
 # Desktop integration.
 #
 # Upstream ships no .desktop file -- packagers add one downstream, which is why

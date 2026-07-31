@@ -552,6 +552,16 @@ extern xa_surface_id pixmap_25pct_stipple;
 extern xa_surface_id pixmap_13pct_stipple;
 extern xa_surface_id pixmap_wx_stipple;
 
+/*
+ * Device pixels per logical pixel.
+ *
+ * The core has no business knowing what a monitor does with its coordinates,
+ * with one exception: choosing which resolution of a RASTER asset to fetch.
+ * An OSM tile is a picture, and picking the zoom level without knowing the
+ * display density means fetching a tile that has to be magnified.
+ */
+int xa_device_scale(void);
+
 extern xa_color colors[256];    // the allocated screen colours
 
 /*

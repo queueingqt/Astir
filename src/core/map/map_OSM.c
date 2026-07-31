@@ -150,6 +150,7 @@
 #endif // HAVE_MAGICK
 
 #include "draw/xa_draw.h"
+#include "core/render/draw_symbols.h"   // draw_nice_string
 
 #include "core/xa_ui.h"
 
@@ -240,6 +241,36 @@ void adj_to_OSM_level( long *new_scale_x, long *new_scale_y)
 } // adj_to_OSM_level()
 
 
+
+/*
+ * The OpenStreetMap attribution, as text.
+ *
+ * This was two PNGs: a 133x31 logo strip and a 180x16 picture of the string
+ * "CC-BY-SA 2.0 OpenStreetMap", loaded off disk with GraphicsMagick's
+ * ReadImage() on every single frame and composited into the corner.
+ *
+ * Drawing it as text costs nothing per frame, scales with the display, and is
+ * the only version that can be translated.  A picture of a sentence is not a
+ * thing a program with a text engine should own.
+ *
+ * It also fixes what the sentence SAID.  OpenStreetMap relicensed its data
+ * from CC-BY-SA 2.0 to the Open Database Licence in September 2012, so the
+ * old attribution had been claiming the wrong licence for over a decade, and
+ * shipping a Creative Commons badge for data that is not under a Creative
+ * Commons licence.  The badge is gone with it; the credit OSM asks for is a
+ * textual one naming the contributors.
+ */
+static void draw_osm_attribution(void)
+{
+  // Declare the credit; the front end draws it.
+  //
+  // Drawing it here put it in the map layer, and the map layer is what the
+  // render scheduler scales and slides to preview a zoom or a drag -- so the
+  // credit zoomed with the map, which is exactly what a credit must not do.
+  astir_snprintf(map_attribution, sizeof(map_attribution),
+                  "%s", "(c) OpenStreetMap contributors  ODbL");
+}
+
 /*
  * osm_zoom_level - translate the longitude scale to the nearest OSM zoom level
  *
@@ -251,8 +282,38 @@ unsigned int osm_zoom_level(long scale_x)
   double circumference = 360.0*3600.0*100.0; // Astir Units = 1/100 second.
   double zf;
   int z;
+
   zf = (log(circumference / (double)scale_x) / log(2.0)) - 8.0;
-  z = (int)(zf + 0.5);
+
+  /*
+   * Round UP, and account for the display density.
+   *
+   * This used to round to nearest, which means the chosen zoom can be up to
+   * half a level below what the view needs, and the tiles are then MAGNIFIED
+   * by as much as 1.41x.  A tile is a photograph of a map: its road casings
+   * and place names were rasterised at one size by the tile server, and
+   * magnifying them is exactly how crisp text becomes unreadable text.  Half
+   * the time the map was being blown up rather than shrunk.
+   *
+   * Rounding up means the tiles are only ever REDUCED, which resamples
+   * cleanly.  It costs more tiles per frame -- one zoom level is four times as
+   * many -- which is why it was worth being deliberate about rather than
+   * quietly correct.
+   *
+   * The device scale is the same argument again.  On a 2x display every tile
+   * is drawn at twice its pixel size, so the level that was right for the
+   * logical size is one too shallow; log2 of the scale is exactly the
+   * correction.
+   */
+  {
+    int density = xa_device_scale();
+
+    if (density > 1)
+    {
+      zf += log((double)density) / log(2.0);
+    }
+  }
+  z = (int)ceil(zf - 0.001);      // the epsilon keeps an exact level exact
 
   // OSM levels run from 0 to 18. Not all levels are available for all views.
   if (z < 0)
@@ -1383,22 +1444,7 @@ void draw_OSM_tiles (char *filenm,           // this is the name of the astir ma
       xa_image_destroy(shared_ximg);
     }
 
-    // Display the OpenStreetMap attribution
-    // Just reuse the tile structure rather than creating another.
-    astir_snprintf(tmpString, sizeof(tmpString),
-                    "%s/CC_OpenStreetMap.png", get_data_base_dir("maps"));
-    strncpy(tile_info->filename, tmpString, MaxTextExtent);
-
-    tile = ReadImage(tile_info,&exception);
-    if (exception.severity != UndefinedException)
-    {
-      CatchException(&exception);
-    }
-    else
-    {
-      draw_image(tile, &exception, 4, 4);
-      DestroyImage(tile);
-    }
+    draw_osm_attribution();
   }
   else
   {
@@ -1734,19 +1780,7 @@ void draw_OSM_map (char *filenm,
   draw_OSM_image(image, &exception, &(tp[0]), &(tp[1]), osm_zl);
   DestroyImage(image);
 
-  // Display the OpenStreetMap attribution
-  astir_snprintf(image_info->filename, MaxTextExtent,
-                  "%s/CC_OpenStreetMap.png", get_data_base_dir("maps"));
-
-  image = ReadImage(image_info,&exception);
-  if (exception.severity != UndefinedException)
-  {
-    CatchException(&exception);
-  }
-  else
-  {
-    draw_image(image, &exception, 4, 4);
-  }
+  draw_osm_attribution();
 
 
   // Clean up

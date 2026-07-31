@@ -779,3 +779,8 @@ void xa_fill_rings(xa_surface_id dst, xa_pen pen,
 {
   (void)dst; (void)pen; (void)pts; (void)ring_sizes; (void)nrings; (void)alpha;
 }
+
+int xa_device_scale(void)
+{
+  return 1;
+}

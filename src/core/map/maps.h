@@ -232,6 +232,22 @@ typedef struct
 // front end needs it.
 extern long get_x_scale(long x, long y, long ysc);
 
+/*
+ * The credit the currently drawn maps require, or an empty string.
+ *
+ * Set by whichever map driver needs one -- only the OSM tile driver does --
+ * and cleared at the start of every map pass, so it reflects what is on screen
+ * rather than what once was.
+ *
+ * The front end draws it, not the map code, and that is the point.  Drawn into
+ * the map layer it scaled and slid with the map: the render scheduler shows the
+ * previous frame transformed while the new one is composed, so anything in the
+ * canvas moves with a drag and grows with a zoom.  A credit is chrome.  It
+ * belongs on top of the frame, in fixed position, at a fixed size.
+ */
+#define MAP_ATTRIBUTION_MAX 128
+extern char map_attribution[MAP_ATTRIBUTION_MAX];
+
 #endif /* __ASTIR_MAPS_H */
 
 

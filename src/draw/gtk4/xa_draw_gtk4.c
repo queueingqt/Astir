@@ -200,6 +200,14 @@ int xa_gtk4_device_scale(void)
   return gtk4_device_scale;
 }
 
+
+// The toolkit-neutral spelling, for core code choosing the resolution of a
+// raster asset.  Same number; xa_draw.h is what the core includes.
+int xa_device_scale(void)
+{
+  return gtk4_device_scale;
+}
+
 // What the widget's draw function should paint.  NULL before set_canvas().
 cairo_surface_t *xa_gtk4_canvas_surface(void)
 {
@@ -926,14 +934,36 @@ static void fill_source(cairo_t *cr, gtk4_pen *p)
 
 /* ---- drawing ----------------------------------------------------------- */
 
-// X pixel centres: a 1-pixel line from (x1,y1) to (x2,y2) covers those pixels.
-// Cairo strokes are centred on the path, so a half-pixel offset lands them on
-// the same pixels for odd widths.
-#define PX(v) ((double)(v) + 0.5)
+/*
+ * Where a path has to sit for a stroke to land on whole pixels.
+ *
+ * X names pixels; Cairo centres a stroke on the path.  A width-1 stroke down
+ * x = 7.0 therefore covers x = 6.5 to 7.5 -- half of pixel 6 and half of pixel
+ * 7, which is a two-pixel grey smear where X drew one crisp line.  Offsetting
+ * the path by half a pixel fixes that.
+ *
+ * It fixes it FOR ODD WIDTHS ONLY, and the previous version applied it to
+ * every width.  A width-2 stroke down x = 7.5 covers 6.5 to 8.5: pixel 7 fully,
+ * pixels 6 and 8 half each -- two pixels of ink spread over three columns.
+ * That is what made the lat/lon grid look blurred, because draw_grid() asks for
+ * width 2.  An even width wants the path ON the boundary, not offset from it.
+ *
+ * Measured on the grid before and after: (185,183,233) (127,127,233)
+ * (185,183,233) across three columns became two columns of one solid colour.
+ */
+static double px_off(gtk4_pen *p)
+{
+  int w = (p != NULL && p->line_width > 0) ? p->line_width : 1;
+
+  return (w & 1) ? 0.5 : 0.0;
+}
+
+#define PX(v) ((double)(v) + off)
 
 void xa_draw_line(xa_surface_id dst, xa_pen pen, int x1, int y1, int x2, int y2)
 {
   cairo_t *cr = begin(dst, pen);
+  double off = px_off((gtk4_pen *)pen);
 
   if (cr == NULL) { return; }
   cairo_move_to(cr, PX(x1), PX(y1));
@@ -944,7 +974,7 @@ void xa_draw_line(xa_surface_id dst, xa_pen pen, int x1, int y1, int x2, int y2)
 
 
 static void path_points(cairo_t *cr, xa_point *points, int npoints,
-                        int coord_mode, int close)
+                        int coord_mode, int close, double off)
 {
   int i;
   double cx, cy;
@@ -972,9 +1002,10 @@ void xa_draw_lines(xa_surface_id dst, xa_pen pen, xa_point *points,
                    int npoints, int coord_mode)
 {
   cairo_t *cr = begin(dst, pen);
+  double off = px_off((gtk4_pen *)pen);
 
   if (cr == NULL) { return; }
-  path_points(cr, points, npoints, coord_mode, 0);
+  path_points(cr, points, npoints, coord_mode, 0, off);
   cairo_stroke(cr);
   cairo_destroy(cr);
 }
@@ -995,6 +1026,7 @@ void xa_draw_rect(xa_surface_id dst, xa_pen pen, int x, int y,
                   int width, int height)
 {
   cairo_t *cr = begin(dst, pen);
+  double off = px_off((gtk4_pen *)pen);
 
   if (cr == NULL) { return; }
   // X draws a rectangle width+1 by height+1 pixels; matched here so a converted
@@ -1031,10 +1063,13 @@ void xa_fill_polygon(xa_surface_id dst, xa_pen pen, xa_point *points,
 {
   cairo_t *cr = begin(dst, pen);
   gtk4_pen *p = (gtk4_pen *)pen;
+  // A fill has no stroke width, so it wants the pixel boundary, never a
+  // half-pixel offset: an offset fill is a shape moved half a pixel.
+  double off = 0.0;
 
   (void)shape;                   // a hint about convexity; Cairo needs none
   if (cr == NULL) { return; }
-  path_points(cr, points, npoints, coord_mode, 1);
+  path_points(cr, points, npoints, coord_mode, 1, off);
   if (p && p->fill_style != XA_FILL_SOLID)
   {
     cairo_clip(cr);

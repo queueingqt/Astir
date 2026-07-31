@@ -180,6 +180,9 @@ time_t map_index_timestamp;
 
 int grid_size = 0;
 
+// The credit the drawn maps require; see maps.h.
+char map_attribution[MAP_ATTRIBUTION_MAX] = "";
+
 // Rounding
 #ifndef HAVE_ROUNDF
 // Poor man's rounding, but rounds away from zero as roundf is supposed to.
@@ -2150,7 +2153,13 @@ void actually_draw_utm_minor_grid(void)
   // OLD: Draw grid in dashed white lines.
   // NEW: Tint the lines as they go along, making them appear
   // no matter what color is underneath.
-  xa_pen_color(gc_tint, colors[0x27]);
+  // gray35, not yellow.  0x27 is yellow and was never meant to be seen: XOR'd
+  // against a pale map it came out blue, which is what the grid actually
+  // looked like.  Drawn normally, yellow on light terrain is close to
+  // invisible.  A neutral mid grey is legible over the light land, the blue
+  // sea and the green forest alike, without competing with the map for
+  // attention -- which is all a graticule is for.
+  xa_pen_color(gc_tint, colors[0x28]);
 
   // Note:  npoints can be negative here!  Make sure our code
   // checks for that.  Initially npoints was an unsigned int.
@@ -3473,11 +3482,27 @@ void draw_grid(void)
     xa_draw_line(pixmap_final, gc, l16(screen_width-half), 0, l16(screen_width-half), l16(screen_height));
   }
 
-  // Set the line width in the GC to 2 pixels wide for the larger
-  // UTM grid and the complete Lat/Long grid.
-  xa_pen_line(gc_tint, 2, XA_LINE_ON_OFF_DASH, XA_CAP_BUTT, XA_JOIN_MITER);
-  xa_pen_color(gc_tint, colors[0x27]);
-  xa_pen_function(gc_tint, XA_FUNC_XOR);
+  // The grid is one pixel wide and drawn normally, not two pixels of XOR.
+  //
+  // XOR was how a grid stayed visible over any background when the only tool
+  // was a bitwise operation on colour indices.  It has two costs here.  Cairo
+  // composites colours rather than indices and has no XOR, so the backend
+  // approximates it with DIFFERENCE -- which means the line's colour depends
+  // on the map underneath it and changes along its own length.  And the width
+  // of 2, drawn at a half-pixel offset, put two pixels of ink across three
+  // columns.  Together they read as a blurred line of no fixed colour.
+  //
+  // A solid one-pixel line in a fixed colour is legible over both the light
+  // land and the darker sea, which is the only thing XOR was buying.
+  xa_pen_line(gc_tint, 1, XA_LINE_ON_OFF_DASH, XA_CAP_BUTT, XA_JOIN_MITER);
+  // gray35, not yellow.  0x27 is yellow and was never meant to be seen: XOR'd
+  // against a pale map it came out blue, which is what the grid actually
+  // looked like.  Drawn normally, yellow on light terrain is close to
+  // invisible.  A neutral mid grey is legible over the light land, the blue
+  // sea and the green forest alike, without competing with the map for
+  // attention -- which is all a graticule is for.
+  xa_pen_color(gc_tint, colors[0x28]);
+  xa_pen_function(gc_tint, XA_FUNC_COPY);
 
   if (coordinate_system == USE_UTM
       || coordinate_system == USE_UTM_SPECIAL
@@ -7463,6 +7488,10 @@ void load_maps (void)
   char selected_map_path[MAX_VALUE];
 
   get_user_base_dir(SELECTED_MAP_DATA, selected_map_path, sizeof(selected_map_path));
+
+  // Whatever the last pass required, this pass has to earn again.  A credit
+  // that outlives the map it belongs to is a false claim about what is drawn.
+  map_attribution[0] = '\0';
 
 //    int dummy;
 
