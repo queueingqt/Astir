@@ -88,6 +88,48 @@ static const iface_kind *kind_of(int type)
 }
 
 
+/*
+ * A name for EVERY device type, including the ones this window cannot create.
+ *
+ * The two lists are deliberately different sizes.  kinds[] is what can be
+ * added; this is what can be shown.  A config carried over from another program
+ * -- or written by hand, or by an older version -- can hold a type that is not
+ * offered here, and calling it "unknown type" would be this window admitting it
+ * had not looked.  The interface still runs, still starts and stops, and still
+ * says what it is; it just cannot be edited here yet.
+ */
+static const char *type_name(int type)
+{
+  const iface_kind *k = kind_of(type);
+
+  if (k != NULL)
+  {
+    return k->label;
+  }
+  switch (type)
+  {
+    case DEVICE_SERIAL_TNC_HSP_GPS:  return "Serial TNC with GPS (HSP cable)";
+    case DEVICE_SERIAL_TNC_AUX_GPS:  return "Serial TNC with GPS (aux port)";
+    case DEVICE_SERIAL_GPS:          return "Serial GPS";
+    case DEVICE_SERIAL_WX:           return "Serial weather station";
+    case DEVICE_AX25_TNC:            return "Kernel AX.25 port";
+    case DEVICE_NET_GPSD:            return "GPS via gpsd";
+    case DEVICE_NET_WX:              return "Networked weather station";
+    case DEVICE_NET_DATABASE:        return "Networked database";
+    case DEVICE_SERIAL_MKISS_TNC:    return "Multi-port serial KISS TNC";
+    case DEVICE_SQL_DATABASE:        return "SQL database";
+    default:                         return "Interface";
+  }
+}
+
+
+// Whether the add/edit dialog understands this type well enough to change it.
+static int type_is_editable(int type)
+{
+  return kind_of(type) != NULL;
+}
+
+
 // A device slot that has never been configured.  device_type is the only field
 // that says so; the rest of the record is whatever was last in it.
 static int slot_in_use(int i)
@@ -495,7 +537,6 @@ static void rebuild_rows(void)
   for (i = 0; i < MAX_IFACE_DEVICES; i++)
   {
     GtkWidget *row, *hbox, *vbox, *title, *sub, *dot, *btn;
-    const iface_kind *k;
     char target[160], line[260];
     int status;
 
@@ -503,7 +544,6 @@ static void rebuild_rows(void)
     {
       continue;
     }
-    k = kind_of(devices[i].device_type);
     status = get_device_status(i);
     /*
      * ASTIR_IFACE_TRACE reports what this window believes, once per refresh.
@@ -559,13 +599,13 @@ static void rebuild_rows(void)
     describe_target(i, target, sizeof(target));
     astir_snprintf(line, sizeof(line), "%s",
                    devices[i].comment[0] ? devices[i].comment
-                   : (k != NULL ? k->label : "Interface"));
+                   : type_name(devices[i].device_type));
     title = gtk_label_new(line);
     gtk_label_set_xalign(GTK_LABEL(title), 0.0);
     gtk_widget_add_css_class(title, "heading");
 
     astir_snprintf(line, sizeof(line), "%s \xe2\x80\x94 %s%s",
-                   k != NULL ? k->label : "unknown type", target,
+                   type_name(devices[i].device_type), target,
                    devices[i].transmit_data ? "  \xe2\x80\xa2 transmit enabled"
                                             : "  \xe2\x80\xa2 receive only");
     sub = gtk_label_new(line);
@@ -594,7 +634,21 @@ static void rebuild_rows(void)
     gtk_box_append(GTK_BOX(hbox), btn);
 
     btn = gtk_button_new_with_label("Edit");
-    g_signal_connect(btn, "clicked", G_CALLBACK(on_edit), GINT_TO_POINTER(i));
+    if (type_is_editable(devices[i].device_type))
+    {
+      g_signal_connect(btn, "clicked", G_CALLBACK(on_edit),
+                       GINT_TO_POINTER(i));
+    }
+    else
+    {
+      // Greyed rather than hidden, with a reason.  A missing button invites
+      // the guess that the interface is broken; a disabled one with a tooltip
+      // says which part is not finished, and the interface still runs.
+      gtk_widget_set_sensitive(btn, FALSE);
+      gtk_widget_set_tooltip_text(btn,
+        "This interface type cannot be edited here yet. It still starts and "
+        "stops normally; change its settings in ~/.astir/config/astir.cnf.");
+    }
     gtk_box_append(GTK_BOX(hbox), btn);
 
     btn = gtk_button_new_from_icon_name("user-trash-symbolic");

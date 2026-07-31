@@ -165,16 +165,27 @@ int forked_getaddrinfo(const char *hostname, const char *servname, const struct 
       // calling restart() on SIGHUP
       (void) signal(SIGHUP,SIG_DFL);
 
-
-      // Change the name of the new child process.  So far
-      // this only works for "ps" listings, not for "top".
-      // This code only works on Linux.  For BSD use
-      // setproctitle(3), NetBSD can use setprogname(2).
-#ifdef __linux__
-      init_set_proc_title(my_argc, my_argv, my_envp);
-      set_proc_title("%s", "hostname lookup (astir)");
-      //fprintf(stderr,"DEBUG: %s\n", Argv[0]);
-#endif  // __linux__
+      /*
+       * THE CHILD DOES NOT RENAME ITSELF.
+       *
+       * It used to, so that a process listing showed "hostname lookup (astir)"
+       * rather than a second copy of Astir.  That is worth very little, and it
+       * cost the whole program: init_set_proc_title() malloc()s in a loop and
+       * strdup()s twice, and this is the first thing after a fork() in a
+       * process with nine threads in it.
+       *
+       * fork() copies the calling thread and nothing else.  A lock another
+       * thread was holding at that instant stays locked in the child with
+       * nobody left to release it, so the first malloc() can block forever --
+       * and did, leaving a child parked in futex_wait and the parent spinning
+       * beside it waiting for a child that would never exit.  The application
+       * froze.
+       *
+       * POSIX is blunt about this: between fork() and exec() a child in a
+       * threaded program may call only async-signal-safe functions.  malloc()
+       * is not one, and neither is getaddrinfo() below -- which is why the
+       * wait in the parent now has a deadline, rather than trusting this.
+       */
 
 
       // Close the end of the pipe we don't need here
@@ -298,21 +309,72 @@ int forked_getaddrinfo(const char *hostname, const char *servname, const struct 
 
       close(fp[1]);   // Write end of the pipe
 
-      tm=1;
-      wait_host=1;
-      while (wait_host!=-1)
+      /*
+       * Wait for the child, with a sleep and a deadline.
+       *
+       * This was a busy-wait -- waitpid(WNOHANG) and sched_yield() round a
+       * loop, with the usleep commented out -- and it left only when waitpid
+       * returned -1.  A child that never exits returns 0 forever, so the loop
+       * span at one whole core until the program was killed.  From outside
+       * that is not a slow lookup; it is a frozen application.
+       *
+       * And a child that never exits is not hypothetical.  fork() in a
+       * threaded program copies the calling thread alone: any lock another
+       * thread held at that instant stays locked in the child, with nothing
+       * left running to release it.  The child here goes on to allocate -- in
+       * set_proc_title, in getaddrinfo, in the resolver's own module loading --
+       * and any one of those can block on the allocator's lock forever.  That
+       * is what happened: a child parked in futex_wait, and a parent burning a
+       * core beside it.
+       *
+       * So: sleep between checks, and give up after a deadline.  A name that
+       * cannot be resolved in this long is not going to be, and the caller
+       * already knows how to report a lookup that failed.
+       */
       {
-        astir_snprintf(ttemp, sizeof(ttemp), langcode("BBARSTA031"), tm++);
-        xa_ui_status(ttemp);        // Looking up hostname...
+        const int poll_ms = 20;                   /* between checks */
+        const int deadline_ms = 20000;            /* 20 s, then give up */
+        int waited_ms = 0;
 
-        for (i=0; i < 60 && wait_host!=-1; i++)
+        tm = 1;
+        wait_host = 0;
+        while ((wait_host = waitpid(host_pid, &status, WNOHANG)) == 0)
         {
-          wait_host=waitpid(host_pid,&status,WNOHANG);
-          /* update display while waiting */
-//                        XmUpdateDisplay(XtParent(da));
-          //usleep(500);
-          sched_yield();
+          if (waited_ms >= deadline_ms)
+          {
+            fprintf(stderr,
+                    "hostname lookup for '%s' did not finish in %d seconds; "
+                    "abandoning it\n",
+                    hostname ? hostname : "(null)", deadline_ms / 1000);
+
+            // SIGKILL, not SIGTERM: a child deadlocked on a lock it can never
+            // acquire will not run a handler.
+            (void)kill(host_pid, SIGKILL);
+            (void)waitpid(host_pid, &status, 0);
+            wait_host = -1;
+            rc = FAI_TIMEOUT;
+            break;
+          }
+
+          // Once a second, say that something is still happening -- and only
+          // once a second, because this used to redraw a status line as fast
+          // as the loop could turn.
+          if (waited_ms % 1000 == 0)
+          {
+            astir_snprintf(ttemp, sizeof(ttemp), langcode("BBARSTA031"), tm++);
+            xa_ui_status(ttemp);      // Looking up hostname...
+          }
+
+          usleep(poll_ms * 1000);
+          waited_ms += poll_ms;
         }
+        (void)i;
+      }
+
+      if (rc == FAI_TIMEOUT)
+      {
+        close(fp[0]);
+        return rc;                    // nothing was written to the pipe
       }
       // Get the return code
       if (read(fp[0],&rc,sizeof(int)) == -1)
