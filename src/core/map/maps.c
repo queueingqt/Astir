@@ -4299,6 +4299,13 @@ extern void draw_palm_image_map(char *dir,
                                 map_draw_flags *draw_flags);
 
 #ifdef HAVE_LIBSHP
+extern void draw_pmtiles_map(char *dir,
+                            char *filenm,
+                            alert_entry *alert,
+                            u_char alert_color,
+                            int destination_pixmap,
+                            map_draw_flags *draw_flags);
+
 extern void draw_shapefile_map (char *dir,
                                 char *filenm,
                                 alert_entry *alert,
@@ -4339,7 +4346,7 @@ extern void draw_pop_map(char *dir,
 struct
 {
   char *ext;
-  enum {none=0, map, tif, geo, gnis, shp, pop} type;
+  enum {none=0, map, tif, geo, gnis, shp, pop, pmtiles_vector} type;
   void (*func)(char *dir,
                char *filenm,
                alert_entry *alert,
@@ -4360,6 +4367,9 @@ struct
 
 #ifdef HAVE_LIBSHP
   {"shp",shp,draw_shapefile_map},
+  // A PMTiles archive of vector tiles: geometry and tags rather than pixels,
+  // in one offline file.  See map_pmtiles.c.
+  {"pmtiles",pmtiles_vector,draw_pmtiles_map},
 #endif /* HAVE_LIBSHP */
 
   {NULL,none,NULL}

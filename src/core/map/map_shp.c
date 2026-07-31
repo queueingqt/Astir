@@ -118,6 +118,7 @@ typedef struct _label_string
 // It's OK for this to appear *after* "leak_detection.h" because
 // it contains nothing that interferes with that file.
 #include "core/map/map_shp_fwd.h"
+#include "core/map/map_style.h"
 
 // RTrees are used as a spatial index for shapefiles.  We can search them
 // for shapes that intersect our viewport, and only read those from the
@@ -751,6 +752,91 @@ static awk_rule dbfawk_default_rules[] =
 #define dbfawk_default_nrules (sizeof(dbfawk_default_rules)/sizeof(dbfawk_default_rules[0]))
 static dbfawk_sig_info *dbfawk_default_sig = NULL;
 
+
+
+/*
+ * The styling engine, as an interface rather than a pile of file statics.
+ *
+ * dbfawk's symbol table is built once and recycled, so the variables the rules
+ * write into have to be shared -- which is why they are file statics here.  A
+ * second feature source (the vector tile driver) needs the same engine and the
+ * same values, and reaching into another file's statics is not a way to get
+ * them.  These three calls are.
+ *
+ * It is the same engine, the same rule files and the same variables; only the
+ * feature source differs.
+ */
+void *map_dbfawk_sigs(void)
+{
+  // Load on demand.  The rule set used to be loaded only by
+  // draw_shapefile_map(), so a map set with no shapefile in it -- a vector
+  // tile archive on its own -- got an empty rule set, matched nothing, and
+  // drew a correctly decoded tile in no colour at all.
+  if (Dbf_sigs == NULL)
+  {
+    Dbf_sigs = dbfawk_load_sigs(get_data_base_dir("config"), ".dbfawk");
+  }
+  return (void *)Dbf_sigs;
+}
+
+
+void map_dbfawk_init_symtab(void)
+{
+  (void)initialize_dbfawk_symbol_table(dbffields, sizeof(dbffields),
+                                       &color, &lanes,
+                                       name, sizeof(name),
+                                       key, sizeof(key),
+                                       sym, sizeof(sym),
+                                       &filled, &fill_style,
+                                       &fill_color, &fill_stipple,
+                                       &pattern, &display_level,
+                                       &min_display_level, &label_level,
+                                       &label_color, &font_size,
+                                       &label_method, &label_lon, &label_lat);
+}
+
+
+/*
+ * Compile a rule against the shared symbol table.
+ *
+ * A dbfawk program is compiled against the table it will read and write, so
+ * running one that was never compiled dereferences a symbol list that does not
+ * exist -- which is a SIGSEGV inside awk_find_sym, not a diagnostic.  The
+ * shapefile path does this between building the table and executing the BEGIN
+ * rule; any other feature source has to do it too.
+ */
+int map_dbfawk_compile(void *sig)
+{
+  dbfawk_sig_info *info = (dbfawk_sig_info *)sig;
+
+  if (info == NULL || info->prog == NULL)
+  {
+    return -1;
+  }
+  map_dbfawk_init_symtab();
+  return awk_compile_program(Symtbl, info->prog);
+}
+
+
+map_style map_dbfawk_style(void)
+{
+  map_style s;
+
+  s.color = color;
+  s.lanes = lanes;
+  s.filled = filled;
+  s.pattern = pattern;
+  s.display_level = display_level;
+  s.min_display_level = min_display_level;
+  s.label_level = label_level;
+  s.fill_style = fill_style;
+  s.fill_color = fill_color;
+  s.fill_stipple = fill_stipple;
+  s.label_color = label_color;
+  s.font_size = font_size;
+  s.name = name;
+  return s;
+}
 
 
 void draw_shapefile_map (char *dir,

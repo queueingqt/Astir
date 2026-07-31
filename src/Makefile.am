@@ -108,6 +108,8 @@ libastircore_a_SOURCES = \
     core/map/maps.c \
     core/map/mvt.c core/map/mvt.h \
     core/map/pmtiles.c core/map/pmtiles.h \
+    core/map/map_pmtiles.c \
+    core/map/map_style.h \
     core/map/maps.h \
     core/map/shp_hash.c \
     core/map/shp_hash.h \

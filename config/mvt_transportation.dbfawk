@@ -1,0 +1,27 @@
+# Astir styling for the "transportation" layer of a vector tile.
+#
+# Claimed by LAYER NAME, not by a DBF signature: a tile's layers are named and
+# that name is the stable thing to key on, where the set of tags varies tile by
+# tile.  The driver builds the signature "mvt:<layername>".
+#
+# These are the same rules, the same engine and the same variables that style
+# shapefiles.  Only the source of the attributes differs.
+BEGIN {
+dbfinfo="mvt:transportation";
+dbffields="highway:name";
+}
+
+BEGIN_RECORD {key=""; lanes=1; color=8; fill_color=8; name=""; filled=0;
+              pattern=0; display_level=64000; min_display_level=0;
+              label_level=8000; label_color=8; font_size=1; symbol="";
+              fill_style=0;}
+
+/^name=(.*)$/ {name="$1";}
+
+/^highway=motorway$/    {lanes=4; color=4;  display_level=512000; next}
+/^highway=trunk$/       {lanes=3; color=4;  display_level=256000; next}
+/^highway=primary$/     {lanes=3; color=13; display_level=128000; next}
+/^highway=secondary$/   {lanes=2; color=13; display_level=64000; next}
+/^highway=tertiary$/    {lanes=2; color=8;  display_level=32000; next}
+/^highway=residential$/ {lanes=1; color=8;  display_level=12000; next}
+/^highway=service$/     {lanes=1; color=7;  display_level=6000; next}
