@@ -201,6 +201,50 @@ void xa_dirty_clear(void)
   xa_dirty_active = 0;
 }
 
+
+/*
+ * The map background choices, in the order the preference offers them.
+ *
+ * Kept as names rather than as an enum of colours because that is what the
+ * saved config means: MAP_BGCOLOR is an index into this list, and reordering it
+ * would silently change the background of every existing installation.  Append
+ * only.
+ */
+static const char *map_background_names[] =
+{
+  "gray73",                  /*  0, the default */
+  "MistyRose",               /*  1 */
+  "NavyBlue",                /*  2 */
+  "SteelBlue",               /*  3 */
+  "MediumSeaGreen",          /*  4 */
+  "PaleGreen",               /*  5 */
+  "PaleGoldenrod",           /*  6 */
+  "LightGoldenrodYellow",    /*  7 */
+  "RosyBrown",               /*  8 */
+  "firebrick",               /*  9 */
+  "white",                   /* 10 */
+  "black",                   /* 11 */
+  "lightblue",               /* 12, water -- the sea under a vector basemap */
+};
+
+
+xa_color map_background_apply(void)
+{
+  const int n = (int)(sizeof(map_background_names)
+                      / sizeof(map_background_names[0]));
+  int which = map_background_color;
+
+  if (which < 0 || which >= n)
+  {
+    which = 0;
+    map_background_color = 0;     // repair the setting rather than fight it
+  }
+
+  // 0xfd is the slot the whole program clears the map layer with.
+  colors[0xfd] = xa_color_by_name(map_background_names[which]);
+  return colors[0xfd];
+}
+
 // Start of the current map draw, for the per-driver timing below.
 static double astir_map_t0;
 

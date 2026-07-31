@@ -1593,7 +1593,8 @@ void load_data_or_default(void)
 
   scale_x = get_x_scale(center_longitude,center_latitude,scale_y);
 
-  map_background_color = get_int ("MAP_BGCOLOR", 0, 11, 0);
+  // 12 is water; see map_background_names[] in maps.c, which this indexes.
+  map_background_color = get_int ("MAP_BGCOLOR", 0, 12, 0);
 
   map_color_fill = get_int ( "MAP_DRAW_FILLED_COLORS", 0, 1, 1);
 

@@ -10,24 +10,31 @@ dbfinfo="featurecla:scalerank:LABELRANK:SOVEREIGNT:SOV_A3:ADM0_DIF:LEVEL:TYPE:TL
 
 dbffields="NAME_LONG:MAPCOLOR9:MIN_ZOOM:MAX_LABEL:LABEL_X:LABEL_Y";}
 
-# Defaults: thin black lines, 13% stippled, display all the way out to max
+# Defaults: thin black lines, solid land fill, display all the way out to max
 # zoom, don't display below 1000 zoom, stop labeling above 50000 zoom,
 # use black labels in large font, take label location out of DBF fields
-BEGIN_RECORD {key=""; lanes=1; color=8; name=""; filled=1; fill_style=2; fill_stipple=0; pattern=0; display_level=2147483647; min_display_level=1000; label_level=50000; label_color=8; symbol=""; font_size=3; label_method=1; label_lon=0.0; label_lat=0.0;}
+#
+# This layer is the BOTTOM of Astir's default map set: it draws the land, and
+# whatever it does not cover is the sea.  So the fill is solid.  It used to be a
+# 13% wash, which is right for a country outline laid over another map and wrong
+# for a basemap -- washed over the background, land and sea came out the same
+# colour and the coastline was the only thing telling them apart.
+BEGIN_RECORD {key=""; lanes=1; color=8; name=""; filled=1; fill_style=0; fill_color=105; pattern=0; display_level=2147483647; min_display_level=1000; label_level=50000; label_color=8; symbol=""; font_size=3; label_method=1; label_lon=0.0; label_lat=0.0;}
 
 # Get the label text from the shapefile record
 /^NAME_LONG=(.*)$/ {name="$1";}
 
 # Color each polygon based on its "MAPCOLOR9" value.  Use the Set1 colors
-/^MAPCOLOR9=1$/ {fill_style=2; fill_stipple=0; fill_color=127;}
-/^MAPCOLOR9=2$/ {fill_style=2; fill_stipple=0; fill_color=128;}
-/^MAPCOLOR9=3$/ {fill_style=2; fill_stipple=0; fill_color=129;}
-/^MAPCOLOR9=4$/ {fill_style=2; fill_stipple=0; fill_color=130;}
-/^MAPCOLOR9=5$/ {fill_style=2; fill_stipple=0; fill_color=131;}
-/^MAPCOLOR9=6$/ {fill_style=2; fill_stipple=0; fill_color=132;}
-/^MAPCOLOR9=7$/ {fill_style=2; fill_stipple=0; fill_color=133;}
-/^MAPCOLOR9=8$/ {fill_style=2; fill_stipple=0; fill_color=134;}
-/^MAPCOLOR9=9$/ {fill_style=2; fill_stipple=0; fill_color=135;}
+# One land colour, not nine.
+#
+# MAPCOLOR9 assigns each country one of nine Set1 hues so that no two neighbours
+# share one -- a political map, where the point is telling countries apart.  A
+# basemap has a different job: it is the quiet thing underneath the stations, and
+# nine saturated fills fight everything drawn on top.  Borders still separate the
+# countries; the colour no longer has to.
+#
+# The attribute is still read, so restoring the political colouring is a matter
+# of putting the nine rules back.
 
 # the smaller the MIN_ZOOM value, the farther out you have to be to see
 # the feature rendered (i.e. far enough out to want to see a whole country

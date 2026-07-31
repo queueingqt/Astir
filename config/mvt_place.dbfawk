@@ -4,9 +4,13 @@
 # about label_level -- the zoom at which a name stops being drawn -- and font
 # size.  The driver draws the name rather than the point.
 #
-# There is no collision detection anywhere in Astir, so two places close
-# together will overlap.  Keeping the smaller categories to close zooms is the
-# crude substitute, and it is the reason the levels below fall away so sharply.
+# The label placer rejects names that would overlap, so two places close
+# together no longer collide.  The levels below still fall away sharply, but for
+# a different reason now: they decide which names are even OFFERED at a zoom,
+# and offering a hamlet at country scale would have it lose to a city anyway.
+#
+# A pattern and its action must be on the same line; dbfawk reads a rule per
+# line, and wrapping one for readability makes both halves parse errors.
 BEGIN {
 dbfinfo="mvt:place";
 dbffields="class:name:rank";
@@ -26,6 +30,5 @@ BEGIN_RECORD {key=""; lanes=1; color=8; fill_color=8; name=""; filled=0;
 /^class=town$/      {font_size=2; label_color=8; label_level=64000; next}
 /^class=village$/   {font_size=2; label_color=8; label_level=24000; next}
 /^class=hamlet$/    {font_size=1; label_color=8; label_level=12000; next}
-/^class=(suburb|quarter|neighbourhood)$/
-                    {font_size=1; label_color=41; label_level=8000; next}
+/^class=(suburb|quarter|neighbourhood)$/ {font_size=1; label_color=41; label_level=8000; next}
 /^class=island$/    {font_size=2; label_color=26; label_level=64000; next}

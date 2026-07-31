@@ -39,6 +39,7 @@
 #include "core/state/xa_state.h"
 #include "core/state/xa_settings.h"
 #include "core/state/xa_config.h"
+#include "core/state/first_run.h"
 #include "core/xa_ui.h"
 #include "core/map/maps.h"
 #include "core/util/lang.h"
@@ -191,6 +192,9 @@ static void xa_render(void)
     // ASTIR_GTK4_REUSE=0 forces a full redraw, which is how the reused frame
     // is checked against the frame it is supposed to be identical to.
     static int reuse_enabled = -1;
+
+    // The configured background into colors[0xfd], which both clears below use.
+    map_background_apply();
 
     if (reuse_enabled < 0)
     {
@@ -1075,9 +1079,39 @@ static int init_core(void)
     astir_snprintf(user_dir, sizeof(user_dir), "%s", pw->pw_dir);
   }
 
-  // Language first: almost everything else reports through langcode().
-  if (!load_language_file(get_user_base_dir("config/language.sys", base,
-                                            sizeof(base))))
+  // Build ~/.astir before anything reads out of it.  A first run has no
+  // directory at all, and every failure after this point would otherwise be
+  // reported as a missing file rather than as a missing install.
+  if (!xa_user_dirs_create())
+  {
+    g_printerr("astir: cannot set up the user directory; giving up\n");
+    return 0;
+  }
+
+  // Language first: almost everything else reports through langcode().  The
+  // user's own language.sys wins if they have one; otherwise Astir's shipped
+  // copy for the configured language is read straight out of the data
+  // directory, with no symlink in between to go stale.
+  if (!xa_resolve_config("language.sys", base, sizeof(base)))
+  {
+    char want[64];
+
+    /*
+     * The configured language is not known yet: langcode() has to work before
+     * the config file can be reported on, so the language load comes first and
+     * the setting arrives with load_data_or_default() below.  English is the
+     * language every install ships, so it is what a first run reads; a user who
+     * has chosen another gets it from the next launch onward.
+     */
+    astir_snprintf(want, sizeof(want), "language-%s.sys",
+                   lang_to_use[0] != '\0' ? lang_to_use : "English");
+    if (!xa_resolve_config(want, base, sizeof(base)))
+    {
+      g_printerr("astir: no language file found; is Astir installed?\n");
+      return 0;
+    }
+  }
+  if (!load_language_file(base))
   {
     g_printerr("could not load the language file\n");
     return 0;

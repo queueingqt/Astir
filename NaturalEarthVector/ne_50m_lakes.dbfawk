@@ -9,18 +9,22 @@ dbfinfo="scalerank:featurecla:name:name_alt:note:admin:namepar:min_zoom:min_labe
 
 dbffields="name:featurecla:min_zoom:min_label";}
 
-# defaults: color 117 (same as Tiger/Line water color), fill color 117,
-# stippled 50%, display all the way out to max zoom, stop labeling at
-# 50k zoom, label in black.
+# defaults: solid, in the same water colour the sea is drawn in, display all
+# the way out to max zoom, stop labeling at 50k zoom, label in black.
+#
+# A lake is water, and it is drawn in exactly the colour the sea is, so the two
+# read as one thing at a glance.  This was a 25% wash of the bright Tiger/Line
+# water colour, which over the land fill came out grey -- a lake the same colour
+# as the ground it sits in.
 
-BEGIN_RECORD {key=""; lanes=1; color=117; name=""; filled=1; fill_color=117; fill_style=2; fill_stipple=2; pattern=0; display_level=2147483647; label_level=50000; label_color=8; symbol=""; font_size=3; label_method=0;}
+BEGIN_RECORD {key=""; lanes=1; color=23; name=""; filled=1; fill_color=23; fill_style=0; pattern=0; display_level=2147483647; label_level=50000; label_color=8; symbol=""; font_size=3; label_method=0;}
 
 # Feature name from DBF record
 /^name=(.*)$/ {name="$1";}
 
-# color reservoirs and alkaline lakes in a different shaed of blue
-/^featurecla=Alkaline Lake$/ {fill_color=128;}
-/^featurecla=Reservoir$/ {fill_color=23;}
+# Alkaline lakes are shown in a different blue; a reservoir is water like any
+# other and is left alone.
+/^featurecla=Alkaline Lake$/ {fill_color=117;}
 
 # set display level and label level based on attributes
 # higher numbers are smaller features

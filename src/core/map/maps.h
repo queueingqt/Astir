@@ -272,6 +272,21 @@ extern long xa_dirty_top, xa_dirty_bottom;    /* latitude, Astir units */
 void xa_dirty_set(long left, long right, long top, long bottom);
 void xa_dirty_clear(void);
 
+/*
+ * Put the configured map background into the palette slot the front end clears
+ * with, and return it.
+ *
+ * MAP_BGCOLOR has been read from the config, written back to it and offered in
+ * the preferences all along, but the code that turned the number into a colour
+ * lived in the Motif main() and did not come across.  The setting has been
+ * inert since: every map has been drawn on gray73 whatever the user chose,
+ * which happens to be what 0 means, so it looked like it worked.
+ *
+ * Call it before clearing the map layer.  It is cheap and the setting can
+ * change between frames.
+ */
+xa_color map_background_apply(void);
+
 #endif /* __ASTIR_MAPS_H */
 
 
