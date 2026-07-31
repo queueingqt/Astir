@@ -1751,6 +1751,21 @@ static gboolean show_station_once(gpointer win)
   {
     call = (n_first != NULL) ? n_first->call_sign : NULL;
   }
+  // Dump what the history holds, so the popover's contents can be checked
+  // without a pointer.
+  {
+    const char *t[24];
+    const char *c[24];
+    int n = xa_gtk4_station_history(t, c, 24);
+    int i;
+
+    g_print("history holds %d entries:\n", n);
+    for (i = 0; i < n; i++)
+    {
+      g_print("   [%s] %s\n", c[i] ? c[i] : "(no station)", t[i]);
+    }
+  }
+
   if (call != NULL && call[0] != '\0')
   {
     g_print("opening station window for %s\n", call);

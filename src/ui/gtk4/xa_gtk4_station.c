@@ -46,31 +46,104 @@ static int history_n;            /* how many are filled, up to HISTORY_MAX */
 static int history_head;         /* where the next one goes */
 
 
+/*
+ * Record an event.  Progress is not an event.
+ *
+ * Everything the core puts on the status line came through here at first, and
+ * that filled the ring with "Loading CA_Los_Angeles_06037_roads.shp" -- several
+ * per render, forever -- pushing out the stations, which are the only entries
+ * anybody can click.  A history of what the program was busy with is not a
+ * history of what happened.
+ *
+ * So a message is kept only if it names a station.  That is a strict rule and a
+ * deliberate one: it makes this "stations heard recently", which is exactly
+ * what the popover is for, and progress still shows live in the toast where it
+ * is useful.
+ */
 void xa_gtk4_station_note(const char *text, const char *callsign)
 {
   history_entry *e;
+  int i;
 
   if (text == NULL || text[0] == '\0')
   {
     return;
   }
-
-  // Collapse an immediate repeat.  A progress line that ticks ("Loading x",
-  // "Loading x") would otherwise fill the ring with one event.
-  if (history_n > 0)
+  if (callsign == NULL || callsign[0] == '\0')
   {
-    int prev = (history_head + HISTORY_MAX - 1) % HISTORY_MAX;
+    return;                      // progress, not an event
+  }
 
-    if (strcmp(history[prev].text, text) == 0)
+  /*
+   * One entry per station, moved to the front when heard again.
+   *
+   * A station transmitting every thirty seconds would otherwise take the whole
+   * ring to itself within the hour, and forty lines all saying the same
+   * callsign is not a history either.
+   */
+  for (i = 0; i < history_n; i++)
+  {
+    int idx = (history_head + HISTORY_MAX - 1 - i) % HISTORY_MAX;
+
+    if (strcasecmp(history[idx].callsign, callsign) == 0)
     {
-      return;
+      // Shuffle the newer entries back over it, then append afresh.
+      int k;
+
+      for (k = i; k > 0; k--)
+      {
+        int dst = (history_head + HISTORY_MAX - 1 - k) % HISTORY_MAX;
+        int src = (history_head + HISTORY_MAX - k) % HISTORY_MAX;
+
+        history[dst] = history[src];
+      }
+      history_head = (history_head + HISTORY_MAX - 1) % HISTORY_MAX;
+      history_n--;
+      break;
     }
   }
 
   e = &history[history_head];
-  astir_snprintf(e->text, sizeof(e->text), "%s", text);
-  astir_snprintf(e->callsign, sizeof(e->callsign), "%s",
-                 callsign != NULL ? callsign : "");
+  astir_snprintf(e->callsign, sizeof(e->callsign), "%s", callsign);
+
+  /*
+   * Tidy the text for a list rather than a status line.
+   *
+   * The core pads the callsign out to a fixed width so successive status lines
+   * align in place; in a stacked list that padding is just a gap.  And a
+   * position update carries no message at all, which left rows showing a bare
+   * callsign and nothing else -- true, but it reads like something failed to
+   * load.
+   */
+  {
+    const char *rest = text + strlen(callsign);
+    char tidy[sizeof(e->text)];
+    size_t n = 0;
+    int gap = 0;
+
+    while (*rest == ' ' || *rest == '\t')
+    {
+      rest++;
+    }
+    while (*rest != '\0' && n < sizeof(tidy) - 1)
+    {
+      if (*rest == ' ' || *rest == '\t')
+      {
+        gap = 1;                 // collapse a run of spaces to one
+      }
+      else
+      {
+        if (gap && n > 0) { tidy[n++] = ' '; }
+        gap = 0;
+        tidy[n++] = *rest;
+      }
+      rest++;
+    }
+    tidy[n] = '\0';
+
+    astir_snprintf(e->text, sizeof(e->text), "%s  %s", callsign,
+                   n > 0 ? tidy : "heard");
+  }
 
   history_head = (history_head + 1) % HISTORY_MAX;
   if (history_n < HISTORY_MAX)
