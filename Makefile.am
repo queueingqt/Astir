@@ -62,6 +62,40 @@ install-data-hook:
 	rm -f CC_OpenStreetMap.png && \
 	$(LN_S) CC_OpenStreetMap_logo.png CC_OpenStreetMap.png
  
+# Desktop integration.
+#
+# Upstream ships no .desktop file -- packagers add one downstream, which is why
+# there has never been one in the tree and why Xastir has no menu entry unless
+# your distribution made one.  This is Astir's, and it is installed by the
+# build so a source install lands in the menu like any other application.
+#
+# The icon is installed as SVG into hicolor/scalable first.  symbols/icon.svg
+# already exists and nothing was using it; a scalable icon is the correct thing
+# for a menu that renders at whatever size the panel asks for, and it is the
+# same argument as the rest of the vector work.  The 128px PNG goes in as well,
+# for anything that cannot read SVG.
+#
+# StartupWMClass is "Astir", matching the application class main.c passes to
+# XtVaOpenApplication.  Without it the taskbar shows a running window that it
+# cannot connect to the launcher that started it.
+desktopdir = $(datadir)/applications
+dist_desktop_DATA = astir.desktop
+
+svgicondir = $(datadir)/icons/hicolor/scalable/apps
+pngicondir = $(datadir)/icons/hicolor/128x128/apps
+
+install-data-local: install-astir-icons
+install-astir-icons:
+	$(MKDIR_P) $(DESTDIR)$(svgicondir) $(DESTDIR)$(pngicondir)
+	$(INSTALL_DATA) $(top_srcdir)/symbols/icon.svg $(DESTDIR)$(svgicondir)/astir.svg
+	$(INSTALL_DATA) $(top_srcdir)/symbols/icon.png $(DESTDIR)$(pngicondir)/astir.png
+
+uninstall-local: uninstall-astir-icons
+uninstall-astir-icons:
+	rm -f $(DESTDIR)$(svgicondir)/astir.svg $(DESTDIR)$(pngicondir)/astir.png
+
+.PHONY: install-astir-icons uninstall-astir-icons
+
 mandir=@mandir@
 man_MANS=astir.1 astir_callpass.1 astir_udp_client.1 astir_testdbfawk.1
 

@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Version=1.5
+Name=Astir
+GenericName=APRS Client
+Comment=Track and map amateur radio stations over APRS
+Exec=astir
+Icon=astir
+Terminal=false
+StartupNotify=true
+StartupWMClass=Astir
+Categories=Network;HamRadio;
+Keywords=APRS;amateur radio;ham radio;packet;AX.25;GPS;mapping;tracking;
