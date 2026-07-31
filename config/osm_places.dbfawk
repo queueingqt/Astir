@@ -1,0 +1,19 @@
+# Astir styling for OSM place names, from tools/osm_import.sh.
+#
+# Points with no geometry worth drawing: these exist to be labels, which is
+# why the symbol is empty and the label levels do all the work.
+BEGIN {
+dbfinfo="place:name:population";
+dbffields="place:name:population";
+}
+
+BEGIN_RECORD {min_display_level=0; key=""; lanes=1; color=8; name=""; filled=0; pattern=0;
+              display_level=0; label_level=8000; label_color=8; font_size=2;
+              symbol="";}
+
+/^name=(.*)$/ {name="$1";}
+
+/^place=(city)$/     {font_size=4; label_level=512000; next}
+/^place=(town)$/     {font_size=3; label_level=128000; next}
+/^place=(village)$/  {font_size=2; label_level=32000; next}
+/^place=(suburb|neighbourhood|hamlet)$/ {font_size=1; label_level=12000; next}

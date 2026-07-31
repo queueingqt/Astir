@@ -1,0 +1,21 @@
+# Astir styling for OSM land use and green space, from tools/osm_import.sh.
+BEGIN {
+dbfinfo="landuse:name";
+dbffields="landuse:name";
+}
+
+BEGIN_RECORD {min_display_level=0; key=""; lanes=1; color=8; fill_color=10; name=""; filled=1;
+              fill_style=2; fill_stipple=0; pattern=0; display_level=64000;
+              label_level=8000; label_color=8; font_size=1; symbol="";}
+
+/^name=(.*)$/ {name="$1";}
+
+# Green space.  Parks are what give a city map its shape at a glance.
+/^landuse=(park|nature_reserve|recreation_ground|village_green)$/ {fill_color=10; color=10; next}
+/^landuse=(forest|wood)$/       {fill_color=11; color=11; next}
+/^landuse=(grass|meadow|farmland|farmyard|orchard|vineyard)$/ {fill_color=10; color=10; next}
+/^landuse=golf_course$/         {fill_color=10; color=10; next}
+/^landuse=cemetery$/            {fill_color=10; color=8; next}
+
+# Built up areas, kept quiet so they do not compete with the roads.
+/^landuse=(residential|commercial|retail|industrial)$/ {fill_color=25; color=25; display_level=32000; next}

@@ -60,6 +60,7 @@
   #endif
 #endif
 
+#include <sys/stat.h>
 #include <pwd.h>
 #include <unistd.h>
 
@@ -726,6 +727,20 @@ static void act_toggle(GSimpleAction *a, GVariant *state, gpointer u)
   render_soon();
 }
 
+/*
+ * Rebuild the map index.
+ *
+ * Needed after any map is added -- notably after tools/osm_import.sh writes new
+ * shapefiles, which are invisible until the index knows their extents.
+ */
+static void act_reindex(GSimpleAction *a, GVariant *p, gpointer u)
+{
+  (void)a; (void)p; (void)u;
+  map_indexer(0);
+  xa_render();
+}
+
+
 static void act_about(GSimpleAction *a, GVariant *p, gpointer u)
 {
   GtkWidget *dlg;
@@ -891,6 +906,30 @@ static int init_core(void)
     return 0;
   }
 
+  /*
+   * Build the map index if there is not one.
+   *
+   * map_indexer() has always been in the core; nothing in this front end ever
+   * called it, so a GTK4-only install had no way to produce an index at all --
+   * it silently inherited whatever the Motif build had left in ~/.astir.
+   *
+   * Without an index map_onscreen_index() culls every map as not visible and
+   * load_maps() draws nothing, with no error anywhere, because "not visible"
+   * is a normal answer.  A newly imported map is exactly the case that hits
+   * this: the files are there, they are selected, and the map is blank.
+   */
+  {
+    char idx[MAX_VALUE];
+    struct stat st;
+
+    get_user_base_dir(MAP_INDEX_DATA, idx, sizeof(idx));
+    if (stat(idx, &st) != 0)
+    {
+      fprintf(stderr, "no map index at %s; building one\n", idx);
+      map_indexer(0);
+    }
+  }
+
   // Let a scripted render pick the scale, so "are the maps culled by zoom?"
   // is one run rather than a guess.  scale_y is 1/100 second per pixel.
   if (getenv("ASTIR_GTK4_SCALE") != NULL)
@@ -952,6 +991,7 @@ static void on_activate(GtkApplication *app, gpointer user_data)
     { "zoom-out",    act_zoom_out, NULL, NULL,    NULL, {0} },
     { "redraw",      act_redraw,   NULL, NULL,    NULL, {0} },
     { "about",       act_about,    NULL, NULL,    NULL, {0} },
+    { "reindex",     act_reindex,  NULL, NULL,    NULL, {0} },
     { "grid",        NULL, NULL, "false", act_toggle, {0} },
     { "map-labels",  NULL, NULL, "false", act_toggle, {0} },
     { "filled-maps", NULL, NULL, "false", act_toggle, {0} },
@@ -995,6 +1035,7 @@ static void on_activate(GtkApplication *app, gpointer user_data)
   g_object_unref(maps);
 
   help = g_menu_new();
+  g_menu_append(maps, "Rebuild Map Index", "win.reindex");
   g_menu_append(help, "About Astir", "win.about");
   g_menu_append_section(menu, NULL, G_MENU_MODEL(help));
   g_object_unref(help);

@@ -1,0 +1,34 @@
+# Astir styling for OSM roads imported by tools/osm_import.sh.
+#
+# Matched by DBF field signature, so this must name exactly the fields the
+# importer writes, in order.  A rule whose dbfinfo does not match never fires,
+# and it fails silently -- the map simply draws in the default style.
+BEGIN {
+dbfinfo="highway:name:z_order";
+dbffields="highway:name:z_order";
+}
+
+# Defaults: a thin dark line, named, drawn until well zoomed out.
+# display_level is the scale ABOVE which a feature stops being drawn, so a
+# bigger number means "keep showing it as you zoom out".
+BEGIN_RECORD {min_display_level=0; key=""; lanes=1; color=8; fill_color=8; name=""; filled=0;
+              pattern=0; display_level=64000; label_level=8000; label_color=8;
+              font_size=1; symbol=""; fill_style=0;}
+
+/^name=(.*)$/ {name="$1";}
+
+# Motorways and trunks carry to the widest zoom and are drawn heaviest, which
+# is what makes a road map readable rather than a uniform mesh.
+/^highway=motorway$/      {lanes=4; color=4;  display_level=512000; label_level=64000; next}
+/^highway=motorway_link$/ {lanes=2; color=4;  display_level=64000; next}
+/^highway=trunk$/         {lanes=3; color=4;  display_level=256000; label_level=48000; next}
+/^highway=primary$/       {lanes=3; color=13; display_level=128000; label_level=32000; next}
+/^highway=secondary$/     {lanes=2; color=13; display_level=64000; label_level=16000; next}
+/^highway=tertiary$/      {lanes=2; color=8;  display_level=32000; label_level=12000; next}
+/^highway=residential$/   {lanes=1; color=8;  display_level=12000; label_level=6000; next}
+/^highway=unclassified$/  {lanes=1; color=8;  display_level=12000; label_level=6000; next}
+/^highway=service$/       {lanes=1; color=7;  display_level=6000; label_level=3000; next}
+/^highway=track$/         {lanes=1; color=7;  pattern=2; display_level=6000; next}
+
+# Paths and cycleways: dashed, and only close in.
+/^highway=(footway|path|cycleway|bridleway|steps)$/ {lanes=1; color=7; pattern=1; display_level=4000; next}
