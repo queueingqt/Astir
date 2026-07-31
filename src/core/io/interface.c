@@ -3336,11 +3336,31 @@ static void* net_connect_thread(void *arg)
     }
     if(result == -1)
     {
-      fprintf(stderr, "Socket connection for interface %d type (%d, %d, %d) failed: %s\n",
-              port, res->ai_family, res->ai_socktype, res->ai_protocol, strerror(errno) );
+      /*
+       * One address failed.  Say so at the volume it deserves.
+       *
+       * A hostname usually resolves to several addresses -- "localhost" is ::1
+       * and 127.0.0.1 -- and they are tried in turn until one answers.  A
+       * server bound to IPv4 only refuses the IPv6 attempt EVERY time, and the
+       * connection that follows it succeeds.  Reporting that as a failure, in
+       * the same words used for a real one, sent somebody looking for a broken
+       * interface that had in fact just connected.
+       *
+       * So an attempt with somewhere left to go is a note, not an error, and it
+       * does not use the word "failed".  The last address keeps the full report,
+       * because at that point the connection really has failed.
+       */
       if(res->ai_next)
       {
-        fprintf(stderr, "This is OK since we have more to try.\n");
+        fprintf(stderr,
+                "interface %d: no answer on %s address, trying the next one\n",
+                port, res->ai_family == AF_INET6 ? "IPv6" : "IPv4");
+      }
+      else
+      {
+        fprintf(stderr,
+                "interface %d: could not connect on any address: %s\n",
+                port, strerror(errno));
       }
       close(port_data[port].channel);
       port_data[port].channel = -1;
