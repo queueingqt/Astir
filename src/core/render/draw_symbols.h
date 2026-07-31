@@ -70,6 +70,15 @@ extern int symbol_change_requested_from;
 extern void draw_symbols_init(void);
 extern void draw_deadreckoning_features(DataRow *p_station, xa_surface_id where);
 
+// Drawing a symbol from its outline; see symbol_draw_vector.c.
+#include "core/render/symbols_vector.h"
+
+const astir_sym_glyph *astir_symbol_glyph(char table, char symbol);
+void astir_symbol_draw_glyph(const astir_sym_glyph *g,
+                             xa_surface_id where, xa_pen pen,
+                             long x, long y, double size,
+                             char orient, double alpha);
+
 #endif  // __ASTIR_DRAW_SYMBOLS_H
 
 

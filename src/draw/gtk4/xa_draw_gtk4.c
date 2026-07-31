@@ -1078,6 +1078,68 @@ static void arc_path(cairo_t *cr, int x, int y, int width, int height,
 }
 
 
+/*
+ * Fill closed rings by the nonzero winding rule, at `alpha`.
+ *
+ * The symbol outlines land here.  No clip mask is involved, which is the whole
+ * point: the pixmap path drew an icon by blitting a 20x20 rectangle through a
+ * 1-bit coverage mask, and this backend could only honour the mask's bounding
+ * rectangle, so every station sat on an opaque grey square.  A filled outline
+ * has no rectangle to leak.
+ */
+void xa_fill_rings(xa_surface_id dst, xa_pen pen,
+                   const xa_pointf *pts, const int *ring_sizes, int nrings,
+                   double alpha)
+{
+  cairo_t *cr;
+  int i, k, at = 0;
+
+  if (pts == NULL || ring_sizes == NULL || nrings <= 0)
+  {
+    return;
+  }
+  cr = begin(dst, pen);
+  if (cr == NULL)
+  {
+    return;
+  }
+
+  // Nonzero is Cairo's default, but say so: the tracer relies on it to put
+  // holes in, and a later change to even-odd would fill them in silently.
+  cairo_set_fill_rule(cr, CAIRO_FILL_RULE_WINDING);
+
+  for (i = 0; i < nrings; i++)
+  {
+    if (ring_sizes[i] < 3)
+    {
+      at += ring_sizes[i];
+      continue;
+    }
+    cairo_move_to(cr, pts[at].x, pts[at].y);
+    for (k = 1; k < ring_sizes[i]; k++)
+    {
+      cairo_line_to(cr, pts[at + k].x, pts[at + k].y);
+    }
+    cairo_close_path(cr);
+    at += ring_sizes[i];
+  }
+
+  if (alpha >= 1.0)
+  {
+    cairo_fill(cr);
+  }
+  else
+  {
+    // Clip to the path and paint through alpha, rather than setting a
+    // translucent source and filling: overlapping rings within one glyph would
+    // otherwise composite against each other and show their seams.
+    cairo_clip(cr);
+    cairo_paint_with_alpha(cr, alpha < 0.0 ? 0.0 : alpha);
+  }
+  cairo_destroy(cr);
+}
+
+
 void xa_draw_arc(xa_surface_id dst, xa_pen pen, int x, int y,
                  int width, int height, int angle1, int angle2)
 {

@@ -113,6 +113,7 @@ libastircore_a_SOURCES = \
     core/map/tile_mgmnt.h \
     core/render/draw_symbols.c \
     core/render/symbols_vector.c core/render/symbols_vector.h \
+    core/render/symbol_draw_vector.c \
     core/render/draw_symbols.h \
     core/render/symbols.h \
     core/state/xa_config.c \

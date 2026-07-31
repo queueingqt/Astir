@@ -472,6 +472,42 @@ void xa_fill_rect(xa_surface_id dst, xa_pen pen,
                   int x, int y, int width, int height);
 void xa_fill_polygon(xa_surface_id dst, xa_pen pen,
                      xa_point *points, int npoints, int shape, int coord_mode);
+
+/*
+ * A point in continuous coordinates.
+ *
+ * xa_point is a pair of shorts because X wanted a pair of shorts.  Outlines
+ * are scaled and rotated before they are drawn, so their points land between
+ * pixels by definition, and rounding them to integers first would put the
+ * staircase back that the outline exists to remove.
+ */
+typedef struct
+{
+  double x, y;
+} xa_pointf;
+
+/*
+ * Fill closed rings by the nonzero winding rule, at `alpha`.
+ *
+ * `ring_sizes[i]` is the point count of ring i; `pts` holds them one ring
+ * after another.  Nonzero rather than even-odd is what makes a hole a hole
+ * without the caller having to say which ring is which: the tracer emits
+ * outer boundaries and holes in opposite directions, and the fill rule sorts
+ * it out.
+ *
+ * This exists for the symbol outlines, and there are three reasons it is not
+ * xa_fill_polygon:
+ *
+ *   - it takes continuous coordinates, so a symbol can be drawn at any size
+ *   - it takes several rings at once, so a symbol with holes is one call and
+ *     one fill rather than one call per ring with the holes painted back over
+ *   - it takes alpha, which is how a ghosted station is drawn now.  The pixmap
+ *     path faked it with a checkerboard mask that blanked every second pixel,
+ *     because a 1-bit mask was the only transparency an X pixmap had.
+ */
+void xa_fill_rings(xa_surface_id dst, xa_pen pen,
+                   const xa_pointf *pts, const int *ring_sizes, int nrings,
+                   double alpha);
 void xa_draw_arc(xa_surface_id dst, xa_pen pen,
                  int x, int y, int width, int height, int angle1, int angle2);
 void xa_fill_arc(xa_surface_id dst, xa_pen pen,

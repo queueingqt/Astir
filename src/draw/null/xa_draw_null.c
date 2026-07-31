@@ -772,3 +772,10 @@ void xa_draw_string(xa_surface_id dst, xa_pen pen, int x, int y, const char *tex
   (void)length;
   null_record("xa_draw_string");
 }
+
+void xa_fill_rings(xa_surface_id dst, xa_pen pen,
+                   const xa_pointf *pts, const int *ring_sizes, int nrings,
+                   double alpha)
+{
+  (void)dst; (void)pen; (void)pts; (void)ring_sizes; (void)nrings; (void)alpha;
+}

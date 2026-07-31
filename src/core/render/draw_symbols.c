@@ -2709,37 +2709,42 @@ void symbol(int ghost, char symbol_table, char symbol_id, char symbol_overlay, x
   }
 
 
-  if (mask)
+  // Draw the outline, not a pixmap.
+  //
+  // `mask` is now ignored, and there is nothing left for it to mean: it used to
+  // ask for the icon to be blitted through its coverage mask so the background
+  // showed through the transparent pixels.  A filled outline only covers what
+  // it covers, so transparency is not a mode any more.  The parameter stays in
+  // the signature because fifteen call sites pass it and removing it is a
+  // separate change.
+  //
+  // Ghosting is alpha rather than a checkerboard that blanked every second
+  // pixel.  0.45 rather than 0.5 because the dither also left the underlying
+  // map visible through those pixels, so the old ghost read lighter than half.
   {
-    if (ghost)
+    const astir_sym_glyph *g = astir_symbol_glyph(symbol_table, symbol_id);
+    double alpha = ghost ? 0.45 : 1.0;
+
+    (void)mask;
+    if (g == NULL)               // no such symbol: fall back to "no symbol yet"
     {
-      xa_pen_clip_mask(gc, symbol_data[found].pix_mask_old);
+      g = astir_symbol_glyph('!', '#');
     }
-    else
+    astir_symbol_draw_glyph(g, where, gc, x_offset, y_offset, 20.0,
+                            symbol_data[found].orient == ' ' ? ' ' : orient,
+                            alpha);
+
+    if (symbol_overlay != '\0' && symbol_overlay != ' ')
     {
-      xa_pen_clip_mask(gc, symbol_data[found].pix_mask);
+      const astir_sym_glyph *ov = astir_symbol_glyph('#', symbol_overlay);
+
+      if (ov != NULL)
+      {
+        astir_symbol_draw_glyph(ov, where, gc, x_offset, y_offset, 20.0,
+                                ' ', alpha);
+      }
     }
   }
-  xa_pen_clip_origin(gc, x_offset, y_offset);
-  xa_copy_area(symbol_data[found].pix, where, gc, 0, 0, 20, 20, x_offset, y_offset);
-
-
-  if(alphanum_index > 0)
-  {
-    if (ghost)
-    {
-      xa_pen_clip_mask(gc, symbol_data[alphanum_index].pix_mask_old);
-    }
-    else
-    {
-      xa_pen_clip_mask(gc, symbol_data[alphanum_index].pix_mask);
-    }
-
-    xa_pen_clip_origin(gc, x_offset, y_offset);
-    xa_copy_area(symbol_data[alphanum_index].pix, where, gc, 0, 0, 20, 20, x_offset, y_offset); // rot
-  }
-
-  xa_pen_clip_mask(gc, None);
 }
 
 // Calculate the width in pixels of the actual text
