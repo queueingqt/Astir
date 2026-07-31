@@ -32,16 +32,16 @@ Check the config by:
      git config -l   # Doesn't differentiate between global and local though!
 ```
 
-2. Go to <http://github.com/Astir/Astir> to access the project page.
+2. Go to <http://github.com/Xastir/Xastir> to access the project page.
   There you will find the URL of the git repository, just to the right
   of a button that says "HTTPS". Copy this URL to your clipboard.  (At
   the time of this writing, the URL was
-  https://github.com/Astir/Astir.git)
+  https://github.com/Xastir/Xastir.git)
 
 3. Open a shell, navigate to a directory where you want to store the
 Astir source code, and enter this command:
 ```
-    git  clone https://github.com/Astir/Astir.git
+    git  clone https://github.com/Xastir/Xastir.git
 ```
 
 This will create a clone of the Astir git repository in an
@@ -131,7 +131,7 @@ get set up right.  Choose your initial clone URL accordingly.
 ### HTTPS Method:
 
 ```
-   git clone https://github.com/Astir/Astir
+   git clone https://github.com/Xastir/Xastir
 ```
 
 ### SSH public key method
@@ -139,7 +139,7 @@ get set up right.  Choose your initial clone URL accordingly.
 [Add keys to GitHub](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account) and then:
 
 ```
-   git clone git@github.com:Astir/Astir
+   git clone git@github.com:Xastir/Xastir
 ```
 
 Note that using the SSH method means that you won't have to answer the
@@ -189,8 +189,8 @@ git remote -v
 ```
 which should list your remotes:
 ```
-origin  git@github.com:Astir/Astir.git (fetch)
-origin  git@github.com:Astir/Astir.git (push)
+origin  git@github.com:Xastir/Xastir.git (fetch)
+origin  git@github.com:Xastir/Xastir.git (push)
 myremote git@github.com:myusername/Astir.git (fetch)
 myremote git@github.com:myusername/Astir.git (push)
 ```
@@ -476,8 +476,8 @@ Colorizing Git output (set once and forget):
 
 Clone a repo:
 ```
-    git clone https://github.com/Astir/Astir
-    git clone git@github.com:Astir/Astir
+    git clone https://github.com/Xastir/Xastir
+    git clone git@github.com:Xastir/Xastir
 ```
 
 Status of local repo:

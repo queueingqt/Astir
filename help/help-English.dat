@@ -31,8 +31,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 More information on the program can be found at:
 
- https://github.com/Astir/Astir
- https://github.com/Astir/Astir/wiki
+ https://github.com/Xastir/Xastir
+ https://github.com/Xastir/Xastir/wiki
  https://www.xastir.org
 
 There are some mailing lists available that are Astir-specific.
@@ -78,7 +78,7 @@ removed all the old entries and will not update it further.
 
 The best way to see what's new in any release of Astir is to view the
 release notes we provide with each release on Github.  These may be viewed at
-https://github.com/Astir/Astir/releases.
+https://github.com/Xastir/Xastir/releases.
 
 
 HELP-INDEX>Starting Astir for the first time
@@ -1001,7 +1001,7 @@ Enable Weather Alert Counties
 This toggles the display of county warning area maps for severe
 weather.  These maps can be obtained and installed according to the
 directions at
-https://github.com/Astir/Astir/wiki/Astir-Mapping-Overview and its
+https://github.com/Xastir/Xastir/wiki/Astir-Mapping-Overview and its
 various links. They are displayed on screen when special weather alert
 messages are received, and expire after a time or can be remotely
 canceled.  The weather alert text can be seen under View|Weather
@@ -1047,10 +1047,10 @@ topographic maps, and ESRI Shapefile maps.  The graphics handling capability
 of Astir can be greatly extended by compiling with GraphicsMagick support,
 enabling support for many graphic formats as maps.  Astir supports weather
 alert maps in ESRI Shapefile format, available from NOAA.  See the Github
-wiki page https://github.com/Astir/Astir/wiki/Installing-Astir for details.
+wiki page https://github.com/Xastir/Xastir/wiki/Installing-Astir for details.
 
 Details of locations to obtain many of the above types of maps are found in
-the file https://github.com/Astir/Astir/wiki/Astir-Mapping-Overview and
+the file https://github.com/Xastir/Xastir/wiki/Astir-Mapping-Overview and
 links below it.
 
 Map Locations
@@ -1061,7 +1061,7 @@ under this directory to help organize and separate your data. The maps will be
 loaded in alphanumerical order unless layering is specified.
 
 Hints on installing and organizing maps are found in the Astir Github
-wiki at https://github.com/Astir/Astir/wiki/Astir-Mapping-Overview.
+wiki at https://github.com/Xastir/Xastir/wiki/Astir-Mapping-Overview.
 Maps in a pixel graphics format actually need a combination of two files,
 a data file with a graphic pixmap (.xpm) (or other format if you compiled
 with GraphicsMagick), and a calibration file (.geo). The .xpm file is the
@@ -1225,7 +1225,7 @@ WX County Maps
 All WX County maps should be stored in the
 /usr/local/share/astir/Counties and Astir only supports the ESRI
 Shapefile standard for these. Installation is explained in
-https://github.com/Astir/Astir/wiki/Astir-Mapping-Overview.  You
+https://github.com/Xastir/Xastir/wiki/Astir-Mapping-Overview.  You
 must have Shapelib compiled in.
 
 As NWS messages are received, different areas will get tinted to designate
@@ -1735,7 +1735,7 @@ and RAC files should be placed in the /usr/local/share/astir/fcc
 directory, and case is important!  Pressing this button adds the
 station's name and address into the Station Info box.  Instructions
 for installing these databases are in the "Helper Scripts" page on the wiki,
-https://github.com/Astir/Astir/wiki/Helper-Scripts
+https://github.com/Xastir/Xastir/wiki/Helper-Scripts
 
 Astir will create index files for each database file upon startup. If a newer
 callsign file is placed there while Astir is running, it will create or

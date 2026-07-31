@@ -206,7 +206,7 @@ as shown.
 
   mkdir git
   cd git
-  git clone http://github.com/Astir/Astir
+  git clone http://github.com/Xastir/Xastir
 
 The end result when it succeeds will be a new directory "~\git\Astir\"
 which contains all of the Astir source code.  You can type "ls Astir"
@@ -275,7 +275,7 @@ Support for these additional map types has been compiled in:
        tif   USGS DRG Geotiff Topographic Maps (libgeotiff/libproj)
        xpm   X Pixmap Maps (XPM library)
 
-The Astir wiki at Github (https://github.com/Astir/Astir/wiki) has
+The Astir wiki at Github (https://github.com/Xastir/Xastir/wiki) has
 instructions for where to get maps and where to put them under the
 Astir hierarchy.
 
@@ -482,7 +482,7 @@ within Cygwin or you may experience lockups.
 
 You'll need to add the .wav files to Astir.
 
-git clone http://github.com/Astir/Astir-sounds
+git clone http://github.com/Xastir/Xastir-sounds
 
 cd Astir-sounds
 cp -r sounds/* /usr/local/share/astir/sounds/

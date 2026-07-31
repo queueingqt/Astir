@@ -600,7 +600,7 @@ Do not run Astir while building — `build.sh` explains why (a saturated compile
 plus a GUI app hung the GPU on this machine and corrupted five object files).
 
 **The branch is local-only.** `perf-and-gui` has no upstream tracking branch and
-is 11 commits ahead of nothing. `origin` is the fork, `upstream` is Astir/Astir.
+is 11 commits ahead of nothing. `origin` is the fork, `upstream` is Xastir/Xastir.
 Nothing here has been pushed.
 
 ## How to verify a change (read this first)

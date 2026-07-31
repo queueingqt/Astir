@@ -16,7 +16,7 @@ you have to write code.
 
 Please subscribe to our mailing list as listed on the official Astir
 web site, http://xastir.org/.  You may also want to keep an eye on
-Github Discussions at https://github.com/Astir/Astir/discussions .
+Github Discussions at https://github.com/queueingqt/Xastir/discussions .
 
 ### Please don't open a Github Issue for questions about the code
 
@@ -51,7 +51,7 @@ expect and what the code actually does.
 
 If you are reasonably sure that you have found a real bug and wish to
 report it, open an issue on the Astir Github repository at
-https://github.com/Astir/Astir.
+https://github.com/queueingqt/Xastir.
 
 Realize that Astir is entirely a volunteer effort largely moved
 forward by very busy people, and your bug might not get fixed in short
@@ -84,7 +84,7 @@ In order to get contributed patches accepted more easily by the
 Astir developers:
 
 * Read
-[Coding Standard](https://github.com/Astir/Astir/wiki/Coding-Standard).
+[Coding Standard](https://github.com/queueingqt/Xastir/wiki/Coding-Standard).
 Make sure to follow the
 formatting and indentation rules, and in particular the tab format
 (spaces, not tabs).  If you don't like some of the formatting rules,
@@ -92,7 +92,7 @@ abide by them anyway for consistency.  Some of the developers don't
 like some of the  formatting rules either, but consistency is more
 important than ideas we might have of coding style!
 
-* Check the Astir issue tracker: http://github.com/Astir/Astir/issues
+* Check the Astir issue tracker: https://github.com/queueingqt/Xastir/issues
 You need a GitHub account to create new issues, but this is free.
 This is one of the best places to see what needs to be worked on,
 and to see if anyone else has had a similar idea.
@@ -132,7 +132,7 @@ https://help.github.com/articles/about-pull-requests/)
 In a (rather large) nutshell this process goes like this:
 
 * Log in to Astir's github repo at
-  https://github.com/Astir/Astir.git and click the "Fork" button.
+  https://github.com/queueingqt/Xastir.git and click the "Fork" button.
   This will create a copy of the repo that you have full control of.
   Once you have created a fork, here's a general approach you can use:
 
@@ -149,7 +149,7 @@ In a (rather large) nutshell this process goes like this:
 
 * Add the official repo as a second remote called "upstream":
 
-      git remote add upstream https://github.com/Astir/Astir.git
+      git remote add upstream https://github.com/queueingqt/Xastir.git
 
   Now your local repo knows about two remote repos -- yours, and the official
   project repo.  Now make git sync to this remote, too:

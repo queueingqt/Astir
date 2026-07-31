@@ -32,8 +32,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 Puede encontrar más información sobre el programa en:
 
- https://github.com/Astir/Astir
- https://github.com/Astir/Astir/wiki
+ https://github.com/Xastir/Xastir
+ https://github.com/Xastir/Xastir/wiki
  https://www.xastir.org
 
 Hay algunas listas de correo disponibles que son específicas de Astir.
@@ -81,7 +81,7 @@ actualizándola.
 La mejor forma de ver las novedades en cualquier versión de Astir es ver
 las notas de la versión que proporcionamos con cada lanzamiento en Github.
 Estas se pueden ver en:
-https://github.com/Astir/Astir/releases.
+https://github.com/Xastir/Xastir/releases.
 
 
 HELP-INDEX>Iniciando Astir por primera vez
@@ -1068,7 +1068,7 @@ Alerta Mapa WX
 Esto alterna la visualización de mapas de área de advertencia de condados para
 clima severo. Estos mapas se pueden obtener e instalar de acuerdo con las
 indicaciones en
-https://github.com/Astir/Astir/wiki/Astir-Mapping-Overview y sus diversos
+https://github.com/Xastir/Xastir/wiki/Astir-Mapping-Overview y sus diversos
 enlaces. Se muestran en pantalla cuando se reciben mensajes especiales de alerta
 meteorológica, y expiran después de un tiempo o se pueden cancelar remotamente.
 El texto de alerta meteorológica se puede ver en Visualizar|Alerta del tiempo. El
@@ -1117,11 +1117,11 @@ capacidad de manejo gráfico de Astir puede ser muy ampliada compilando con
 soporte GraphicsMagick, habilitando soporte para muchos formatos gráficos como
 mapas. Astir soporta mapas de alertas meteorológicas en formato ESRI Shapefile,
 disponibles de NOAA. Consulte la página del wiki Github
-https://github.com/Astir/Astir/wiki/Installing-Astir para obtener detalles.
+https://github.com/Xastir/Xastir/wiki/Installing-Astir para obtener detalles.
 
 Los detalles de ubicaciones para obtener muchos de los tipos de mapas anteriores
 se encuentran en el archivo
-https://github.com/Astir/Astir/wiki/Astir-Mapping-Overview y enlaces debajo
+https://github.com/Xastir/Xastir/wiki/Astir-Mapping-Overview y enlaces debajo
 de él.
 
 Ubicaciones de mapas
@@ -1134,7 +1134,7 @@ menos que se especifique capas.
 
 Las sugerencias sobre la instalación y organización de mapas se encuentran en
 el wiki Github de Astir en
-https://github.com/Astir/Astir/wiki/Astir-Mapping-Overview.
+https://github.com/Xastir/Xastir/wiki/Astir-Mapping-Overview.
 Los mapas en formato gráfico de píxeles necesitan en realidad una combinación
 de dos archivos, un archivo de datos con un mapa de píxeles gráfico (.xpm) (u
 otro formato si compiló con GraphicsMagick), y un archivo de calibración (.geo).
@@ -1303,7 +1303,7 @@ Mapas de condados WX
 Todos los mapas de condados WX deben almacenarse en el
 /usr/local/share/astir/Counties y Astir solo soporta el estándar ESRI
 Shapefile para estos. La instalación se explica en
-https://github.com/Astir/Astir/wiki/Astir-Mapping-Overview. Debe tener
+https://github.com/Xastir/Xastir/wiki/Astir-Mapping-Overview. Debe tener
 Shapelib compilado en.
 
 A medida que se reciben mensajes del NWS, diferentes áreas se teñirán para
@@ -1848,7 +1848,7 @@ Presionar este botón agrega el nombre y dirección de la estación al cuadro
 de "Info Estación". Las
 instrucciones para instalar estas bases de datos se encuentran en la página
 "Scripts auxiliares" en el wiki,
-https://github.com/Astir/Astir/wiki/Helper-Scripts
+https://github.com/Xastir/Xastir/wiki/Helper-Scripts
 
 Astir creará archivos de índice para cada archivo de base de datos al
 iniciar. Si un archivo de indicativo más nuevo se coloca allí mientras Astir

@@ -45,8 +45,8 @@ Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 
 Vous trouverez plus d'informations sur le programme à l'adresse suivante :
 
-https://github.com/Astir/Astir
-https://github.com/Astir/Astir/wiki
+https://github.com/Xastir/Xastir
+https://github.com/Xastir/Xastir/wiki
 https://www.xastir.org
 
 Des listes de diffusion spécifiques à Astir sont disponibles.
@@ -94,7 +94,7 @@ la mettrons plus à jour.
 Pour connaître les nouveautés de chaque version de Astir, le mieux
 est de consulter les notes de version que nous publions sur
 GitHub. Vous pouvez les consulter à l'adresse suivante :
-https://github.com/Astir/Astir/releases.
+https://github.com/Xastir/Xastir/releases.
 
 HELP-INDEX>Débuter
                                Débuter
@@ -1221,7 +1221,7 @@ Cette option active l'affichage des cartes des zones d'alerte par
 comté pour les conditions météorologiques extrêmes. Ces cartes peuvent
 être obtenues et installées conformément aux instructions disponibles
 à l'adresse
-https://github.com/Astir/Astir/wiki/Astir-Mapping-Overview et ses
+https://github.com/Xastir/Xastir/wiki/Astir-Mapping-Overview et ses
 différents liens. Elles s'affichent à l'écran lors de la réception de
 messages d'alerte météorologique et expirent après un certain temps ou
 peuvent être annulées à distance.  Le texte des alertes
@@ -1272,10 +1272,10 @@ compilé pour utiliser des bibliothèques externes afin de prendre en charge les
 et les cartes au format Shapefile ESRI. La capacité de gestion graphique
 de Astir peut être considérablement étendue en compilant avec la prise en charge de GraphicsMagick,
 ce qui permet de prendre en charge de nombreux formats graphiques comme cartes. Astir prend en charge les cartes d'alertes météorologiques au format Shapefile ESRI, disponibles auprès de la NOAA. Consultez la page wiki Github
-https://github.com/Astir/Astir/wiki/Installing-Astir pour plus de détails.
+https://github.com/Xastir/Xastir/wiki/Installing-Astir pour plus de détails.
 
 Des informations détaillées sur les emplacements où obtenir la plupart des types de cartes mentionnés ci-dessus se trouvent dans
-le fichier https://github.com/Astir/Astir/wiki/Astir-Mapping-Overview et
+le fichier https://github.com/Xastir/Xastir/wiki/Astir-Mapping-Overview et
 les liens ci-dessous.
 
 Emplacements des cartes
@@ -1286,7 +1286,7 @@ sous ce répertoire pour organiser et séparer vos données. Les cartes seront
 chargées par ordre alphanumérique, sauf si une superposition est spécifiée.
 
 Des conseils sur l'installation et l'organisation des cartes se trouvent sur le wiki Github de Astir
-à l'adresse https://github.com/Astir/Astir/wiki/Astir-Mapping-Overview.
+à l'adresse https://github.com/Xastir/Xastir/wiki/Astir-Mapping-Overview.
 Les cartes au format graphique pixelisé nécessitent en réalité une combinaison de deux fichiers :
 un fichier de données avec une image bitmap (.xpm) (ou un autre format si vous avez compilé
 avec GraphicsMagick) et un fichier de calibration (.geo). Le fichier .xpm est le
@@ -1453,7 +1453,7 @@ Toutes les cartes du comté WX doivent être stockées dans le répertoire
 /usr/local/share/astir/Counties. Astir prend uniquement en charge le
 format ESRI Shapefile pour ces cartes. L'installation est expliquée
 sur
-https://github.com/Astir/Astir/wiki/Astir-Mapping-Overview. Vous
+https://github.com/Xastir/Xastir/wiki/Astir-Mapping-Overview. Vous
 devez avoir compilé Shapelib.
 
 À la réception des messages du NWS, différentes zones sont colorées
@@ -2050,7 +2050,7 @@ RAC doivent être placés dans le répertoire
 ce bouton ajoute le nom et l'adresse de la station dans le champ «
 Informations sur la station ». Les instructions d'installation de ces
 bases de données se trouvent sur la page « Scripts d'aide » du wiki : 
-https://github.com/Astir/Astir/wiki/Helper-Scripts
+https://github.com/Xastir/Xastir/wiki/Helper-Scripts
 
 Astir crée des fichiers d'index pour chaque fichier de base de
 données au démarrage. Si un fichier d'indicatifs d'appel plus récent

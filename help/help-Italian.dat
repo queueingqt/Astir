@@ -32,7 +32,7 @@ Place - Suite 330, Boston, MA  02111-1307, USA.
 Ulteriori informazioni sul software possono essere ottenute via:
 Web,
  http://www.xastir.org
- http://github.com/Astir/Astir
+ http://github.com/Xastir/Xastir
 
 
 Per maggiori informazioni riguardo la licenza pubblica GNU GPL:
@@ -74,7 +74,7 @@ updated for release 2.0.1 (which was in 2012!).
 The Astir project has migrated from SourceForge and CVS to Github and
 git.  This changes how Astir releases are distributed, and also how
 one accesses the latest development code.  The Astir project is now hosted at
-https://github.com/Astir/Astir, and the wiki is still at http://xastir.org.
+https://github.com/Xastir/Xastir, and the wiki is still at http://xastir.org.
 
 -Added support for IPv6 in both Astir server code and APRS-IS connection code.
 -Added "wxnowsrv.pl" script to support feeding Astir weather data via the

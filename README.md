@@ -1,6 +1,10 @@
 # README
 
-![build badge](https://img.shields.io/github/check-runs/Astir/Astir/master)
+**Astir is a fork of [Xastir](https://xastir.org).** It is a separate program,
+not a newer version, and the two install and run side by side without sharing
+anything. See [FORK.md](FORK.md) for what changed, why, and how the two coexist.
+
+![build badge](https://img.shields.io/github/check-runs/queueingqt/Xastir/master)
 
 > [!IMPORTANT]
 >
@@ -70,7 +74,7 @@
 
    More information on Astir can be found here:
 
-   * https://github.com/Astir/Astir/wiki
+   * https://github.com/Xastir/Xastir/wiki
    * http://github.com/Astir
    * http://xastir.org
 
@@ -90,7 +94,7 @@
 2. HOW TO GET ASTIR
 
    Astir is currently developed at
-   <http://github.com/Astir/Astir>
+   <http://github.com/Xastir/Xastir>
    You can get the latest version of Astir from there.
 
    You might try <http://xastir.org> for help and information,
@@ -107,14 +111,14 @@
    * Release version tarballs
 
      You can get the latest packaged release source code without git
-     at https://github.com/Astir/Astir/releases.  Be warned that packaged
+     at https://github.com/Xastir/Xastir/releases.  Be warned that packaged
      source tarballs may be quite old and not representative of the current
      state of the project.  We highly recommend not using this method unless
      you have a specific reason to stick to official releases.
 
 3. QUICK STARTUP
 
-   Please see the [Astir wiki at github](https://github.com/Astir/Astir/wiki) for the most
+   Please see the [Astir wiki at github](https://github.com/Xastir/Xastir/wiki) for the most
    up-to-date documentation on getting started with Astir.
 
    See [INSTALL.md](INSTALL.md) for a
@@ -151,7 +155,7 @@
 6. OS SPECIFIC NOTES
 
    There are some OS-specific installation notes at
-   https://github.com/Astir/Astir/wiki.  We are working on expanding
+   https://github.com/Xastir/Xastir/wiki.  We are working on expanding
    the section.
 
    There are more OS-specific installation notes at http://xastir.org

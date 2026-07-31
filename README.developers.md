@@ -165,7 +165,7 @@ users must now use "bootstrap.sh" as a first step in building Astir.
       git push origin Release-X.Y.Z
 
 - Log in to github and go to the Astir project releases page at
-  http://github.com/Astir/Astir/releases.  Click the "Draft a new
+  http://github.com/Xastir/Xastir/releases.  Click the "Draft a new
   release" button.  Put your tag name (Release-X.Y.Z) into the
   dialog box that says "Tag version" and Github will display a note
   that it found a matching, existing tag.  Fill in the rest of the
@@ -187,10 +187,10 @@ users must now use "bootstrap.sh" as a first step in building Astir.
   This new release will now appear on the "Releases" page, along with
   links to tar and zip files for the source code and the release notes
   you just created.  The fixed URL
-  https://github.com/Astir/Astir/releases/latest will always point
+  https://github.com/Xastir/Xastir/releases/latest will always point
   to the most recent release.  The source code download link will be
 
-    https://github.com/Astir/Astir/archive/Release-X.Y.Z/Astir-Release-X.Y.Z.tar.gz
+    https://github.com/Xastir/Xastir/archive/Release-X.Y.Z/Astir-Release-X.Y.Z.tar.gz
 
   with the obvious change for the zip version.
 

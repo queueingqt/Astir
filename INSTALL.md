@@ -7,7 +7,7 @@ been distributed with Astir for years.
 > This document makes a lot of references to the xastir.org wiki site,
 > which has been experiencing frequent downtime and may be unreachable
 > more often than not.  Please look at the Wiki on GitHub
-> at https://Astir/Astir/wiki for replacement, up-to-date
+> at https://github.com/Xastir/Xastir/wiki for replacement, up-to-date
 > documentation.  We apologize for the inconvenience.
 
 
@@ -105,7 +105,7 @@ the dependencies when the main package is installed.
 There are two ways to get Astir source code:
 
 1. Get one of the source release "tarballs" from Github at
-  https://github.com/Astir/Astir/releases
+  https://github.com/Xastir/Xastir/releases
   and explode it.  (Replace X.Y.Z with the release number below)
 ```
   mkdir -p ~/src/ASTIR
@@ -122,7 +122,7 @@ There are two ways to get Astir source code:
 ```
   mkdir -p ~/src/ASTIR
   cd ~/src/ASTIR
-  git  clone https://github.com/Astir/Astir.git
+  git  clone https://github.com/Xastir/Xastir.git
 ```
   This will create a clone of the Astir git repository in an
   "Astir" subdirectory of the current directory.  The Astir source
@@ -545,7 +545,7 @@ all been there before.
 These notes don't really belong in the installation instructions, and
 will be removed shortly.  They are properly part of Astir operation,
 not installation, and will be documented in the
-[Operating](https://github.com/Astir/Astir/wiki/Operating) page on
+[Operating](https://github.com/Xastir/Xastir/wiki/Operating) page on
 the Astir Github wiki.
 
 ### Various ways to manipulate Astir
@@ -622,7 +622,7 @@ your maps.
 You must have Shapelib compiled into Astir, which also requires the
 PCRE2 library and its development headers to be installed.  Install
 NOAA shapefile maps as specified in [the Weather Alerts
-page](https://github.com/Astir/Astir/wiki/Weather-Alerts) on the
+page](https://github.com/Xastir/Xastir/wiki/Weather-Alerts) on the
 Github wiki.  These files must be
 installed into the /usr/local/share/astir/Counties/ directory.  You
 may use this script to download/install them for you:

@@ -15,7 +15,7 @@ SUBDIRS = src config help scripts online-maps symbols callpass tests
 EXTRA_DIST = config.guess config.sub install-sh \
         missing placeholder FAQ LICENSE README README.GIT.md \
         README.CYGWIN CONTRIBUTING.md \
-        README.MAPS README.OSM_maps README.sudo astir_testdbfawk.1 \
+        README.MAPS README.OSM_maps README.sudo astir_testdbfawk.1 FORK.md \
         DEBUG_LEVELS bootstrap.sh INSTALL.md astir_callpass.1 astir.1 astir_udp_client.1 \
         worldhi.map \
         Davis LaCrosse \
@@ -54,7 +54,7 @@ sound_DATA=placeholder
 docdir=@docdir@
 doc_DATA=AUTHORS FAQ ChangeLog LICENSE README README.GIT.md README.CYGWIN \
         README.MAPS README.sudo COPYING INSTALL.md \
-        README.OSM_maps CONTRIBUTING.md \
+        README.OSM_maps CONTRIBUTING.md FORK.md \
         COPYING.LIB.LESSTIF
 
 install-data-hook:
