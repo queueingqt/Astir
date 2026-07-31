@@ -11307,6 +11307,18 @@ int data_add(int type,
 
   }   // valid data into database
 
+  /*
+   * Tell the front end which station this was.
+   *
+   * Only on a good packet, and only once per packet: this is the point where
+   * the record is known to have changed, so anything displaying that station
+   * can refresh exactly then instead of asking on a timer.
+   */
+  if (ok && call_sign != NULL && call_sign[0] != '\0')
+  {
+    xa_ui_station_changed(call_sign);
+  }
+
   return(ok);
 }   // End of data_add() function
 

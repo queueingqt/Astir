@@ -1326,6 +1326,14 @@ static void ui_popup(const char *banner, const char *message)
   g_message("%s: %s", banner ? banner : "", message ? message : "");
 }
 
+// The core announces this from inside interface.c's locks, so the actual
+// rebuild is deferred rather than run here.
+static void ui_interfaces_changed(void)
+{
+  xa_gtk4_interfaces_changed();
+}
+
+
 static void ui_redraw(void)
 {
   xa_render();
@@ -1353,6 +1361,17 @@ static void install_ui_callbacks(void)
   cb.popup_always = ui_popup;
   cb.redraw = ui_redraw;
   cb.free_label = ui_free_label;
+
+  /*
+   * Two notifications this front end was ignoring.
+   *
+   * Both have been in the contract all along, announced from the core, with
+   * nothing registered to hear them -- so the windows that needed the
+   * information polled for it instead, on timers, rebuilding themselves whether
+   * anything had changed or not.  Registering them is what lets those timers go.
+   */
+  cb.interfaces_changed = ui_interfaces_changed;
+  cb.station_changed = xa_gtk4_station_changed;
   xa_ui_set_callbacks(&cb);
 }
 

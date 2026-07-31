@@ -162,6 +162,15 @@ void xa_ui_interfaces_changed(void)
 }
 
 
+void xa_ui_station_changed(const char *call_sign)
+{
+  if (ui.station_changed != NULL && call_sign != NULL)
+  {
+    ui.station_changed(call_sign);
+  }
+}
+
+
 void xa_ui_wx_data_changed(void)
 {
   if (ui.wx_data_changed != NULL)

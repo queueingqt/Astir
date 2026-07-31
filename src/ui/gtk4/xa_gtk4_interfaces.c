@@ -21,7 +21,6 @@
 // One window, and the timer that keeps its status column honest.
 static GtkWidget *iface_win;
 static GtkWidget *iface_list;
-static guint      iface_poll;
 
 static void rebuild_rows(void);
 
@@ -730,53 +729,26 @@ static void rebuild_rows(void)
  * notices as lag and far above what costs anything.
  */
 /*
- * Rebuild only when something actually changed.
+ * The core says a port changed state.  Redraw the list.
  *
- * This used to rebuild unconditionally twice a second, which meant destroying
- * every row -- and every button in it -- twice a second.  A press that landed in
- * the half of the cycle where its button was about to be replaced went nowhere,
- * so Start and Stop had to be clicked repeatedly to take.  Polling is the only
- * way to see a port change state, but redrawing on a poll that found nothing is
- * pure damage.
+ * This replaces a half-second poll.  xa_ui.h has carried an interfaces_changed
+ * callback all along -- the core announces from about twenty places in
+ * interface.c whenever a port opens, closes or errors -- and this front end
+ * never registered for it, so the window asked twice a second instead of being
+ * told.  Polling meant rebuilding rows nobody had changed, under the pointer,
+ * which is why Start and Stop needed repeated clicks.
  *
- * The signature is coarse on purpose: what is configured, and whether it is up.
- * That is everything a row displays which can change without somebody pressing
- * something, and anything they do press rebuilds explicitly.
+ * Told instead of asking, the list redraws exactly when a port changes and at
+ * no other time.
  */
-static unsigned long iface_signature(void)
+void xa_gtk4_interfaces_changed(void)
 {
-  unsigned long sig = 1469598103u;
-  int i;
-
-  for (i = 0; i < MAX_IFACE_DEVICES; i++)
+  if (iface_win != NULL)
   {
-    sig = sig * 31u + (unsigned long)devices[i].device_type;
-    sig = sig * 31u + (unsigned long)get_device_status(i);
-    sig = sig * 31u + (unsigned long)(devices[i].transmit_data != 0);
+    // Deferred: the core announces this from inside its own locks, and
+    // rebuilding here would run GTK while interface.c holds port_data_lock.
+    g_idle_add(rebuild_soon, NULL);
   }
-  return sig;
-}
-
-
-static gboolean poll_status(gpointer unused)
-{
-  static unsigned long last_sig;
-  unsigned long sig;
-
-  (void)unused;
-  if (iface_win == NULL)
-  {
-    iface_poll = 0;
-    return G_SOURCE_REMOVE;
-  }
-
-  sig = iface_signature();
-  if (sig != last_sig)
-  {
-    last_sig = sig;
-    rebuild_rows();
-  }
-  return G_SOURCE_CONTINUE;
 }
 
 
@@ -786,11 +758,6 @@ static void on_win_destroy(GtkWidget *w, gpointer unused)
   (void)unused;
   iface_win = NULL;
   iface_list = NULL;
-  if (iface_poll != 0)
-  {
-    g_source_remove(iface_poll);
-    iface_poll = 0;
-  }
 }
 
 
@@ -859,6 +826,5 @@ void xa_gtk4_interfaces_show(GtkWindow *parent)
   g_signal_connect(iface_win, "destroy", G_CALLBACK(on_win_destroy), NULL);
 
   rebuild_rows();
-  iface_poll = g_timeout_add(500, poll_status, NULL);
   gtk_window_present(GTK_WINDOW(iface_win));
 }

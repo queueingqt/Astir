@@ -106,6 +106,17 @@ static char       info_call[MAX_CALLSIGN + 1];
 
 static void info_fill(void);
 
+#define FIELD_MAX 20
+
+static struct
+{
+  const char *name;
+  GtkWidget  *label;
+  GtkWidget  *value;
+} fields[FIELD_MAX];
+static int field_n;
+
+
 
 static void on_info_destroy(GtkWidget *w, gpointer unused)
 {
@@ -113,6 +124,7 @@ static void on_info_destroy(GtkWidget *w, gpointer unused)
   (void)unused;
   info_win = NULL;
   info_grid = NULL;
+  field_n = 0;                   // the widgets went with the window
   info_call[0] = '\0';
   if (info_timer != 0)
   {
@@ -145,86 +157,128 @@ static void ago(time_t then, char *out, size_t n)
 }
 
 
-static void add_row(int *row, const char *name, const char *value)
+/*
+ * One field, created once and then updated in place.
+ *
+ * The first version of this destroyed every child and built new ones on each
+ * refresh.  That is how a Motif dialog was redrawn and it is wrong here for
+ * reasons that are visible rather than theoretical: selected text is thrown
+ * away mid-selection, the scroll position jumps, and a widget under the pointer
+ * is destroyed while GTK is dispatching to it.  It is the same fault that made
+ * the interface list eat clicks.
+ *
+ * So the rows are built once, keyed by field name, and afterwards only their
+ * text changes.  A field that becomes empty hides its row rather than removing
+ * it, so nothing is ever destroyed while the window is open.
+ */
+static void set_field(const char *name, const char *value)
 {
+  int i;
   GtkWidget *l, *v;
+
+  for (i = 0; i < field_n; i++)
+  {
+    if (strcmp(fields[i].name, name) == 0)
+    {
+      break;
+    }
+  }
+
+  if (i == field_n)                      // first time this field is seen
+  {
+    if (field_n >= FIELD_MAX || info_grid == NULL)
+    {
+      return;
+    }
+    l = gtk_label_new(name);
+    gtk_label_set_xalign(GTK_LABEL(l), 0.0);
+    gtk_widget_set_valign(l, GTK_ALIGN_START);
+    gtk_widget_add_css_class(l, "dim-label");
+    gtk_widget_set_size_request(l, 110, -1);
+
+    v = gtk_label_new("");
+    gtk_label_set_xalign(GTK_LABEL(v), 0.0);
+    gtk_label_set_wrap(GTK_LABEL(v), TRUE);
+    gtk_label_set_selectable(GTK_LABEL(v), TRUE);   // a callsign wants copying
+    gtk_widget_set_hexpand(v, TRUE);
+
+    gtk_grid_attach(GTK_GRID(info_grid), l, 0, field_n, 1, 1);
+    gtk_grid_attach(GTK_GRID(info_grid), v, 1, field_n, 1, 1);
+
+    fields[field_n].name = name;
+    fields[field_n].label = l;
+    fields[field_n].value = v;
+    field_n++;
+  }
+
+  l = fields[i].label;
+  v = fields[i].value;
 
   if (value == NULL || value[0] == '\0')
   {
-    return;                      // an empty field is not worth a line
+    gtk_widget_set_visible(l, FALSE);
+    gtk_widget_set_visible(v, FALSE);
+    return;
   }
 
-  l = gtk_label_new(name);
-  gtk_label_set_xalign(GTK_LABEL(l), 0.0);
-  gtk_widget_set_valign(l, GTK_ALIGN_START);
-  gtk_widget_add_css_class(l, "dim-label");
-  gtk_widget_set_size_request(l, 110, -1);
-
-  v = gtk_label_new(value);
-  gtk_label_set_xalign(GTK_LABEL(v), 0.0);
-  gtk_label_set_wrap(GTK_LABEL(v), TRUE);
-  gtk_label_set_selectable(GTK_LABEL(v), TRUE);   // a callsign wants copying
-  gtk_widget_set_hexpand(v, TRUE);
-
-  gtk_grid_attach(GTK_GRID(info_grid), l, 0, *row, 1, 1);
-  gtk_grid_attach(GTK_GRID(info_grid), v, 1, *row, 1, 1);
-  (*row)++;
+  // Only touch the text if it actually differs: setting a label to what it
+  // already says still drops any selection inside it.
+  if (strcmp(gtk_label_get_text(GTK_LABEL(v)), value) != 0)
+  {
+    gtk_label_set_text(GTK_LABEL(v), value);
+  }
+  gtk_widget_set_visible(l, TRUE);
+  gtk_widget_set_visible(v, TRUE);
 }
 
 
 /*
- * Rebuild the contents from the station database.
+ * Refresh the contents from the station database.
  *
  * Re-looked-up every time rather than held: the station timeout can expire and
  * free a DataRow while its window is open, and a window holding that pointer
- * would be reading freed memory a few seconds later.
+ * would be reading freed memory a few seconds later.  Nothing is destroyed --
+ * see set_field.
  */
 static void info_fill(void)
 {
   DataRow *p = NULL;
-  GtkWidget *child;
   char buf[512], tmp[128];
-  int row = 0;
 
   if (info_grid == NULL)
   {
     return;
   }
 
-  while ((child = gtk_widget_get_first_child(info_grid)) != NULL)
-  {
-    gtk_grid_remove(GTK_GRID(info_grid), child);
-  }
-
   if (!search_station_name(&p, info_call, 1) || p == NULL)
   {
-    add_row(&row, "Station", info_call);
-    add_row(&row, "", "No longer in the station list -- it has expired.");
+    set_field("Callsign", info_call);
+    set_field("Status", "No longer in the station list -- it has expired.");
     return;
   }
 
-  add_row(&row, "Callsign", p->call_sign);
+  set_field("Callsign", p->call_sign);
   if (p->tactical_call_sign != NULL && p->tactical_call_sign[0] != '\0')
   {
-    add_row(&row, "Tactical", p->tactical_call_sign);
+    set_field("Tactical", p->tactical_call_sign);
   }
   if (p->origin[0] != '\0')
   {
     // An object or item is transmitted BY somebody, and which somebody matters.
-    add_row(&row, "Reported by", p->origin);
+    set_field("Reported by", p->origin);
   }
 
   convert_lat_l2s(p->coord_lat, tmp, sizeof(tmp), CONVERT_HP_NOSP);
-  add_row(&row, "Latitude", tmp);
+  set_field("Latitude", tmp);
   convert_lon_l2s(p->coord_lon, tmp, sizeof(tmp), CONVERT_HP_NOSP);
-  add_row(&row, "Longitude", tmp);
+  set_field("Longitude", tmp);
 
   ago(p->sec_heard, tmp, sizeof(tmp));
-  add_row(&row, "Last heard", tmp);
+  set_field("Last heard", tmp);
   if (p->direct_heard != 0)
   {
     ago(p->direct_heard, tmp, sizeof(tmp));
-    add_row(&row, "Heard direct", tmp);
+    set_field("Heard direct", tmp);
   }
 
   if (p->course[0] != '\0' || p->speed[0] != '\0')
@@ -233,17 +287,17 @@ static void info_fill(void)
                    p->course[0] ? p->course : "",
                    (p->course[0] && p->speed[0]) ? " deg at " : "",
                    p->speed[0] ? p->speed : "");
-    add_row(&row, "Course/speed", buf);
+    set_field("Course/speed", buf);
   }
-  add_row(&row, "Altitude", p->altitude);
-  add_row(&row, "Power/gain", p->power_gain);
+  set_field("Altitude", p->altitude);
+  set_field("Power/gain", p->power_gain);
 
   astir_snprintf(buf, sizeof(buf), "%u", p->num_packets);
-  add_row(&row, "Packets", buf);
+  set_field("Packets", buf);
 
   if (p->node_path_ptr != NULL)
   {
-    add_row(&row, "Path", p->node_path_ptr);
+    set_field("Path", p->node_path_ptr);
   }
 
   // Comments and status, newest first, as one block.  A station that keeps
@@ -265,7 +319,7 @@ static void info_fill(void)
       }
       strncat(buf, c->text_ptr, sizeof(buf) - 1 - strlen(buf));
     }
-    add_row(&row, "Comment", buf);
+    set_field("Comment", buf);
 
     buf[0] = '\0';
     n = 0;
@@ -281,14 +335,41 @@ static void info_fill(void)
       }
       strncat(buf, c->text_ptr, sizeof(buf) - 1 - strlen(buf));
     }
-    add_row(&row, "Status", buf);
+    set_field("Status", buf);
   }
 }
 
 
-// Refresh while open: a moving station's position and last-heard time go stale
-// within seconds, and a window showing a stale position is worse than none.
-static gboolean info_refresh(gpointer unused)
+/*
+ * The core heard this station.  Refresh, if it is the one on display.
+ *
+ * This is what the window runs on, in place of a timer.  It fires exactly when
+ * a packet for this station is decoded, which is the only moment its details
+ * can have changed.
+ */
+void xa_gtk4_station_changed(const char *call_sign)
+{
+  if (info_win == NULL || call_sign == NULL || info_call[0] == '\0')
+  {
+    return;
+  }
+  if (strcasecmp(call_sign, info_call) == 0)
+  {
+    info_fill();
+  }
+}
+
+
+/*
+ * One thing still needs a clock: "last heard 2s ago" counts upward whether or
+ * not anything arrives, and it is wrong within seconds if nothing redraws it.
+ *
+ * So this is a display tick, not a data poll -- it refreshes elapsed time and
+ * nothing else asks the station list a question it has already answered.  Once
+ * every five seconds is enough for a relative time expressed in seconds, and
+ * updating a label in place cannot disturb anything.
+ */
+static gboolean info_tick(gpointer unused)
 {
   (void)unused;
   if (info_win == NULL)
@@ -345,6 +426,6 @@ void xa_gtk4_station_show(GtkWindow *parent, const char *callsign)
   g_signal_connect(info_win, "destroy", G_CALLBACK(on_info_destroy), NULL);
 
   info_fill();
-  info_timer = g_timeout_add_seconds(2, info_refresh, NULL);
+  info_timer = g_timeout_add_seconds(5, info_tick, NULL);
   gtk_window_present(GTK_WINDOW(info_win));
 }

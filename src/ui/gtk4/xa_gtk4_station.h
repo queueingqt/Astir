@@ -34,6 +34,15 @@ void xa_gtk4_station_show(GtkWindow *parent, const char *callsign);
  */
 void xa_gtk4_station_note(const char *text, const char *callsign);
 
+/*
+ * The core heard a station: refresh the window if it is the one on display.
+ *
+ * Wired to xa_ui's station_changed callback.  This is what the window runs on
+ * instead of a timer -- it fires exactly when the data changes and at no other
+ * time, so nothing is redrawn under the pointer for no reason.
+ */
+void xa_gtk4_station_changed(const char *call_sign);
+
 // The history, newest first.  Returns how many entries were written.
 int xa_gtk4_station_history(const char **text, const char **callsign, int max);
 

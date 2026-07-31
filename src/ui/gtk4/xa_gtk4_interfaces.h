@@ -35,4 +35,11 @@ void xa_gtk4_interfaces_show(GtkWindow *parent);
  */
 void xa_gtk4_interfaces_show_add(GtkWindow *parent);
 
+/*
+ * A port opened, closed or changed state.  Wired to xa_ui's interfaces_changed
+ * callback, which the core has been announcing all along with nothing
+ * listening.  Replaces the half-second poll this window used to run on.
+ */
+void xa_gtk4_interfaces_changed(void);
+
 #endif /* ASTIR_GTK4_INTERFACES_H */

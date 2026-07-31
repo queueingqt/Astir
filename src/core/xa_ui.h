@@ -101,6 +101,22 @@ typedef struct
   // New decoded weather data is available.
   void (*wx_data_changed)(void);
 
+  /*
+   * A station's record changed: it was heard, moved, or gained a comment.
+   *
+   * The counterpart to interfaces_changed, and added for the same reason.  A
+   * front end showing one station's details otherwise has to poll, and a window
+   * that polls is a window that rebuilds itself under the pointer -- text
+   * cannot be selected, and anything mid-click is destroyed.  Being told
+   * instead means the display changes exactly when the data does and at no
+   * other time.
+   *
+   * The callsign identifies which; a front end showing something else can
+   * return immediately.  Called on the thread that decoded the packet, which is
+   * the front end's own tick, so a toolkit may be touched from here.
+   */
+  void (*station_changed)(const char *call_sign);
+
   // A bulletin arrived.  Passed through as received; the front end copies what
   // it keeps.
   void (*bulletin_added)(const char *call_sign, const char *from_call,
@@ -202,6 +218,7 @@ void xa_ui_popup(const char *banner, const char *message);
 void xa_ui_popup_always(const char *banner, const char *message);
 void xa_ui_interfaces_changed(void);
 void xa_ui_wx_data_changed(void);
+void xa_ui_station_changed(const char *call_sign);
 void xa_ui_bulletin_added(const char *call_sign, const char *from_call,
                           const char *data, const char *seq,
                           char type, char from);
