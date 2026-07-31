@@ -183,15 +183,42 @@ static void describe_target(int i, char *out, size_t n)
 
 /* ---- starting and stopping --------------------------------------------- */
 
+/*
+ * Redraw the list, but not from inside a button's own click handler.
+ *
+ * rebuild_rows() destroys every row and builds new ones, and the button being
+ * clicked is inside one of them -- destroying the widget GTK is in the middle
+ * of dispatching to.  Deferring to an idle callback lets the click finish
+ * first.
+ *
+ * It also fixes what that looked like.  Bringing a port up does not block until
+ * it is up: a connect runs on its own thread and can take seconds, longer still
+ * when a name resolves to an IPv6 address with no route and the attempt has to
+ * time out.  Reading the status back on the next line therefore read it before
+ * anything could have happened, and painted "Error" on an interface that went on
+ * to connect perfectly well a moment later.  The half-second poll is what
+ * reports the outcome; this only refreshes the buttons.
+ */
+static gboolean rebuild_soon(gpointer unused)
+{
+  (void)unused;
+  if (iface_win != NULL)
+  {
+    rebuild_rows();
+  }
+  return G_SOURCE_REMOVE;
+}
+
+
 static void on_start(GtkButton *b, gpointer data)
 {
   int port = GPOINTER_TO_INT(data);
 
   (void)b;
-  // 1 rather than -1: bring up THIS port, whatever its "connect on startup"
-  // setting says.  Pressing Start is the override.
+  // A specific port rather than -1: bring up THIS one whatever its "connect on
+  // startup" setting says.  Pressing Start is the override.
   startup_all_or_defined_port(port);
-  rebuild_rows();
+  g_idle_add(rebuild_soon, NULL);
 }
 
 
@@ -201,7 +228,7 @@ static void on_stop(GtkButton *b, gpointer data)
 
   (void)b;
   shutdown_all_active_or_defined_port(port);
-  rebuild_rows();
+  g_idle_add(rebuild_soon, NULL);
 }
 
 
@@ -219,7 +246,7 @@ static void on_delete(GtkButton *b, gpointer data)
   devices[port].device_type = DEVICE_NONE;
   devices[port].connect_on_startup = 0;
   save_data();                   // so a deleted interface stays deleted
-  rebuild_rows();
+  g_idle_add(rebuild_soon, NULL);   // not from inside this button's handler
 }
 
 
@@ -344,7 +371,7 @@ static void on_dialog_save(GtkButton *b, gpointer data)
   save_data();                   // an interface that is not saved is not an
                                  // interface; it is a session
   gtk_window_destroy(GTK_WINDOW(d->dialog));
-  rebuild_rows();
+  g_idle_add(rebuild_soon, NULL);
 }
 
 
