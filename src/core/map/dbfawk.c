@@ -468,6 +468,61 @@ dbfawk_sig_info *dbfawk_find_sig(dbfawk_sig_info *Dbf_sigs,
  * dbfawk_parse_record:  Read a dbf record and parse only the fields
  *  listed in 'fi' using the program, 'rs'.
  */
+/*
+ * Run a dbfawk program over a set of attributes that did not come from a DBF.
+ *
+ * dbfawk has been Astir's styling engine for twenty years, and it only looks
+ * shapefile-specific: dbfawk_parse_record() below reads a DBF because that is
+ * what it happened to be given, but the program itself matches on lines of the
+ * form "key=value" and knows nothing about where they came from.
+ *
+ * That matters because a vector tile carries exactly the same thing -- tags,
+ * as key/value pairs.  A vector tile client normally needs a MapLibre style
+ * document and an interpreter for it, and that interpreter is the expensive
+ * part of the job; feeding tile tags to the rules that already style
+ * shapefiles reuses the engine instead of acquiring a second one.
+ *
+ * Returns after the first rule that asks to stop, exactly as the DBF path does.
+ */
+void dbfawk_parse_attrs(awk_program *rs, int nattrs,
+                        const char *const *keys, const char *const *values)
+{
+  int i;
+
+  if (rs == NULL)
+  {
+    return;
+  }
+  awk_exec_begin_record(rs);
+
+  for (i = 0; i < nattrs; i++)
+  {
+    char qbuf[1024];
+    int n;
+
+    if (keys[i] == NULL)
+    {
+      continue;
+    }
+    n = snprintf(qbuf, sizeof(qbuf), "%s=%s", keys[i],
+                 values[i] != NULL ? values[i] : "");
+    if (n < 0)
+    {
+      continue;
+    }
+    if (n >= (int)sizeof(qbuf))
+    {
+      n = (int)sizeof(qbuf) - 1;   // a tag longer than the buffer is truncated
+    }
+    if (awk_exec_program(rs, qbuf, (size_t)n) == 2)
+    {
+      break;
+    }
+  }
+  awk_exec_end_record(rs);
+}
+
+
 void dbfawk_parse_record(awk_program *rs,
                          DBFHandle dbf,
                          dbfawk_field_info *fi,

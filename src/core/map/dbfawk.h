@@ -59,6 +59,12 @@ extern dbfawk_sig_info *dbfawk_find_sig(dbfawk_sig_info *info,
 extern void dbfawk_free_sig(dbfawk_sig_info *sig);
 extern void dbfawk_free_sigs(dbfawk_sig_info *list);
 extern void dbfawk_free_info(dbfawk_field_info *list);
+// Style a feature from key/value tags rather than a DBF record.  Used by the
+// vector tile path; see dbfawk.c for why the engine is not shapefile-specific.
+extern void dbfawk_parse_attrs(awk_program *rs, int nattrs,
+                               const char *const *keys,
+                               const char *const *values);
+
 extern void dbfawk_parse_record(awk_program *rs,
                                 DBFHandle dbf,
                                 dbfawk_field_info *fi,
