@@ -789,3 +789,8 @@ void xa_surface_clear(xa_surface_id s)
 {
   (void)s;
 }
+
+void xa_image_fill_rect(xa_image img, int x, int y, int w, int h, xa_color c)
+{
+  (void)img; (void)x; (void)y; (void)w; (void)h; (void)c;
+}

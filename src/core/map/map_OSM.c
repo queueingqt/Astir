@@ -1105,17 +1105,18 @@ static void render_OSM_image_pixels(
             // on Raspberry Pi and slow/remote displays).
             if (ximg != XA_IMAGE_NONE)
             {
-              int ix, iy;
-              for (iy = (int)scr_y; iy < (int)scr_y + scr_dy && iy < screen_height; iy++)
-              {
-                for (ix = (int)scr_x; ix < (int)scr_x + scr_dx && ix < screen_width; ix++)
-                {
-                  if (ix >= 0 && iy >= 0)
-                  {
-                    xa_image_put_pixel(ximg, ix, iy, fill_pixel);
-                  }
-                }
-              }
+              /*
+               * One call per source pixel, not one per destination pixel.
+               *
+               * This was a nested loop calling xa_image_put_pixel() for every
+               * screen pixel -- a function call and four bounds tests each,
+               * around 700000 per frame, and the largest single cost in a warm
+               * frame.  xa_image_fill_rect() resolves the bounds once and
+               * fills the rows, and it does its own clipping, so the guards
+               * that were here per pixel are gone with it.
+               */
+              xa_image_fill_rect(ximg, (int)scr_x, (int)scr_y,
+                                 scr_dx, scr_dy, fill_pixel);
             }
             else
             {

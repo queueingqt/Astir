@@ -1525,6 +1525,41 @@ void xa_image_put_pixel(xa_image img, int x, int y, xa_color c)
 }
 
 
+void xa_image_fill_rect(xa_image img, int x, int y, int w, int h, xa_color c)
+{
+  gtk4_image *im = (gtk4_image *)img;
+  int yy;
+
+  if (im == NULL || w <= 0 || h <= 0)
+  {
+    return;
+  }
+
+  // Clip once, then fill rows with no further checking.  This is the whole
+  // point of the call: the per-pixel version re-tested every bound for every
+  // pixel of every block.
+  if (x < 0) { w += x; x = 0; }
+  if (y < 0) { h += y; y = 0; }
+  if (x + w > im->width)  { w = im->width  - x; }
+  if (y + h > im->height) { h = im->height - y; }
+  if (w <= 0 || h <= 0)
+  {
+    return;
+  }
+
+  for (yy = 0; yy < h; yy++)
+  {
+    xa_color *row = im->px + (size_t)(y + yy) * im->width + x;
+    int xx;
+
+    for (xx = 0; xx < w; xx++)
+    {
+      row[xx] = c;
+    }
+  }
+}
+
+
 xa_color xa_image_get_pixel(xa_image img, int x, int y)
 {
   gtk4_image *im = (gtk4_image *)img;

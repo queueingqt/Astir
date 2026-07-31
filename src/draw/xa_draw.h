@@ -376,6 +376,21 @@ xa_image xa_image_load(const char *path, int *width, int *height);
 void xa_image_destroy(xa_image img);
 
 void     xa_image_put_pixel(xa_image img, int x, int y, xa_color c);
+
+/*
+ * Fill a rectangle of an image buffer with one colour.
+ *
+ * The raster map drivers scale a source pixel to a block of screen pixels, and
+ * did it by calling xa_image_put_pixel() for each one -- a function call and
+ * four bounds tests per pixel, around 700000 per frame, which measured as the
+ * single largest cost in a warm frame.
+ *
+ * The bounds are resolved once here and the rows filled directly.  Clipping is
+ * this function's job: callers pass whatever rectangle the projection
+ * produced, including rectangles partly or wholly outside the buffer.
+ */
+void     xa_image_fill_rect(xa_image img, int x, int y, int w, int h,
+                            xa_color c);
 xa_color xa_image_get_pixel(xa_image img, int x, int y);
 
 // Hand the buffer to a surface.
