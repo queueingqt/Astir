@@ -865,6 +865,7 @@ void draw_shapefile_map (char *dir,
   int             polygon_hole_flag;
   int             *polygon_hole_storage;
   xa_pen          gc_temp = NULL;
+  int             object_cached = 0;
   int             gps_flag = 0;
   char            gps_label[100];
   int             gps_color = 0x0c;
@@ -1386,10 +1387,58 @@ void draw_shapefile_map (char *dir,
       structure = RTree_hitarray_index;
     }
 
-    xa_perf_begin(XA_ZONE_SHP_READ);
-    object = SHPReadObject( hSHP, structure );
-    xa_perf_end(XA_ZONE_SHP_READ);
-    xa_perf_count(XA_CNT_SHAPES_READ, 1);  // Note that each structure can have multiple rings
+    /*
+     * Read the shape, or recall it.
+     *
+     * The same bytes were parsed every frame -- 32000 shapes for a fifth of
+     * the frame -- and they do not change.  `object_cached` says whether this
+     * one belongs to the cache, because a cached object must not be destroyed
+     * at the end of the loop: it is the cache's, and the cache outlives the
+     * frame.
+     */
+    object_cached = 0;
+    object = NULL;
+
+    if (si != NULL && structure >= 0)
+    {
+      if (si->objects == NULL && si->nobjects == 0)
+      {
+        int n = nEntities;
+
+        if (n > 0)
+        {
+          si->objects = (void **)calloc((size_t)n, sizeof(void *));
+          si->nobjects = si->objects ? n : 0;
+        }
+      }
+      if (si->objects != NULL && structure < si->nobjects
+          && si->objects[structure] != NULL)
+      {
+        object = (SHPObject *)si->objects[structure];
+        object_cached = 1;
+      }
+    }
+
+    if (object == NULL)
+    {
+      xa_perf_begin(XA_ZONE_SHP_READ);
+      object = SHPReadObject( hSHP, structure );
+      xa_perf_end(XA_ZONE_SHP_READ);
+      xa_perf_count(XA_CNT_SHAPES_READ, 1);
+
+      // Keep it if this file still has room.  Past the budget the shape is
+      // used and freed exactly as before, so the cache stops growing rather
+      // than the program stops working.
+      if (object != NULL && si != NULL && si->objects != NULL
+          && structure >= 0 && structure < si->nobjects
+          && si->cached_vertices + object->nVertices
+             <= SHP_CACHE_VERTEX_BUDGET)
+      {
+        si->objects[structure] = object;
+        si->cached_vertices += object->nVertices;
+        object_cached = 1;
+      }
+    }
 
     if (object == NULL)
     {
@@ -2006,7 +2055,10 @@ void draw_shapefile_map (char *dir,
 
       }   // End of switch
     }
-    SHPDestroyObject( object ); // Done with this structure
+    if (!object_cached)
+    {
+      SHPDestroyObject( object ); // Done with this structure
+    }
   }
 
 

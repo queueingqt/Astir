@@ -174,6 +174,23 @@ void empty_shpinfo(shpinfo *si)
     si->styles = NULL;
     si->nstyles = 0;
 
+    if (si->objects != NULL)
+    {
+      int k;
+
+      for (k = 0; k < si->nobjects; k++)
+      {
+        if (si->objects[k] != NULL)
+        {
+          SHPDestroyObject((SHPObject *)si->objects[k]);
+        }
+      }
+      free(si->objects);
+      si->objects = NULL;
+      si->nobjects = 0;
+      si->cached_vertices = 0;
+    }
+
     // The hashtable functions free the
     // key, which is in our case the filename.  So since we're only going
     // to empty the shpinfo when we're removing from the hashtable, we
@@ -256,6 +273,9 @@ void add_shp_to_hash(char *filename, SHPHandle sHP)
   temp->root = Astir_RTreeNewIndex();
   temp->styles = NULL;
   temp->nstyles = 0;
+  temp->objects = NULL;
+  temp->nobjects = 0;
+  temp->cached_vertices = 0;
   temp->creation = sec_now();
   temp->last_access = temp->creation;
 

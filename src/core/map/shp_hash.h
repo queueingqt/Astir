@@ -56,7 +56,33 @@ typedef struct _shpinfo
    */
   shp_style *styles;
   int nstyles;
+
+  /*
+   * Parsed shapes, filled lazily.
+   *
+   * SHPReadObject() re-read and re-parsed the same bytes every frame -- 32000
+   * shapes for a fifth of the frame time -- and the bytes do not change.  The
+   * OS page cache already keeps the file in memory; what this avoids is
+   * parsing it again.
+   *
+   * Bounded, because a large map set is unbounded: caching every shape of a
+   * whole state's roads would grow without limit as panning brings new ones
+   * into view.  Past the budget, shapes are read and freed as before, so the
+   * cache degrades to the old behaviour instead of exhausting memory.
+   */
+  void **objects;                /* SHPObject *, opaque here */
+  int nobjects;
+  long cached_vertices;
 } shpinfo;
+
+/*
+ * How many vertices one file may keep parsed.
+ *
+ * 2 million is about 32 MB of coordinate pairs, which is a lot of map and not
+ * much memory.  Per file rather than global, so one enormous shapefile cannot
+ * starve every other one.
+ */
+#define SHP_CACHE_VERTEX_BUDGET 2000000L
 
 void init_shp_hash(int clobber);
 void add_shp_to_hash(char *filename,SHPHandle sHP);
