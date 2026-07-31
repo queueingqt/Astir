@@ -183,6 +183,9 @@ int grid_size = 0;
 // The credit the drawn maps require; see maps.h.
 char map_attribution[MAP_ATTRIBUTION_MAX] = "";
 
+// Start of the current map draw, for the per-driver timing below.
+static double astir_map_t0;
+
 // Rounding
 #ifndef HAVE_ROUNDF
 // Poor man's rounding, but rounds away from zero as roundf is supposed to.
@@ -4475,7 +4478,21 @@ void draw_map (char *dir, char *filenm, alert_entry *alert,
 
   if (map_driver_ptr->func)
   {
-    xa_perf_begin(XA_ZONE_MAP_ONE);
+    /*
+   * Per-driver timing.
+   *
+   * map_one spans every driver, so 130 ms of unaccounted time inside it could
+   * be the shapefile reader or the tile fetcher and the number cannot say
+   * which.  Under ASTIR_PERF this prints what each map cost by name, which is
+   * the difference between knowing and guessing.
+   */
+  {
+    struct timespec mt0;
+
+    clock_gettime(CLOCK_MONOTONIC, &mt0);
+    astir_map_t0 = mt0.tv_sec * 1000.0 + mt0.tv_nsec / 1e6;
+  }
+  xa_perf_begin(XA_ZONE_MAP_ONE);
     map_driver_ptr->func(dir,
                          filenm,
                          alert,
@@ -4483,6 +4500,15 @@ void draw_map (char *dir, char *filenm, alert_entry *alert,
                          destination_pixmap,
                          draw_flags);
     xa_perf_end(XA_ZONE_MAP_ONE);
+    if (getenv("ASTIR_PERF") != NULL)
+    {
+      struct timespec mt1;
+      double ms;
+
+      clock_gettime(CLOCK_MONOTONIC, &mt1);
+      ms = (mt1.tv_sec * 1000.0 + mt1.tv_nsec / 1e6) - astir_map_t0;
+      fprintf(stderr, "[map] %-46s %7.1f ms\n", filenm, ms);
+    }
   }
 
   xa_perf_begin(XA_ZONE_MAP_XMUPDATE);

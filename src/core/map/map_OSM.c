@@ -63,6 +63,7 @@
 
 #include "core/astir.h"
 #include "core/globals.h"
+#include <time.h>
 #include "core/map/maps.h"
 #include "core/io/fetch_remote.h"
 #include "core/util/util.h"
@@ -770,6 +771,28 @@ static void draw_image(
  * (shared buffer for all tiles) so that the X server round-trips for
  * XGetImage and XPutImage happen exactly once per redraw, not once per tile.
  **********************************************************/
+/*
+ * Column-to-screen tables for one image, and how wide an image they cover.
+ *
+ * A tile is 256 wide; this allows for a single large image as well, and falls
+ * back to computing per pixel above the limit rather than allocating.
+ */
+#define OSM_COL_TAB_MAX 8192
+static long osm_col_x[OSM_COL_TAB_MAX];
+static long osm_col_dx[OSM_COL_TAB_MAX];
+static int  osm_col_valid;
+
+/* Stage timings, reported under ASTIR_PERF; see the driver's summary below. */
+double astir_osm_t_capture, astir_osm_t_pixels, astir_osm_t_writeback;
+long   astir_osm_n_images;
+
+static double astir_osm_now(void)
+{
+  struct timespec ts;
+  clock_gettime(CLOCK_MONOTONIC, &ts);
+  return ts.tv_sec * 1000.0 + ts.tv_nsec / 1e6;
+}
+
 static void render_OSM_image_pixels(
   Image *image,
   ExceptionInfo *except_ptr,
@@ -968,8 +991,19 @@ static void render_OSM_image_pixels(
   // loop over map pixel rows
   for (map_image_row = map_y_min; (map_image_row <= map_y_max); map_image_row++)
   {
-
-    xa_ui_pump_events();
+    /*
+     * Service the main loop every 64 rows rather than every row.
+     *
+     * The pump exists so a slow redraw can be interrupted, and it has to run
+     * often enough to stay responsive -- not once per row of every tile, which
+     * is around nine thousand main-loop services per frame for a job that
+     * needs a few dozen.  The shapefile reader settled on 64 for the same
+     * reason and recorded why; this matches it.
+     */
+    if ((map_image_row & 63) == 0)
+    {
+      xa_ui_pump_events();
+    }
     if (interrupt_drawing_now)
     {
       // Caller owns ximg; we just return without flushing —
@@ -1368,9 +1402,11 @@ void draw_OSM_tiles (char *filenm,           // this is the name of the astir ma
     // lower-zoom fallback tiles — the same behaviour as the original canvas.
     // Each tile's pixels are written into this buffer with render_OSM_image_pixels()
     // and the whole screen is handed to the pixmap in one operation at the end.
+    double osm_t0 = astir_osm_now();
     xa_image shared_ximg = xa_image_capture(pixmap, 0, 0,
                                            (int)screen_width,
                                            (int)screen_height);
+    astir_osm_t_capture += astir_osm_now() - osm_t0;
     if (shared_ximg == XA_IMAGE_NONE)
     {
       shared_ximg = xa_image_create((int)screen_width, (int)screen_height);
@@ -1429,8 +1465,11 @@ void draw_OSM_tiles (char *filenm,           // this is the name of the astir ma
 
           if (tile)
           {
+            { double pt0 = astir_osm_now();
             render_OSM_image_pixels(tile, &exception, &tpTileNW, &tpTileSE, osm_zl,
                                     shared_ximg);
+              astir_osm_t_pixels += astir_osm_now() - pt0; }
+            astir_osm_n_images++;
             DestroyImage(tile);
           }
         }
@@ -1439,9 +1478,20 @@ void draw_OSM_tiles (char *filenm,           // this is the name of the astir ma
     // Hand all tiles to the pixmap in one bulk transfer
     if (shared_ximg != XA_IMAGE_NONE)
     {
+      osm_t0 = astir_osm_now();
       xa_image_to_surface(pixmap, gc, shared_ximg, 0, 0, 0, 0,
                           (int)screen_width, (int)screen_height);
+      astir_osm_t_writeback += astir_osm_now() - osm_t0;
       xa_image_destroy(shared_ximg);
+    }
+    if (getenv("ASTIR_PERF") != NULL)
+    {
+      fprintf(stderr, "[osm] capture %.1f  pixels %.1f  writeback %.1f ms "
+              "across %ld images\n",
+              astir_osm_t_capture, astir_osm_t_pixels,
+              astir_osm_t_writeback, astir_osm_n_images);
+      astir_osm_t_capture = astir_osm_t_pixels = astir_osm_t_writeback = 0;
+      astir_osm_n_images = 0;
     }
 
     draw_osm_attribution();
