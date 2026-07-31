@@ -228,13 +228,20 @@ extern int Read_messages_packet_data_type;  // 1=tnc_only, 2=net_only, 0=tnc&net
 extern int Read_messages_mine_only;
 
 
-// Moved out of list_gui.c, where these lived only because the dialog
-// that edits them does.  Definitions unchanged.
-// Incomplete type on purpose: list_gui.h already declares these the same way,
-// and the extent (LST_NUM) is a station-list category count that this header
-// has no business knowing.  The definition in xa_settings.c carries it.
-extern int list_size_h[];  // height of entire list widget
-extern int list_size_w[];  // width  of entire list widget
+// Moved out of list_gui.c, where these lived only because the dialog that
+// edits them does.
+//
+// LST_NUM is here now, and the arrays carry their real extent.  It used to be
+// defined only in the Motif front end's list_gui.h, on the reasoning that the
+// header held no toolkit type so including it from a core file cost nothing.
+// That was true of the symbols and false of the dependency: archiving the
+// front end broke three core objects that had no other need of it.  The number
+// of station-list categories is a property of the settings and of the config
+// file format, both of which outlive any particular front end.
+#define LST_NUM 7
+
+extern int list_size_h[LST_NUM];  // height of entire list widget
+extern int list_size_w[LST_NUM];  // width  of entire list widget
 
 
 // Moved out of bulletin_gui.c, where these lived only because the dialog

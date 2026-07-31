@@ -67,7 +67,6 @@
 #include "core/io/fetch_remote.h"
 #include "core/util/util.h"
 #include "core/main.h"
-#include "draw/x11/color.h"
 #include "core/state/xa_config.h"
 
 #include "core/map/map_cache.h"

@@ -50,7 +50,8 @@ core_hdr_fail=""
 # the APRS parser.  One convenient #include puts it back, and nothing else would
 # report it, so it is checked here.
 for h in core/state/xa_state.h core/state/xa_settings.h draw/xa_draw.h \
-         core/globals.h core/astir.h core/io/interface.h; do
+         core/globals.h core/astir.h core/io/interface.h \
+         core/aprs/objects.h core/state/xa_config.h; do
   [ -f "src/$h" ] || continue
   probe="$(mktemp -t xacore.XXXXXX.c)"
   printf '#include "%s"\nint main(void){return 0;}\n' "$h" > "$probe"
@@ -63,7 +64,7 @@ for h in core/state/xa_state.h core/state/xa_settings.h draw/xa_draw.h \
 done
 if [ -n "$core_hdr_fail" ]; then
   echo "WARNING: core headers are no longer front-end neutral:$core_hdr_fail" >&2
-  echo "         a GTK4 front end must be able to include these without X11." >&2
+  echo "         the core must stay compilable without any toolkit header." >&2
 fi
 
 if [ "$MODE" = "clean" ]; then
@@ -82,4 +83,4 @@ echo
 echo "built: $(pwd)/src/astir"
 ls -l src/astir
 echo
-echo "run with:  ASTIR_PERF=1 ./src/astir"
+echo "run with:  ASTIR_DATA_BASE=$PWD/artifacts/datadir ./src/astir"

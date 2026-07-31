@@ -42,9 +42,7 @@
 #include "core/util/util.h"
 #include "core/util/mutex_utils.h"
 #include "core/aprs/dr_utils.h"
-#include "draw/x11/color.h"
 #include "core/map/maps.h"
-#include "draw/x11/cairo_text.h"
 
 #include "core/state/xa_settings.h"
 

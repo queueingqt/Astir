@@ -548,6 +548,11 @@ void xa_color_pack(unsigned short r, unsigned short g, unsigned short b,
 
 // Station trail colours.  Declared in main.h until now, which meant a core file
 // drawing a trail had to include the front end's header to name the array.
+// The trail colour reserved for this station's own track.  It lived in the
+// Motif front end's db_gui.h, which meant db.c -- core code choosing a colour
+// for a trail -- included a GUI header to learn a number.
+#define MY_TRAIL_COLOR      0x16
+
 #define MAX_TRAIL_COLORS 32
 extern xa_color trail_colors[MAX_TRAIL_COLORS];
 

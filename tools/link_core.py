@@ -49,7 +49,7 @@ def link_command(srcdir):
   """The real link line for astir, from make, so this tracks ./configure."""
   # -W pretends main.c changed, so make prints the relink without touching
   # anything.  Without it make says "up to date" and prints no link line at all.
-  mk = subprocess.run(["make", "-n", "-W", "ui/motif/main.c", "astir"], cwd=srcdir,
+  mk = subprocess.run(["make", "-n", "-W", "ui/gtk4/xa_gtk4_main.c", "astir"], cwd=srcdir,
                       capture_output=True, text=True).stdout
   for line in mk.splitlines():
     if " -o astir " not in line:
@@ -81,13 +81,37 @@ def main():
     if t == "-o":
       i += 2
       continue
+    if t.endswith(".a"):
+      # libastircore.a is the core, and the core is supplied below as objects
+      # taken from the tree.  Letting it through as a flag links the core
+      # twice and the link dies on multiple definitions rather than on the
+      # thing this tool is asking about.
+      i += 1
+      continue
     (objs if t.endswith(".o") else libs if (t.startswith("-l") or t.startswith("-L"))
      else flags).append(t)
     i += 1
 
-  core = [o for o in objs
-          if os.path.normpath(o).split(os.sep)[0] in CORE_DIRS]
-  dropped = [o for o in objs if o not in core]
+  # The objects come from the TREE, not from the link line.
+  #
+  # The link line used to name all sixty core objects individually.  Now it
+  # names libastircore.a, so parsing it for ".o" tokens found exactly one
+  # object -- the backend -- and this happily reported LINKED CLEANLY for a
+  # link that contained no core at all.  A harness that measures nothing
+  # reports success, which is worse than one that fails.
+  #
+  # Libraries and flags still come from the link line, because those do track
+  # ./configure and must not be guessed.
+  # Relative to srcdir: the link below runs with cwd=srcdir, as the real one
+  # does, so that the flags taken from make's link line mean the same thing.
+  rel = [os.path.relpath(o, srcdir) for o in srctree.objects(srcdir)]
+  core = [o for o in rel
+          if os.path.normpath(o).split(os.sep)[0] in CORE_DIRS
+          and os.path.basename(o) not in ("xa_draw_null.o",)]
+  dropped = [o for o in rel if o not in core]
+  if len(core) < 10:
+    raise SystemExit("only %d core objects found in %s -- this tool is not "
+                     "measuring anything; build first" % (len(core), srcdir))
   print("core objects : %d" % len(core))
   print("omitted      : %s" % " ".join(sorted(os.path.basename(o) for o in dropped)))
 

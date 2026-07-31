@@ -63,7 +63,6 @@
 #include "core/aprs/alert.h"
 #include "core/util/util.h"
 #include "core/aprs/tactical_call_utils.h"
-#include "ui/motif/bulletin_gui.h"
 #include "core/aprs/fcc_data.h"
 #include "core/io/gps.h"
 #include "core/aprs/rac_data.h"
@@ -71,15 +70,11 @@
 #include "core/map/maps.h"
 #include "core/aprs/wx.h"
 #include "core/aprs/igate.h"
-#include "ui/motif/list_gui.h"
 #include "core/aprs/objects.h"
-#include "ui/motif/objects_gui.h"
-#include "ui/motif/track_gui.h"
 #include "core/state/xa_config.h"
 #include "core/io/x_spider.h"
 #include "core/util/encoding.h"
 #include "core/aprs/db_gis.h"
-#include "ui/motif/db_gui.h"
 #include "core/aprs/db_funcs.h"
 #include "core/io/sound.h"
 #include "core/util/log_utils.h"
@@ -4819,7 +4814,7 @@ void exp_trailstation(FILE *f, DataRow *p_station, int export_format)
       // in either case represented as a <Point/>
       // and will show up as a labeled pushpin point.
       fprintf(f,"<Placemark>");
-      get_iso_datetime(p_station->sec_heard,timestring,True,True);
+      get_iso_datetime(p_station->sec_heard,timestring,1,1);
 
       if (p_station->origin[0] == '\0')
       {
@@ -4840,7 +4835,7 @@ void exp_trailstation(FILE *f, DataRow *p_station, int export_format)
       fprintf(f,"</description>\n");
 
       // kml specifies w3c's date time format for timestamps
-      if (get_w3cdtf_datetime(p_station->sec_heard, timestring, False, False))
+      if (get_w3cdtf_datetime(p_station->sec_heard, timestring, 0, 0))
         if (strlen(timestring) > 0)
         {
           fprintf(f,"<TimeStamp><when>%s</when></TimeStamp>",timestring);
@@ -4890,7 +4885,7 @@ void exp_trailstation(FILE *f, DataRow *p_station, int export_format)
           course = current->course;
           alt    = current->altitude;
           // kml specifies w3c's date time format for timestamps
-          if (get_w3cdtf_datetime(sec,timestring,False,False) && (int)sec>0)
+          if (get_w3cdtf_datetime(sec,timestring,0,0) && (int)sec>0)
           {
             // point has valid timestamp, write it
             fprintf(f,"<Placemark>");
@@ -5950,7 +5945,7 @@ int add_simple_station(DataRow *p_new_station,char *station, char *origin, char 
         p_new_station->sec_heard = mktime(&time);
         if (debug_level & 4096)
         {
-          get_iso_datetime(p_new_station->sec_heard,timestring,False,False);
+          get_iso_datetime(p_new_station->sec_heard,timestring,0,0);
           fprintf(stderr,"time %s to [%s] using [%s]\n",transmit_time,timestring,timeformat);
         }
         if (p_new_station->sec_heard > sec_now())

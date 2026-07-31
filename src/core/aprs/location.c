@@ -37,7 +37,6 @@
 #include "core/map/maps.h"   // get_x_scale()
 #include "core/main.h"
 #include "core/aprs/db_funcs.h"
-#include "ui/motif/track_gui.h"
 
 // Must be last include file
 #include "core/util/leak_detection.h"

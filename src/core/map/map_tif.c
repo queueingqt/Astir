@@ -66,8 +66,6 @@
 #include "core/main.h"
 #include "core/geo/datum.h"
 #include "core/render/draw_symbols.h"
-#include "draw/x11/rotated.h"
-#include "draw/x11/color.h"
 #include "core/state/xa_config.h"
 
 #define DOS_HDR_LINES 8

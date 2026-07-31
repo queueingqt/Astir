@@ -13,7 +13,7 @@ Run the measurement scripts against a **built** tree — several read `src/*.o`.
 **The tools depend on src/ being layered.**  `core/`, `draw/`, `ui/`, `apps/`
 are not decoration: `link_core.py` treats `core/` + `draw/` as the core,
 `link_null.py` treats `core/` alone as the core so it can supply its own
-backend, and `build_gtk4.sh` links `find src/core -name '*.o'`.  Each of those
+backend, and `make` (was build_gtk4.sh) links `find src/core -name '*.o'`.  Each of those
 used to be a list of filename patterns to exclude.  A new core file now joins
 by existing.  `srctree.py` is where the walk lives, so there is one copy of it.
 

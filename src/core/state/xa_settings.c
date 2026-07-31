@@ -10,10 +10,6 @@
 
 #include "core/state/xa_settings.h"
 
-// For LST_NUM, the station-list category count.  list_gui.h is all #defines
-// and prototypes -- no toolkit type anywhere in it -- so including it here
-// does not put Motif into a core object.
-#include "ui/motif/list_gui.h"
 
 int my_trail_diff_color = 0;
 int serial_char_pacing;  // Inter-char delay in ms for serial ports.

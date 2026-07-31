@@ -62,6 +62,9 @@ extern DataRow *construct_object_item_data_row(char *name,
                                         int killed);
 extern void destroy_object_item_data_row(DataRow *theDataRow);
 
+// Defined in objects.c.  The declaration used to live in the Motif front
+// end's objects_gui.h, so every core caller reached into the GUI to find
+// the prototype of a core function.
+extern void disown_object_item(char *call_sign, char *new_owner);
+
 #endif /* ASTIR_OBJECTS_H */
-
-

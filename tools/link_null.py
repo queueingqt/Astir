@@ -42,14 +42,16 @@ STANDALONE = {"astir_udp_client.o", "astir_testdbfawk.o", "astir_callpass.o"}
 # Calling them "core" was a filing error, not a finding: nm says no core object
 # references any symbol any of them defines.  Verified, not assumed -- see
 # tools/README.md.
-X11_BACKEND = {"xa_draw_x11.o", "rotated.o", "color.o", "cairo_text.o"}
+# The X11 backend is archived and no longer built; kept as a name only so
+# the docstring above still describes something real.
+X11_BACKEND = set()
 
 X_LIB = re.compile(r'^-l(X[a-zA-Z0-9]*|Xm|Xt|ICE|SM|Xext|Xpm|xcb.*)$')
 
 
 def link_command(srcdir):
   """The real link line for astir, from make, so this tracks ./configure."""
-  mk = subprocess.run(["make", "-n", "-W", "ui/motif/main.c", "astir"], cwd=srcdir,
+  mk = subprocess.run(["make", "-n", "-W", "ui/gtk4/xa_gtk4_main.c", "astir"], cwd=srcdir,
                       capture_output=True, text=True).stdout
   for line in mk.splitlines():
     if " -o astir " not in line:

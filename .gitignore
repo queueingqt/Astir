@@ -21,6 +21,7 @@ compile
 config.guess
 config.h
 config.h.in
+config.h.in~
 config.log
 config.status
 config.sub
@@ -60,4 +61,5 @@ tests/atconfig
 tests/atlocal
 
 # built by tools/build_gtk4.sh, not by make
+src/libastircore.a
 src/astir-gtk4

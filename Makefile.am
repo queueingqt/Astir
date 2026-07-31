@@ -75,9 +75,9 @@ install-data-hook:
 # same argument as the rest of the vector work.  The 128px PNG goes in as well,
 # for anything that cannot read SVG.
 #
-# StartupWMClass is "Astir", matching the application class main.c passes to
-# XtVaOpenApplication.  Without it the taskbar shows a running window that it
-# cannot connect to the launcher that started it.
+# StartupWMClass is org.astir.Gtk4, the application id the GTK4 front end
+# registers on the session bus.  Without it the taskbar shows a running window
+# that it cannot connect to the launcher that started it.
 desktopdir = $(datadir)/applications
 dist_desktop_DATA = astir.desktop
 

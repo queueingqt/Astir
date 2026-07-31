@@ -8,6 +8,6 @@ Exec=astir
 Icon=astir
 Terminal=false
 StartupNotify=true
-StartupWMClass=Astir
+StartupWMClass=org.astir.Gtk4
 Categories=Network;HamRadio;
 Keywords=APRS;amateur radio;ham radio;packet;AX.25;GPS;mapping;tracking;

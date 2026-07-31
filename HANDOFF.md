@@ -264,11 +264,10 @@ always borrowed the packaged install's data. Without it the shapefiles still
 draw, but with default styling instead of their dbfawk rules, which looks like
 a rendering regression and is not one:
 
-    ASTIR_DATA_BASE=/usr/share/xastir ./src/astir-gtk4
+    ASTIR_DATA_BASE=/usr/share/xastir ./src/astir
 
-    ./build.sh                 # the core objects, as usual
-    ./tools/build_gtk4.sh      # links them + xa_draw_gtk4.o, no Motif, no X
-    ./src/astir-gtk4
+    ./build.sh                 # builds src/astir; GTK4 is the only front end
+    ./src/astir
 
 Environment hooks, all scripted-run conveniences, all inert unset:
 
@@ -354,7 +353,7 @@ when the render lands.
 
 ## There is a GTK4 front end
 
-`src/gtk4/xa_gtk4_main.c`, built by `tools/build_gtk4.sh`: 60 core objects plus
+`src/gtk4/xa_gtk4_main.c`, built by `make`: 60 core objects plus
 the GTK4 backend, no Motif, every X library struck off the link line. One object
 set, two binaries -- and not a line of the core compiled differently for either.
 

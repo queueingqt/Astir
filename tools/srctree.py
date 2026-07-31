@@ -50,10 +50,14 @@ def layer_of(path):
     return "?"
 
 
-# The Motif front end's entry object.  Several tools use its existence as the
+# The front end's entry object.  Several tools use its existence as the
 # "has this tree been built?" test, and one uses its symbol table as the
 # definition of "what the front end provides".
-MAIN_OBJ = os.path.join("ui", "motif", "main.o")
+#
+# automake gives it the astir- prefix because the target carries its own
+# CPPFLAGS for the GTK4 include path, so the object cannot be shared with
+# anything else and is named per target.
+MAIN_OBJ = os.path.join("ui", "gtk4", "astir-xa_gtk4_main.o")
 
 
 def main_object(srcdir="src"):

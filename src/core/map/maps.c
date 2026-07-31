@@ -119,9 +119,6 @@
 #include "core/main.h"
 #include "core/geo/datum.h"
 #include "core/render/draw_symbols.h"
-#include "draw/x11/rotated.h"
-#include "draw/x11/color.h"
-#include "draw/x11/cairo_text.h"
 #include "core/state/xa_config.h"
 #include "core/util/timer_utils.h"
 #include "core/geo/mgrs_utils.h"
@@ -3947,7 +3944,7 @@ void draw_rotated_label_text_to_target (int rotation, int x, int y, int label_le
                                          label_length,
                                          color,
                                          label_text,
-                                         BRIGHT,
+                                         XA_ALIGN_BRIGHT,
                                          fontsize,
                                          target_pixmap,
                                          draw_outline,
@@ -3962,7 +3959,7 @@ void draw_rotated_label_text_to_target (int rotation, int x, int y, int label_le
                                          label_length,
                                          color,
                                          label_text,
-                                         BLEFT,
+                                         XA_ALIGN_BLEFT,
                                          fontsize,
                                          target_pixmap,
                                          draw_outline,
@@ -3989,7 +3986,7 @@ void draw_rotated_label_text (int rotation, int x, int y, int label_length, int 
                                          label_length,
                                          color,
                                          label_text,
-                                         BRIGHT,
+                                         XA_ALIGN_BRIGHT,
                                          fontsize,
                                          pixmap, 0, 0);
   }
@@ -4002,7 +3999,7 @@ void draw_rotated_label_text (int rotation, int x, int y, int label_length, int 
                                          label_length,
                                          color,
                                          label_text,
-                                         BLEFT,
+                                         XA_ALIGN_BLEFT,
                                          fontsize,
                                          pixmap, 0, 0);
   }
@@ -4019,7 +4016,7 @@ void draw_centered_label_text (int rotation, int x, int y, int label_length, int
                                        label_length,
                                        color,
                                        label_text,
-                                       BCENTRE,
+                                       XA_ALIGN_BCENTRE,
                                        fontsize,
                                        pixmap, 0, 0);
 }

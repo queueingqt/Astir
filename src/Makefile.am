@@ -1,47 +1,37 @@
 #
 # Copyright (C) 2000-2026 The Xastir Group
 #
-# The layout mirrors the architecture rather than the order files were written:
+# The layout mirrors the architecture:
 #
-#   core/    links with NO front end at all.  tools/link_core.py proves it by
-#            linking these objects on their own; that test is the reason the
-#            directory exists as a separate thing from ui/.
+#   core/    links with NO front end at all.  Built once, as a library, and
+#            that is only possible because the core has no toolkit dependency
+#            -- so the build now demonstrates the boundary that
+#            tools/link_core.py measures, instead of merely not contradicting
+#            it.
 #   draw/    the xa_draw.h contract and the backends implementing it.  Exactly
 #            one backend is linked into any binary.
-#   ui/      the front ends.  motif/ is built here; gtk4/ is built by
-#            tools/build_gtk4.sh, which links the same core objects against
-#            draw/gtk4 instead.
+#   ui/      the front end.  GTK4.
 #   apps/    standalone binaries that are not Astir.
 #
 # Includes are written as full paths from src/ ("core/util/util.h"), so a line
-# says which layer it reaches into.  That is deliberate: -I per directory would
-# have been a smaller change and would have made a core file including a Motif
-# header look exactly like every other include.
+# says which layer it reaches into.
 
-# astir_testdbfawk, not testdbfawk: Xastir installs that name as well, and both
-# programs are installable side by side.
 bin_PROGRAMS = astir astir_udp_client astir_testdbfawk
 
 SUBDIRS = rtree
 DIST_SUBDIRS = rtree
 
-# Two backends ship but must not link into astir: each defines the same
-# symbols as draw/x11.  tools/link_null.py and tools/build_gtk4.sh compile them
-# themselves.
+# The null backend ships but is never linked here: it defines the same symbols
+# as the Cairo one.  tools/link_null.py compiles it itself, to ask whether the
+# core can link against a backend that draws nothing.
 EXTRA_DIST = icon.xbm \
     core/io/io-common.c \
     core/io/macspeech.c \
-    draw/null/xa_draw_null.c \
-    draw/gtk4/xa_draw_gtk4.c \
-    ui/gtk4/xa_gtk4_main.c \
-    ui/gtk4/xa_gtk4_palette.c
+    draw/null/xa_draw_null.c
 
-ASTIR_SRC = \
-    core/globals.h \
-    core/main.h \
-    core/xa_ui.c \
-    core/xa_ui.h \
-    core/astir.h \
+noinst_LIBRARIES = libastircore.a
+
+libastircore_a_SOURCES = \
     core/aprs/alert.c \
     core/aprs/alert.h \
     core/aprs/cad_objects.c \
@@ -72,12 +62,14 @@ ASTIR_SRC = \
     core/aprs/tactical_call_utils.h \
     core/aprs/wx.c \
     core/aprs/wx.h \
+    core/astir.h \
     core/geo/ambiguity_utils.c \
     core/geo/ambiguity_utils.h \
     core/geo/datum.c \
     core/geo/datum.h \
     core/geo/mgrs_utils.c \
     core/geo/mgrs_utils.h \
+    core/globals.h \
     core/io/dlm.c \
     core/io/dlm.h \
     core/io/festival.c \
@@ -94,6 +86,7 @@ ASTIR_SRC = \
     core/io/sound.h \
     core/io/x_spider.c \
     core/io/x_spider.h \
+    core/main.h \
     core/map/awk.c \
     core/map/awk.h \
     core/map/dbfawk.c \
@@ -155,46 +148,8 @@ ASTIR_SRC = \
     core/util/xa_perf.h \
     core/util/xa_trace.c \
     core/util/xa_trace.h \
-    draw/xa_draw.h \
-    draw/x11/cairo_text.c \
-    draw/x11/cairo_text.h \
-    draw/x11/color.c \
-    draw/x11/color.h \
-    draw/x11/rotated.c \
-    draw/x11/rotated.h \
-    draw/x11/xa_draw_x11.c \
-    draw/x11/xa_draw_x11.h \
-    ui/motif/bulletin_gui.c \
-    ui/motif/bulletin_gui.h \
-    ui/motif/cad_objects_gui.c \
-    ui/motif/cad_objects_gui.h \
-    ui/motif/db_gui.c \
-    ui/motif/db_gui.h \
-    ui/motif/draw_symbols_gui.c \
-    ui/motif/draw_symbols_gui.h \
-    ui/motif/geocoder_gui.c \
-    ui/motif/interface_gui.c \
-    ui/motif/interface_gui.h \
-    ui/motif/list_gui.c \
-    ui/motif/list_gui.h \
-    ui/motif/locate_gui.c \
-    ui/motif/location_gui.c \
-    ui/motif/main.c \
-    ui/motif/main_gui.h \
-    ui/motif/maps_gui.c \
-    ui/motif/maps_gui.h \
-    ui/motif/messages_gui.c \
-    ui/motif/messages_gui.h \
-    ui/motif/objects_gui.c \
-    ui/motif/objects_gui.h \
-    ui/motif/popup.h \
-    ui/motif/popup_gui.c \
-    ui/motif/track_gui.c \
-    ui/motif/track_gui.h \
-    ui/motif/view_message_gui.c \
-    ui/motif/wx_gui.c \
-    ui/motif/wx_gui.h \
-    ui/motif/astir_gui.h
+    core/xa_ui.c \
+    core/xa_ui.h
 
 # Conditionally compiled sources
 if HAVE_NOMINATIM
@@ -203,7 +158,19 @@ else
 NOMINATIM_SRC =
 endif
 
-astir_SOURCES = $(ASTIR_SRC) $(NOMINATIM_SRC) core/util/compiledate.c
+libastircore_a_LIBADD =
+nodist_libastircore_a_SOURCES = core/util/compiledate.c
+libastircore_a_SOURCES += $(NOMINATIM_SRC)
+
+# Astir itself: the GTK4 front end, the Cairo backend, and the core.
+astir_SOURCES = \
+    draw/xa_draw.h \
+    draw/gtk4/xa_draw_gtk4.c \
+    ui/gtk4/xa_gtk4_main.c \
+    ui/gtk4/xa_gtk4_palette.c
+
+astir_CPPFLAGS = $(AM_CPPFLAGS) $(GTK4_CFLAGS)
+astir_LDADD = libastircore.a -Lrtree -lrtree $(GTK4_LIBS)
 
 astir_udp_client_SOURCES = \
     apps/astir_udp_client.c
@@ -216,14 +183,12 @@ astir_testdbfawk_SOURCES = \
 
 .PHONY: core/util/compiledate.c
 
-core/util/compiledate.c: $(ASTIR_SRC)
+core/util/compiledate.c: $(libastircore_a_SOURCES)
 	rm -f core/util/compiledate.c core/util/compiledate.$(OBJEXT)
 	echo 'char gitstring[] = "'"`$(top_srcdir)/scripts/AstirGitStamp.sh $(top_srcdir)`"'";' >> core/util/compiledate.c
 
 remove_compiledate:
 	rm -f core/util/compiledate.c core/util/compiledate.$(OBJEXT)
-
-astir_LDADD=-Lrtree -lrtree
 
 astir_LINK=$(CC) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
 

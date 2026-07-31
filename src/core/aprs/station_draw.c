@@ -66,7 +66,6 @@
 #include "core/map/maps.h"
 #include "core/aprs/alert.h"
 #include "core/util/util.h"
-#include "draw/x11/color.h"
 #include "core/state/xa_config.h"
 #include "core/state/xa_settings.h"
 #include "core/aprs/dr_utils.h"

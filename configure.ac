@@ -121,42 +121,22 @@ fi
 #AC_DEFINE(_REENTRANT, 1, [Use reentrant code if available.]) 
 AC_DEFINE_UNQUOTED(STIPPLE, 1, [Legacy stuff, use crowbar and lets keep going]) 
 
-# Checks for libraries. 
-# 
-# 
-# Find the X11 include and library directories. 
-# 
-AC_PATH_XTRA
-if test "$no_x" = "yes"; then
-  AC_MSG_ERROR(*** No X11!  Install the X Window System development headers/libraries! ***)
-fi
-
-CPPFLAGS="$CPPFLAGS $X_CFLAGS" 
-LDFLAGS="$LDFLAGS $X_LIBS"
-LIBS="$LIBS $X_PRE_LIBS -lX11 $X_EXTRA_LIBS"
+# Checks for libraries.
+#
+# GTK4 is the toolkit.  Astir does not use X11 or Motif and does not check for
+# them: the core links against a drawing backend through xa_draw.h, the backend
+# that ships is Cairo, and the front end is GTK4.  It runs natively on Wayland.
+#
+# This used to be AC_PATH_XTRA followed by an AC_MSG_ERROR that stopped the
+# build dead on any machine without the X Window System development headers.
+#
+PKG_PROG_PKG_CONFIG
+PKG_CHECK_MODULES([GTK4], [gtk4 >= 4.10],
+  [],
+  [AC_MSG_ERROR([*** GTK4 not found.  Astir needs gtk4 >= 4.10 development files. ***])])
 
 AC_SEARCH_LIBS(tan,math m)
-AC_CHECK_LIB([Xext], [XextAddDisplay])
 
-#***********************************
-# Check for libXp removed on 31 Oct 2015
-# This was in place for a very long time, but libxp is now deprecated and
-# has even been removed from some distros
-#
-# XpGetDocumentData is not used *anywhere* in Astir, but some distros have
-# a Motif library that is linked against it.  This is supposed to be
-# taken care of by the shared library loader, not by explicit linking, but
-# as late as 2007 some distros had it linked wrong.  It appears as of 2015
-# that nobody still does that, and this check causes more harm than good.
-#
-# If the build of Astir fails at link time looking for XpGetDocumentData,
-# then somebody *does* still do that incorrect shared library linking,
-# and y9ou'll need to re-enable this on your system
-#
-#AC_CHECK_LIB([Xp], [XpGetDocumentData])
-#************************************
-AC_CHECK_LIB([Xt], [XtDisplay]) 
-AC_CHECK_LIB([Xm], [XmTextFindString])
 
 
 
@@ -200,27 +180,16 @@ fi
 
 
 
-# Check for Cairo xlib (antialiased text rendering).  Skipped entirely if
-# pkg-config (or its m4 macros) are not available on the build host.
-use_cairo=no
-AC_ARG_WITH(cairo,[  --without-cairo           Disable Cairo antialiased text rendering.],cairo_desired=$withval,cairo_desired=yes)
-if test "${cairo_desired}" = "yes"; then
-  m4_ifdef([PKG_PROG_PKG_CONFIG], [PKG_PROG_PKG_CONFIG])
-  m4_ifdef([PKG_CHECK_MODULES],
-    [if test -n "$PKG_CONFIG"; then
-       PKG_CHECK_MODULES([CAIRO], [cairo-xlib],
-         [use_cairo=yes
-          AC_DEFINE([HAVE_CAIRO], [1], [Define if Cairo xlib is available for antialiased text])
-          CPPFLAGS="$CPPFLAGS $CAIRO_CFLAGS"
-          LIBS="$LIBS $CAIRO_LIBS"],
-         [use_cairo=no
-          AC_MSG_WARN([cairo-xlib not found; antialiased map text rendering will be disabled])])
-     else
-       AC_MSG_WARN([pkg-config not found; Cairo detection skipped])
-     fi],
-    [AC_MSG_WARN([pkg-config m4 macros not available; Cairo detection skipped])])
-fi
-
+# Cairo comes with GTK4, so it is always present and HAVE_CAIRO is always set.
+#
+# This used to probe for cairo-xlib and warn that "antialiased map text
+# rendering will be disabled" if it was missing.  That was the X11 backend's
+# text path.  The GTK4 backend draws its text with Pango, which is a hard
+# dependency of gtk4, so the question no longer has a "no" answer -- and
+# core/render/draw_symbols.c still reads HAVE_CAIRO to decide whether to
+# measure text through xa_text_width().
+use_cairo=yes
+AC_DEFINE([HAVE_CAIRO], [1], [Cairo is available for antialiased text])
 
 use_curl=no
 curl_desired=yes
@@ -698,18 +667,6 @@ else
   AC_MSG_RESULT([yes])
 fi
 
-# 
-# Assure we have this order for these LIBS: "-lXm -lXt -lX11" by 
-# adding them to the beginning.  Add spaces around them for the 
-# following steps.  Here I'm adding them to the beginning so the   
-# dupe-check portion will take out the later ones that might be in 
-# the wrong order.  If they're in the wrong order, we can get 
-# "Error: Shell widget astir has zero width and/or height" when 
-# Astir is started up.   Can also get "Error: attempt to add
-# non-widget child "DropSiteManager" to parent", but that can also
-# be caused by other problems with libraries.
-# 
-LIBS=" -lXm -lXt -lX11 $LIBS" 
 
 #
 # Change the compiler optimization if using Windows/Cygwin in order
