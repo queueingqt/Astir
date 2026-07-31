@@ -7,7 +7,9 @@
   #include "config.h"
 #endif
 
+#include <fcntl.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "core/astir.h"
 #include "core/aprs/alert.h"
@@ -26,6 +28,67 @@
 // Enough that a normal channel never hits it, low enough that a firehose
 // cannot hold the caller's event loop for a visible length of time.
 #define PUMP_DEFAULT_BUDGET 250
+
+
+/* ---- waking a front end when a packet arrives --------------------------- */
+
+/*
+ * A self-pipe: read end for the main loop, write end for the read threads.
+ *
+ * A pipe rather than an eventfd because it is portable, and one byte rather
+ * than a count because the reader drains the whole queue anyway -- the byte
+ * says "something is there", not how much.
+ *
+ * Non-blocking on both ends deliberately.  A write that would block means the
+ * pipe is already full of wakeups nobody has collected yet, which means the
+ * main loop is already going to wake and drain; dropping that byte loses
+ * nothing.  A blocking write there would stall a read thread on the UI.
+ */
+static int wakeup_fd[2] = { -1, -1 };
+
+
+int xa_incoming_wakeup_fd(void)
+{
+  if (wakeup_fd[0] == -1)
+  {
+    if (pipe(wakeup_fd) != 0)
+    {
+      wakeup_fd[0] = wakeup_fd[1] = -1;
+      return -1;
+    }
+    (void)fcntl(wakeup_fd[0], F_SETFL, O_NONBLOCK);
+    (void)fcntl(wakeup_fd[1], F_SETFL, O_NONBLOCK);
+  }
+  return wakeup_fd[0];
+}
+
+
+void xa_incoming_wake(void)
+{
+  static const char one = 'x';
+
+  if (wakeup_fd[1] != -1)
+  {
+    // Deliberately unchecked: see above, a full pipe is a wakeup already
+    // pending and losing this byte costs nothing.
+    (void)!write(wakeup_fd[1], &one, 1);
+  }
+}
+
+
+void xa_incoming_drain_wakeup(void)
+{
+  char buf[256];
+
+  if (wakeup_fd[0] == -1)
+  {
+    return;
+  }
+  while (read(wakeup_fd[0], buf, sizeof(buf)) > 0)
+  {
+    ;                            // however many bytes, one drain
+  }
+}
 
 
 /*

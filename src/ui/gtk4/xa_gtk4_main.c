@@ -1598,20 +1598,21 @@ static int init_core(void)
 
 
 /*
- * The heartbeat.
+ * A packet arrived.  Decode it.
  *
- * Interfaces are threads that queue what they read, so a packet only becomes a
- * station when something drains that queue.  Motif did it from UpdateTime() at
- * 10 ms; 50 ms is used here because the work per tick is the same and a GTK
- * timeout at 10 ms is a lot of wakeups for a program that mostly sits still.
- * A 1200 baud channel cannot deliver two packets in 50 ms.
+ * Called by GLib when the core's wakeup descriptor becomes readable, which
+ * happens the moment an interface thread queues a packet -- so this runs once
+ * per burst of traffic and at no other time.
  *
- * The redraw is deliberately NOT immediate.  A busy channel would otherwise
- * redraw the map on every packet; asking the scheduler for one lets it coalesce
- * a burst into a single frame, which is the whole reason it exists.
+ * It used to be a fifty-millisecond timer asking whether anything had turned
+ * up, which on a quiet channel is twenty questions a second with the same
+ * answer.  None of that was necessary: the producer knows when it produces, and
+ * now it says so.
  */
-static gboolean on_tick(gpointer user_data)
+static gboolean on_packet_ready(gint fd, GIOCondition cond, gpointer user_data)
 {
+  (void)fd;
+  (void)cond;
   (void)user_data;
 
   if (!xa_ready)
@@ -1619,42 +1620,54 @@ static gboolean on_tick(gpointer user_data)
     return G_SOURCE_CONTINUE;
   }
 
+  // Cleared BEFORE draining, so a packet queued while we decode leaves the
+  // descriptor readable and we are called again -- rather than going back to
+  // sleep on a queue that is not empty.
+  xa_incoming_drain_wakeup();
+
   if (xa_incoming_pump(0) > 0)
   {
     redraw_on_new_data = 2;      // 2 = "and reposition", as the core reads it
   }
 
-  xa_housekeeping(sec_now());
-
-  // Expiry and decode both set this; one place to notice it.
   if (redraw_on_new_data > 0)
   {
-    static long n_redraws, total_us;
-    gint64 t0 = g_get_monotonic_time();
-
     redraw_on_new_data = 0;
     // Markers only: a new station changes where the symbols are, not what the
-    // map underneath them looks like, and the marker pass is 35 ms against the
-    // map's several hundred.
+    // map underneath them looks like, and the marker pass is 15 ms against the
+    // map's hundred and more.
     xa_render_markers();
     gtk_widget_queue_draw(xa_area);
-
-    // How much of the main loop this is actually eating.  A tick that spends
-    // most of its 50 ms redrawing leaves little room for anything else --
-    // including delivering a button press.
-    if (getenv("ASTIR_TICK_TRACE") != NULL)
-    {
-      total_us += g_get_monotonic_time() - t0;
-      n_redraws++;
-      if ((n_redraws % 20) == 0)
-      {
-        g_print("[tick] %ld marker redraws, %.1f ms each, %.0f%% of the loop\n",
-                n_redraws, total_us / 1000.0 / n_redraws,
-                (total_us / 1000.0 / n_redraws) / 50.0 * 100.0);
-      }
-    }
   }
 
+  return G_SOURCE_CONTINUE;
+}
+
+
+/*
+ * Deadlines, once a second.
+ *
+ * This one is a timer and has to be.  It exists to notice that a moment has
+ * passed -- a station older than the expiry setting, a weather alert that has
+ * run out, a dropped port due another reconnect attempt.  Nothing can announce
+ * the passage of time, so here the clock IS the event rather than a poll asking
+ * whether anything changed.  It reads no queue and asks no question that
+ * something else could have answered by telling us.
+ */
+static gboolean on_expiry_tick(gpointer user_data)
+{
+  (void)user_data;
+
+  if (xa_ready)
+  {
+    xa_housekeeping(sec_now());
+    if (redraw_on_new_data > 0)
+    {
+      redraw_on_new_data = 0;
+      xa_render_markers();
+      gtk_widget_queue_draw(xa_area);
+    }
+  }
   return G_SOURCE_CONTINUE;
 }
 
@@ -2232,11 +2245,29 @@ int main(int argc, char **argv, char **envp)
   g_signal_connect(app, "shutdown", G_CALLBACK(on_shutdown), NULL);
 
   /*
-   * The heartbeat that turns received bytes into stations.  Registered here
-   * rather than in on_activate() so it exists for the whole run, and outside
-   * the headless render path above, which returns before ever reaching this.
+   * Wake on packets, not on a clock.
+   *
+   * Registered here rather than in on_activate() so it covers the whole run,
+   * and outside the headless render path above, which returns before reaching
+   * this.  There is deliberately no fallback timer if the pipe cannot be made:
+   * silently degrading to polling is how a program ends up polling with nobody
+   * aware of it, so it says so instead.
    */
-  g_timeout_add(50, on_tick, NULL);
+  {
+    int fd = xa_incoming_wakeup_fd();
+
+    if (fd >= 0)
+    {
+      g_unix_fd_add(fd, G_IO_IN, on_packet_ready, NULL);
+    }
+    else
+    {
+      g_printerr("astir: no wakeup pipe; incoming packets will not be seen\n");
+    }
+  }
+
+  // Deadlines, which nothing can announce.  See on_expiry_tick.
+  g_timeout_add_seconds(1, on_expiry_tick, NULL);
 
   /*
    * Quit cleanly on an interrupt so the config is still written.

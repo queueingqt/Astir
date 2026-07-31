@@ -101,7 +101,6 @@ int xa_gtk4_station_history(const char **text, const char **callsign, int max)
 
 static GtkWidget *info_win;
 static GtkWidget *info_grid;
-static guint      info_timer;
 static char       info_call[MAX_CALLSIGN + 1];
 
 static void info_fill(void);
@@ -126,34 +125,44 @@ static void on_info_destroy(GtkWidget *w, gpointer unused)
   info_grid = NULL;
   field_n = 0;                   // the widgets went with the window
   info_call[0] = '\0';
-  if (info_timer != 0)
-  {
-    g_source_remove(info_timer);
-    info_timer = 0;
-  }
 }
 
 
-// "4 minutes ago", because an absolute time makes you do the subtraction.
-static void ago(time_t then, char *out, size_t n)
+/*
+ * When, as a wall-clock time.
+ *
+ * Not "9s ago", which was the first version and which cannot be right for more
+ * than a second: a relative time has to be redrawn continuously to stay true,
+ * and redrawing continuously is the polling this window was supposed to stop
+ * doing.  Solving it with a five-second timer was solving the symptom -- the
+ * window still woke up asking a question nothing had prompted.
+ *
+ * A timestamp is correct the moment it is written and stays correct forever, so
+ * it needs no clock at all.  The date appears only when it is not today, which
+ * is the case where its absence would mislead.
+ */
+static void when(time_t t, char *out, size_t n)
 {
-  long secs;
+  struct tm tm_then, tm_now;
+  time_t now = sec_now();
 
-  if (then == 0)
+  if (t == 0)
   {
     astir_snprintf(out, n, "never");
     return;
   }
-  secs = (long)(sec_now() - then);
-  if (secs < 0)   { secs = 0; }
-  if (secs < 60)  { astir_snprintf(out, n, "%lds ago", secs); return; }
-  if (secs < 3600){ astir_snprintf(out, n, "%ldm ago", secs / 60); return; }
-  if (secs < 86400)
+
+  tm_then = *localtime(&t);
+  tm_now  = *localtime(&now);
+
+  if (tm_then.tm_year == tm_now.tm_year && tm_then.tm_yday == tm_now.tm_yday)
   {
-    astir_snprintf(out, n, "%ldh %ldm ago", secs / 3600, (secs % 3600) / 60);
-    return;
+    strftime(out, n, "%H:%M:%S", &tm_then);
   }
-  astir_snprintf(out, n, "%ldd ago", secs / 86400);
+  else
+  {
+    strftime(out, n, "%Y-%m-%d %H:%M:%S", &tm_then);
+  }
 }
 
 
@@ -273,11 +282,11 @@ static void info_fill(void)
   convert_lon_l2s(p->coord_lon, tmp, sizeof(tmp), CONVERT_HP_NOSP);
   set_field("Longitude", tmp);
 
-  ago(p->sec_heard, tmp, sizeof(tmp));
+  when(p->sec_heard, tmp, sizeof(tmp));
   set_field("Last heard", tmp);
   if (p->direct_heard != 0)
   {
-    ago(p->direct_heard, tmp, sizeof(tmp));
+    when(p->direct_heard, tmp, sizeof(tmp));
     set_field("Heard direct", tmp);
   }
 
@@ -360,28 +369,6 @@ void xa_gtk4_station_changed(const char *call_sign)
 }
 
 
-/*
- * One thing still needs a clock: "last heard 2s ago" counts upward whether or
- * not anything arrives, and it is wrong within seconds if nothing redraws it.
- *
- * So this is a display tick, not a data poll -- it refreshes elapsed time and
- * nothing else asks the station list a question it has already answered.  Once
- * every five seconds is enough for a relative time expressed in seconds, and
- * updating a label in place cannot disturb anything.
- */
-static gboolean info_tick(gpointer unused)
-{
-  (void)unused;
-  if (info_win == NULL)
-  {
-    info_timer = 0;
-    return G_SOURCE_REMOVE;
-  }
-  info_fill();
-  return G_SOURCE_CONTINUE;
-}
-
-
 void xa_gtk4_station_show(GtkWindow *parent, const char *callsign)
 {
   GtkWidget *scroll, *header;
@@ -426,6 +413,5 @@ void xa_gtk4_station_show(GtkWindow *parent, const char *callsign)
   g_signal_connect(info_win, "destroy", G_CALLBACK(on_info_destroy), NULL);
 
   info_fill();
-  info_timer = g_timeout_add_seconds(5, info_tick, NULL);
   gtk_window_present(GTK_WINDOW(info_win));
 }

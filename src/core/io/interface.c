@@ -78,6 +78,7 @@
 #include "core/aprs/db_funcs.h"
 #include "core/state/xa_config.h"
 //#include "core/map/maps.h"
+#include "core/io/incoming.h"
 #include "core/io/interface.h"
 #include "core/util/util.h"
 #include "core/util/mutex_utils.h"
@@ -288,6 +289,11 @@ int push_incoming_data(unsigned char *data_string, int length, int port)
   {
     fprintf(stderr,"data_lock\n");
   }
+
+  // Wake whoever is waiting for packets.  Outside the lock: this writes to a
+  // pipe the main loop is watching, and doing it while holding data_lock would
+  // let the reader wake and immediately block on the lock we still hold.
+  xa_incoming_wake();
 
   return(0);
 }

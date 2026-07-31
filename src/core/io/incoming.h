@@ -27,6 +27,26 @@
 #include <time.h>
 
 /*
+ * A file descriptor that becomes readable when a packet has been queued.
+ *
+ * So that a front end never has to ask.  Interfaces are threads, and a thread
+ * that queues a packet writes one byte here; a main loop watching this
+ * descriptor wakes at that moment and at no other.  Before this existed the
+ * only way to notice was to call xa_incoming_pump() on a timer -- fifty times a
+ * second, finding nothing forty-nine of them.
+ *
+ * Returns -1 if the pipe could not be created, in which case a caller has to
+ * fall back to asking on a timer.
+ *
+ * Call xa_incoming_drain_wakeup() after waking, before pumping, to clear it.
+ */
+int xa_incoming_wakeup_fd(void);
+void xa_incoming_drain_wakeup(void);
+
+// Called by whatever queued a packet, to wake the descriptor above.
+void xa_incoming_wake(void);
+
+/*
  * Drain the incoming queue and decode what is in it.
  *
  * Returns the number of packets processed, which is worth having: a front end
