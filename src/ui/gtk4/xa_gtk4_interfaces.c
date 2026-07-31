@@ -605,7 +605,7 @@ static void rebuild_rows(void)
     dot = gtk_label_new(status == DEVICE_UP    ? "\xe2\x97\x8f Up"
                         : status == DEVICE_ERROR ? "\xe2\x97\x8f Error"
                         : "\xe2\x97\x8b Down");
-    gtk_widget_set_size_request(dot, 76, -1);
+    gtk_widget_set_size_request(dot, 66, -1);
     gtk_label_set_xalign(GTK_LABEL(dot), 0.0);
     if (status == DEVICE_UP)
     {
@@ -630,6 +630,16 @@ static void rebuild_rows(void)
     title = gtk_label_new(line);
     gtk_label_set_xalign(GTK_LABEL(title), 0.0);
     gtk_widget_add_css_class(title, "heading");
+    /*
+     * Ellipsize, or the text decides how wide the row is.
+     *
+     * A label with no ellipsize reports its full text as its minimum width, so
+     * "APRS-IS internet server -- noam.aprs2.net:14580, receive only" made the
+     * row wider than the window.  The list scrolled sideways to fit it and the
+     * buttons on the right went off the edge -- Delete first, because it is
+     * last.  A row that cannot be narrowed pushes its own controls out of reach.
+     */
+    gtk_label_set_ellipsize(GTK_LABEL(title), PANGO_ELLIPSIZE_END);
 
     astir_snprintf(line, sizeof(line), "%s \xe2\x80\x94 %s%s",
                    type_name(devices[i].device_type), target,
@@ -638,6 +648,9 @@ static void rebuild_rows(void)
     sub = gtk_label_new(line);
     gtk_label_set_xalign(GTK_LABEL(sub), 0.0);
     gtk_widget_add_css_class(sub, "dim-label");
+    gtk_label_set_ellipsize(GTK_LABEL(sub), PANGO_ELLIPSIZE_END);
+    // The full text is always reachable, ellipsized or not.
+    gtk_widget_set_tooltip_text(sub, line);
 
     gtk_box_append(GTK_BOX(vbox), title);
     gtk_box_append(GTK_BOX(vbox), sub);
@@ -800,7 +813,9 @@ void xa_gtk4_interfaces_show(GtkWindow *parent)
   iface_win = gtk_window_new();
   gtk_window_set_title(GTK_WINDOW(iface_win), "Interfaces");
   gtk_window_set_transient_for(GTK_WINDOW(iface_win), parent);
-  gtk_window_set_default_size(GTK_WINDOW(iface_win), 620, 380);
+  // Wide enough that the three per-row controls and a readable label coexist
+  // without the text having to be cut short at the usual case.
+  gtk_window_set_default_size(GTK_WINDOW(iface_win), 760, 420);
 
   header = gtk_header_bar_new();
   add = gtk_button_new_from_icon_name("list-add-symbolic");
@@ -814,6 +829,15 @@ void xa_gtk4_interfaces_show(GtkWindow *parent)
 
   scroll = gtk_scrolled_window_new();
   gtk_widget_set_vexpand(scroll, TRUE);
+  /*
+   * Never scroll sideways.  A list of interfaces has a fixed set of controls on
+   * the right of every row, and a horizontal scroll is the one thing guaranteed
+   * to hide them -- you cannot press Delete if reaching it means noticing a
+   * scrollbar that only appears because the text is long.  With the labels
+   * ellipsized there is nothing legitimate to scroll to.
+   */
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll),
+                                 GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
   iface_list = gtk_list_box_new();
   gtk_list_box_set_selection_mode(GTK_LIST_BOX(iface_list),
                                   GTK_SELECTION_NONE);
