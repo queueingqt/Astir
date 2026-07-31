@@ -1013,12 +1013,58 @@ static void act_about(GSimpleAction *a, GVariant *p, gpointer u)
  * That the table can be filled in this partially, and the core neither knows
  * nor cares, is the property the whole extraction was for.
  */
+// Hide the toast once it has been still for a while.
+static guint status_hide_timer;
+
+static gboolean status_hide(gpointer unused)
+{
+  (void)unused;
+  status_hide_timer = 0;
+  if (xa_status != NULL)
+  {
+    gtk_widget_set_visible(xa_status, FALSE);
+  }
+  return G_SOURCE_REMOVE;
+}
+
+
+/*
+ * Progress and status, as a toast over the bottom right of the map.
+ *
+ * It used to be a label in the header bar, beside the menu button.  The text is
+ * whatever the core last had to say -- "Indexing maps", a station callsign, a
+ * tile count -- so its width changed constantly while maps loaded and stations
+ * arrived, and everything packed beside it moved.  Including the menu button,
+ * which slid out from under the pointer on its way to being clicked.
+ *
+ * A menu bar holds things whose position you learn.  Anything that changes size
+ * on its own does not belong in one.  So this floats over the map instead, where
+ * moving costs nothing, and disappears when there is nothing to report rather
+ * than leaving the last thing that happened on screen forever.
+ */
 static void ui_status(const char *text)
 {
-  if (xa_status != NULL && text != NULL)
+  if (xa_status == NULL || text == NULL)
   {
-    gtk_label_set_text(GTK_LABEL(xa_status), text);
+    return;
   }
+
+  if (text[0] == '\0')
+  {
+    gtk_widget_set_visible(xa_status, FALSE);
+    return;
+  }
+
+  gtk_label_set_text(GTK_LABEL(xa_status), text);
+  gtk_widget_set_visible(xa_status, TRUE);
+
+  // Restart the countdown on every message, so a run of them reads as one
+  // continuous report rather than flickering once per update.
+  if (status_hide_timer != 0)
+  {
+    g_source_remove(status_hide_timer);
+  }
+  status_hide_timer = g_timeout_add_seconds(4, status_hide, NULL);
 }
 
 /*
@@ -1516,9 +1562,6 @@ static void on_activate(GtkApplication *app, gpointer user_data)
   gtk_window_set_default_size(GTK_WINDOW(win), xa_w, xa_h);
 
   header = gtk_header_bar_new();
-  xa_status = gtk_label_new("");
-  gtk_label_set_ellipsize(GTK_LABEL(xa_status), PANGO_ELLIPSIZE_END);
-  gtk_header_bar_pack_end(GTK_HEADER_BAR(header), xa_status);
   {
     GtkWidget *zi = gtk_button_new_from_icon_name("zoom-in-symbolic");
     GtkWidget *zo = gtk_button_new_from_icon_name("zoom-out-symbolic");
@@ -1616,8 +1659,55 @@ static void on_activate(GtkApplication *app, gpointer user_data)
     g_timeout_add_seconds(2, (GSourceFunc)show_interfaces_once, win);
   }
 
+  /*
+   * The map, with the status toast floating over its bottom right corner.
+   *
+   * An overlay rather than another row in the box: a row would take height from
+   * the map and shift it every time the toast appeared, which is the same fault
+   * as the header bar had, moved to a different edge.  Over the map it costs the
+   * map nothing and moves nothing.
+   */
   box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  gtk_box_append(GTK_BOX(box), xa_area);
+  {
+    GtkWidget *overlay = gtk_overlay_new();
+    GtkCssProvider *css = gtk_css_provider_new();
+
+    gtk_overlay_set_child(GTK_OVERLAY(overlay), xa_area);
+
+    xa_status = gtk_label_new("");
+    gtk_label_set_ellipsize(GTK_LABEL(xa_status), PANGO_ELLIPSIZE_END);
+    gtk_widget_set_halign(xa_status, GTK_ALIGN_END);
+    gtk_widget_set_valign(xa_status, GTK_ALIGN_END);
+    gtk_widget_set_margin_end(xa_status, 12);
+    // Clear of the scale bar and the attribution, which the map draws along the
+    // bottom edge.  A toast that covers the scale is a toast that makes you wait
+    // for it to go away before you can read the map.
+    gtk_widget_set_margin_bottom(xa_status, 40);
+    // Never wide enough to cover the map, never so narrow it says nothing.
+    gtk_label_set_max_width_chars(GTK_LABEL(xa_status), 48);
+    gtk_widget_set_visible(xa_status, FALSE);
+    gtk_widget_add_css_class(xa_status, "astir-toast");
+
+    // Readable over any map underneath it, which is why it is not simply the
+    // theme's own background colour.
+    gtk_css_provider_load_from_string(css,
+      ".astir-toast {"
+      "  background-color: rgba(0,0,0,0.72);"
+      "  color: #ffffff;"
+      "  border-radius: 8px;"
+      "  padding: 6px 12px;"
+      "  font-size: 0.9em;"
+      "}");
+    gtk_style_context_add_provider_for_display(
+      gdk_display_get_default(), GTK_STYLE_PROVIDER(css),
+      GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+    g_object_unref(css);
+
+    gtk_overlay_add_overlay(GTK_OVERLAY(overlay), xa_status);
+    gtk_widget_set_hexpand(overlay, TRUE);
+    gtk_widget_set_vexpand(overlay, TRUE);
+    gtk_box_append(GTK_BOX(box), overlay);
+  }
   gtk_window_set_child(GTK_WINDOW(win), box);
 
   rebuild_surfaces(xa_area, xa_w, xa_h);
