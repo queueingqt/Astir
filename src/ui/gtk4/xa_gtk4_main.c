@@ -102,6 +102,20 @@ static int xa_ready = 0;               // core initialised, safe to render
 static xa_surface_id pixmap_markers = XA_SURFACE_NONE;
 static void xa_render_markers(void);
 
+/*
+ * How far the marker layer has to slide to match the current view.
+ *
+ * Separate from view_dx/view_dy, and it has to be: the two layers go stale at
+ * different moments.  view_dx is how far the MAP is behind, and the map is
+ * redrawn on a timer; the markers are redrawn immediately, so the instant they
+ * are they owe nothing, even while the map still owes the whole gesture.
+ *
+ * Sharing view_dx meant that at the end of a drag the markers were re-projected
+ * to the new centre AND then translated by the same amount again -- so they
+ * flew past the pointer and snapped back when the map caught up.
+ */
+static double marker_dx = 0.0, marker_dy = 0.0;
+
 
 /* ---- rendering --------------------------------------------------------- */
 
@@ -251,6 +265,9 @@ static void xa_render_markers(void)
     xa_perf_end(XA_ZONE_DISPLAY_FILE);
     pixmap_final = was;
   }
+  // Drawn for the current view, so nothing is owed.
+  marker_dx = 0.0;
+  marker_dy = 0.0;
   xa_perf_frame_end("gtk4_markers");
 
   if (xa_area != NULL)
@@ -467,7 +484,7 @@ static void xa_draw_cb(GtkDrawingArea *area, cairo_t *cr,
        * stayed nailed to the window and jumped into place on release.
        */
       cairo_save(cr);
-      cairo_translate(cr, view_dx, view_dy);
+      cairo_translate(cr, marker_dx, marker_dy);
       cairo_set_source_surface(cr, m, 0, 0);
       cairo_paint(cr);
       cairo_restore(cr);
@@ -603,29 +620,36 @@ static void xa_rescale(void)
 
 
 
+/*
+ * The scale at which the whole world just fills the window.
+ *
+ * Astir's stored limit is 500000, which is not a view limit -- it is just the
+ * largest value the config will hold.  Past the point where 180 degrees of
+ * latitude spans the window there is nothing further to reveal, only a
+ * shrinking earth in a growing field of background.
+ *
+ * 32400000 Astir units is 90 degrees of latitude -- a degree is 360000 units --
+ * so this fills the window with a hemisphere's worth of height rather than the
+ * full 180.  That is deliberate: Web Mercator cannot draw beyond about 85
+ * degrees, so the last slice of a full-height view is empty background either
+ * way, and stopping at 90 keeps the map filling the window instead of
+ * shrinking inside it.
+ *
+ * Derived from the window height rather than fixed, because a taller window
+ * shows the same span at a smaller scale.
+ */
+static long xa_max_zoom_out(void)
+{
+  long m = (screen_height > 0) ? (32400000L / screen_height) : 500000L;
+
+  return (m > 500000L) ? 500000L : m;
+}
+
+
 static void xa_zoom(double factor)
 {
   long s = (long)(scale_y * factor + 0.5);
-  long max_out;
-
-  /*
-   * Stop zooming out once the whole world already fits.
-   *
-   * Astir's stored limit is 500000, which is not a view limit -- it is just
-   * the largest value the config will hold.  Past the point where 180 degrees
-   * of latitude spans the window there is nothing further to reveal, only a
-   * shrinking earth in a growing field of background, which is what "too far
-   * out to see anything" is.
-   *
-   * 32400000 Astir units is 180 degrees, so the whole world fits vertically
-   * at exactly this scale.  Derived from the window height rather than fixed,
-   * because a taller window can show the same world at a smaller scale.
-   */
-  max_out = (screen_height > 0) ? (32400000L / screen_height) : 500000L;
-  if (max_out > 500000L)
-  {
-    max_out = 500000L;      // never exceed what the config can store
-  }
+  long max_out = xa_max_zoom_out();
 
   /*
    * Guarantee the step actually moves.
@@ -718,6 +742,11 @@ static void on_drag_update(GtkGestureDrag *g, double ox, double oy, gpointer u)
   // this keeps up with the pointer.
   view_dx = ox;
   view_dy = oy;
+  // The markers are not redrawn during the drag, so they slide with the map.
+  // A pan moves every one of them by the same amount, which is why sliding is
+  // exact rather than an approximation.
+  marker_dx = ox;
+  marker_dy = oy;
   gtk_widget_queue_draw(xa_area);
 }
 
@@ -1008,6 +1037,28 @@ static int init_core(void)
     {
       fprintf(stderr, "no map index at %s; building one\n", idx);
       map_indexer(0);
+    }
+  }
+
+  /*
+   * Clamp whatever the config asked for to the same limit.
+   *
+   * The limit was only applied when zooming, so a stored SCREEN_ZOOM past it
+   * started the program showing a world too small to read -- 152470 puts 180
+   * degrees of latitude into 212 pixels of a 700 pixel window.  The value came
+   * from a config seeded from another program and there was nothing to catch
+   * it, because zoom limits were enforced on the way out and not on the way
+   * in.
+   */
+  {
+    long max_out = xa_max_zoom_out();
+
+    if (scale_y > max_out)
+    {
+      fprintf(stderr, "startup zoom %ld is further out than the world; "
+              "using %ld\n", scale_y, max_out);
+      scale_y = max_out;
+      xa_rescale();
     }
   }
 
