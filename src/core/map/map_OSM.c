@@ -795,6 +795,106 @@ static double astir_osm_now(void)
 
 static long dirty_x0, dirty_x1, dirty_y0, dirty_y1;
 
+/*
+ * Decoded tiles, kept in memory.
+ *
+ * The tiles on screen were read off disk and PNG-decoded on every frame -- 35
+ * of them, and the majority of the tile driver's cost, which is itself most of
+ * a warm frame.  The file cache below this only avoids the network; nothing
+ * avoided the decode.
+ *
+ * Keyed by path, because the path already encodes zoom, x, y and the tile set,
+ * so two tile sets cannot collide and no separate key needs constructing.
+ *
+ * Bounded, and evicted oldest-first.  Panning brings new tiles in forever, so
+ * an unbounded cache is a leak with a long fuse; 128 tiles is about 32 MB at
+ * 256x256 RGBA and comfortably more than one screen holds, so a pan back and
+ * forth stays entirely in cache.
+ */
+#define OSM_TILE_CACHE_MAX 128
+
+typedef struct
+{
+  char path[MAX_FILENAME];
+  Image *image;
+  unsigned long used;            /* for oldest-first eviction */
+} osm_tile_entry;
+
+static osm_tile_entry osm_tile_cache[OSM_TILE_CACHE_MAX];
+static int osm_tile_cache_n;
+static unsigned long osm_tile_clock;
+long astir_osm_tile_hits, astir_osm_tile_misses;
+
+static Image *osm_tile_cache_get(const char *path)
+{
+  int i;
+
+  for (i = 0; i < osm_tile_cache_n; i++)
+  {
+    if (strcmp(osm_tile_cache[i].path, path) == 0)
+    {
+      osm_tile_cache[i].used = ++osm_tile_clock;
+      astir_osm_tile_hits++;
+      return osm_tile_cache[i].image;
+    }
+  }
+  astir_osm_tile_misses++;
+  return NULL;
+}
+
+
+static void osm_tile_cache_put(const char *path, Image *image)
+{
+  int slot;
+
+  if (image == NULL)
+  {
+    return;
+  }
+  if (osm_tile_cache_n < OSM_TILE_CACHE_MAX)
+  {
+    slot = osm_tile_cache_n++;
+  }
+  else
+  {
+    int i;
+
+    slot = 0;
+    for (i = 1; i < osm_tile_cache_n; i++)
+    {
+      if (osm_tile_cache[i].used < osm_tile_cache[slot].used)
+      {
+        slot = i;
+      }
+    }
+    DestroyImage(osm_tile_cache[slot].image);
+  }
+  astir_snprintf(osm_tile_cache[slot].path,
+                  sizeof(osm_tile_cache[slot].path), "%s", path);
+  osm_tile_cache[slot].image = image;
+  osm_tile_cache[slot].used = ++osm_tile_clock;
+}
+
+
+/*
+ * Forget a tile.  Called when a file turns out to be corrupt and is unlinked,
+ * so a redownload is not shadowed by the bad decode.
+ */
+static void osm_tile_cache_drop(const char *path)
+{
+  int i;
+
+  for (i = 0; i < osm_tile_cache_n; i++)
+  {
+    if (strcmp(osm_tile_cache[i].path, path) == 0)
+    {
+      DestroyImage(osm_tile_cache[i].image);
+      osm_tile_cache[i] = osm_tile_cache[--osm_tile_cache_n];
+      return;
+    }
+  }
+}
+
 static void render_OSM_image_pixels(
   Image *image,
   ExceptionInfo *except_ptr,
@@ -1478,6 +1578,12 @@ void draw_OSM_tiles (char *filenm,           // this is the name of the astir ma
                           tileExt[0] != '\0' ? tileExt : "png");
           strncpy(tile_info->filename, tmpString, MaxTextExtent);
 
+          tile = osm_tile_cache_get(tmpString);
+          if (tile != NULL)
+          {
+            goto have_tile;      // decoded already; skip the read entirely
+          }
+
           tile = ReadImage(tile_info, &exception);
 
           if (exception.severity != UndefinedException)
@@ -1497,6 +1603,7 @@ void draw_OSM_tiles (char *filenm,           // this is the name of the astir ma
               else
               {
                 fprintf(stderr, "Removing %s\n", tmpString);
+                osm_tile_cache_drop(tmpString);
                 unlink(tmpString);
               }
               CatchException(&exception);
@@ -1504,6 +1611,9 @@ void draw_OSM_tiles (char *filenm,           // this is the name of the astir ma
             GetExceptionInfo(&exception);
           }
 
+          osm_tile_cache_put(tmpString, tile);
+
+have_tile:
           if (tile)
           {
             { double pt0 = astir_osm_now();
@@ -1511,7 +1621,7 @@ void draw_OSM_tiles (char *filenm,           // this is the name of the astir ma
                                     shared_ximg);
               astir_osm_t_pixels += astir_osm_now() - pt0; }
             astir_osm_n_images++;
-            DestroyImage(tile);
+            // Not destroyed: the cache owns it now and it outlives the frame.
           }
         }
       }
@@ -1528,9 +1638,11 @@ void draw_OSM_tiles (char *filenm,           // this is the name of the astir ma
     if (getenv("ASTIR_PERF") != NULL)
     {
       fprintf(stderr, "[osm] capture %.1f  pixels %.1f  writeback %.1f ms "
-              "across %ld images\n",
+              "across %ld images; tile cache %ld hit %ld miss\n",
               astir_osm_t_capture, astir_osm_t_pixels,
-              astir_osm_t_writeback, astir_osm_n_images);
+              astir_osm_t_writeback, astir_osm_n_images,
+              astir_osm_tile_hits, astir_osm_tile_misses);
+      astir_osm_tile_hits = astir_osm_tile_misses = 0;
       astir_osm_t_capture = astir_osm_t_pixels = astir_osm_t_writeback = 0;
       astir_osm_n_images = 0;
     }
