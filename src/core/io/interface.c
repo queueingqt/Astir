@@ -3792,10 +3792,6 @@ int net_detach(int port)
     }
 
     usleep(100000); // 100ms
-    // We wish to close down the socket (so both ends of the darn thing
-    // go away), but we want to keep the number on those systems that
-    // re-assign the same file descriptor again.  This is to prevent
-    // cross-connects from one interface to another in Astir (big pain!).
 
     // Close it
     stat = close(port_data[port].channel);
@@ -3806,8 +3802,29 @@ int net_detach(int port)
 
     usleep(100000); // 100ms
 
-    // Snag a socket again.  We'll use it next time around.
-    port_data[port].channel = socket(PF_INET, SOCK_STREAM, 0);
+    /*
+     * Forget the descriptor.  Do NOT open a replacement to hold the number.
+     *
+     * This used to close the socket and immediately socket() a new one, with a
+     * comment explaining that it was keeping the file descriptor number "to
+     * prevent cross-connects from one interface to another (big pain!)".  It
+     * caused the exact thing it was written to prevent.
+     *
+     * A closed descriptor goes straight back to the pool and the kernel hands
+     * out the lowest free one, so the number this port hung on to could just as
+     * easily come to belong to another interface's live connection.  net_init()
+     * then sees channel != -1, believes the socket is still its own, and calls
+     * shutdown() and close() on it.
+     *
+     * That is what happened: starting a GPS port dropped an APRS-IS connection
+     * three slots away, at the instant the GPS port "cleaned up".  The
+     * give-away was shutdown() returning 0 -- success, on a socket supposed to
+     * be dead, because it belonged to somebody else and was very much alive.
+     *
+     * -1 means "no socket": what every other path here already uses, and what
+     * net_init() is written to expect.
+     */
+    port_data[port].channel = -1;
 
     ok = 1;
   }

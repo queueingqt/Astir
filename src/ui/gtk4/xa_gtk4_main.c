@@ -1288,6 +1288,27 @@ static int init_core(void)
   index_restore_from_file();     // the map index
 
   /*
+   * Every port starts with no socket.
+   *
+   * clear_all_port_data() sets each port's channel to -1, meaning "no
+   * descriptor".  main.c called it; nothing did afterwards, so the whole table
+   * kept the zero it got from being a global -- and zero is a perfectly good
+   * file descriptor.
+   *
+   * net_init() reads "channel != -1" as "there is a socket here left over from
+   * a previous attempt; shut it down before making a new one".  With every
+   * channel at 0 that was true of every port before any of them had a socket at
+   * all, so bringing up an interface closed file descriptor 0.  Once freed, 0
+   * goes to the next socket created -- so a later interface would hand its own
+   * live connection the number that an earlier one still believed was its own,
+   * and closing "its" socket dropped somebody else's.
+   *
+   * It showed up as starting a GPS killing an APRS-IS connection three slots
+   * away, in either order, at the exact instant the new port cleaned up.
+   */
+  clear_all_port_data();
+
+  /*
    * Bring up whatever interfaces the config defines.
    *
    * startup_all_or_defined_port() has been in the core the whole time and was
@@ -1631,8 +1652,63 @@ int main(int argc, char **argv, char **envp)
       int got = 0;
       int i;
 
+      /*
+       * Optionally press "Start" on one interface partway through, and report
+       * every interface's status once a second.
+       *
+       * ASTIR_GTK4_START_PORT="2@10" starts port 2 after ten seconds.  This
+       * exists because the bug it was written for -- starting one interface
+       * knocking another one over -- only happens when a SECOND interface is
+       * brought up while a first is running, and that is a sequence no
+       * one-shot render could produce.  Reasoning about it instead of
+       * reproducing it got the wrong answer twice.
+       */
+      const char *sp = getenv("ASTIR_GTK4_START_PORT");
+      int start_port = -1, start_at = 0;
+      int last_report = -1;
+
+      if (sp != NULL)
+      {
+        const char *at = strchr(sp, '@');
+
+        start_port = atoi(sp);
+        start_at = (at != NULL) ? atoi(at + 1) : 0;
+      }
+
       for (i = 0; i < secs * 20; i++)       // 50 ms, as the real tick uses
       {
+        int now_s = i / 20;
+
+        if (start_port >= 0 && now_s == start_at && (i % 20) == 0)
+        {
+          g_print("--- starting port %d now ---\n", start_port);
+          startup_all_or_defined_port(start_port);
+        }
+
+        if (getenv("ASTIR_IFACE_TRACE") != NULL && now_s != last_report
+            && (i % 20) == 0)
+        {
+          int p;
+
+          last_report = now_s;
+          g_print("t=%2ds ", now_s);
+          for (p = 0; p < MAX_IFACE_DEVICES; p++)
+          {
+            if (devices[p].device_type != DEVICE_NONE)
+            {
+              int st = get_device_status(p);
+
+              // The file descriptor matters as much as the status: two ports
+              // showing the same one is the whole bug.
+              g_print(" [%d:%s fd=%d]", p,
+                      st == DEVICE_UP ? "up"
+                      : st == DEVICE_ERROR ? "ERR" : "down",
+                      port_data[p].channel);
+            }
+          }
+          g_print("  packets=%d\n", got);
+        }
+
         got += xa_incoming_pump(0);
         xa_housekeeping(sec_now());
         g_usleep(50000);
