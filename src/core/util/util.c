@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -45,7 +45,7 @@
 #include <math.h>
 #include <errno.h>
 
-#include "core/xastir.h"
+#include "core/astir.h"
 #include "core/globals.h"
 #include "core/util/util.h"
 #include "core/aprs/db_funcs.h"
@@ -66,11 +66,11 @@
 #define ACCEPT_0N_0E    /* set this to see stations at 0N/0E on the map */
 
 /////////////////////////////////////////////////////////////////////
-// convert_from_xastir_coordinates()
+// convert_from_astir_coordinates()
 //
-// Converts from Xastir coordinate system to lat/lon.  First two
+// Converts from Astir coordinate system to lat/lon.  First two
 // parameters are the output floating point lat/lon values.  2nd two
-// are the input Xastir X/Y values.
+// are the input Astir X/Y values.
 //
 //              0 (90 deg. or 90N)
 //
@@ -83,19 +83,19 @@
 //         limits. In such cases the float values are set to appropriate
 //         minimum or maximum values.
 /////////////////////////////////////////////////////////////////////
-int convert_from_xastir_coordinates ( float *f_longitude,
+int convert_from_astir_coordinates ( float *f_longitude,
                                       float *f_latitude,
                                       long x,
                                       long y )
 {
 
-//fprintf(stderr,"convert_from_xastir_coordinates\n");
+//fprintf(stderr,"convert_from_astir_coordinates\n");
   int result = 1;  // assume the input values are in range
 
   if (x < 0l )
   {
     fprintf(stderr,
-            "convert_from_xastir_coordinates:X out-of-range (too low):%lu\n",
+            "convert_from_astir_coordinates:X out-of-range (too low):%lu\n",
             x);
     x = 0;
     result = 0;
@@ -104,7 +104,7 @@ int convert_from_xastir_coordinates ( float *f_longitude,
   if (x > 129600000l)
   {
     fprintf(stderr,
-            "convert_from_xastir_coordinates:X out-of-range (too high):%lu\n",
+            "convert_from_astir_coordinates:X out-of-range (too high):%lu\n",
             x);
     x = 129600000l;
     result = 0;
@@ -113,7 +113,7 @@ int convert_from_xastir_coordinates ( float *f_longitude,
   if (y < 0l)
   {
     fprintf(stderr,
-            "convert_from_xastir_coordinates:Y out-of-range (too low):%lu\n",
+            "convert_from_astir_coordinates:Y out-of-range (too low):%lu\n",
             y);
     y = 0;
     result = 0;
@@ -122,7 +122,7 @@ int convert_from_xastir_coordinates ( float *f_longitude,
   if (y > 64800000l)
   {
     fprintf(stderr,
-            "convert_from_xastir_coordinates:Y out-of-range (too high):%lu\n",
+            "convert_from_astir_coordinates:Y out-of-range (too high):%lu\n",
             y);
     y = 64800000l;
     result = 0;
@@ -146,10 +146,10 @@ int convert_from_xastir_coordinates ( float *f_longitude,
 
 
 /////////////////////////////////////////////////////////////////////
-// convert_to_xastir_coordinates()
+// convert_to_astir_coordinates()
 //
-// Converts from lat/lon to Xastir coordinate system.
-// First two parameters are the output Xastir X/Y values,
+// Converts from lat/lon to Astir coordinate system.
+// First two parameters are the output Astir X/Y values,
 // 2nd two are the input floating point lat/lon values.
 //
 //              0 (90 deg. or 90N)
@@ -160,7 +160,7 @@ int convert_from_xastir_coordinates ( float *f_longitude,
 //
 // Returns 0 if error, 1 if good values were converted.
 /////////////////////////////////////////////////////////////////////
-int convert_to_xastir_coordinates ( unsigned long* x,
+int convert_to_astir_coordinates ( unsigned long* x,
                                     unsigned long* y,
                                     float f_longitude,
                                     float f_latitude )
@@ -174,7 +174,7 @@ int convert_to_xastir_coordinates ( unsigned long* x,
   if (f_longitude < -180.0)
   {
     fprintf(stderr,
-            "convert_to_xastir_coordinates:Longitude out-of-range (too low):%f\n",
+            "convert_to_astir_coordinates:Longitude out-of-range (too low):%f\n",
             f_longitude);
     *x = 0;
     ok = 0;
@@ -183,7 +183,7 @@ int convert_to_xastir_coordinates ( unsigned long* x,
   if (f_longitude >  180.0)
   {
     fprintf(stderr,
-            "convert_to_xastir_coordinates:Longitude out-of-range (too high):%f\n",
+            "convert_to_astir_coordinates:Longitude out-of-range (too high):%f\n",
             f_longitude);
     *x = 129600000l;
     ok = 0;
@@ -192,7 +192,7 @@ int convert_to_xastir_coordinates ( unsigned long* x,
   if (f_latitude <  -90.0)
   {
     fprintf(stderr,
-            "convert_to_xastir_coordinates:Latitude out-of-range (too low):%f\n",
+            "convert_to_astir_coordinates:Latitude out-of-range (too low):%f\n",
             f_latitude);
     *y = 0;
     ok = 0;
@@ -201,7 +201,7 @@ int convert_to_xastir_coordinates ( unsigned long* x,
   if (f_latitude >   90.0)
   {
     fprintf(stderr,
-            "convert_to_xastir_coordinates:Latitude out-of-range (too high):%f\n",
+            "convert_to_astir_coordinates:Latitude out-of-range (too high):%f\n",
             f_latitude);
     *y = 64800000l;
     ok =0;
@@ -366,7 +366,7 @@ int copy_token(char *dest, size_t dest_size, const char *src)
     return(0);
   }
 
-  xastir_snprintf(dest, dest_size, "%.*s", (int)length, start);
+  astir_snprintf(dest, dest_size, "%.*s", (int)length, start);
 
   return((int)length);
 }
@@ -727,7 +727,7 @@ void phg_decode(const char *langstr, const char *phg, char *phg_decoded, int phg
 
   if (strlen(phg) != 7)
   {
-    xastir_snprintf(phg_decoded,
+    astir_snprintf(phg_decoded,
                     phg_decoded_length,
                     "%s %s",
                     langstr,
@@ -772,55 +772,55 @@ void phg_decode(const char *langstr, const char *phg, char *phg_decoded, int phg
   switch (phg[6])
   {
     case '0':
-      xastir_snprintf(directivity,
+      astir_snprintf(directivity,
                       sizeof(directivity),
                       "%s",
                       langcode("WPUPSTI071") );   // "omni"
       break;
     case '1':
-      xastir_snprintf(directivity,
+      astir_snprintf(directivity,
                       sizeof(directivity),
                       "%s",
                       " NE");
       break;
     case '2':
-      xastir_snprintf(directivity,
+      astir_snprintf(directivity,
                       sizeof(directivity),
                       "%s",
                       " E");
       break;
     case '3':
-      xastir_snprintf(directivity,
+      astir_snprintf(directivity,
                       sizeof(directivity),
                       "%s",
                       " SE");
       break;
     case '4':
-      xastir_snprintf(directivity,
+      astir_snprintf(directivity,
                       sizeof(directivity),
                       "%s",
                       " S");
       break;
     case '5':
-      xastir_snprintf(directivity,
+      astir_snprintf(directivity,
                       sizeof(directivity),
                       "%s",
                       " SW");
       break;
     case '6':
-      xastir_snprintf(directivity,
+      astir_snprintf(directivity,
                       sizeof(directivity),
                       "%s",
                       " W");
       break;
     case '7':
-      xastir_snprintf(directivity,
+      astir_snprintf(directivity,
                       sizeof(directivity),
                       "%s",
                       " NW");
       break;
     case '8':
-      xastir_snprintf(directivity,
+      astir_snprintf(directivity,
                       sizeof(directivity),
                       "%s",
                       " N");
@@ -831,7 +831,7 @@ void phg_decode(const char *langstr, const char *phg, char *phg_decoded, int phg
   }
 
   if (english_units)
-    xastir_snprintf(temp,
+    astir_snprintf(temp,
                     sizeof(temp),
                     "%.0fW @ %.0fft %s, %ddB%s, %s %.1fmi",
                     power,
@@ -842,7 +842,7 @@ void phg_decode(const char *langstr, const char *phg, char *phg_decoded, int phg
                     langcode("WPUPSTI072"), // range
                     range);
   else
-    xastir_snprintf(temp,
+    astir_snprintf(temp,
                     sizeof(temp),
                     "%.0fW @ %.1fm %s, %ddB%s, %s %.1fkm",
                     power,
@@ -853,7 +853,7 @@ void phg_decode(const char *langstr, const char *phg, char *phg_decoded, int phg
                     langcode("WPUPSTI072"), // range
                     range*1.609344);
 
-  xastir_snprintf(phg_decoded,
+  astir_snprintf(phg_decoded,
                   phg_decoded_length,
                   "%s %s",
                   langstr,
@@ -877,7 +877,7 @@ void shg_decode(const char *langstr, const char *shg, char *shg_decoded, int shg
 
   if (strlen(shg) != 7)
   {
-    xastir_snprintf(shg_decoded,
+    astir_snprintf(shg_decoded,
                     shg_decoded_length,
                     langstr,
                     langcode("WPUPSTI074") );   // "BAD SHG"
@@ -894,70 +894,70 @@ void shg_decode(const char *langstr, const char *shg, char *shg_decoded, int shg
   switch (s)
   {
     case '0':
-      xastir_snprintf(signal,
+      astir_snprintf(signal,
                       sizeof(signal),
                       "%s",
                       langcode("WPUPSTI076") );
       // "No signal detected"
       break;
     case '1':
-      xastir_snprintf(signal,
+      astir_snprintf(signal,
                       sizeof(signal),
                       "%s",
                       langcode("WPUPSTI077") );
       // "Detectible signal (Maybe)"
       break;
     case '2':
-      xastir_snprintf(signal,
+      astir_snprintf(signal,
                       sizeof(signal),
                       "%s",
                       langcode("WPUPSTI078") );
       // "Detectible signal but not copyable)"
       break;
     case '3':
-      xastir_snprintf(signal,
+      astir_snprintf(signal,
                       sizeof(signal),
                       "%s",
                       langcode("WPUPSTI079") );
       // "Weak signal, marginally readable"
       break;
     case '4':
-      xastir_snprintf(signal,
+      astir_snprintf(signal,
                       sizeof(signal),
                       "%s",
                       langcode("WPUPSTI080") );
       // "Noisy but copyable signal"
       break;
     case '5':
-      xastir_snprintf(signal,
+      astir_snprintf(signal,
                       sizeof(signal),
                       "%s",
                       langcode("WPUPSTI081") );
       // "Some noise, easy to copy signal"
       break;
     case '6':
-      xastir_snprintf(signal,
+      astir_snprintf(signal,
                       sizeof(signal),
                       "%s",
                       langcode("WPUPSTI082") );
       // "Good signal w/detectible noise"
       break;
     case '7':
-      xastir_snprintf(signal,
+      astir_snprintf(signal,
                       sizeof(signal),
                       "%s",
                       langcode("WPUPSTI083") );
       // "Near full-quieting signal"
       break;
     case '8':
-      xastir_snprintf(signal,
+      astir_snprintf(signal,
                       sizeof(signal),
                       "%s",
                       langcode("WPUPSTI084") );
       // "Full-quieting signal"
       break;
     case '9':
-      xastir_snprintf(signal,
+      astir_snprintf(signal,
                       sizeof(signal),
                       "%s",
                       langcode("WPUPSTI085") );
@@ -1004,55 +1004,55 @@ void shg_decode(const char *langstr, const char *shg, char *shg_decoded, int shg
   switch (shg[6])
   {
     case '0':
-      xastir_snprintf(directivity,
+      astir_snprintf(directivity,
                       sizeof(directivity),
                       "%s ",
                       langcode("WPUPSTI071") );   // "omni"
       break;
     case '1':
-      xastir_snprintf(directivity,
+      astir_snprintf(directivity,
                       sizeof(directivity),
                       "%s",
                       " NE");
       break;
     case '2':
-      xastir_snprintf(directivity,
+      astir_snprintf(directivity,
                       sizeof(directivity),
                       "%s",
                       " E");
       break;
     case '3':
-      xastir_snprintf(directivity,
+      astir_snprintf(directivity,
                       sizeof(directivity),
                       "%s",
                       " SE");
       break;
     case '4':
-      xastir_snprintf(directivity,
+      astir_snprintf(directivity,
                       sizeof(directivity),
                       "%s",
                       " S");
       break;
     case '5':
-      xastir_snprintf(directivity,
+      astir_snprintf(directivity,
                       sizeof(directivity),
                       "%s",
                       " SW");
       break;
     case '6':
-      xastir_snprintf(directivity,
+      astir_snprintf(directivity,
                       sizeof(directivity),
                       "%s",
                       " W");
       break;
     case '7':
-      xastir_snprintf(directivity,
+      astir_snprintf(directivity,
                       sizeof(directivity),
                       "%s",
                       " NW");
       break;
     case '8':
-      xastir_snprintf(directivity,
+      astir_snprintf(directivity,
                       sizeof(directivity),
                       "%s",
                       " N");
@@ -1064,7 +1064,7 @@ void shg_decode(const char *langstr, const char *shg, char *shg_decoded, int shg
 
   if (english_units)
   {
-    xastir_snprintf(temp,
+    astir_snprintf(temp,
                     sizeof(temp),
                     "%.0fft %s, %ddB%s, %s: %.1fmi, %s",
                     height,
@@ -1077,7 +1077,7 @@ void shg_decode(const char *langstr, const char *shg, char *shg_decoded, int shg
   }
   else
   {
-    xastir_snprintf(temp,
+    astir_snprintf(temp,
                     sizeof(temp),
                     "%.1fm %s, %ddB%s, %s: %.1fkm, %s",
                     height*0.3048,
@@ -1089,7 +1089,7 @@ void shg_decode(const char *langstr, const char *shg, char *shg_decoded, int shg
                     signal);
   }
 
-  xastir_snprintf(shg_decoded,
+  astir_snprintf(shg_decoded,
                   shg_decoded_length,
                   langstr,
                   temp);
@@ -1115,7 +1115,7 @@ void bearing_decode(const char *langstr, const char *bearing_str,
 
   if (strlen(bearing_str) != 3)
   {
-    xastir_snprintf(bearing_decoded,
+    astir_snprintf(bearing_decoded,
                     bearing_decoded_length,
                     langstr,
                     langcode("WPUPSTI086") );   // "BAD BEARING"
@@ -1124,7 +1124,7 @@ void bearing_decode(const char *langstr, const char *bearing_str,
 
   if (strlen(NRQ) != 3)
   {
-    xastir_snprintf(bearing_decoded,
+    astir_snprintf(bearing_decoded,
                     bearing_decoded_length,
                     langstr,
                     langcode("WPUPSTI087") );   // "BAD NRQ"
@@ -1184,7 +1184,7 @@ void bearing_decode(const char *langstr, const char *bearing_str,
 
     if (english_units)
     {
-      xastir_snprintf(temp,
+      astir_snprintf(temp,
                       sizeof(temp),
                       "%i%c, %s: %i%c, %s: %i mi",
                       bearing,
@@ -1197,7 +1197,7 @@ void bearing_decode(const char *langstr, const char *bearing_str,
     }
     else
     {
-      xastir_snprintf(temp,
+      astir_snprintf(temp,
                       sizeof(temp),
                       "%i%c, %s: %i%c, %s: %0.2f km",
                       bearing,
@@ -1211,14 +1211,14 @@ void bearing_decode(const char *langstr, const char *bearing_str,
   }
   else
   {
-    xastir_snprintf(temp,
+    astir_snprintf(temp,
                     sizeof(temp),
                     "%s",
                     langcode("WPUPSTI090") );   // "Not Valid"
 
 //fprintf(stderr,"N was 0\n");
   }
-  xastir_snprintf(bearing_decoded,
+  astir_snprintf(bearing_decoded,
                   bearing_decoded_length,
                   langstr,
                   temp);
@@ -1273,7 +1273,7 @@ char *get_line(FILE *f, char *linedata, int maxline) {
         }
     }
 
-    xastir_snprintf(linedata,
+    astir_snprintf(linedata,
         maxline,
         "%s",
         temp_line);
@@ -1629,7 +1629,7 @@ char *compress_posit(const char *input_lat, const char group, const char *input_
   deg = atoi(temp_str);
 
   // Fetch minutes (rest of numbers)
-  xastir_snprintf(temp_str,
+  astir_snprintf(temp_str,
                   sizeof(temp_str),
                   "%s",
                   input_lat);
@@ -1672,7 +1672,7 @@ char *compress_posit(const char *input_lat, const char group, const char *input_
   deg = atoi(temp_str);
 
   // Fetch minutes (rest of numbers)
-  xastir_snprintf(temp_str,
+  astir_snprintf(temp_str,
                   sizeof(temp_str),
                   "%s",
                   input_lon);
@@ -1782,7 +1782,7 @@ char *compress_posit(const char *input_lat, const char group, const char *input_
   // the compressed posit has a fixed 13-character length
   // according to the spec!
   //
-  xastir_snprintf(pos,
+  astir_snprintf(pos,
                   sizeof(pos),
                   "%c%s%s%c%c%c%c",
                   compress_group(group),
@@ -1835,10 +1835,10 @@ int position_defined(long lat, long lon, int UNUSED(strict))
 
 
 
-// Function to convert from screen (pixel) coordinates to the Xastir
+// Function to convert from screen (pixel) coordinates to the Astir
 // coordinate system.
 //
-void convert_screen_to_xastir_coordinates(int x,
+void convert_screen_to_astir_coordinates(int x,
     int y,
     long *lat,
     long *lon)
@@ -1868,10 +1868,10 @@ void convert_screen_to_xastir_coordinates(int x,
   }
 }
 
-// function to convert from Xastir (long, centi-seconds from 90N/180W) coords
+// function to convert from Astir (long, centi-seconds from 90N/180W) coords
 // to screen coordinates
 
-void convert_xastir_to_screen_coordinates(long lon, long lat, long *x, long *y)
+void convert_astir_to_screen_coordinates(long lon, long lat, long *x, long *y)
 {
   // Convert to screen coordinates.  Careful
   // here!  The format conversions you'll need
@@ -1885,8 +1885,8 @@ void convert_xastir_to_screen_coordinates(long lon, long lat, long *x, long *y)
 
 
 
-// Convert Xastir lat/lon to UTM printable string
-void convert_xastir_to_UTM_str(char *str, int str_len, long x, long y)
+// Convert Astir lat/lon to UTM printable string
+void convert_astir_to_UTM_str(char *str, int str_len, long x, long y)
 {
   double utmNorthing;
   double utmEasting;
@@ -1902,7 +1902,7 @@ void convert_xastir_to_UTM_str(char *str, int str_len, long x, long y)
   utmZone[9] = '\0';
   //fprintf(stderr,"%s %07.0f %07.0f\n", utmZone, utmEasting,
   //utmNorthing );
-  xastir_snprintf(str,
+  astir_snprintf(str,
                   str_len,
                   "%s %07.0f %07.0f",
                   utmZone,
@@ -1913,8 +1913,8 @@ void convert_xastir_to_UTM_str(char *str, int str_len, long x, long y)
 
 
 
-// Convert Xastir lat/lon to UTM
-void convert_xastir_to_UTM(double *easting, double *northing, char *zone, int zone_len, long x, long y)
+// Convert Astir lat/lon to UTM
+void convert_astir_to_UTM(double *easting, double *northing, char *zone, int zone_len, long x, long y)
 {
 
   ll_to_utm_ups(E_WGS_84,
@@ -1931,8 +1931,8 @@ void convert_xastir_to_UTM(double *easting, double *northing, char *zone, int zo
 
 
 
-// Convert UTM to Xastir lat/lon
-void convert_UTM_to_xastir(double easting, double northing, char *zone, long *x, long *y)
+// Convert UTM to Astir lat/lon
+void convert_UTM_to_astir(double easting, double northing, char *zone, long *x, long *y)
 {
   double lat, lon;
 
@@ -1944,10 +1944,10 @@ void convert_UTM_to_xastir(double easting, double northing, char *zone, long *x,
                 &lon);
 
   // Reverse latitude to fit our coordinate system then convert to
-  // Xastir units.
+  // Astir units.
   *y = (long)(lat * -360000.0) + 32400000l;
 
-  // Convert longitude to xastir units
+  // Convert longitude to astir units
   *x = (long)(lon *  360000.0) + 64800000l;
 }
 
@@ -1955,7 +1955,7 @@ void convert_UTM_to_xastir(double easting, double northing, char *zone, long *x,
 
 
 // convert latitude from long to string
-// Input is in Xastir coordinate system
+// Input is in Astir coordinate system
 //
 // CONVERT_LP_NOSP      = DDMM.MMN
 // CONVERT_HP_NOSP      = DDMM.MMMN
@@ -2003,7 +2003,7 @@ void convert_lat_l2s(long lat, char *str, int str_len, int type)
   {
 
     case(CONVERT_LP_NOSP): /* do low P w/no space */
-      xastir_snprintf(str,
+      astir_snprintf(str,
                       str_len,
                       "%02d%05.2f%c",
                       ideg,
@@ -2013,7 +2013,7 @@ void convert_lat_l2s(long lat, char *str, int str_len, int type)
       break;
 
     case(CONVERT_LP_NORMAL): /* do low P normal */
-      xastir_snprintf(str,
+      astir_snprintf(str,
                       str_len,
                       "%02d %05.2f%c",
                       ideg,
@@ -2023,7 +2023,7 @@ void convert_lat_l2s(long lat, char *str, int str_len, int type)
       break;
 
     case(CONVERT_HP_NOSP): /* do HP w/no space */
-      xastir_snprintf(str,
+      astir_snprintf(str,
                       str_len,
                       "%02d%06.3f%c",
                       ideg,
@@ -2033,7 +2033,7 @@ void convert_lat_l2s(long lat, char *str, int str_len, int type)
       break;
 
     case(CONVERT_VHP_NOSP): /* do Very HP w/no space */
-      xastir_snprintf(str,
+      astir_snprintf(str,
                       str_len,
                       "%02d%07.4f%c",
                       ideg,
@@ -2043,7 +2043,7 @@ void convert_lat_l2s(long lat, char *str, int str_len, int type)
       break;
 
     case(CONVERT_UP_TRK): /* for tracklog files */
-      xastir_snprintf(str,
+      astir_snprintf(str,
                       str_len,
                       "%c%02d %07.4f",
                       ns,
@@ -2053,7 +2053,7 @@ void convert_lat_l2s(long lat, char *str, int str_len, int type)
       break;
 
     case(CONVERT_DEC_DEG):
-      xastir_snprintf(str,
+      astir_snprintf(str,
                       str_len,
                       "%08.5f%c",
 //                (ideg+min/60.0)+0.000001, // Correct possible unbiased rounding
@@ -2062,7 +2062,7 @@ void convert_lat_l2s(long lat, char *str, int str_len, int type)
       break;
 
     case(CONVERT_DMS_NORMAL):
-      xastir_snprintf(str,
+      astir_snprintf(str,
                       str_len,
                       "%02d %02d %04.1f%c",
                       ideg,
@@ -2073,7 +2073,7 @@ void convert_lat_l2s(long lat, char *str, int str_len, int type)
       break;
 
     case(CONVERT_DMS_NORMAL_FORMATED):
-      xastir_snprintf(str,
+      astir_snprintf(str,
                       str_len,
                       "%02d%c%02d\'%04.1f%c",
                       ideg,
@@ -2085,7 +2085,7 @@ void convert_lat_l2s(long lat, char *str, int str_len, int type)
       break;
 
     case(CONVERT_HP_NORMAL_FORMATED):
-      xastir_snprintf(str,
+      astir_snprintf(str,
                       str_len,
                       "%02d%c%06.3f%c",
                       ideg,
@@ -2097,7 +2097,7 @@ void convert_lat_l2s(long lat, char *str, int str_len, int type)
 
     case(CONVERT_HP_NORMAL):
     default: /* do HP normal */
-      xastir_snprintf(str,
+      astir_snprintf(str,
                       str_len,
                       "%02d %06.3f%c",
                       ideg,
@@ -2113,7 +2113,7 @@ void convert_lat_l2s(long lat, char *str, int str_len, int type)
 
 
 // convert longitude from long to string
-// Input is in Xastir coordinate system
+// Input is in Astir coordinate system
 //
 // CONVERT_LP_NOSP      = DDDMM.MME
 // CONVERT_HP_NOSP      = DDDMM.MMME
@@ -2159,7 +2159,7 @@ void convert_lon_l2s(long lon, char *str, int str_len, int type)
   {
 
     case(CONVERT_LP_NOSP): /* do low P w/nospacel */
-      xastir_snprintf(str,
+      astir_snprintf(str,
                       str_len,
                       "%03d%05.2f%c",
                       ideg,
@@ -2169,7 +2169,7 @@ void convert_lon_l2s(long lon, char *str, int str_len, int type)
       break;
 
     case(CONVERT_LP_NORMAL): /* do low P normal */
-      xastir_snprintf(str,
+      astir_snprintf(str,
                       str_len,
                       "%03d %05.2f%c",
                       ideg,
@@ -2179,7 +2179,7 @@ void convert_lon_l2s(long lon, char *str, int str_len, int type)
       break;
 
     case(CONVERT_HP_NOSP): /* do HP w/nospace */
-      xastir_snprintf(str,
+      astir_snprintf(str,
                       str_len,
                       "%03d%06.3f%c",
                       ideg,
@@ -2189,7 +2189,7 @@ void convert_lon_l2s(long lon, char *str, int str_len, int type)
       break;
 
     case(CONVERT_VHP_NOSP): /* do Very HP w/nospace */
-      xastir_snprintf(str,
+      astir_snprintf(str,
                       str_len,
                       "%03d%07.4f%c",
                       ideg,
@@ -2199,7 +2199,7 @@ void convert_lon_l2s(long lon, char *str, int str_len, int type)
       break;
 
     case(CONVERT_UP_TRK): /* for tracklog files */
-      xastir_snprintf(str,
+      astir_snprintf(str,
                       str_len,
                       "%c%03d %07.4f",
                       ew,
@@ -2209,7 +2209,7 @@ void convert_lon_l2s(long lon, char *str, int str_len, int type)
       break;
 
     case(CONVERT_DEC_DEG):
-      xastir_snprintf(str,
+      astir_snprintf(str,
                       str_len,
                       "%09.5f%c",
 //                (ideg+min/60.0)+0.000001, // Correct possible unbiased rounding
@@ -2218,7 +2218,7 @@ void convert_lon_l2s(long lon, char *str, int str_len, int type)
       break;
 
     case(CONVERT_DMS_NORMAL):
-      xastir_snprintf(str,
+      astir_snprintf(str,
                       str_len,
                       "%03d %02d %04.1f%c",
                       ideg,
@@ -2229,7 +2229,7 @@ void convert_lon_l2s(long lon, char *str, int str_len, int type)
       break;
 
     case(CONVERT_DMS_NORMAL_FORMATED):
-      xastir_snprintf(str,
+      astir_snprintf(str,
                       str_len,
                       "%03d%c%02d\'%04.1f%c",
                       ideg,
@@ -2241,7 +2241,7 @@ void convert_lon_l2s(long lon, char *str, int str_len, int type)
       break;
 
     case(CONVERT_HP_NORMAL_FORMATED):
-      xastir_snprintf(str,
+      astir_snprintf(str,
                       str_len,
                       "%03d%c%06.3f%c",
                       ideg,
@@ -2253,7 +2253,7 @@ void convert_lon_l2s(long lon, char *str, int str_len, int type)
 
     case(CONVERT_HP_NORMAL):
     default: /* do HP normal */
-      xastir_snprintf(str,
+      astir_snprintf(str,
                       str_len,
                       "%03d %06.3f%c",
                       ideg,
@@ -2304,13 +2304,13 @@ long convert_lat_s2l(char *lat)        /* N=0°=°, Ctr=90°, S=180° */
       return(0l); // Bad, no degrees
       break;
     case 3:     // DMM.MM[MM]N
-      xastir_snprintf(copy,
+      astir_snprintf(copy,
                       sizeof(copy),
                       "0%s",  // Add a leading '0'
                       lat);
       break;
     case 4:     // DDMM.MM[MM]N
-      xastir_snprintf(copy,
+      astir_snprintf(copy,
                       sizeof(copy),
                       "%s",   // Copy verbatim
                       lat);
@@ -2347,7 +2347,7 @@ long convert_lat_s2l(char *lat)        /* N=0°=°, Ctr=90°, S=180° */
     substr(n, copy+5, 4);     // fractional minutes
     // Keep the fourth digit if present, as it resolves to 0.6
     // of a 1/100 sec resolution.  Two counts make one count in
-    // the Xastir coordinate system.
+    // the Astir coordinate system.
 
     // Extend the digits to full precision by adding zeroes on
     // the end.
@@ -2426,19 +2426,19 @@ long convert_lon_s2l(char *lon)       /* W=0°, Ctr=180°, E=360° */
       return(0l); // Bad, no degrees
       break;
     case 3:     // DMM.MM[MM]N
-      xastir_snprintf(copy,
+      astir_snprintf(copy,
                       sizeof(copy),
                       "00%s",  // Add two leading zeroes
                       lon);
       break;
     case 4:     // DDMM.MM[MM]N
-      xastir_snprintf(copy,
+      astir_snprintf(copy,
                       sizeof(copy),
                       "0%s",   // Add leading '0'
                       lon);
       break;
     case 5:     // DDDMM.MM[MM]N
-      xastir_snprintf(copy,
+      astir_snprintf(copy,
                       sizeof(copy),
                       "%s",   // Copy verbatim
                       lon);
@@ -2476,7 +2476,7 @@ long convert_lon_s2l(char *lon)       /* W=0°, Ctr=180°, E=360° */
     substr(n,copy+6,4);  // fractional minutes 66E 660E or 6601
     // Keep the fourth digit if present, as it resolves to 0.6
     // of a 1/100 sec resolution.  Two counts make one count in
-    // the Xastir coordinate system.
+    // the Astir coordinate system.
 
     // Extend the digits to full precision by adding zeroes on
     // the end.
@@ -2519,7 +2519,7 @@ long convert_lon_s2l(char *lon)       /* W=0°, Ctr=180°, E=360° */
 
 
 /*
- *  Convert latitude from Xastir format to radian
+ *  Convert latitude from Astir format to radian
  */
 double convert_lat_l2r(long lat)
 {
@@ -2536,7 +2536,7 @@ double convert_lat_l2r(long lat)
 
 
 /*
- *  Convert longitude from Xastir format to radian
+ *  Convert longitude from Astir format to radian
  */
 double convert_lon_l2r(long lon)
 {
@@ -2591,7 +2591,7 @@ double calc_distance_haversine_radian(double lat1, double lon1, double lat2, dou
 // longer distances.  Haversine is a great-circle calculation.
 //
 //
-// Inputs:  lat1/long1/lat2/long2 in Xastir coordinate system (long)
+// Inputs:  lat1/long1/lat2/long2 in Astir coordinate system (long)
 //
 // Outputs: Distance in meters between them (double)
 //
@@ -2621,7 +2621,7 @@ double calc_distance_haversine(long lat1, long lon1, long lat2, long lon2)
  *  great-circle calculation.
  *
  *
- * Inputs:  lat1/long1/lat2/long2 in Xastir coordinate system (long)
+ * Inputs:  lat1/long1/lat2/long2 in Astir coordinate system (long)
  *
  * Outputs: Distance in meters between them (double)
  *
@@ -2677,7 +2677,7 @@ double calc_distance(long lat1, long lon1, long lat2, long lon2)
  *  bearing is computed, not a Rhumb-line bearing.
  *
  *
- * Inputs:  lat1/long1/lat2/long2 in Xastir coordinate system (long)
+ * Inputs:  lat1/long1/lat2/long2 in Astir coordinate system (long)
  *          Length of course_deg string (int)
  *
  * Outputs: Distance in nautical miles between them (double).
@@ -2743,7 +2743,7 @@ double calc_distance_course(long lat1, long lon1, long lat2, long lon2, char *co
   }
 
   // Return the course
-  xastir_snprintf(course_deg,
+  astir_snprintf(course_deg,
                   course_deg_length,
                   "%.1f",
                   (180.0/M_PI)*r_c);
@@ -3251,7 +3251,7 @@ int valid_path(char *path)
 
     //fprintf(stderr,"Orig. Path:%s\n",path);
     // Save the destination
-    xastir_snprintf(dest,sizeof(dest),"%s",&path[delimiters[--k]+1]);
+    astir_snprintf(dest,sizeof(dest),"%s",&path[delimiters[--k]+1]);
     dest[strlen(path) - delimiters[k] - 1] = '\0'; // Terminate it
     dest[14] = '\0';    // Just to make sure
     path[delimiters[k]] = '\0'; // Delete it from the original path
@@ -3266,12 +3266,12 @@ int valid_path(char *path)
 
     // We now need to insert the destination into the middle of
     // the string.  Save part of it in another variable first.
-    xastir_snprintf(rest,
+    astir_snprintf(rest,
                     sizeof(rest),
                     "%s",
                     path);
     //fprintf(stderr,"Rest:%s\n",rest);
-    xastir_snprintf(path,len+1,"%s,%s",dest,rest);
+    astir_snprintf(path,len+1,"%s,%s",dest,rest);
     //fprintf(stderr,"New Path:%s\n",path);
   }
 
@@ -3399,7 +3399,7 @@ int valid_call(char *call)
     {
       char filtered_data[MAX_LINE_SIZE+1];
 
-      xastir_snprintf(filtered_data,
+      astir_snprintf(filtered_data,
                       sizeof(filtered_data),
                       "%s",
                       call);
@@ -3423,7 +3423,7 @@ int valid_call(char *call)
     {
       char filtered_data[MAX_LINE_SIZE+1];
 
-      xastir_snprintf(filtered_data,
+      astir_snprintf(filtered_data,
                       sizeof(filtered_data),
                       "%s",
                       call);
@@ -3532,7 +3532,7 @@ int valid_inet_name(char *name, char *info, char *origin, int origin_size)
   //
   if (len >= 5 && strncmp(name,"aprsd",5) == 0)
   {
-    xastir_snprintf(origin, origin_size, "INET");
+    astir_snprintf(origin, origin_size, "INET");
     origin[4] = '\0';   // Terminate it
     return(1);                      // aprsdXXXX is ok
   }
@@ -3577,13 +3577,13 @@ int valid_inet_name(char *name, char *info, char *origin, int origin_size)
     // Depending on whether we had an NWS or BOM message, se the origin appropriately
     if (oknws)
     {
-      xastir_snprintf(origin, origin_size, "INET-NWS");
+      astir_snprintf(origin, origin_size, "INET-NWS");
       origin[8] = '\0';
       return(1);                      // weather alerts
     }
     if (okbom)
     {
-      xastir_snprintf(origin, origin_size, "INET-BOM");
+      astir_snprintf(origin, origin_size, "INET-BOM");
       origin[8] = '\0';
       return(1);                      // weather alerts
     }
@@ -3599,7 +3599,7 @@ int valid_inet_name(char *name, char *info, char *origin, int origin_size)
 
 
 // dl9sau:
-// I liked to have xastir to compute the locator along with the normal coordinates.
+// I liked to have astir to compute the locator along with the normal coordinates.
 // The algorithm derives from dk5sg's util/qth.c (wampes)
 //
 // This computes Maidenhead grid coordinates and is used for both
@@ -3611,8 +3611,8 @@ char *sec_to_loc(long longitude, long latitude)
   static char buf[7];
   char *loc = buf;
 
-  // database.h:    long coord_lon;                     // Xastir coordinates 1/100 sec, 0 = 180°W
-  // database.h:    long coord_lat;                     // Xastir coordinates 1/100 sec, 0 =  90°N
+  // database.h:    long coord_lon;                     // Astir coordinates 1/100 sec, 0 = 180°W
+  // database.h:    long coord_lat;                     // Astir coordinates 1/100 sec, 0 =  90°N
 
   longitude /= 100L;
   latitude  =  2L * 90L * 3600L - 1L - (latitude / 100L);
@@ -3885,7 +3885,7 @@ void spell_it_out(char *text, int max_length)
   // Only use the new string if it kind'a looks like a callsign
   if (number_found_before_dash)
   {
-    xastir_snprintf(text, max_length, "%s", buffer);
+    astir_snprintf(text, max_length, "%s", buffer);
   }
 }
 
@@ -4437,7 +4437,7 @@ int check_unproto_path ( char *data )
 // Set string printed out by segfault handler
 void set_dangerous( char *ptr )
 {
-  xastir_snprintf(dangerous_operation,
+  astir_snprintf(dangerous_operation,
                   sizeof(dangerous_operation),
                   "%s",
                   ptr);
@@ -4458,19 +4458,19 @@ void clear_dangerous(void)
 
 
 // Write out a WKT file
-void xastirWriteWKT(char *filename)
+void astirWriteWKT(char *filename)
 {
-  // This "WKT" string describes the coordinate system we use in Xastir.
+  // This "WKT" string describes the coordinate system we use in Astir.
   // We'll use this string to write out ".prj" files to associate with
   // shapefiles we create from GPS or APRS tracks.
-  char Xastir_WKT[] = "GEOGCS[\"GCS_WGS_1984\",DATUM[\"D_WGS_1984\",SPHEROID[\"WGS_84\",6378137,298.257223563]],PRIMEM[\"Greenwich\",0],UNIT[\"Degree\",0.017453292519943295]]";
+  char Astir_WKT[] = "GEOGCS[\"GCS_WGS_1984\",DATUM[\"D_WGS_1984\",SPHEROID[\"WGS_84\",6378137,298.257223563]],PRIMEM[\"Greenwich\",0],UNIT[\"Degree\",0.017453292519943295]]";
 
   FILE *f;
 
   f=fopen(filename,"w"); // open for write
   if (f != NULL)
   {
-    fprintf(f,"%s\n",Xastir_WKT);
+    fprintf(f,"%s\n",Astir_WKT);
     fclose(f);
   }
   else
@@ -4677,14 +4677,14 @@ void short_filename_for_status(char *filename, char *short_filename,
     int avail = 41 - 11;
     int new_len = strlen(filename) - avail;
 
-    xastir_snprintf(short_filename,
+    astir_snprintf(short_filename,
                     short_filename_size,
                     "..%s",
                     &filename[new_len]);
   }
   else
   {
-    xastir_snprintf(short_filename,
+    astir_snprintf(short_filename,
                     short_filename_size,
                     "%s",
                     filename);

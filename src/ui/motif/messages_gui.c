@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -33,8 +33,8 @@
 
 #include <Xm/XmAll.h>
 
-#include "core/xastir.h"
-#include "ui/motif/xastir_gui.h"
+#include "core/astir.h"
+#include "ui/motif/astir_gui.h"
 #include "ui/motif/wx_gui.h"
 #include "ui/motif/main_gui.h"
 #include "ui/motif/draw_symbols_gui.h"
@@ -69,7 +69,7 @@ Widget auto_msg_on, auto_msg_off;
 Widget auto_msg_dialog = (Widget)NULL;
 Widget auto_msg_set_data = (Widget)NULL;
 
-static xastir_mutex auto_msg_dialog_lock;
+static astir_mutex auto_msg_dialog_lock;
 // send_message_dialog_lock now lives in messages.c: db.c and messages.c take it
 // too, so it is not this dialog's private lock despite the name.
 
@@ -200,7 +200,7 @@ void reverse_path(char *input_string)
     {
 
       // Snag each callsign into temp:
-      xastir_snprintf(temp,
+      astir_snprintf(temp,
                       sizeof(temp),
                       "%s",
                       &input_string[indexes[i]+1]);
@@ -215,7 +215,7 @@ void reverse_path(char *input_string)
         if ( (temp[4] != ',') && is_num_chr(temp[4]) )
         {
 //fprintf(stderr,"Found a WIDEn-N\n");
-          xastir_snprintf(temp,
+          astir_snprintf(temp,
                           sizeof(temp),
                           "WIDE%c-%c",
                           temp[4],
@@ -232,7 +232,7 @@ void reverse_path(char *input_string)
         if ( (temp[5] != ',') && is_num_chr(temp[5]) )
         {
 //fprintf(stderr,"Found a TRACEn-N\n");
-          xastir_snprintf(temp,
+          astir_snprintf(temp,
                           sizeof(temp),
                           "WIDE%c-%c",
                           temp[5],
@@ -242,7 +242,7 @@ void reverse_path(char *input_string)
         {
 //fprintf(stderr,"Found a TRACE\n");
           // Convert it from TRACE to WIDE
-          xastir_snprintf(temp,
+          astir_snprintf(temp,
                           sizeof(temp),
                           "WIDE");
         }
@@ -277,7 +277,7 @@ void get_path_data(char *callsign, char *path, int max_length)
 
     if (p_station->node_path_ptr)
     {
-      xastir_snprintf(new_path,sizeof(new_path), "%s", p_station->node_path_ptr);
+      astir_snprintf(new_path,sizeof(new_path), "%s", p_station->node_path_ptr);
 
       if(debug_level & 2)
         fprintf(stderr,"\nPath from %s: %s\n",
@@ -301,7 +301,7 @@ void get_path_data(char *callsign, char *path, int max_length)
                 callsign,
                 new_path);
 
-      xastir_snprintf(path,
+      astir_snprintf(path,
                       max_length,
                       "%s",
                       new_path);
@@ -369,7 +369,7 @@ void Send_message_change_path_apply(Widget UNUSED(widget), XtPointer clientData,
   {
 
     temp_ptr = XmTextFieldGetString(current_path);
-    xastir_snprintf(path,
+    astir_snprintf(path,
                     sizeof(path),
                     "%s",
                     temp_ptr);
@@ -769,7 +769,7 @@ void Send_message_change_path( Widget UNUSED(widget), XtPointer clientData, XtPo
     char call_sign[MAX_CALLSIGN+1];
 
     temp_ptr = XmTextFieldGetString(mw[ii].send_message_path);
-    xastir_snprintf(temp1,
+    astir_snprintf(temp1,
                     sizeof(temp1),
                     "%s",
                     temp_ptr);
@@ -779,7 +779,7 @@ void Send_message_change_path( Widget UNUSED(widget), XtPointer clientData, XtPo
 
     // Go get the reverse path.  Start with the callsign.
     temp_ptr = XmTextFieldGetString(mw[ii].send_message_call_data);
-    xastir_snprintf(call_sign,
+    astir_snprintf(call_sign,
                     sizeof(call_sign),
                     "%s",
                     temp_ptr);
@@ -836,7 +836,7 @@ void get_send_message_path(char *callsign, char *path, int path_size)
   char my_callsign[20];
 
 
-  xastir_snprintf(my_callsign,sizeof(my_callsign),"%s",callsign);
+  astir_snprintf(my_callsign,sizeof(my_callsign),"%s",callsign);
   remove_trailing_spaces(my_callsign);
 
 //fprintf(stderr,"Looking for %s\n", my_callsign);
@@ -848,7 +848,7 @@ void get_send_message_path(char *callsign, char *path, int path_size)
     {
 
       temp_ptr = XmTextFieldGetString(mw[ii].send_message_call_data);
-      xastir_snprintf(temp1,
+      astir_snprintf(temp1,
                       sizeof(temp1),
                       "%s",
                       temp_ptr);
@@ -875,7 +875,7 @@ void get_send_message_path(char *callsign, char *path, int path_size)
   // We have the correct Send Message dialog.  Snag the path.
   //
   temp_ptr = XmTextFieldGetString(mw[ii].send_message_path);
-  xastir_snprintf(temp1,
+  astir_snprintf(temp1,
                   sizeof(temp1),
                   "%s",
                   temp_ptr);
@@ -894,7 +894,7 @@ void get_send_message_path(char *callsign, char *path, int path_size)
   }
 
   // We have a real path!  Stuff it into the path variable.
-  xastir_snprintf(path,
+  astir_snprintf(path,
                   path_size,
                   "%s",
                   temp1);
@@ -924,7 +924,7 @@ void Send_message_destroy_shell( Widget UNUSED(widget), XtPointer clientData, Xt
             // Check whether the send_message_call_data field has a
             // custom path entered.
             temp_ptr = XmTextFieldGetString(mw[ii].send_message_call_data);
-            xastir_snprintf(temp1,
+            astir_snprintf(temp1,
                     sizeof(temp1),
                     "%s",
                     temp_ptr);
@@ -1056,7 +1056,7 @@ void Send_message_now( Widget UNUSED(w), XtPointer clientData, XtPointer UNUSED(
     hamhud = XmToggleButtonGetState(mw[ii].HamHUD_mode);
 
     temp_ptr = XmTextFieldGetString(mw[ii].send_message_call_data);
-    xastir_snprintf(temp1,
+    astir_snprintf(temp1,
                     sizeof(temp1),
                     "%s",
                     temp_ptr);
@@ -1068,7 +1068,7 @@ void Send_message_now( Widget UNUSED(w), XtPointer clientData, XtPointer UNUSED(
 
     // Fetch message_data_line1 in all cases
     temp_ptr = XmTextFieldGetString(mw[ii].message_data_line1);
-    xastir_snprintf(temp_line1,
+    astir_snprintf(temp_line1,
                     sizeof(temp_line1),
                     "%s",
                     temp_ptr);
@@ -1080,7 +1080,7 @@ void Send_message_now( Widget UNUSED(w), XtPointer clientData, XtPointer UNUSED(
     if (d700 || d7)
     {
       temp_ptr = XmTextFieldGetString(mw[ii].message_data_line2);
-      xastir_snprintf(temp_line2,
+      astir_snprintf(temp_line2,
                       sizeof(temp_line2),
                       "%s",
                       temp_ptr);
@@ -1091,7 +1091,7 @@ void Send_message_now( Widget UNUSED(w), XtPointer clientData, XtPointer UNUSED(
     if (d700 || d7)
     {
       temp_ptr = XmTextFieldGetString(mw[ii].message_data_line3);
-      xastir_snprintf(temp_line3,
+      astir_snprintf(temp_line3,
                       sizeof(temp_line3),
                       "%s",
                       temp_ptr);
@@ -1102,7 +1102,7 @@ void Send_message_now( Widget UNUSED(w), XtPointer clientData, XtPointer UNUSED(
     if (d7)
     {
       temp_ptr = XmTextFieldGetString(mw[ii].message_data_line4);
-      xastir_snprintf(temp_line4,
+      astir_snprintf(temp_line4,
                       sizeof(temp_line4),
                       "%s",
                       temp_ptr);
@@ -1112,7 +1112,7 @@ void Send_message_now( Widget UNUSED(w), XtPointer clientData, XtPointer UNUSED(
     // Construct the entire message now
     if (hamhud)   // Combine two lines together
     {
-      xastir_snprintf(temp2,
+      astir_snprintf(temp2,
                       sizeof(temp2),
                       "%-20s%-47s",
                       temp_line1,
@@ -1120,7 +1120,7 @@ void Send_message_now( Widget UNUSED(w), XtPointer clientData, XtPointer UNUSED(
     }
     else if (d700)   // Combine three lines together
     {
-      xastir_snprintf(temp2,
+      astir_snprintf(temp2,
                       sizeof(temp2),
                       "%-22s%-22s%-20s",
                       temp_line1,
@@ -1129,7 +1129,7 @@ void Send_message_now( Widget UNUSED(w), XtPointer clientData, XtPointer UNUSED(
     }
     else if (d7)    // Combine four lines together
     {
-      xastir_snprintf(temp2,
+      astir_snprintf(temp2,
                       sizeof(temp2),
                       "%-12s%-12s%-12s%-9s",
                       temp_line1,
@@ -1143,7 +1143,7 @@ void Send_message_now( Widget UNUSED(w), XtPointer clientData, XtPointer UNUSED(
 
     {
       // Use line1 only
-      xastir_snprintf(temp2,
+      astir_snprintf(temp2,
                       sizeof(temp2),
                       "%s",
                       temp_line1);
@@ -1171,7 +1171,7 @@ void Send_message_now( Widget UNUSED(w), XtPointer clientData, XtPointer UNUSED(
     (void)remove_trailing_spaces(temp2);
 
     temp_ptr = XmTextFieldGetString(mw[ii].send_message_path);
-    xastir_snprintf(path,
+    astir_snprintf(path,
                     sizeof(path),
                     "%s",
                     temp_ptr);
@@ -1294,7 +1294,7 @@ void Clear_message_from( Widget UNUSED(w), XtPointer clientData, XtPointer UNUSE
   {
 
     temp_ptr = XmTextFieldGetString(mw[i].send_message_call_data);
-    xastir_snprintf(temp1,
+    astir_snprintf(temp1,
                     sizeof(temp1),
                     "%s",
                     temp_ptr);
@@ -1332,7 +1332,7 @@ void Clear_message_to( Widget UNUSED(w), XtPointer clientData, XtPointer UNUSED(
   {
 
     temp_ptr = XmTextFieldGetString(mw[i].send_message_call_data);
-    xastir_snprintf(temp1,
+    astir_snprintf(temp1,
                     sizeof(temp1),
                     "%s",
                     temp_ptr);
@@ -1404,7 +1404,7 @@ void Kick_timer( Widget UNUSED(w), XtPointer clientData, XtPointer UNUSED(callDa
 
 
   temp_ptr = XmTextFieldGetString(mw[atoi(clientData)].send_message_call_data);
-  xastir_snprintf(temp1,
+  astir_snprintf(temp1,
                   sizeof(temp1),
                   "%s",
                   temp_ptr);
@@ -1428,7 +1428,7 @@ void Clear_messages_to( Widget UNUSED(w), XtPointer clientData, XtPointer UNUSED
 
 
   temp_ptr = XmTextFieldGetString(mw[atoi(clientData)].send_message_call_data);
-  xastir_snprintf(temp1,
+  astir_snprintf(temp1,
                   sizeof(temp1),
                   "%s",
                   temp_ptr);
@@ -1452,7 +1452,7 @@ void Send_message_call( Widget UNUSED(w), XtPointer clientData, XtPointer UNUSED
 
   if(clientData != NULL)
   {
-    xastir_snprintf(call,
+    astir_snprintf(call,
                     sizeof(call),
                     "%s",
                     (char *)clientData);
@@ -1822,7 +1822,7 @@ void rebuild_send_message_input_boxes(int ii, int hamhud, int d700, int d7)
 
 // Lesstif appears to have a problem with removing/adding widgets to
 // a dialog that's already been created and will segfault in this
-// case.  In order to make LSB-Xastir more reliable we disable the
+// case.  In order to make LSB-Astir more reliable we disable the
 // dynamically-created widget code here and stick with the default
 // setup (one long TextField widget for input).
 //
@@ -1950,7 +1950,7 @@ void select_station_type(int ii)
   }
 
   temp_ptr = XmTextFieldGetString(mw[ii].send_message_call_data);
-  xastir_snprintf(call_sign,
+  astir_snprintf(call_sign,
                   sizeof(call_sign),
                   "%s",
                   temp_ptr);
@@ -2132,7 +2132,7 @@ void Send_message( Widget UNUSED(w), XtPointer clientData, XtPointer UNUSED(call
       substr(group,(char *)clientData, MAX_CALLSIGN);
       if (group[0] == '*')
       {
-        xastir_snprintf(mw[i].to_call_sign,
+        astir_snprintf(mw[i].to_call_sign,
                         sizeof(mw[i].to_call_sign),
                         "***");
         mw[i].to_call_sign[3] = '\0';   // Terminate it
@@ -2142,7 +2142,7 @@ void Send_message( Widget UNUSED(w), XtPointer clientData, XtPointer UNUSED(call
       }
       else
       {
-        xastir_snprintf(mw[i].to_call_sign,
+        astir_snprintf(mw[i].to_call_sign,
                         sizeof(mw[i].to_call_sign),
                         "%s",
                         my_callsign);
@@ -2151,14 +2151,14 @@ void Send_message( Widget UNUSED(w), XtPointer clientData, XtPointer UNUSED(call
     }
     else
     {
-      xastir_snprintf(mw[i].to_call_sign,
+      astir_snprintf(mw[i].to_call_sign,
                       sizeof(mw[i].to_call_sign),
                       "%s",
                       my_callsign);
       mw[i].to_call_sign[MAX_CALLSIGN] = '\0';    // Terminate it
     }
 
-    xastir_snprintf(temp, sizeof(temp), langcode(groupon==0 ? "WPUPMSB001": "WPUPMSB002"),
+    astir_snprintf(temp, sizeof(temp), langcode(groupon==0 ? "WPUPMSB001": "WPUPMSB002"),
                     (i+1));
 
     mw[i].message_group = groupon;
@@ -2431,7 +2431,7 @@ void Send_message( Widget UNUSED(w), XtPointer clientData, XtPointer UNUSED(call
                                    XmNfontList, fontlist1,
                                    NULL);
 
-    xastir_snprintf(temp, sizeof(temp), "%s", langcode(groupon == 0 ? "WPUPMSB005": "WPUPMSB006"));
+    astir_snprintf(temp, sizeof(temp), "%s", langcode(groupon == 0 ? "WPUPMSB005": "WPUPMSB006"));
 
     mw[i].button_submit_call = XtVaCreateManagedWidget(temp,
                                xmPushButtonGadgetClass,
@@ -2567,7 +2567,7 @@ void Send_message( Widget UNUSED(w), XtPointer clientData, XtPointer UNUSED(call
                               args,
                               n);
 
-    xastir_snprintf(mw[i].win, sizeof(mw[i].win), "%ld", i);
+    astir_snprintf(mw[i].win, sizeof(mw[i].win), "%ld", i);
 
     XtAddCallback(mw[i].send_message_change_path, XmNactivateCallback, Send_message_change_path, (XtPointer)mw[i].win);
 
@@ -2933,7 +2933,7 @@ static int motif_msg_window_callsign(int i, char *out, int n)
   }
 
   temp_ptr = XmTextFieldGetString(mw[i].send_message_call_data);
-  xastir_snprintf(out, n, "%s", temp_ptr);
+  astir_snprintf(out, n, "%s", temp_ptr);
   XtFree(temp_ptr);
   return 1;
 }

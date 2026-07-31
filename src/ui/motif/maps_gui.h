@@ -4,8 +4,8 @@
  * Moved out of maps.h, which every map driver includes.
  */
 
-#ifndef XASTIR_MAPS_GUI_H
-#define XASTIR_MAPS_GUI_H
+#ifndef ASTIR_MAPS_GUI_H
+#define ASTIR_MAPS_GUI_H
 
 #include <X11/Intrinsic.h>
 #include "core/map/maps.h"
@@ -24,4 +24,4 @@ extern int  pop_locate_place(Widget w, char *name, char *state,
 
 extern void Print_Postscript(Widget widget, XtPointer clientData, XtPointer callData);
 
-#endif  /* XASTIR_MAPS_GUI_H */
+#endif  /* ASTIR_MAPS_GUI_H */

@@ -23,7 +23,7 @@ GUI_OBJS = {
 }
 
 # Not part of the program: standalone utilities with their own main().
-STANDALONE = {"xastir_udp_client.o", "testdbfawk.o", "callpass.o"}
+STANDALONE = {"astir_udp_client.o", "testdbfawk.o", "callpass.o"}
 
 def syms(obj, mode):
     try:

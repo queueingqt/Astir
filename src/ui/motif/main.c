@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -23,11 +23,11 @@
 
 
 
-// This is for debug.  If defined to 1, Xastir will display
-// coordinates in the Xastir coordinate system inside the text2
+// This is for debug.  If defined to 1, Astir will display
+// coordinates in the Astir coordinate system inside the text2
 // widget.
 //
-static int DISPLAY_XASTIR_COORDINATES = 0;
+static int DISPLAY_ASTIR_COORDINATES = 0;
 
 
 
@@ -60,23 +60,23 @@ static int DISPLAY_XASTIR_COORDINATES = 0;
 #include <time.h>
 
 // TVR -- stupid, stupid ImageMagick
-char *xastir_package=PACKAGE;
-char *xastir_version=VERSION;
+char *astir_package=PACKAGE;
+char *astir_version=VERSION;
 #undef PACKAGE
 #undef VERSION
 
 #ifdef HAVE_MAGICK
   #include <sys/types.h>
   /* JMT - stupid ImageMagick */
-  #define XASTIR_PACKAGE_BUGREPORT PACKAGE_BUGREPORT
+  #define ASTIR_PACKAGE_BUGREPORT PACKAGE_BUGREPORT
   #undef PACKAGE_BUGREPORT
-  #define XASTIR_PACKAGE_NAME PACKAGE_NAME
+  #define ASTIR_PACKAGE_NAME PACKAGE_NAME
   #undef PACKAGE_NAME
-  #define XASTIR_PACKAGE_STRING PACKAGE_STRING
+  #define ASTIR_PACKAGE_STRING PACKAGE_STRING
   #undef PACKAGE_STRING
-  #define XASTIR_PACKAGE_TARNAME PACKAGE_TARNAME
+  #define ASTIR_PACKAGE_TARNAME PACKAGE_TARNAME
   #undef PACKAGE_TARNAME
-  #define XASTIR_PACKAGE_VERSION PACKAGE_VERSION
+  #define ASTIR_PACKAGE_VERSION PACKAGE_VERSION
   #undef PACKAGE_VERSION
   #ifdef HAVE_MAGICK
     #ifdef HAVE_MAGICKCORE_MAGICKCORE_H
@@ -88,20 +88,20 @@ char *xastir_version=VERSION;
     #endif //HAVE_MAGICKCORE_MAGICKCORE_H
   #endif //HAVE_MAGICK
   #undef PACKAGE_BUGREPORT
-  #define PACKAGE_BUGREPORT XASTIR_PACKAGE_BUGREPORT
-  #undef XASTIR_PACKAGE_BUGREPORT
+  #define PACKAGE_BUGREPORT ASTIR_PACKAGE_BUGREPORT
+  #undef ASTIR_PACKAGE_BUGREPORT
   #undef PACKAGE_NAME
-  #define PACKAGE_NAME XASTIR_PACKAGE_NAME
-  #undef XASTIR_PACKAGE_NAME
+  #define PACKAGE_NAME ASTIR_PACKAGE_NAME
+  #undef ASTIR_PACKAGE_NAME
   #undef PACKAGE_STRING
-  #define PACKAGE_STRING XASTIR_PACKAGE_STRING
-  #undef XASTIR_PACKAGE_STRING
+  #define PACKAGE_STRING ASTIR_PACKAGE_STRING
+  #undef ASTIR_PACKAGE_STRING
   #undef PACKAGE_TARNAME
-  #define PACKAGE_TARNAME XASTIR_PACKAGE_TARNAME
-  #undef XASTIR_PACKAGE_TARNAME
+  #define PACKAGE_TARNAME ASTIR_PACKAGE_TARNAME
+  #undef ASTIR_PACKAGE_TARNAME
   #undef PACKAGE_VERSION
-  #define PACKAGE_VERSION XASTIR_PACKAGE_VERSION
-  #undef XASTIR_PACKAGE_VERSION
+  #define PACKAGE_VERSION ASTIR_PACKAGE_VERSION
+  #undef ASTIR_PACKAGE_VERSION
 #endif // HAVE_MAGICK
 
 //#ifdef HAVE_NETAX25_AXLIB_H
@@ -112,8 +112,8 @@ char *xastir_version=VERSION;
   #include <curl/curl.h>
 #endif
 
-#include "core/xastir.h"
-#include "ui/motif/xastir_gui.h"
+#include "core/astir.h"
+#include "ui/motif/astir_gui.h"
 #include "ui/motif/wx_gui.h"
 #include "ui/motif/maps_gui.h"
 #include "ui/motif/main_gui.h"
@@ -193,10 +193,10 @@ char *xastir_version=VERSION;
 #define ABOUT_OSM "Maps, tiles, and data from the OpenStreetMap project are\nCopyright OpenStreetMap and contributors, CC-BY-SA.\nhttp://www.openstreetmap.org/\n  http://creativecommons.org/licenses/by-sa/2.0/\n"
 
 
-// Define this if you want an xastir.pid file created in the
-// ~/.xastir directory and want to check that there's not another
-// copy of Xastir running before a new one starts up.  You can also
-// use this to send SIGHUP or SIGUSR1 signals to a running Xastir
+// Define this if you want an astir.pid file created in the
+// ~/.astir directory and want to check that there's not another
+// copy of Astir running before a new one starts up.  You can also
+// use this to send SIGHUP or SIGUSR1 signals to a running Astir
 // from scripts.
 #define USE_PID_FILE_CHECK 1
 
@@ -231,7 +231,7 @@ char *xastir_version=VERSION;
 //
 //#define SWAP_MOUSE_BUTTONS
 
-// If next line uncommented, Xastir will display the status line
+// If next line uncommented, Astir will display the status line
 // in 2 rows instead of the normal single row.  Formatted especially
 // for 640 pixel wide screens.  It also gives a little extra room for
 // the number of stations and the Zoom factor.
@@ -240,7 +240,7 @@ char *xastir_version=VERSION;
 // Enable this next line to set all flags properly for a 640x480
 // touch-screen:  Makes the main window smaller due to the reduced
 // font sizes, makes all dialogs come up at the upper-left of the
-// main Xastir screen, reverses buttons 1 and 3 so that the more
+// main Astir screen, reverses buttons 1 and 3 so that the more
 // important mouse menus are accessible via the touch-screen, and
 // sets it for 2 status lines.  Make sure to change the system font
 // size smaller than the default.
@@ -291,7 +291,7 @@ int first_time_run = 0;
 /* JMT - works under FreeBSD */
 
 
-int  restart_xastir_now = 0;
+int  restart_astir_now = 0;
 
 
 // A count of the stations currently on the screen.  Counted by
@@ -838,11 +838,11 @@ int request_resize = 0;         // Flag used to request a resize operation
 void new_image(Widget da);
 
 
-typedef struct XastirGlobal
+typedef struct AstirGlobal
 {
   Widget  top;    // top level shell
-} XastirGlobal;
-XastirGlobal Global;
+} AstirGlobal;
+AstirGlobal Global;
 
 
 char *database_ptr;             /* database pointers */
@@ -1241,7 +1241,7 @@ void Smart_Beacon(Widget w, XtPointer UNUSED(clientData), XtPointer callData)
     switch (english_units)
     {
       case 0: // Metric
-        xastir_snprintf(temp_label_string,
+        astir_snprintf(temp_label_string,
                         sizeof(temp_label_string),
                         "%s",
                         langcode("SMARTB004") );
@@ -1249,7 +1249,7 @@ void Smart_Beacon(Widget w, XtPointer UNUSED(clientData), XtPointer callData)
       case 1: // English
       case 2: // Nautical
       default:
-        xastir_snprintf(temp_label_string,
+        astir_snprintf(temp_label_string,
                         sizeof(temp_label_string),
                         "%s",
                         langcode("SMARTB003") );
@@ -1338,7 +1338,7 @@ void Smart_Beacon(Widget w, XtPointer UNUSED(clientData), XtPointer callData)
     switch (english_units)
     {
       case 0: // Metric
-        xastir_snprintf(temp_label_string,
+        astir_snprintf(temp_label_string,
                         sizeof(temp_label_string),
                         "%s",
                         langcode("SMARTB007") );
@@ -1346,7 +1346,7 @@ void Smart_Beacon(Widget w, XtPointer UNUSED(clientData), XtPointer callData)
       case 1: // English
       case 2: // Nautical
       default:
-        xastir_snprintf(temp_label_string,
+        astir_snprintf(temp_label_string,
                         sizeof(temp_label_string),
                         "%s",
                         langcode("SMARTB006") );
@@ -1587,13 +1587,13 @@ void Smart_Beacon(Widget w, XtPointer UNUSED(clientData), XtPointer callData)
       XmToggleButtonSetState(smart_beacon_enable,FALSE,FALSE);
     }
 
-    xastir_snprintf(temp_string, sizeof(temp_string), "%d", xa_sb.posit_fast);
+    astir_snprintf(temp_string, sizeof(temp_string), "%d", xa_sb.posit_fast);
     XmTextSetString(sb_hi_rate_data, temp_string);
 
     switch (english_units)
     {
       case 0: // Metric:  Convert from MPH to KPH for display
-        xastir_snprintf(temp_string,
+        astir_snprintf(temp_string,
                         sizeof(temp_string),
                         "%d",
                         (int)((xa_sb.high_speed_limit * 1.6094) + 0.5) );
@@ -1601,7 +1601,7 @@ void Smart_Beacon(Widget w, XtPointer UNUSED(clientData), XtPointer callData)
       case 1: // English
       case 2: // Nautical
       default:    // No conversion necessary
-        xastir_snprintf(temp_string,
+        astir_snprintf(temp_string,
                         sizeof(temp_string),
                         "%d",
                         xa_sb.high_speed_limit);
@@ -1609,13 +1609,13 @@ void Smart_Beacon(Widget w, XtPointer UNUSED(clientData), XtPointer callData)
     }
     XmTextSetString(sb_hi_mph_data, temp_string);
 
-    xastir_snprintf(temp_string, sizeof(temp_string), "%d", xa_sb.posit_slow);
+    astir_snprintf(temp_string, sizeof(temp_string), "%d", xa_sb.posit_slow);
     XmTextSetString(sb_lo_rate_data, temp_string);
 
     switch (english_units)
     {
       case 0: // Metric:  Convert from MPH to KPH for display
-        xastir_snprintf(temp_string,
+        astir_snprintf(temp_string,
                         sizeof(temp_string),
                         "%d",
                         (int)((xa_sb.low_speed_limit * 1.6094) + 0.5) );
@@ -1623,7 +1623,7 @@ void Smart_Beacon(Widget w, XtPointer UNUSED(clientData), XtPointer callData)
       case 1: // English
       case 2: // Nautical
       default:    // No conversion necessary
-        xastir_snprintf(temp_string,
+        astir_snprintf(temp_string,
                         sizeof(temp_string),
                         "%d",
                         xa_sb.low_speed_limit);
@@ -1631,13 +1631,13 @@ void Smart_Beacon(Widget w, XtPointer UNUSED(clientData), XtPointer callData)
     }
     XmTextSetString(sb_lo_mph_data, temp_string);
 
-    xastir_snprintf(temp_string, sizeof(temp_string), "%d", xa_sb.turn_min);
+    astir_snprintf(temp_string, sizeof(temp_string), "%d", xa_sb.turn_min);
     XmTextSetString(sb_min_turn_data, temp_string);
 
-    xastir_snprintf(temp_string, sizeof(temp_string), "%d", xa_sb.turn_slope);
+    astir_snprintf(temp_string, sizeof(temp_string), "%d", xa_sb.turn_slope);
     XmTextSetString(sb_turn_slope_data, temp_string);
 
-    xastir_snprintf(temp_string, sizeof(temp_string), "%d", xa_sb.turn_time);
+    astir_snprintf(temp_string, sizeof(temp_string), "%d", xa_sb.turn_time);
     XmTextSetString(sb_wait_time_data, temp_string);
   }
 }
@@ -1683,7 +1683,7 @@ void Re_Download_Maps_Now(Widget UNUSED(w), XtPointer UNUSED(clientData), XtPoin
 
 
 
-// Removes all files in the ~/.xastir/map_cache directory.  Does not
+// Removes all files in the ~/.astir/map_cache directory.  Does not
 // recurse down into subdirectories, but it shouldn't have to.
 //
 void Flush_Entire_Map_Queue(Widget UNUSED(w), XtPointer UNUSED(clientData), XtPointer UNUSED(callData) )
@@ -1848,7 +1848,7 @@ void Coordinate_calc_clear_data(Widget UNUSED(widget), XtPointer UNUSED(clientDa
 // the "result" textField.  Also fills in the global variables for
 // possible later use when passing results back to the calling
 // dialog.  We can't use the util.c:*_l2s routines for the
-// conversions here because the util.c routines use Xastir
+// conversions here because the util.c routines use Astir
 // coordinate system as inputs instead of normal lat/lon.  Had to
 // home-grow our solution here.
 //
@@ -1870,8 +1870,8 @@ void Coordinate_calc_output(char *full_zone, long northing,
   int lon_deg_int,lon_min_int;
   char maidenhead_grid[50];
   long temp;
-  long xastir_lat;
-  long xastir_lon;
+  long astir_lat;
+  long astir_lon;
   char MGRS_str[50];
   double double_easting, double_northing;
 
@@ -1880,7 +1880,7 @@ void Coordinate_calc_output(char *full_zone, long northing,
   // floating-point rounding errors.
   // We _do_ need to round it first though so that we don't lose
   // accuracy.
-  xastir_snprintf(temp_string,sizeof(temp_string),"%8.0f",latitude * 100000.0);
+  astir_snprintf(temp_string,sizeof(temp_string),"%8.0f",latitude * 100000.0);
   temp = atol(temp_string);
   if (temp < 0)
   {
@@ -1901,7 +1901,7 @@ void Coordinate_calc_output(char *full_zone, long northing,
   // floating-point rounding errors.
   // We _do_ need to round it first though so that we don't lose
   // accuracy.
-  xastir_snprintf(temp_string,sizeof(temp_string),"%9.0f",longitude * 100000.0);
+  astir_snprintf(temp_string,sizeof(temp_string),"%9.0f",longitude * 100000.0);
   temp = atol(temp_string);
   if (temp < 0)
   {
@@ -1920,41 +1920,41 @@ void Coordinate_calc_output(char *full_zone, long northing,
 
   double_easting = (double)easting;
   double_northing = (double)northing;
-  convert_UTM_to_xastir(double_easting,
+  convert_UTM_to_astir(double_easting,
                         double_northing,
                         full_zone,
-                        &xastir_lon,
-                        &xastir_lat);
+                        &astir_lon,
+                        &astir_lat);
 
 //fprintf(stderr,"%s  %f  %f\t\t%lu %lu\n",
 //full_zone,
 //double_easting,
 //double_northing,
-//xastir_lat,
-//xastir_lon);
+//astir_lat,
+//astir_lon);
 
 
   // Compute MGRS coordinates.
-  convert_xastir_to_MGRS_str(MGRS_str,
+  convert_astir_to_MGRS_str(MGRS_str,
                              sizeof(MGRS_str),
-                             xastir_lon,
-                             xastir_lat,
+                             astir_lon,
+                             astir_lat,
                              1); // Format with leading spaces plus spaces between
   // easting and northing, so that it lines up with UTM
   // strings.
 
 
   // Compute Maidenhead Grid Locator.  Note that the sec_to_loc()
-  // function expects lat/lon in Xastir coordinate system.
-  xastir_snprintf(maidenhead_grid,
+  // function expects lat/lon in Astir coordinate system.
+  astir_snprintf(maidenhead_grid,
                   sizeof(maidenhead_grid),
                   "%s",
-                  sec_to_loc( xastir_lon, xastir_lat ) );
+                  sec_to_loc( astir_lon, astir_lat ) );
 
 
   if (strlen(full_zone) == 1)
   {
-    xastir_snprintf(temp_string,
+    astir_snprintf(temp_string,
                     sizeof(temp_string),
                     "  %s",
                     full_zone);
@@ -1963,7 +1963,7 @@ void Coordinate_calc_output(char *full_zone, long northing,
   }
   else if (strlen(full_zone) == 2)
   {
-    xastir_snprintf(temp_string,
+    astir_snprintf(temp_string,
                     sizeof(temp_string),
                     " %s",
                     full_zone);
@@ -1974,7 +1974,7 @@ void Coordinate_calc_output(char *full_zone, long northing,
 
   // Put the four different representations of the coordinate into
   // the "result" textField.
-  xastir_snprintf(temp_string,
+  astir_snprintf(temp_string,
                   sizeof(temp_string),
                   "%s%8.5f%c   %9.5f%c\n%s%02d %06.3f%c  %03d %06.3f%c\n%s%02d %02d %04.1f%c %03d %02d %04.1f%c\n%s%3s  %07lu  %07lu\n%s%s\n%s%s",
                   langcode("COORD011"), // "Decimal Degrees:",
@@ -1998,19 +1998,19 @@ void Coordinate_calc_output(char *full_zone, long northing,
   // the result back to the calling dialog.
 
   // Changing to double to make "%02.0f" formatting work / get rid of compiler warning
-  xastir_snprintf(coordinate_calc_lat_deg, sizeof(coordinate_calc_lat_deg),
+  astir_snprintf(coordinate_calc_lat_deg, sizeof(coordinate_calc_lat_deg),
                   "%02.0f", (double)lat_deg_int);
-  xastir_snprintf(coordinate_calc_lat_min, sizeof(coordinate_calc_lat_min),
+  astir_snprintf(coordinate_calc_lat_min, sizeof(coordinate_calc_lat_min),
                   "%06.3f", lat_min);
-  xastir_snprintf(coordinate_calc_lat_dir, sizeof(coordinate_calc_lat_dir),
+  astir_snprintf(coordinate_calc_lat_dir, sizeof(coordinate_calc_lat_dir),
                   "%c", (south) ? 'S':'N');
 
   // Changing to double to make "%03.0f" formatting work / get rid of compiler warning
-  xastir_snprintf(coordinate_calc_lon_deg, sizeof(coordinate_calc_lon_deg),
+  astir_snprintf(coordinate_calc_lon_deg, sizeof(coordinate_calc_lon_deg),
                   "%03.0f", (double)lon_deg_int);
-  xastir_snprintf(coordinate_calc_lon_min, sizeof(coordinate_calc_lon_min),
+  astir_snprintf(coordinate_calc_lon_min, sizeof(coordinate_calc_lon_min),
                   "%06.3f", lon_min);
-  xastir_snprintf(coordinate_calc_lon_dir, sizeof(coordinate_calc_lon_dir),
+  astir_snprintf(coordinate_calc_lon_dir, sizeof(coordinate_calc_lon_dir),
                   "%c", (west) ? 'W':'E');
 }
 
@@ -2135,14 +2135,14 @@ void Coordinate_calc_compute(Widget UNUSED(widget), XtPointer UNUSED(clientData)
     // Save it away for later use
     if (zone_number == 0)   // We're in a UPS area
     {
-      xastir_snprintf(full_zone,
+      astir_snprintf(full_zone,
                       sizeof(full_zone),
                       "  %c",
                       zone_letter);
     }
     else    // UTM area
     {
-      xastir_snprintf(full_zone,
+      astir_snprintf(full_zone,
                       sizeof(full_zone),
                       "%02d%c",
                       zone_number,
@@ -2213,7 +2213,7 @@ void Coordinate_calc_compute(Widget UNUSED(widget), XtPointer UNUSED(clientData)
     int piece;
 
     // Copy the string so we can change it.
-    xastir_snprintf(temp_string,sizeof(temp_string),"%s",str_ptr);
+    astir_snprintf(temp_string,sizeof(temp_string),"%s",str_ptr);
 
     for (j = 0; j < i; j++)
     {
@@ -2390,7 +2390,7 @@ void Coordinate_calc_compute(Widget UNUSED(widget), XtPointer UNUSED(clientData)
     int piece;
 
     // Copy the string so we can change it.
-    xastir_snprintf(temp_string,sizeof(temp_string),"%s",str_ptr);
+    astir_snprintf(temp_string,sizeof(temp_string),"%s",str_ptr);
 
     for (j = 0; j < i; j++)
     {
@@ -2560,9 +2560,9 @@ void Coordinate_calc_compute(Widget UNUSED(widget), XtPointer UNUSED(clientData)
       fprintf(stderr,"Zone: %s, Easting: %f, Northing: %f\n", full_zone, double_easting, double_northing);
     }
     // Round the UTM values as we convert them to longs
-    xastir_snprintf(temp_string,sizeof(temp_string),"%7.0f",double_northing);
+    astir_snprintf(temp_string,sizeof(temp_string),"%7.0f",double_northing);
     northing = atof(temp_string);
-    xastir_snprintf(temp_string,sizeof(temp_string),"%7.0f",double_easting);
+    astir_snprintf(temp_string,sizeof(temp_string),"%7.0f",double_easting);
     easting  = atof(temp_string);
     Coordinate_calc_output(full_zone,
                            (long)northing,
@@ -2573,7 +2573,7 @@ void Coordinate_calc_compute(Widget UNUSED(widget), XtPointer UNUSED(clientData)
   }
   else    // Dump out some helpful text
   {
-    xastir_snprintf(temp_string,
+    astir_snprintf(temp_string,
                     sizeof(temp_string),
                     "%s\n%s\n%s\n%s",
 //            " **       Sorry, your input was not recognized!        **",
@@ -2695,7 +2695,7 @@ void Coordinate_calc(Widget w, XtPointer clientData, XtPointer callData)
     // We change the title based on who's calling us.
     // clientData supplies the string we use for the label, and
     // is sent to us by the calling dialog.
-    xastir_snprintf( temp_string, sizeof(temp_string), "%s %s", (char *)clientData, langcode("COORD001") );
+    astir_snprintf( temp_string, sizeof(temp_string), "%s %s", (char *)clientData, langcode("COORD001") );
 
     coordinate_calc_dialog = XtVaCreatePopupShell(temp_string,
                              xmDialogShellWidgetClass, appshell,
@@ -2892,7 +2892,7 @@ void Coordinate_calc(Widget w, XtPointer clientData, XtPointer callData)
                                          XmNfontList, fontlist1,
                                          NULL);
 
-//        xastir_snprintf(temp_string, sizeof(temp_string), "%d", temp);
+//        astir_snprintf(temp_string, sizeof(temp_string), "%d", temp);
 //        XmTextSetString(coordinate_calc_text, temp_string);
 
     coordinate_calc_result_text = NULL;
@@ -3037,7 +3037,7 @@ void Coordinate_calc(Widget w, XtPointer clientData, XtPointer callData)
     str_ptr2 = XmTextGetString(coordinate_calc_array.input_lat_min);
     str_ptr3 = XmTextGetString(coordinate_calc_array.input_lat_dir);
 
-    xastir_snprintf(temp_string, sizeof(temp_string), "%s %s%s",
+    astir_snprintf(temp_string, sizeof(temp_string), "%s %s%s",
                     str_ptr1, str_ptr2, str_ptr3);
     XmTextSetString(coordinate_calc_latitude_easting, temp_string);
     //fprintf(stderr,"String: %s\n", temp_string);
@@ -3061,7 +3061,7 @@ void Coordinate_calc(Widget w, XtPointer clientData, XtPointer callData)
     str_ptr2 = XmTextGetString(coordinate_calc_array.input_lon_min);
     str_ptr3 = XmTextGetString(coordinate_calc_array.input_lon_dir);
 
-    xastir_snprintf(temp_string, sizeof(temp_string), "%s %s%s",
+    astir_snprintf(temp_string, sizeof(temp_string), "%s %s%s",
                     str_ptr1, str_ptr2, str_ptr3);
     XmTextSetString(coordinate_calc_longitude_northing, temp_string);
     //fprintf(stderr,"String: %s\n", temp_string);
@@ -3209,13 +3209,13 @@ int create_image(Widget w)
   SE_corner_longitude = center_longitude + (screen_width * scale_x / 2);
   SE_corner_latitude = center_latitude + (screen_height * scale_y / 2);
 
-  // Set up floating point lat/long values to match Xastir
+  // Set up floating point lat/long values to match Astir
   // coordinates.
-  convert_from_xastir_coordinates(&f_NW_corner_longitude,
+  convert_from_astir_coordinates(&f_NW_corner_longitude,
                                   &f_NW_corner_latitude,
                                   NW_corner_longitude,
                                   NW_corner_latitude);
-  convert_from_xastir_coordinates(&f_SE_corner_longitude,
+  convert_from_astir_coordinates(&f_SE_corner_longitude,
                                   &f_SE_corner_latitude,
                                   SE_corner_longitude,
                                   SE_corner_latitude);
@@ -3525,13 +3525,13 @@ void refresh_image(Widget w)
   SE_corner_longitude = center_longitude + (screen_width * scale_x / 2);
   SE_corner_latitude = center_latitude + (screen_height * scale_y / 2);
 
-  // Set up floating point lat/long values to match Xastir
+  // Set up floating point lat/long values to match Astir
   // coordinates.
-  convert_from_xastir_coordinates(&f_NW_corner_longitude,
+  convert_from_astir_coordinates(&f_NW_corner_longitude,
                                   &f_NW_corner_latitude,
                                   NW_corner_longitude,
                                   NW_corner_latitude);
-  convert_from_xastir_coordinates(&f_SE_corner_longitude,
+  convert_from_astir_coordinates(&f_SE_corner_longitude,
                                   &f_SE_corner_latitude,
                                   SE_corner_longitude,
                                   SE_corner_latitude);
@@ -3734,26 +3734,26 @@ static void TrackMouse( Widget UNUSED(w), XtPointer clientData, XEvent *event, B
     return;
   }
 
-  if (DISPLAY_XASTIR_COORDINATES)
+  if (DISPLAY_ASTIR_COORDINATES)
   {
-    xastir_snprintf(my_text, sizeof(my_text), "%ld  %ld", y, x);
+    astir_snprintf(my_text, sizeof(my_text), "%ld  %ld", y, x);
   }
   else if (coordinate_system == USE_UTM
            || coordinate_system == USE_UTM_SPECIAL)
   {
-    // Create a UTM string from coordinate in Xastir coordinate
+    // Create a UTM string from coordinate in Astir coordinate
     // system.
-    convert_xastir_to_UTM_str(my_text, sizeof(my_text), x, y);
+    convert_astir_to_UTM_str(my_text, sizeof(my_text), x, y);
   }
   else if (coordinate_system == USE_MGRS)
   {
-    // Create an MGRS string from coordinate in Xastir
+    // Create an MGRS string from coordinate in Astir
     // coordinate system.
-    convert_xastir_to_MGRS_str(my_text, sizeof(my_text), x, y, 0);
+    convert_astir_to_MGRS_str(my_text, sizeof(my_text), x, y, 0);
   }
   else
   {
-    // Create a lat/lon string from coordinate in Xastir
+    // Create a lat/lon string from coordinate in Astir
     // coordinate system.
     if (coordinate_system == USE_DDDDDD)
     {
@@ -3773,7 +3773,7 @@ static void TrackMouse( Widget UNUSED(w), XtPointer clientData, XEvent *event, B
       convert_lon_l2s(x, str_long, sizeof(str_long), CONVERT_HP_NORMAL_FORMATED);
       //str_lat[2]='\xB0'; str_long[3]='\xB0';
     }
-    xastir_snprintf(my_text, sizeof(my_text), "%s  %s", str_lat, str_long);
+    astir_snprintf(my_text, sizeof(my_text), "%s  %s", str_lat, str_long);
   }
 
   strncat(my_text,
@@ -3801,7 +3801,7 @@ static void TrackMouse( Widget UNUSED(w), XtPointer clientData, XEvent *event, B
     {
       if (value*1.15078 < 0.99)
       {
-        xastir_snprintf(temp_my_distance,
+        astir_snprintf(temp_my_distance,
                         sizeof(temp_my_distance),
                         "%d %s",
                         (int)(value*1.15078*1760),
@@ -3809,7 +3809,7 @@ static void TrackMouse( Widget UNUSED(w), XtPointer clientData, XEvent *event, B
       }
       else
       {
-        xastir_snprintf(temp_my_distance,
+        astir_snprintf(temp_my_distance,
                         sizeof(temp_my_distance),
                         langcode("WPUPSTI020"),     // miles
                         value*1.15078);
@@ -3819,7 +3819,7 @@ static void TrackMouse( Widget UNUSED(w), XtPointer clientData, XEvent *event, B
     {
       if (value*1.852 < 0.99)
       {
-        xastir_snprintf(temp_my_distance,
+        astir_snprintf(temp_my_distance,
                         sizeof(temp_my_distance),
                         "%d %s",
                         (int)(value*1.852*1000),
@@ -3827,7 +3827,7 @@ static void TrackMouse( Widget UNUSED(w), XtPointer clientData, XEvent *event, B
       }
       else
       {
-        xastir_snprintf(temp_my_distance,
+        astir_snprintf(temp_my_distance,
                         sizeof(temp_my_distance),
                         langcode("WPUPSTI021"),     // km
                         value*1.852);
@@ -3866,7 +3866,7 @@ static void TrackMouse( Widget UNUSED(w), XtPointer clientData, XEvent *event, B
 static void ClearTrackMouse( Widget UNUSED(w), XtPointer UNUSED(clientData), XEvent * UNUSED(event), Boolean * UNUSED(flag) )
 {
 // N7TAP: In my opinion, it is handy to have the cursor position still displayed
-//        in the xastir window when I switch to another (like to write it down...)
+//        in the astir window when I switch to another (like to write it down...)
 //    Widget textarea = (Widget) clientData;
 //    XmTextFieldSetString(textarea," ");
 //    XtManageChild(textarea);
@@ -4212,7 +4212,7 @@ void stderr_and_statusline(char *message)
 // Check for statusline timeout and replace statusline text with a
 // station identification message.
 //
-// ID was requested so that Xastir could be used for a live fast-scan
+// ID was requested so that Astir could be used for a live fast-scan
 // TV display over amateur radio without having to identify the
 // station in some other manner.  As long as we guarantee that we'll
 // see this line for a few seconds each 10 minutes (30 minutes for
@@ -4234,7 +4234,7 @@ void check_statusline_timeout(int curr_sec)
     // We save last_id_time and identify for a few seconds if
     // we haven't identified for the last nine minutes or so.
 
-    xastir_snprintf(status_text,
+    astir_snprintf(status_text,
                     sizeof(status_text),
                     langcode ("BBARSTA040"),
                     my_callsign);
@@ -4249,12 +4249,12 @@ void check_statusline_timeout(int curr_sec)
       {
         char my_speech_callsign[100];
 
-        xastir_snprintf(my_speech_callsign,
+        astir_snprintf(my_speech_callsign,
                         sizeof(my_speech_callsign),
                         "%s",
                         my_callsign);
         spell_it_out(my_speech_callsign, 100);
-        xastir_snprintf(status_text,
+        astir_snprintf(status_text,
                         sizeof(status_text),
                         langcode ("BBARSTA040"),
                         my_speech_callsign);
@@ -4298,23 +4298,23 @@ void display_zoom_status(void)
 
   if (scale_y < 9000)
   {
-    xastir_snprintf(siz_str, sizeof(siz_str), "%5.0f", (float)scale_y);
+    astir_snprintf(siz_str, sizeof(siz_str), "%5.0f", (float)scale_y);
   }
   else
   {
     char temp_scale[20];
-    xastir_snprintf(temp_scale, sizeof(temp_scale), "%ldk", scale_y/1024);
+    astir_snprintf(temp_scale, sizeof(temp_scale), "%ldk", scale_y/1024);
     memcpy(siz_str, temp_scale, sizeof(siz_str));
     siz_str[sizeof(siz_str)-1] = '\0';  // Terminate string
   }
 
   if (track_station_on == 1)
   {
-    xastir_snprintf(zoom, sizeof(zoom), langcode("BBARZM0002"), siz_str);
+    astir_snprintf(zoom, sizeof(zoom), langcode("BBARZM0002"), siz_str);
   }
   else
   {
-    xastir_snprintf(zoom, sizeof(zoom), langcode("BBARZM0001"), siz_str);
+    astir_snprintf(zoom, sizeof(zoom), langcode("BBARZM0001"), siz_str);
     \
   }
 
@@ -4364,7 +4364,7 @@ void Change_debug_level_change_data(Widget UNUSED(widget), XtPointer UNUSED(clie
   XtFree(temp);
 
   // Fill in the current value of debug_level
-  xastir_snprintf(temp_string, sizeof(temp_string), "%d", debug_level);
+  astir_snprintf(temp_string, sizeof(temp_string), "%d", debug_level);
   XmTextSetString(debug_level_text, temp_string);
 
 //    Change_debug_level_destroy_shell(widget,clientData,callData);
@@ -4440,7 +4440,7 @@ void Change_Debug_Level(Widget UNUSED(w), XtPointer UNUSED(clientData), XtPointe
                        NULL);
 
     // Fill in the current value of debug_level
-    xastir_snprintf(temp_string, sizeof(temp_string), "%d", debug_level);
+    astir_snprintf(temp_string, sizeof(temp_string), "%d", debug_level);
     XmTextSetString(debug_level_text, temp_string);
 
     button_reset = XtVaCreateManagedWidget(langcode("UNIOP00033"),
@@ -4563,7 +4563,7 @@ void Gamma_adjust_change_data(Widget UNUSED(widget), XtPointer UNUSED(clientData
 
   XtFree(temp);
 
-  xastir_snprintf(temp_string, sizeof(temp_string), "%+.1f", imagemagick_gamma_adjust);
+  astir_snprintf(temp_string, sizeof(temp_string), "%+.1f", imagemagick_gamma_adjust);
   XmTextSetString(gamma_adjust_text, temp_string);
 
   // Set interrupt_drawing_now because conditions have changed
@@ -4634,7 +4634,7 @@ void Gamma_adjust(Widget UNUSED(w), XtPointer UNUSED(clientData), XtPointer UNUS
                         XmNfontList, fontlist1,
                         NULL);
 
-    xastir_snprintf(temp_string, sizeof(temp_string), "%+.1f", imagemagick_gamma_adjust);
+    astir_snprintf(temp_string, sizeof(temp_string), "%+.1f", imagemagick_gamma_adjust);
     XmTextSetString(gamma_adjust_text, temp_string);
 
     button_ok = XtVaCreateManagedWidget(langcode("UNIOP00001"),
@@ -4898,7 +4898,7 @@ void Map_font_change_data(Widget UNUSED(widget), XtPointer clientData, XtPointer
   {
     temp = XmTextGetString(map_font_text[i]);
 
-    xastir_snprintf(rotated_label_fontname[i],
+    astir_snprintf(rotated_label_fontname[i],
                     sizeof(rotated_label_fontname[i]),
                     "%s",
                     temp);
@@ -5212,56 +5212,56 @@ char *report_gps_status(void)
   {
 
     case 8: // Simulation Mode
-      xastir_snprintf(temp2,
+      astir_snprintf(temp2,
                       sizeof(temp2),
                       "%s",
                       langcode("GPSS008") );  // "Simulation"
       break;
 
     case 7: // Manual Input Mode
-      xastir_snprintf(temp2,
+      astir_snprintf(temp2,
                       sizeof(temp2),
                       "%s",
                       langcode("GPSS009") );  // "Manual"
       break;
 
     case 6: // Estimated Fix (dead reckoning)
-      xastir_snprintf(temp2,
+      astir_snprintf(temp2,
                       sizeof(temp2),
                       "%s",
                       langcode("GPSS010") );  // "Estimated"
       break;
 
     case 5: // Float RTK
-      xastir_snprintf(temp2,
+      astir_snprintf(temp2,
                       sizeof(temp2),
                       "%s",
                       langcode("GPSS011") );  // "Float RTK"
       break;
 
     case 4: // RTK
-      xastir_snprintf(temp2,
+      astir_snprintf(temp2,
                       sizeof(temp2),
                       "%s",
                       langcode("GPSS012") );  // "RTK"
       break;
 
     case 3: // WAAS or PPS Fix
-      xastir_snprintf(temp2,
+      astir_snprintf(temp2,
                       sizeof(temp2),
                       "%s",
                       langcode("GPSS001") );  // "WAAS or PPS"
       break;
 
     case 2: // DGPS Fix
-      xastir_snprintf(temp2,
+      astir_snprintf(temp2,
                       sizeof(temp2),
                       "%s",
                       langcode("GPSS002") );  // "DGPS"
       break;
 
     case 1: // Valid SPS Fix
-      xastir_snprintf(temp2,
+      astir_snprintf(temp2,
                       sizeof(temp2),
                       "%s",
                       langcode("GPSS003") );  // "Valid SPS"
@@ -5269,14 +5269,14 @@ char *report_gps_status(void)
 
     case 0: // Invalid
     default:
-      xastir_snprintf(temp2,
+      astir_snprintf(temp2,
                       sizeof(temp2),
                       "%s",
                       langcode("GPSS004") );  // "Invalid"
       break;
   }
 
-  xastir_snprintf(gps_temp,
+  astir_snprintf(gps_temp,
                   sizeof(gps_temp),
                   "%s:%s %s:%s",
                   langcode("GPSS005"),    // "Sats/View"
@@ -5286,7 +5286,7 @@ char *report_gps_status(void)
 
   // Save it in global variable in case we request status via the
   // menus.
-  xastir_snprintf(gps_status_save,
+  astir_snprintf(gps_status_save,
                   sizeof(gps_status_save),
                   "%s",
                   gps_temp);
@@ -5294,7 +5294,7 @@ char *report_gps_status(void)
   gps_status_save_time = sec_now();
 
   // Reset the variables.
-  xastir_snprintf(gps_sats, sizeof(gps_sats), "00");
+  astir_snprintf(gps_sats, sizeof(gps_sats), "00");
   gps_valid = 0;
 
   return(gps_temp);
@@ -5347,61 +5347,61 @@ void Compute_Uptime(Widget UNUSED(w), XtPointer UNUSED(clientData), XtPointer UN
 
   if (days == 1)
   {
-    xastir_snprintf(Days,sizeof(Days),"%s",langcode("TIME001"));  // Day
+    astir_snprintf(Days,sizeof(Days),"%s",langcode("TIME001"));  // Day
   }
   else
   {
-    xastir_snprintf(Days,sizeof(Days),"%s",langcode("TIME002"));  // Days
+    astir_snprintf(Days,sizeof(Days),"%s",langcode("TIME002"));  // Days
   }
 
 
   if (hours == 1)
   {
-    xastir_snprintf(Hours,sizeof(Hours),"%s",langcode("TIME003"));  // Hour
+    astir_snprintf(Hours,sizeof(Hours),"%s",langcode("TIME003"));  // Hour
   }
   else
   {
-    xastir_snprintf(Hours,sizeof(Hours),"%s",langcode("TIME004"));  // Hours
+    astir_snprintf(Hours,sizeof(Hours),"%s",langcode("TIME004"));  // Hours
   }
 
 
   if (minutes == 1)
   {
-    xastir_snprintf(Minutes,sizeof(Minutes),"%s",langcode("TIME005"));  // Minute
+    astir_snprintf(Minutes,sizeof(Minutes),"%s",langcode("TIME005"));  // Minute
   }
   else
   {
-    xastir_snprintf(Minutes,sizeof(Minutes),"%s",langcode("TIME006"));  // Minutes
+    astir_snprintf(Minutes,sizeof(Minutes),"%s",langcode("TIME006"));  // Minutes
   }
 
 
   if (seconds == 1)
   {
-    xastir_snprintf(Seconds,sizeof(Seconds),"%s",langcode("TIME007"));  // Second
+    astir_snprintf(Seconds,sizeof(Seconds),"%s",langcode("TIME007"));  // Second
   }
   else
   {
-    xastir_snprintf(Seconds,sizeof(Seconds),"%s",langcode("TIME008"));  // Seconds
+    astir_snprintf(Seconds,sizeof(Seconds),"%s",langcode("TIME008"));  // Seconds
   }
 
 
   if (days != 0)
   {
-    xastir_snprintf(temp, sizeof(temp), "%d %s, %d %s, %d %s, %d %s",
+    astir_snprintf(temp, sizeof(temp), "%d %s, %d %s, %d %s, %d %s",
                     days, Days, hours, Hours, minutes, Minutes, seconds, Seconds);
   }
   else if (hours != 0)
   {
-    xastir_snprintf(temp, sizeof(temp), "%d %s, %d %s, %d %s",
+    astir_snprintf(temp, sizeof(temp), "%d %s, %d %s, %d %s",
                     hours, Hours, minutes, Minutes, seconds, Seconds);
   }
   else if (minutes != 0)
   {
-    xastir_snprintf(temp, sizeof(temp), "%d %s, %d %s", minutes, Minutes, seconds, Seconds);
+    astir_snprintf(temp, sizeof(temp), "%d %s, %d %s", minutes, Minutes, seconds, Seconds);
   }
   else
   {
-    xastir_snprintf(temp, sizeof(temp), "%d %s", seconds, Seconds);
+    astir_snprintf(temp, sizeof(temp), "%d %s", seconds, Seconds);
   }
   popup_message_always(langcode("PULDNVI014"),temp);
 }
@@ -5703,14 +5703,14 @@ void create_appshell( Display *display, char * UNUSED(app_name), int UNUSED(app_
 
 
   t = "X Amateur Station Tracking and Information Reporting";
-  title = (char *)malloc(t_size = (strlen(t) + 42 + strlen(xastir_package)));
+  title = (char *)malloc(t_size = (strlen(t) + 42 + strlen(astir_package)));
   if (!title)
   {
     fprintf(stderr,"Couldn't allocate memory for title\n");
   }
   else
   {
-    xastir_snprintf(title, t_size, "XASTIR");
+    astir_snprintf(title, t_size, "ASTIR");
     strncat(title, " - ", t_size - 1 - strlen(title));
     strncat(title, t, t_size - 1 - strlen(title));
     strncat(title, " @ ", t_size - 1 - strlen(title));
@@ -5761,7 +5761,7 @@ void create_appshell( Display *display, char * UNUSED(app_name), int UNUSED(app_
   if ( (WidthValue|HeightValue) & geometry_flags )
   {
     //
-    // Size of Xastir was specified with a -geometry setting.
+    // Size of Astir was specified with a -geometry setting.
     // Set up the window size.
     //
 
@@ -5856,7 +5856,7 @@ void create_appshell( Display *display, char * UNUSED(app_name), int UNUSED(app_
     Position my_x, my_y;
 
     //
-    // Position of Xastir was specified with a -geometry setting.
+    // Position of Astir was specified with a -geometry setting.
     //
     if (XNegative & geometry_flags)
     {
@@ -5878,7 +5878,7 @@ void create_appshell( Display *display, char * UNUSED(app_name), int UNUSED(app_
   else
   {
     //
-    // Position of Xastir was not specified.  Use the values
+    // Position of Astir was not specified.  Use the values
     // from the config file
     //
     /*
@@ -5919,7 +5919,7 @@ void create_appshell( Display *display, char * UNUSED(app_name), int UNUSED(app_
 
   // Make at least one Motif call so that the next function won't
   // result in this problem:  'Error: atttempt to add non-widget
-  // child "DropSiteManager" to parent "xastir"'.
+  // child "DropSiteManager" to parent "astir"'.
   //
   (void) XmIsMotifWMRunning(appshell);
 
@@ -10690,7 +10690,7 @@ void create_appshell( Display *display, char * UNUSED(app_name), int UNUSED(app_
 
 // We get this error on some systems if XtRealizeWidget() is called
 // without setting width/height values first:
-// "Error: Shell widget xastir has zero width and/or height"
+// "Error: Shell widget astir has zero width and/or height"
 
   XtRealizeWidget (appshell);
 
@@ -10730,8 +10730,8 @@ void create_appshell( Display *display, char * UNUSED(app_name), int UNUSED(app_
 
   XSetStandardProperties(display,
                          XtWindow(appshell),
-                         title ? title: "Xastir", // window name
-                         "Xastir",       // icon name
+                         title ? title: "Astir", // window name
+                         "Astir",       // icon name
                          icon_pixmap,    // pixmap for icon
                          0, 0,           // argv and argc for restarting
                          NULL);          // size hints
@@ -10908,7 +10908,7 @@ void create_gc(Widget w)
   memset(&values, 0, sizeof(values));
 
   // Allocate colors
-  // Note that the names here are the ones given in xastir.rgb
+  // Note that the names here are the ones given in astir.rgb
   colors[0x00] = GetPixelByName(w,"DarkGreen");  // was darkgreen (same)
   colors[0x01] = GetPixelByName(w,"purple");
   colors[0x02] = GetPixelByName(w,"DarkGreen");  // was darkgreen (same)
@@ -11087,7 +11087,7 @@ void create_gc(Widget w)
 
   pixmap_alerts=xa_surface_create((unsigned int)screen_width, (unsigned int)screen_height, XA_DEPTH_CANVAS);
 
-  xastir_snprintf(xbm_path, sizeof(xbm_path), "%s/%s", SYMBOLS_DIR, "2x2.xbm");
+  astir_snprintf(xbm_path, sizeof(xbm_path), "%s/%s", SYMBOLS_DIR, "2x2.xbm");
   ret_val = XReadBitmapFile(XtDisplay(w), DefaultRootWindow(XtDisplay(w)),
                             xbm_path, &_w, &_h, &pixmap_50pct_stipple, &_xh, &_yh);
 
@@ -11097,7 +11097,7 @@ void create_gc(Widget w)
     exit(1);    // 2x2.xbm couldn't be loaded
   }
 
-  xastir_snprintf(xbm_path, sizeof(xbm_path), "%s/%s", SYMBOLS_DIR, "25pct.xbm");
+  astir_snprintf(xbm_path, sizeof(xbm_path), "%s/%s", SYMBOLS_DIR, "25pct.xbm");
   ret_val = XReadBitmapFile(XtDisplay(w), DefaultRootWindow(XtDisplay(w)),
                             xbm_path, &_w, &_h, &pixmap_25pct_stipple, &_xh, &_yh);
 
@@ -11107,7 +11107,7 @@ void create_gc(Widget w)
     exit(1);    // 25pct.xbm couldn't be loaded
   }
 
-  xastir_snprintf(xbm_path, sizeof(xbm_path), "%s/%s", SYMBOLS_DIR, "13pct.xbm");
+  astir_snprintf(xbm_path, sizeof(xbm_path), "%s/%s", SYMBOLS_DIR, "13pct.xbm");
   ret_val = XReadBitmapFile(XtDisplay(w), DefaultRootWindow(XtDisplay(w)),
                             xbm_path, &_w, &_h, &pixmap_13pct_stipple, &_xh, &_yh);
 
@@ -11117,7 +11117,7 @@ void create_gc(Widget w)
     exit(1);    // 13pct.xbm couldn't be loaded
   }
 
-  xastir_snprintf(xbm_path, sizeof(xbm_path), "%s/%s", SYMBOLS_DIR, "alert.xbm");
+  astir_snprintf(xbm_path, sizeof(xbm_path), "%s/%s", SYMBOLS_DIR, "alert.xbm");
   ret_val = XReadBitmapFile(XtDisplay(w), DefaultRootWindow(XtDisplay(w)),
                             xbm_path, &_w, &_h, &pixmap_wx_stipple, &_xh, &_yh);
 
@@ -11357,7 +11357,7 @@ void da_input(Widget w, XtPointer client_data, XtPointer call_data)
 
       // We need to check to see whether we're dragging the
       // pointer, and then need to save the points away (in
-      // Xastir lat/long format), drawing lines between the
+      // Astir lat/long format), drawing lines between the
       // points whenever we do a pixmap_final refresh to the
       // screen.
 
@@ -11378,10 +11378,10 @@ void da_input(Widget w, XtPointer client_data, XtPointer call_data)
       if (polygon_last_x != -1 && polygon_last_y != -1)
       {
 
-        // Convert from screen coordinates to Xastir
+        // Convert from screen coordinates to Astir
         // coordinate system and save in the object->vertice
         // list.
-        convert_screen_to_xastir_coordinates(input_x,
+        convert_screen_to_astir_coordinates(input_x,
                                              input_y,
                                              &lat,
                                              &lon);
@@ -11395,7 +11395,7 @@ void da_input(Widget w, XtPointer client_data, XtPointer call_data)
         // Figure out the real lat/long from the screen
         // coordinates.  Create a new object to hold the
         // point.
-        convert_screen_to_xastir_coordinates(input_x,
+        convert_screen_to_astir_coordinates(input_x,
                                              input_y,
                                              &lat,
                                              &lon);
@@ -11597,7 +11597,7 @@ void da_input(Widget w, XtPointer client_data, XtPointer call_data)
 // NOTE:  Angles currently change at zoom==1, so we purposely don't
 // give an angle in that measurement instance below.
 //
-            xastir_snprintf(temp,
+            astir_snprintf(temp,
                             sizeof(temp),
                             "%0.2f %s, x=%0.2f %s, y=%0.2f %s, %0.2f %s %s (%0.2f %s), %s: %s %s",
                             full_distance, un_alt,      // feet/meters
@@ -11643,7 +11643,7 @@ void da_input(Widget w, XtPointer client_data, XtPointer call_data)
 //    x_distance_real * y_distance_real,
 //    area);
 
-            xastir_snprintf(temp,
+            astir_snprintf(temp,
                             sizeof(temp),
                             "%0.2f %s, x=%0.2f %s, y=%0.2f %s, %0.2f %s %s, %s: %s %s",
                             full_distance, un_dst,      // miles/kilometers
@@ -12402,7 +12402,7 @@ static int last_alert_on_screen = -1;
 // At the end of the function it schedules itself to be run again.
 
 // ---------------------------------------------------------------------------
-// Scripted benchmark driver (XASTIR_BENCH=1).
+// Scripted benchmark driver (ASTIR_BENCH=1).
 //
 // Drives a fixed sequence of pans and zooms from inside the application so
 // that pan/zoom performance is measured identically on every run.  GUI
@@ -12415,7 +12415,7 @@ static int last_alert_on_screen = -1;
 // ---------------------------------------------------------------------------
 static void quit(int sig);
 
-// Zoom-and-hold helper for visual A/B captures (XASTIR_ZOOMOUT=<n>).
+// Zoom-and-hold helper for visual A/B captures (ASTIR_ZOOMOUT=<n>).
 // Performs n zoom-out steps after startup and then stops, leaving the map on
 // screen so a screenshot can be taken at a known scale.  Unlike the benchmark
 // driver it never quits.
@@ -12437,7 +12437,7 @@ static void xa_zoomout_tick( XtPointer clientData, XtIntervalId *UNUSED(id) )
 }
 
 
-// Replay a packet log without the file-selection dialog (XASTIR_REPLAY=<file>).
+// Replay a packet log without the file-selection dialog (ASTIR_REPLAY=<file>).
 //
 // File > Open Log File sets exactly these two variables and the main loop does
 // the rest, one line per pass; this is the same thing with no human in it.  It
@@ -12455,7 +12455,7 @@ static void xa_replay_tick( XtPointer UNUSED(clientData), XtIntervalId *UNUSED(i
 
   if (!started)
   {
-    const char *path = getenv("XASTIR_REPLAY");
+    const char *path = getenv("ASTIR_REPLAY");
 
     started = 1;
     read_file_ptr = fopen(path, "r");
@@ -12575,30 +12575,30 @@ void UpdateTime( XtPointer clientData, XtIntervalId UNUSED(id) )
 
 
 
-  if (restart_xastir_now)
+  if (restart_astir_now)
   {
     char bin_path[250];
 
     clear_application_context();
-    // Restart Xastir in this process space.  This is triggered
+    // Restart Astir in this process space.  This is triggered
     // by receiving a SIGHUP signal to the main process, which
     // causes the signal handler restart() to run.  restart()
     // shuts down most things nicely and then sets the
-    // restart_xastir_now  global variable.
+    // restart_astir_now  global variable.
     //
     // We need to snag the path to the executable from somewhere
     // so that we can start up again on a variety of systems.
     // Trying to get it from argv[0] doesn't work as that ends
-    // up as "xastir" with no path.  We therefore get it from
-    // XASTIR_BIN_PATH which we define in configure.ac
+    // up as "astir" with no path.  We therefore get it from
+    // ASTIR_BIN_PATH which we define in configure.ac
     //
-//        execve("/usr/local/bin/xastir", my_argv, my_envp);
-    xastir_snprintf(bin_path,
+//        execve("/usr/local/bin/astir", my_argv, my_envp);
+    astir_snprintf(bin_path,
                     sizeof(bin_path),
-                    "%s/bin/xastir",
-                    XASTIR_BIN_PATH);
+                    "%s/bin/astir",
+                    ASTIR_BIN_PATH);
 
-    // Restart this Xastir instance
+    // Restart this Astir instance
     execve(bin_path, my_argv, my_envp);
   }
 
@@ -12625,7 +12625,7 @@ void UpdateTime( XtPointer clientData, XtIntervalId UNUSED(id) )
       fprintf(stderr,"\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
       fprintf(stderr,    "!!  System time jumped backwards %d seconds!\n",
               (int)(last_updatetime - current_time) );
-      fprintf(stderr,    "!! Xastir sleeping, else will use excessive CPU\n");
+      fprintf(stderr,    "!! Astir sleeping, else will use excessive CPU\n");
       fprintf(stderr,    "!! %s\n",
               temp);
       fprintf(stderr,    "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n");
@@ -12640,7 +12640,7 @@ void UpdateTime( XtPointer clientData, XtIntervalId UNUSED(id) )
     if (time_went_backwards)
     {
       fprintf(stderr,
-              "Xastir is done sleeping due to time reversal.\n\n");
+              "Astir is done sleeping due to time reversal.\n\n");
     }
     time_went_backwards = 0;
   }
@@ -12819,7 +12819,7 @@ void UpdateTime( XtPointer clientData, XtIntervalId UNUSED(id) )
             if (festival_speak_new_weather_alert)
             {
               char station_id[50];
-              xastir_snprintf(station_id,
+              astir_snprintf(station_id,
                               sizeof(station_id), "%s, %d",
                               langcode("SPCHSTR009"),
                               temp_alert_count);
@@ -13098,7 +13098,7 @@ void UpdateTime( XtPointer clientData, XtIntervalId UNUSED(id) )
                 {
                   char temp[200];
 
-                  xastir_snprintf(temp,
+                  astir_snprintf(temp,
                                   sizeof(temp),
                                   "GPS:RMC,GGA ");
                   strncat(temp,
@@ -13110,7 +13110,7 @@ void UpdateTime( XtPointer clientData, XtIntervalId UNUSED(id) )
                 {
                   char temp[200];
 
-                  xastir_snprintf(temp,
+                  astir_snprintf(temp,
                                   sizeof(temp),
                                   "GPS:RMC ");
                   strncat(temp,
@@ -13122,7 +13122,7 @@ void UpdateTime( XtPointer clientData, XtIntervalId UNUSED(id) )
                 {
                   char temp[200];
 
-                  xastir_snprintf(temp,
+                  astir_snprintf(temp,
                                   sizeof(temp),
                                   "GPS:GGA ");
                   strncat(temp,
@@ -13134,7 +13134,7 @@ void UpdateTime( XtPointer clientData, XtIntervalId UNUSED(id) )
                 {
                   char temp[200];
 
-                  xastir_snprintf(temp,
+                  astir_snprintf(temp,
                                   sizeof(temp),
                                   "GPS: ");
                   strncat(temp,
@@ -13386,7 +13386,7 @@ void UpdateTime( XtPointer clientData, XtIntervalId UNUSED(id) )
 
 // Check the TCP pipe
           line[0] = '\0'; // Start with line empty
-          n = readline(pipe_tcp_server_to_xastir, line, MAX_LINE_SIZE);
+          n = readline(pipe_tcp_server_to_astir, line, MAX_LINE_SIZE);
           if (n == 0)
           {
             // Do nothing, empty packet
@@ -13435,7 +13435,7 @@ void UpdateTime( XtPointer clientData, XtIntervalId UNUSED(id) )
 
 // Check the UDP pipe
           line[0] = '\0'; // Start with line empty
-          n = readline(pipe_udp_server_to_xastir, line, MAX_LINE_SIZE);
+          n = readline(pipe_udp_server_to_astir, line, MAX_LINE_SIZE);
           if (n == 0)
           {
             // Do nothing, empty packet
@@ -13469,7 +13469,7 @@ void UpdateTime( XtPointer clientData, XtIntervalId UNUSED(id) )
             // order if both flags are present, so we
             // don't need to check for the reverse
             // order.
-            // Note that this is NOT the "-to_inet" that xastir_udp_client
+            // Note that this is NOT the "-to_inet" that astir_udp_client
             // uses!!! See xspider.c for how that gets parsed/changed.
             // Set appropriate flags and remove the prefixes if found.
             if (strncmp(line, "TO_INET,", 8) == 0)
@@ -13502,33 +13502,33 @@ void UpdateTime( XtPointer clientData, XtIntervalId UNUSED(id) )
               path0 = strtok(line,":");   // Pointer to start of path
               info0 = strtok(NULL,"");    // Pointer to information field
 
-              xastir_snprintf(path, sizeof(path), "%s", path0);
-              xastir_snprintf(info, sizeof(info), "%s", info0);
+              astir_snprintf(path, sizeof(path), "%s", path0);
+              astir_snprintf(info, sizeof(info), "%s", info0);
               //fprintf(stderr, "path: %s\n", path);
               //fprintf(stderr, "info: %s\n", info);
               //fprintf(stderr, "line: %s\n", line);
-              xastir_snprintf(line, sizeof(line), "%s%s%s", path, ",NOGATE:", info);
+              astir_snprintf(line, sizeof(line), "%s%s%s", path, ",NOGATE:", info);
               //fprintf(stderr, "line: %s\n", line);
             }
 
             // Check for "TO_RF," string
-            // Note that this is NOT the "-to_rf" that xastir_udp_client
+            // Note that this is NOT the "-to_rf" that astir_udp_client
             // uses!!! See xspider.c for how that gets parsed/changed.
 
             if (strncmp((char *)(line+line_offset), "TO_RF,", 6) == 0)
             {
-              fprintf(stderr,"Xastir received UDP packet with \"TO_RF,\" prefix\n");
+              fprintf(stderr,"Astir received UDP packet with \"TO_RF,\" prefix\n");
               line_offset += 6;
 //
 // "TO_RF," found.
 // This packet should be sent out the local RF ports.  If the
-// callsign matches Xastir's (without the SSID), then send it out
+// callsign matches Astir's (without the SSID), then send it out
 // first-person format.  If it doesn't, send it out third-party
 // format?
 //
               // Snag FROM callsign and do a non-exact
               // match on it against "my_callsign"
-              xastir_snprintf(temp_call,
+              astir_snprintf(temp_call,
                               sizeof(temp_call),
                               "%s",
                               (char *)(line+line_offset));
@@ -13666,7 +13666,7 @@ void UpdateTime( XtPointer clientData, XtIntervalId UNUSED(id) )
                 char new_string[MAX_LINE_SIZE+1];
 
                 // Terminate it with a linefeed
-                xastir_snprintf(new_string,
+                astir_snprintf(new_string,
                                 data_length+1,
                                 "%s\n",
                                 data_string);
@@ -13674,7 +13674,7 @@ void UpdateTime( XtPointer clientData, XtIntervalId UNUSED(id) )
 //fprintf(stderr,"\n-2 %s", new_string);
 
                 // Send data to the x_spider server
-                if (writen(pipe_xastir_to_tcp_server,
+                if (writen(pipe_astir_to_tcp_server,
                            new_string,
                            data_length+1) != data_length+1)
                 {
@@ -13741,13 +13741,13 @@ void UpdateTime( XtPointer clientData, XtIntervalId UNUSED(id) )
                 char new_string[MAX_LINE_SIZE+1];
 
                 // Terminate it with a linefeed
-                xastir_snprintf(new_string,
+                astir_snprintf(new_string,
                                 MAX_LINE_SIZE+1,
                                 "%s\n",
                                 data_string);
 
                 // Send data to the x_spider server
-                if (writen(pipe_xastir_to_tcp_server,
+                if (writen(pipe_astir_to_tcp_server,
                            new_string,
                            data_length+1) != data_length+1)
                 {
@@ -13772,7 +13772,7 @@ void UpdateTime( XtPointer clientData, XtIntervalId UNUSED(id) )
                 (void)gps_data_find((char *)data_string,
                                     data_port);
 
-                xastir_snprintf(temp,
+                astir_snprintf(temp,
                                 sizeof(temp),
                                 "GPS: ");
                 strncat(temp,
@@ -13798,13 +13798,13 @@ void UpdateTime( XtPointer clientData, XtIntervalId UNUSED(id) )
                   char new_string[MAX_LINE_SIZE+1];
 
                   // Terminate it with a linefeed
-                  xastir_snprintf(new_string,
+                  astir_snprintf(new_string,
                                   MAX_LINE_SIZE+1,
                                   "%s\n",
                                   data_string);
 
                   // Send data to the x_spider server
-                  if (writen(pipe_xastir_to_tcp_server,
+                  if (writen(pipe_astir_to_tcp_server,
                              new_string,
                              data_length+1) != data_length+1)
                   {
@@ -13833,7 +13833,7 @@ void UpdateTime( XtPointer clientData, XtIntervalId UNUSED(id) )
                 (void)gps_data_find((char *)data_string,
                                     data_port);
 
-                xastir_snprintf(temp,
+                astir_snprintf(temp,
                                 sizeof(temp),
                                 "GPS: ");
                 strncat(temp,
@@ -13858,13 +13858,13 @@ void UpdateTime( XtPointer clientData, XtIntervalId UNUSED(id) )
                   char new_string[MAX_LINE_SIZE+1];
 
                   // Terminate it with a linefeed
-                  xastir_snprintf(new_string,
+                  astir_snprintf(new_string,
                                   MAX_LINE_SIZE+1,
                                   "%s\n",
                                   data_string);
 
                   // Send data to the x_spider server
-                  if (writen(pipe_xastir_to_tcp_server,
+                  if (writen(pipe_astir_to_tcp_server,
                              new_string,
                              data_length+1) != data_length+1)
                   {
@@ -13892,7 +13892,7 @@ void UpdateTime( XtPointer clientData, XtIntervalId UNUSED(id) )
               {
                 char temp[200];
 
-                xastir_snprintf(temp,
+                astir_snprintf(temp,
                                 sizeof(temp),
                                 "GPS: ");
                 strncat(temp,
@@ -13974,7 +13974,7 @@ void UpdateTime( XtPointer clientData, XtIntervalId UNUSED(id) )
         && stations_status_time != current_time)
     {
       // show number of stations in status line
-      xastir_snprintf(station_num,
+      astir_snprintf(station_num,
                       sizeof(station_num),
                       langcode("BBARSTH001"),
                       currently_selected_stations,
@@ -14023,7 +14023,7 @@ void shut_down_server(void)
 
     // Send to all processes in our process group.  This will
     // cause the server and all of its children to die.  Also
-    // causes Xastir to die!  Don't do it!
+    // causes Astir to die!  Don't do it!
     //kill(0, 1);
 
     sleep(1);
@@ -14046,9 +14046,9 @@ void shut_down_server(void)
 
 
 
-// This is the SIGHUP handler.  We restart Xastir if we receive a
+// This is the SIGHUP handler.  We restart Astir if we receive a
 // SIGHUP, hopefully with the same environment that the original
-// Xastir had.  We set a global variable, then UpdateTime() is the
+// Astir had.  We set a global variable, then UpdateTime() is the
 // process that actually calls execve() in order to replace our
 // current process with the new one.  This assures that the signal
 // handler gets reset.  We can't call execve() from inside the
@@ -14061,7 +14061,7 @@ void shut_down_server(void)
 // spawned processes get a SIGHUP also, which means when we shut
 // down the TCP/UDP servers or similar.  For some reason it still
 // appears to work, even though restart() gets called multiple
-// times when we shut down Xastir or the servers.  We probably need
+// times when we shut down Astir or the servers.  We probably need
 // to call signal() from outside any signal handlers to tell it to
 // ignore further SIGHUP's.
 //
@@ -14071,7 +14071,7 @@ static void restart(int UNUSED(sig) )
   char temp_file_name[MAX_VALUE];
 
 //    if (debug_level & 1)
-  fprintf(stderr,"Shutting down Xastir...\n");
+  fprintf(stderr,"Shutting down Astir...\n");
 
   save_data();
 
@@ -14082,7 +14082,7 @@ static void restart(int UNUSED(sig) )
 
 #ifdef USE_PID_FILE_CHECK
   // remove the PID file
-  unlink(get_user_base_dir("xastir.pid", temp_file_name,
+  unlink(get_user_base_dir("astir.pid", temp_file_name,
                            sizeof(temp_file_name)));
 #endif
 
@@ -14095,12 +14095,12 @@ static void restart(int UNUSED(sig) )
 #endif  // USING LIBGC
 
 //    if (debug_level & 1)
-  fprintf(stderr,"Attempting to restart Xastir...\n");
+  fprintf(stderr,"Attempting to restart Astir...\n");
 
   // Set the global variable which tells UpdateTime() to do a
   // restart.
   //
-  restart_xastir_now++;
+  restart_astir_now++;
 }
 
 
@@ -14128,13 +14128,13 @@ static void quit(int sig)
 
 #ifdef USE_PID_FILE_CHECK
   // remove the PID file
-  unlink(get_user_base_dir("xastir.pid",temp_file_name,
+  unlink(get_user_base_dir("astir.pid",temp_file_name,
                            sizeof(temp_file_name)));
 #endif
 
   if (debug_level & 1)
   {
-    fprintf(stderr,"Exiting Xastir...\n");
+    fprintf(stderr,"Exiting Astir...\n");
   }
 
 #ifdef HAVE_LIBCURL
@@ -14168,9 +14168,9 @@ static int pid_file_check(int hold)
 
   char pidfile_name[MAX_FILENAME];
 
-  xastir_snprintf(pidfile_name, sizeof(pidfile_name),
+  astir_snprintf(pidfile_name, sizeof(pidfile_name),
                   "%s",
-                  get_user_base_dir("xastir.pid", temp_file_name,
+                  get_user_base_dir("astir.pid", temp_file_name,
                                     sizeof(temp_file_name)));
 
   if (filethere(pidfile_name))
@@ -14201,7 +14201,7 @@ static int pid_file_check(int hold)
     if ((killret == -1) && (errno == ESRCH ) && !hold)
     {
       fprintf(stderr,
-              "Other Xastir process, pid: %d does not appear be running. \n",
+              "Other Astir process, pid: %d does not appear be running. \n",
               other_pid);
       // nuke from orbit
       if (unlink(pidfile_name))
@@ -14213,7 +14213,7 @@ static int pid_file_check(int hold)
     else
     {
       fprintf(stderr,
-              "Other Xastir process, pid: %d may be running. Exiting..\n",
+              "Other Astir process, pid: %d may be running. Exiting..\n",
               other_pid);
 
 #ifdef USING_LIBGC
@@ -14256,7 +14256,7 @@ static int pid_file_check(int hold)
 /* handle segfault signal */
 void segfault(int UNUSED(sig) )
 {
-  fprintf(stderr, "Caught Segfault! Xastir will terminate\n");
+  fprintf(stderr, "Caught Segfault! Astir will terminate\n");
   fprintf(stderr, "Previous incoming line was: %s\n", incoming_data_copy_previous);
   fprintf(stderr, "    Last incoming line was: %s\n", incoming_data_copy);
   if (dangerous_operation[0] != '\0')
@@ -14629,10 +14629,10 @@ void new_image(Widget da)
   request_new_image = 0;
 
 
-  // Set up floating point lat/long values to match Xastir
+  // Set up floating point lat/long values to match Astir
   // coordinates (speeds things up when dealing with lat/long
   // values later).
-  convert_from_xastir_coordinates(&f_center_longitude,
+  convert_from_astir_coordinates(&f_center_longitude,
                                   &f_center_latitude,
                                   center_longitude,
                                   center_latitude);
@@ -14761,7 +14761,7 @@ void check_range(void)
 // We keep getting center_longitude out of range when zooming out
 // and having the edge of the world map to the right of the middle
 // of the window.  This shows up in new_image() above during the
-// convert_from_xastir_coordinates() call.  new_mid_x is the data of
+// convert_from_astir_coordinates() call.  new_mid_x is the data of
 // interest in this routine.
 
 }
@@ -15067,7 +15067,7 @@ void Custom_Zoom( Widget UNUSED(w), XtPointer UNUSED(clientData), XtPointer UNUS
 
     // Snag the current zoom value, convert them to
     // displayable values, and fill in the fields.
-    xastir_snprintf(temp,
+    astir_snprintf(temp,
                     sizeof(temp),
                     "%ld",
                     scale_y);
@@ -15402,8 +15402,8 @@ void Center_Zoom_do_it( Widget UNUSED(widget), XtPointer UNUSED(clientData), XtP
   f_center_longitude = atof(temp_ptr);
   XtFree(temp_ptr);
 
-  //Convert to Xastir coordinate system for lat/long
-  convert_to_xastir_coordinates(&x,
+  //Convert to Astir coordinate system for lat/long
+  convert_to_astir_coordinates(&x,
                                 &y,
                                 f_center_longitude,
                                 f_center_latitude);
@@ -15665,18 +15665,18 @@ void Center_Zoom( Widget UNUSED(w), XtPointer UNUSED(clientData), XtPointer call
 
       // Snag the objects values, convert them to displayable
       // values, and fill in the fields.
-      convert_from_xastir_coordinates(&f_longitude,
+      convert_from_astir_coordinates(&f_longitude,
                                       &f_latitude,
                                       p_station->coord_lon,
                                       p_station->coord_lat);
 
-      xastir_snprintf(temp,
+      astir_snprintf(temp,
                       sizeof(temp),
                       "%f",
                       f_latitude);
       XmTextFieldSetString(center_zoom_latitude, temp);
 
-      xastir_snprintf(temp,
+      astir_snprintf(temp,
                       sizeof(temp),
                       "%f",
                       f_longitude);
@@ -15694,7 +15694,7 @@ void Center_Zoom( Widget UNUSED(w), XtPointer UNUSED(clientData), XtPointer call
       // Find out the screen values
       XtVaGetValues(da,XmNwidth, &width, XmNheight, &height, NULL);
 
-      // Convert points to Xastir coordinate system
+      // Convert points to Astir coordinate system
 
       // X
       x = center_longitude  - ((width *scale_x)/2);
@@ -15779,7 +15779,7 @@ void Center_Zoom( Widget UNUSED(w), XtPointer UNUSED(clientData), XtPointer call
 
 //fprintf(stderr,"my_scale_y: %ld\n", my_scale_y);
 
-      xastir_snprintf(temp,
+      astir_snprintf(temp,
                       sizeof(temp),
                       "%ld",
                       my_scale_y);
@@ -15791,19 +15791,19 @@ void Center_Zoom( Widget UNUSED(w), XtPointer UNUSED(clientData), XtPointer call
 
       // Snag the current lat/long/center values, convert them to
       // displayable values, and fill in the fields.
-      xastir_snprintf(temp,
+      astir_snprintf(temp,
                       sizeof(temp),
                       "%f",
                       f_center_latitude);
       XmTextFieldSetString(center_zoom_latitude, temp);
 
-      xastir_snprintf(temp,
+      astir_snprintf(temp,
                       sizeof(temp),
                       "%f",
                       f_center_longitude);
       XmTextFieldSetString(center_zoom_longitude, temp);
 
-      xastir_snprintf(temp,
+      astir_snprintf(temp,
                       sizeof(temp),
                       "%ld",
                       scale_y);
@@ -16481,7 +16481,7 @@ void process_RINO_waypoints(void)
   line[300] = '\0';
 
   // Create the full path/filename
-  xastir_snprintf(temp,
+  astir_snprintf(temp,
                   sizeof(temp),
                   "%s/RINO.gpstrans",
                   get_user_base_dir("gps", temp_file_name, sizeof(temp_file_name)));
@@ -16732,7 +16732,7 @@ void process_RINO_waypoints(void)
         temp2[sizeof(temp2)-1] = '\0';  // Terminate string
 
         // Copy it back to the "name" variable.
-        xastir_snprintf(name,
+        astir_snprintf(name,
                         sizeof(name),
                         "%s",
                         temp2);
@@ -16749,7 +16749,7 @@ void process_RINO_waypoints(void)
         // 07/09/2004 09:22:28
 //fprintf(stderr,"%s %s", name, datetime);
 
-        xastir_snprintf(temp2,
+        astir_snprintf(temp2,
                         sizeof(temp2),
                         "%s",
                         &datetime[3]);
@@ -16757,14 +16757,14 @@ void process_RINO_waypoints(void)
         date = atoi(temp2);
 //fprintf(stderr, "%02d\n", date);
 
-        xastir_snprintf(temp2,
+        astir_snprintf(temp2,
                         sizeof(temp2),
                         "%s",
                         &datetime[11]);
         temp2[2] = '\0';
         hour = atoi(temp2);
 
-        xastir_snprintf(temp2,
+        astir_snprintf(temp2,
                         sizeof(temp2),
                         "%s",
                         &datetime[14]);
@@ -16829,7 +16829,7 @@ void process_RINO_waypoints(void)
         }
 
         // Non-Compressed version
-        xastir_snprintf(line2,
+        astir_snprintf(line2,
                         sizeof(line2),
                         ";%-9s*%02d%02d%02d/%02d%05.2f%c%c%03d%05.2f%c%c",
                         name,
@@ -16849,7 +16849,7 @@ void process_RINO_waypoints(void)
                         // Compressed version.  Gives us more of the
                         // resolution inherent in the RINO waypoints.
                         // Doesn't have an affect on whether we transmit
-                        // compressed objects from Xastir over RF.  That is
+                        // compressed objects from Astir over RF.  That is
                         // selected from the File->Configure->Defaults
                         // dialog.
                         //
@@ -16857,14 +16857,14 @@ void process_RINO_waypoints(void)
                         // APRS-like format:
                         // "%2d%lf%c", &deg, &minutes, &ext
 
-                        xastir_snprintf(lat_s,
+                        astir_snprintf(lat_s,
                             sizeof(lat_s),
                             "%02d%8.5f%c",
                             lat_deg,
                             lat_min,
                             lat_dir);
 
-                        xastir_snprintf(lon_s,
+                        astir_snprintf(lon_s,
                             sizeof(lon_s),
                             "%02d%8.5f%c",
                             lon_deg,
@@ -16881,7 +16881,7 @@ void process_RINO_waypoints(void)
 
         //fprintf(stderr, "compressed: %s\n", compressed_string);
 
-                        xastir_snprintf(line2,
+                        astir_snprintf(line2,
                             sizeof(line2),
                             ";%-9s*%02d%02d%02d/%s",
                             name,
@@ -16946,7 +16946,7 @@ void GPS_operations_change_data(Widget widget, XtPointer clientData, XtPointer c
 
 
   temp = XmTextGetString(gpsfilename_text);
-  xastir_snprintf(short_filename,
+  astir_snprintf(short_filename,
                   sizeof(short_filename),
                   "%s",
                   temp);
@@ -16977,55 +16977,55 @@ void GPS_operations_change_data(Widget widget, XtPointer clientData, XtPointer c
   {
     case 0:
     {
-      xastir_snprintf(color_text,sizeof(color_text),"Red");
+      astir_snprintf(color_text,sizeof(color_text),"Red");
       gps_map_color_offset=0x0c;
       break;
     }
     case 1:
     {
-      xastir_snprintf(color_text,sizeof(color_text),"Green");
+      astir_snprintf(color_text,sizeof(color_text),"Green");
       gps_map_color_offset=0x23;
       break;
     }
     case 2:
     {
-      xastir_snprintf(color_text,sizeof(color_text),"Black");
+      astir_snprintf(color_text,sizeof(color_text),"Black");
       gps_map_color_offset=0x08;
       break;
     }
     case 3:
     {
-      xastir_snprintf(color_text,sizeof(color_text),"White");
+      astir_snprintf(color_text,sizeof(color_text),"White");
       gps_map_color_offset=0x0f;
       break;
     }
     case 4:
     {
-      xastir_snprintf(color_text,sizeof(color_text),"Orange");
+      astir_snprintf(color_text,sizeof(color_text),"Orange");
       gps_map_color_offset=0x62;
       break;
     }
     case 5:
     {
-      xastir_snprintf(color_text,sizeof(color_text),"Blue");
+      astir_snprintf(color_text,sizeof(color_text),"Blue");
       gps_map_color_offset=0x03;
       break;
     }
     case 6:
     {
-      xastir_snprintf(color_text,sizeof(color_text),"Yellow");
+      astir_snprintf(color_text,sizeof(color_text),"Yellow");
       gps_map_color_offset=0x0e;
       break;
     }
     case 7:
     {
-      xastir_snprintf(color_text,sizeof(color_text),"Purple");
+      astir_snprintf(color_text,sizeof(color_text),"Purple");
       gps_map_color_offset=0x0b;
       break;
     }
     default:
     {
-      xastir_snprintf(color_text,sizeof(color_text),"Red");
+      astir_snprintf(color_text,sizeof(color_text),"Red");
       gps_map_color_offset=0x0c;
       break;
     }
@@ -17608,12 +17608,12 @@ void check_for_new_gps_map(int curr_sec)
 
 
       // Write out a WKT in a .prj file to go with this shapefile.
-      xastir_snprintf(temp,
+      astir_snprintf(temp,
                       sizeof(temp),
                       "%s/%s.prj",
                       gps_base_dir,
                       gps_map_filename_base);
-      xastirWriteWKT(temp);
+      astirWriteWKT(temp);
 
       if (strcmp(gps_map_type,"Waypoints") != 0)
       {
@@ -17626,7 +17626,7 @@ void check_for_new_gps_map(int curr_sec)
         // We don't do this for waypoint files, because all we need to
         // do for those is associate the name with the waypoint, and
         // that can be done by a generic signature-based file.
-        xastir_snprintf(temp,
+        astir_snprintf(temp,
                         sizeof(temp),
                         "%s/%s.dbfawk",
                         gps_base_dir,
@@ -17711,12 +17711,12 @@ static void* gps_transfer_thread(void *arg)
 
   // Set up the prefix string.  Note that we depend on the correct
   // setup of serial ports and such in GPSMan's configs.
-  xastir_snprintf(prefix, sizeof(prefix),
+  astir_snprintf(prefix, sizeof(prefix),
                   "%s",
                   GPSMAN_PATH);
 
   // Set up the postfix string.  The files will be created in the
-  // "~/.xastir/gps/" directory.
+  // "~/.astir/gps/" directory.
   strcpy(postfix, "Shapefile dim=2 ");
   postfix[sizeof(postfix)-1] = '\0';  // Terminate string
   strcat(postfix, gps_base_dir);
@@ -17739,15 +17739,15 @@ static void* gps_transfer_thread(void *arg)
 
 //            fprintf(stderr,"Fetch track from GPS\n");
 
-      xastir_snprintf(gps_temp_map_filename,
+      astir_snprintf(gps_temp_map_filename,
                       sizeof(gps_temp_map_filename),
                       "Unnamed_Track_Red.shp");
-      xastir_snprintf(gps_temp_map_filename_base,
+      astir_snprintf(gps_temp_map_filename_base,
                       sizeof(gps_temp_map_filename_base),
                       "Unnamed_Track_Red");
 
 
-      xastir_snprintf(gps_map_type,
+      astir_snprintf(gps_map_type,
                       sizeof(gps_map_type),
                       "Track");
 
@@ -17775,14 +17775,14 @@ static void* gps_transfer_thread(void *arg)
 
 //            fprintf(stderr,"Fetch routes from GPS\n");
 
-      xastir_snprintf(gps_temp_map_filename,
+      astir_snprintf(gps_temp_map_filename,
                       sizeof(gps_temp_map_filename),
                       "Unnamed_Routes_Red.shp");
-      xastir_snprintf(gps_temp_map_filename_base,
+      astir_snprintf(gps_temp_map_filename_base,
                       sizeof(gps_temp_map_filename_base),
                       "Unnamed_Routes_Red");
 
-      xastir_snprintf(gps_map_type,
+      astir_snprintf(gps_map_type,
                       sizeof(gps_map_type),
                       "Routes");
 
@@ -17810,14 +17810,14 @@ static void* gps_transfer_thread(void *arg)
 
 //            fprintf(stderr,"Fetch waypoints from GPS\n");
 
-      xastir_snprintf(gps_temp_map_filename,
+      astir_snprintf(gps_temp_map_filename,
                       sizeof(gps_temp_map_filename),
                       "Unnamed_Waypoints.shp");
-      xastir_snprintf(gps_temp_map_filename_base,
+      astir_snprintf(gps_temp_map_filename_base,
                       sizeof(gps_temp_map_filename_base),
                       "Unnamed_Waypoints");
 
-      xastir_snprintf(gps_map_type,
+      astir_snprintf(gps_map_type,
                       sizeof(gps_map_type),
                       "Waypoints");
 
@@ -17872,18 +17872,18 @@ static void* gps_transfer_thread(void *arg)
 
 //            fprintf(stderr,"Fetch Garmin RINO waypoints\n");
 
-      // The files will be created in the "~/.xastir/gps/"
+      // The files will be created in the "~/.astir/gps/"
       // directory.
 
-      xastir_snprintf(gps_temp_map_filename,
+      astir_snprintf(gps_temp_map_filename,
                       sizeof(gps_temp_map_filename),
                       "RINO.gpstrans");
 
-      xastir_snprintf(gps_temp_map_filename_base,
+      astir_snprintf(gps_temp_map_filename_base,
                       sizeof(gps_temp_map_filename_base),
                       "RINO");
 
-      xastir_snprintf(gps_map_type,
+      astir_snprintf(gps_map_type,
                       sizeof(gps_map_type),
                       "RINO");
 
@@ -17942,7 +17942,7 @@ static void* gps_transfer_thread(void *arg)
 // GPSMan can't handle multiple '.'s in the filename.  It chops at
 // the first one.
 //
-// Note that the permissions on the "~/.xastir/gps/" directory have to be
+// Note that the permissions on the "~/.astir/gps/" directory have to be
 // set so that this user (or the root user?) can create files in
 // that directory.  The permissions on the resulting files may need
 // to be tweaked.
@@ -19498,9 +19498,9 @@ void update_units(void)
   switch (english_units)
   {
     case 1:     // English
-      xastir_snprintf(un_alt,sizeof(un_alt),"ft");
-      xastir_snprintf(un_dst,sizeof(un_dst),"mi");
-      xastir_snprintf(un_spd,sizeof(un_spd),"mph");
+      astir_snprintf(un_alt,sizeof(un_alt),"ft");
+      astir_snprintf(un_dst,sizeof(un_dst),"mi");
+      astir_snprintf(un_spd,sizeof(un_spd),"mph");
       cvt_m2len  = 3.28084;   // m to ft
       cvt_dm2len = 0.328084;  // dm to ft
       cvt_hm2len = 0.0621504; // hm to mi
@@ -19509,9 +19509,9 @@ void update_units(void)
       break;
     case 2:     // Nautical
       // add nautical miles and knots for future use
-      xastir_snprintf(un_alt,sizeof(un_alt),"ft");
-      xastir_snprintf(un_dst,sizeof(un_dst),"nm");
-      xastir_snprintf(un_spd,sizeof(un_spd),"kn");
+      astir_snprintf(un_alt,sizeof(un_alt),"ft");
+      astir_snprintf(un_dst,sizeof(un_dst),"nm");
+      astir_snprintf(un_spd,sizeof(un_spd),"kn");
       cvt_m2len  = 3.28084;   // m to ft
       cvt_dm2len = 0.328084;  // dm to ft
       cvt_hm2len = 0.0539957; // hm to nm
@@ -19519,9 +19519,9 @@ void update_units(void)
       cvt_mi2len = 0.8689607; // mph to knots / mi to nm
       break;
     default:    // Metric
-      xastir_snprintf(un_alt,sizeof(un_alt),"m");
-      xastir_snprintf(un_dst,sizeof(un_dst),"km");
-      xastir_snprintf(un_spd,sizeof(un_spd),"km/h");
+      astir_snprintf(un_alt,sizeof(un_alt),"m");
+      astir_snprintf(un_dst,sizeof(un_dst),"km");
+      astir_snprintf(un_spd,sizeof(un_spd),"km/h");
       cvt_m2len  = 1.0;       // m to m
       cvt_dm2len = 0.1;       // dm to m
       cvt_hm2len = 0.1;       // hm to km
@@ -19706,10 +19706,10 @@ void Help_About( Widget UNUSED(w), XtPointer UNUSED(clientData), XtPointer UNUSE
   extern char gitstring[];
   char version_str[50];
 
-  xastir_snprintf(string2, sizeof(string2),"\nXastir V%s %s\n",xastir_version,gitstring);
+  astir_snprintf(string2, sizeof(string2),"\nAstir V%s %s\n",astir_version,gitstring);
   xms = XmStringCreateLocalized(string2);
 
-  xa = XmStringCreateLocalized("\n\n" ABOUT_MSG "\n\nLibraries used: " XASTIR_INSTALLED_LIBS "\n\n" ABOUT_OSM);  // Add some newlines
+  xa = XmStringCreateLocalized("\n\n" ABOUT_MSG "\n\nLibraries used: " ASTIR_INSTALLED_LIBS "\n\n" ABOUT_OSM);  // Add some newlines
   xb = XmStringConcat(xms, xa);
   XmStringFree(xa);
   XmStringFree(xms);
@@ -19765,7 +19765,7 @@ void Help_About( Widget UNUSED(w), XtPointer UNUSED(clientData), XtPointer UNUSE
 
   version = XRotVersion( string1, 99 );
 
-  xastir_snprintf(version_str, sizeof(version_str), "%0.2f", version);
+  astir_snprintf(version_str, sizeof(version_str), "%0.2f", version);
   strcpy(string2, "\n");
   string2[sizeof(string2)-1] = '\0';  // Terminate string
   strcat(string2, string1);
@@ -19785,7 +19785,7 @@ void Help_About( Widget UNUSED(w), XtPointer UNUSED(clientData), XtPointer UNUSE
   ac = 0;
   XtSetArg(al[ac], XmNmessageString, xms);
   ac++;
-  // "About Xastir"
+  // "About Astir"
   XtSetArg(al[ac], XmNtitle, langcode("PULDNHEL05") );
   ac++;
   XtSetArg(al[ac], XmNforeground, MY_FG_COLOR);
@@ -19795,7 +19795,7 @@ void Help_About( Widget UNUSED(w), XtPointer UNUSED(clientData), XtPointer UNUSE
   XtSetArg(al[ac], XmNfontList, fontlist1);
   ac++;
 
-  // "About Xastir"
+  // "About Astir"
   about_dialog = XmCreateInformationDialog(appshell, langcode("PULDNHEL05"), al, ac);
   XmStringFree(xms);
   XtDestroyWidget(XmMessageBoxGetChild(about_dialog, (unsigned char)XmDIALOG_CANCEL_BUTTON));
@@ -20287,7 +20287,7 @@ void help_view( Widget UNUSED(w), XtPointer UNUSED(clientData), XtPointer UNUSED
     }
     if (!help_view_dialog)
     {
-      xastir_snprintf(title, sizeof(title), "%s - %s", langcode("MENUTB0009"), temp);
+      astir_snprintf(title, sizeof(title), "%s - %s", langcode("MENUTB0009"), temp);
       help_view_dialog = XtVaCreatePopupShell(title,
                                               xmDialogShellWidgetClass, appshell,
                                               XmNdeleteResponse,XmDESTROY,
@@ -20869,13 +20869,13 @@ void map_properties_fill_in (void)
           // JMT - this is a guess
           if (current->max_zoom == 0)
           {
-            xastir_snprintf(temp_max_zoom,
+            astir_snprintf(temp_max_zoom,
                             sizeof(temp_max_zoom),
                             "  -  ");
           }
           else
           {
-            xastir_snprintf(temp_max_zoom,
+            astir_snprintf(temp_max_zoom,
                             sizeof(temp_max_zoom),
                             "%5d",
                             current->max_zoom);
@@ -20883,13 +20883,13 @@ void map_properties_fill_in (void)
 
           if (current->min_zoom == 0)
           {
-            xastir_snprintf(temp_min_zoom,
+            astir_snprintf(temp_min_zoom,
                             sizeof(temp_min_zoom),
                             "  -  ");
           }
           else
           {
-            xastir_snprintf(temp_min_zoom,
+            astir_snprintf(temp_min_zoom,
                             sizeof(temp_min_zoom),
                             "%5d",
                             current->min_zoom);
@@ -20897,19 +20897,19 @@ void map_properties_fill_in (void)
 
           if (current->map_layer == 0)
           {
-            xastir_snprintf(temp_layer,
+            astir_snprintf(temp_layer,
                             sizeof(temp_layer),
                             "  -  ");
           }
           else
           {
-            xastir_snprintf(temp_layer,
+            astir_snprintf(temp_layer,
                             sizeof(temp_layer),
                             "%5d",
                             current->map_layer);
           }
 
-          xastir_snprintf(temp_filled,
+          astir_snprintf(temp_filled,
                           sizeof(temp_filled),
                           "     ");
 
@@ -20929,7 +20929,7 @@ void map_properties_fill_in (void)
 
               // Insert the string.  Fill with spaces
               // on the end.
-              xastir_snprintf(&temp_filled[start],
+              astir_snprintf(&temp_filled[start],
                               sizeof(temp_filled)-start,
                               "%s     ",
                               langcode("MAPP007"));   // "No"
@@ -20949,7 +20949,7 @@ void map_properties_fill_in (void)
 
               // Insert the string.  Fill with spaces
               // on the end.
-              xastir_snprintf(&temp_filled[start],
+              astir_snprintf(&temp_filled[start],
                               sizeof(temp_filled)-start,
                               "%s     ",
                               langcode("MAPP006"));   // "Yes"
@@ -20970,7 +20970,7 @@ void map_properties_fill_in (void)
 
               // Insert the string.  Fill with spaces
               // on the end.
-              xastir_snprintf(&temp_filled[start],
+              astir_snprintf(&temp_filled[start],
                               sizeof(temp_filled)-start,
                               "%s     ",
                               langcode("MAPP011"));   // "Auto"
@@ -20982,7 +20982,7 @@ void map_properties_fill_in (void)
           // Truncate it so it fits our column width.
           temp_filled[5] = '\0';
 
-          xastir_snprintf(temp_drg,
+          astir_snprintf(temp_drg,
                           sizeof(temp_drg),
                           "     ");
 
@@ -21002,7 +21002,7 @@ void map_properties_fill_in (void)
 
               // Insert the string.  Fill with spaces
               // on the end.
-              xastir_snprintf(&temp_drg[start],
+              astir_snprintf(&temp_drg[start],
                               sizeof(temp_drg)-start,
                               "%s     ",
                               langcode("MAPP007"));   // "No"
@@ -21022,7 +21022,7 @@ void map_properties_fill_in (void)
 
               // Insert the string.  Fill with spaces
               // on the end.
-              xastir_snprintf(&temp_drg[start],
+              astir_snprintf(&temp_drg[start],
                               sizeof(temp_drg)-start,
                               "%s     ",
                               langcode("MAPP006"));   // "Yes"
@@ -21043,7 +21043,7 @@ void map_properties_fill_in (void)
 
               // Insert the string.  Fill with spaces
               // on the end.
-              xastir_snprintf(&temp_drg[start],
+              astir_snprintf(&temp_drg[start],
                               sizeof(temp_drg)-start,
                               "%s     ",
                               langcode("MAPP011"));   // "Auto"
@@ -21055,7 +21055,7 @@ void map_properties_fill_in (void)
           // Truncate it so it fits our column width.
           temp_drg[5] = '\0';
 
-          xastir_snprintf(temp_auto,
+          astir_snprintf(temp_auto,
                           sizeof(temp_auto),
                           "     ");
 
@@ -21074,7 +21074,7 @@ void map_properties_fill_in (void)
 
             // Insert the string.  Fill with spaces on the
             // end.
-            xastir_snprintf(&temp_auto[start],
+            astir_snprintf(&temp_auto[start],
                             sizeof(temp_filled)-start,
                             "%s     ",
                             langcode("MAPP006"));
@@ -21087,7 +21087,7 @@ void map_properties_fill_in (void)
           // REQUIRES changing the defined constant MPD_FILENAME_OFFSET
           // at the top of this file, or all the routines that try
           // to decode the string will be wrong!
-          xastir_snprintf(temp,
+          astir_snprintf(temp,
                           sizeof(temp),
                           "%s %s %s %s %s %s  %s",
                           temp_max_zoom,
@@ -22660,7 +22660,7 @@ void map_chooser_update_quantity(void)
   }
 
   // Update the "Dirs/Maps Selected" label in the Map Chooser
-  xastir_snprintf(str_quantity,
+  astir_snprintf(str_quantity,
                   sizeof(str_quantity),
                   "%d/%d",
                   dir_quantity,
@@ -22932,7 +22932,7 @@ void sort_list(char *filename,int size, Widget list, int *item)
   // Clear the list widget first
   XmListDeleteAllItems(list);
 
-  xastir_snprintf(ptr_filename, sizeof(ptr_filename), "%s-ptr", filename);
+  astir_snprintf(ptr_filename, sizeof(ptr_filename), "%s-ptr", filename);
   f_pointer=fopen(ptr_filename,"r");
   f_data=fopen(filename,"r");
   if (f_pointer!=NULL && f_data !=NULL)
@@ -24369,10 +24369,10 @@ void Read_File_Selection( Widget UNUSED(w), XtPointer UNUSED(clientData), XtPoin
     ac++;
     XtSetArg(al[ac], XmNfontList, fontlist1);
     ac++;
-    //XtSetArg(al[ac], XmNdirMask, "/home/hacker/.xastir/logs/*"); ac++;
-    //XtSetArg(al[ac], XmNdirectory, "/home/hacker/.xastir/logs/"); ac++;
+    //XtSetArg(al[ac], XmNdirMask, "/home/hacker/.astir/logs/*"); ac++;
+    //XtSetArg(al[ac], XmNdirectory, "/home/hacker/.astir/logs/"); ac++;
     //XtSetArg(al[ac], XmNpattern, "*"); ac++;
-    //XtSetArg(al[ac], XmNdirMask, ".xastir/logs/*"); ac++;
+    //XtSetArg(al[ac], XmNdirMask, ".astir/logs/*"); ac++;
     read_selection_dialog = XmCreateFileSelectionDialog(appshell,
                             "filesb",
                             al,
@@ -24401,7 +24401,7 @@ void Read_File_Selection( Widget UNUSED(w), XtPointer UNUSED(clientData), XtPoin
     XtVaSetValues(fs,XmNbackground, colors[0x0f],NULL);
     XtVaSetValues(fs,XmNfontList,fontlist1,NULL);
 
-    //XtVaSetValues(read_selection_dialog, XmNdirMask, "/home/hacker/.xastir/logs/*", NULL);
+    //XtVaSetValues(read_selection_dialog, XmNdirMask, "/home/hacker/.astir/logs/*", NULL);
 
     child = XmFileSelectionBoxGetChild(read_selection_dialog, XmDIALOG_FILTER_LABEL);
     XtVaSetValues(child,XmNfontList,fontlist1,NULL);
@@ -24489,7 +24489,7 @@ void Test(Widget UNUSED(w), XtPointer UNUSED(clientData), XtPointer UNUSED(callD
       // Simulate data coming in from a TNC in order to test igating.
       // Port 7 in this case is a serial TNC port (in my current test
       // configuration).
-      xastir_snprintf(temp,
+      astir_snprintf(temp,
           sizeof(temp),
           "WE7U-4>APOT01,SUMAS*,WIDE2-2:!4757.28N/12212.00Wv178/057/A=000208 14.0V 30C\r");
 
@@ -24634,7 +24634,7 @@ void Configure_defaults_change_data(Widget widget, XtPointer clientData, XtPoint
     load_predefined_cb_selection = XmStringCreateLocalized("predefined_SAR.sys");
   }
 
-  xastir_snprintf(predefined_object_definition_filename,
+  astir_snprintf(predefined_object_definition_filename,
                   sizeof(predefined_object_definition_filename),
                   "%s",
                   temp = XmStringUnparse(load_predefined_cb_selection,
@@ -24661,7 +24661,7 @@ void Configure_defaults_change_data(Widget widget, XtPointer clientData, XtPoint
   skip_dupe_checking = (int)(XmToggleButtonGetState(disable_dupe_check));
 
   temp = XmTextGetString(altnet_text);
-  xastir_snprintf(altnet_call,
+  astir_snprintf(altnet_call,
                   sizeof(altnet_call),
                   "%s",
                   temp);
@@ -24671,9 +24671,9 @@ void Configure_defaults_change_data(Widget widget, XtPointer clientData, XtPoint
   if (strlen(altnet_call)==0)
   {
     altnet = FALSE;
-    xastir_snprintf(altnet_call,
+    astir_snprintf(altnet_call,
                     sizeof(altnet_call),
-                    "XASTIR");
+                    "ASTIR");
   }
 
   operate_as_an_igate=Igate_type;
@@ -25068,7 +25068,7 @@ void Configure_defaults( Widget UNUSED(w), XtPointer UNUSED(clientData), XtPoint
 
 
     // Check box to load predefined (SAR/Event) objects menu from a file or not.
-    xastir_snprintf(loadfrom,
+    astir_snprintf(loadfrom,
                     sizeof(loadfrom),
                     "%s %s",
                     langcode("WPUPCFD031"),
@@ -26447,7 +26447,7 @@ void Configure_audio_alarm_change_data(Widget widget, XtPointer clientData, XtPo
 
 
   temp_ptr = XmTextFieldGetString(audio_alarm_config_play_data);
-  xastir_snprintf(sound_command,
+  astir_snprintf(sound_command,
                   sizeof(sound_command),
                   "%s",
                   temp_ptr);
@@ -26456,7 +26456,7 @@ void Configure_audio_alarm_change_data(Widget widget, XtPointer clientData, XtPo
   (void)remove_trailing_spaces(sound_command);
 
   temp_ptr = XmTextFieldGetString(audio_alarm_config_play_ons_data);
-  xastir_snprintf(xa_sound[XA_SOUND_NEW_STATION].file,
+  astir_snprintf(xa_sound[XA_SOUND_NEW_STATION].file,
                   sizeof(xa_sound[XA_SOUND_NEW_STATION].file),
                   "%s",
                   temp_ptr);
@@ -26465,7 +26465,7 @@ void Configure_audio_alarm_change_data(Widget widget, XtPointer clientData, XtPo
   (void)remove_trailing_spaces(xa_sound[XA_SOUND_NEW_STATION].file);
 
   temp_ptr = XmTextFieldGetString(audio_alarm_config_play_onm_data);
-  xastir_snprintf(xa_sound[XA_SOUND_NEW_MESSAGE].file,
+  astir_snprintf(xa_sound[XA_SOUND_NEW_MESSAGE].file,
                   sizeof(xa_sound[XA_SOUND_NEW_MESSAGE].file),
                   "%s",
                   temp_ptr);
@@ -26474,7 +26474,7 @@ void Configure_audio_alarm_change_data(Widget widget, XtPointer clientData, XtPo
   (void)remove_trailing_spaces(xa_sound[XA_SOUND_NEW_MESSAGE].file);
 
   temp_ptr = XmTextFieldGetString(audio_alarm_config_play_onpx_data);
-  xastir_snprintf(xa_sound[XA_SOUND_PROX].file,
+  astir_snprintf(xa_sound[XA_SOUND_PROX].file,
                   sizeof(xa_sound[XA_SOUND_PROX].file),
                   "%s",
                   temp_ptr);
@@ -26483,7 +26483,7 @@ void Configure_audio_alarm_change_data(Widget widget, XtPointer clientData, XtPo
   (void)remove_trailing_spaces(xa_sound[XA_SOUND_PROX].file);
 
   temp_ptr = XmTextFieldGetString(prox_min_data);
-  xastir_snprintf(prox_min,
+  astir_snprintf(prox_min,
                   sizeof(prox_min),
                   "%s",
                   temp_ptr);
@@ -26492,7 +26492,7 @@ void Configure_audio_alarm_change_data(Widget widget, XtPointer clientData, XtPo
   (void)remove_trailing_spaces(prox_min);
 
   temp_ptr = XmTextFieldGetString(prox_max_data);
-  xastir_snprintf(prox_max,
+  astir_snprintf(prox_max,
                   sizeof(prox_max),
                   "%s",
                   temp_ptr);
@@ -26501,7 +26501,7 @@ void Configure_audio_alarm_change_data(Widget widget, XtPointer clientData, XtPo
   (void)remove_trailing_spaces(prox_max);
 
   temp_ptr = XmTextFieldGetString(audio_alarm_config_play_onbo_data);
-  xastir_snprintf(xa_sound[XA_SOUND_BAND_OPEN].file,
+  astir_snprintf(xa_sound[XA_SOUND_BAND_OPEN].file,
                   sizeof(xa_sound[XA_SOUND_BAND_OPEN].file),
                   "%s",
                   temp_ptr);
@@ -26510,7 +26510,7 @@ void Configure_audio_alarm_change_data(Widget widget, XtPointer clientData, XtPo
   (void)remove_trailing_spaces(xa_sound[XA_SOUND_BAND_OPEN].file);
 
   temp_ptr = XmTextFieldGetString(bando_min_data);
-  xastir_snprintf(bando_min,
+  astir_snprintf(bando_min,
                   sizeof(bando_min),
                   "%s",
                   temp_ptr);
@@ -26519,7 +26519,7 @@ void Configure_audio_alarm_change_data(Widget widget, XtPointer clientData, XtPo
   (void)remove_trailing_spaces(bando_min);
 
   temp_ptr = XmTextFieldGetString(bando_max_data);
-  xastir_snprintf(bando_max,
+  astir_snprintf(bando_max,
                   sizeof(bando_max),
                   "%s",
                   temp_ptr);
@@ -26528,7 +26528,7 @@ void Configure_audio_alarm_change_data(Widget widget, XtPointer clientData, XtPo
   (void)remove_trailing_spaces(bando_max);
 
   temp_ptr = XmTextFieldGetString(audio_alarm_config_wx_alert_data);
-  xastir_snprintf(xa_sound[XA_SOUND_WX_ALERT].file,
+  astir_snprintf(xa_sound[XA_SOUND_WX_ALERT].file,
                   sizeof(xa_sound[XA_SOUND_WX_ALERT].file),
                   "%s",
                   temp_ptr);
@@ -27718,7 +27718,7 @@ void Track_Me( Widget UNUSED(widget), XtPointer clientData, XtPointer callData)
 
   if(state->set)
   {
-    xastir_snprintf(tracking_station_call,
+    astir_snprintf(tracking_station_call,
                     sizeof(tracking_station_call),
                     "%s",
                     my_callsign);
@@ -27882,7 +27882,7 @@ void Configure_station_change_data(Widget widget, XtPointer clientData, XtPointe
 
   transmit_compressed_posit = (int)XmToggleButtonGetState(compressed_posit_tx);
 
-  xastir_snprintf(old_callsign,
+  astir_snprintf(old_callsign,
                   sizeof(old_callsign),
                   "%s",
                   my_callsign);
@@ -27890,7 +27890,7 @@ void Configure_station_change_data(Widget widget, XtPointer clientData, XtPointe
   /*fprintf(stderr,"Changing Configure station data\n");*/
 
   temp_ptr = XmTextFieldGetString(station_config_call_data);
-  xastir_snprintf(my_callsign,
+  astir_snprintf(my_callsign,
                   sizeof(my_callsign),
                   "%s",
                   temp_ptr);
@@ -27902,7 +27902,7 @@ void Configure_station_change_data(Widget widget, XtPointer clientData, XtPointe
 
   // Enter NOCALL if there's nothing left.
   if (my_callsign[0] == '\0')
-    xastir_snprintf(my_callsign,
+    astir_snprintf(my_callsign,
                     sizeof(my_callsign),
                     "NOCALL");
 
@@ -27943,7 +27943,7 @@ void Configure_station_change_data(Widget widget, XtPointer clientData, XtPointe
 
   temp_ptr = XmTextFieldGetString(station_config_slat_data_deg);
   temp_ptr2 = XmTextFieldGetString(station_config_slat_data_min);
-  xastir_snprintf(my_lat, sizeof(my_lat), "%02d%06.3f%c",
+  astir_snprintf(my_lat, sizeof(my_lat), "%02d%06.3f%c",
                   atoi(temp_ptr),
                   atof(temp_ptr2),temp[0]);
   XtFree(temp_ptr);
@@ -27986,7 +27986,7 @@ void Configure_station_change_data(Widget widget, XtPointer clientData, XtPointe
 
   temp_ptr = XmTextFieldGetString(station_config_slong_data_deg);
   temp_ptr2 = XmTextFieldGetString(station_config_slong_data_min);
-  xastir_snprintf(my_long, sizeof(my_long), "%03d%06.3f%c",
+  astir_snprintf(my_long, sizeof(my_long), "%03d%06.3f%c",
                   atoi(temp_ptr),
                   atof(temp_ptr2),temp[0]);
   XtFree(temp_ptr);
@@ -28025,7 +28025,7 @@ void Configure_station_change_data(Widget widget, XtPointer clientData, XtPointe
   }
 
   temp_ptr = XmTextFieldGetString(station_config_comment_data);
-  xastir_snprintf(my_comment,
+  astir_snprintf(my_comment,
                   sizeof(my_comment),
                   "%s",
                   temp_ptr);
@@ -28047,7 +28047,7 @@ void Configure_station_change_data(Widget widget, XtPointer clientData, XtPointe
       // will still be tracking our old callsign.
       if (track_me)
       {
-        xastir_snprintf(tracking_station_call,
+        astir_snprintf(tracking_station_call,
                         sizeof(tracking_station_call),
                         "%s",
                         my_callsign);
@@ -30102,7 +30102,7 @@ int main(int argc, char *argv[], char *envp[])
   ag_error=0;
 
   // Reset the gps variables.
-  xastir_snprintf(gps_sats,
+  astir_snprintf(gps_sats,
                   sizeof(gps_sats),
                   "00");
   gps_valid = 0;
@@ -30111,7 +30111,7 @@ int main(int argc, char *argv[], char *envp[])
 
   // Here we had to add "g:" in order to allow -geometry to be
   // used and x: to allow xt arguments, which is actually parsed out
-  // by the XtIntrinsics code, not directly in Xastir code.
+  // by the XtIntrinsics code, not directly in Astir code.
   //
   while ((ag = getopt(argc, argv, "c:f:v:l:g:x:012346789timpV")) != EOF)
   {
@@ -30122,7 +30122,7 @@ int main(int argc, char *argv[], char *envp[])
       case 'c':
         if (optarg)
         {
-          xastir_snprintf(xa_config_dir,sizeof(xa_config_dir),"%s", optarg);
+          astir_snprintf(xa_config_dir,sizeof(xa_config_dir),"%s", optarg);
           fprintf(stderr,"Using config dir %s\n",xa_config_dir);
         }
         break;
@@ -30130,7 +30130,7 @@ int main(int argc, char *argv[], char *envp[])
       case 'f':   // Track callsign
         if (optarg)
         {
-          xastir_snprintf(temp_tracking_station_call,
+          astir_snprintf(temp_tracking_station_call,
                           sizeof(temp_tracking_station_call),
                           "%s",
                           optarg);
@@ -30160,7 +30160,7 @@ int main(int argc, char *argv[], char *envp[])
         break;
 
       case 'V':
-        printf("\nXastir V%s %s\n",xastir_version, gitstring);
+        printf("\nAstir V%s %s\n",astir_version, gitstring);
         exit(0);
         break;
       case 'l':
@@ -30170,51 +30170,51 @@ int main(int argc, char *argv[], char *envp[])
           lang_to_use_or[0] = '\0';
           if        (strncasecmp(optarg,"ENGLISH",    7) == 0)
           {
-            xastir_snprintf(lang_to_use_or, sizeof(lang_to_use_or), "English");
+            astir_snprintf(lang_to_use_or, sizeof(lang_to_use_or), "English");
           }
           else if (strncasecmp(optarg,"DUTCH",      5) == 0)
           {
-            xastir_snprintf(lang_to_use_or, sizeof(lang_to_use_or), "Dutch");
+            astir_snprintf(lang_to_use_or, sizeof(lang_to_use_or), "Dutch");
           }
           else if (strncasecmp(optarg,"FRENCH",     6) == 0)
           {
-            xastir_snprintf(lang_to_use_or, sizeof(lang_to_use_or), "French");
+            astir_snprintf(lang_to_use_or, sizeof(lang_to_use_or), "French");
           }
           else if (strncasecmp(optarg,"GERMAN",     6) == 0)
           {
-            xastir_snprintf(lang_to_use_or, sizeof(lang_to_use_or), "German");
+            astir_snprintf(lang_to_use_or, sizeof(lang_to_use_or), "German");
           }
           else if (strncasecmp(optarg,"SPANISH",    7) == 0)
           {
-            xastir_snprintf(lang_to_use_or, sizeof(lang_to_use_or), "Spanish");
+            astir_snprintf(lang_to_use_or, sizeof(lang_to_use_or), "Spanish");
           }
           else if (strncasecmp(optarg,"ITALIAN",    7) == 0)
           {
-            xastir_snprintf(lang_to_use_or, sizeof(lang_to_use_or), "Italian");
+            astir_snprintf(lang_to_use_or, sizeof(lang_to_use_or), "Italian");
           }
           else if (strncasecmp(optarg,"PORTUGUESE",10) == 0)
           {
-            xastir_snprintf(lang_to_use_or, sizeof(lang_to_use_or), "Portuguese");
+            astir_snprintf(lang_to_use_or, sizeof(lang_to_use_or), "Portuguese");
           }
           else if (strncasecmp(optarg,"ELMERFUDD",10) == 0)
           {
-            xastir_snprintf(lang_to_use_or, sizeof(lang_to_use_or), "ElmerFudd");
+            astir_snprintf(lang_to_use_or, sizeof(lang_to_use_or), "ElmerFudd");
           }
           else if (strncasecmp(optarg,"MUPPETSCHEF",10) == 0)
           {
-            xastir_snprintf(lang_to_use_or, sizeof(lang_to_use_or), "MuppetsChef");
+            astir_snprintf(lang_to_use_or, sizeof(lang_to_use_or), "MuppetsChef");
           }
           else if (strncasecmp(optarg,"OLDEENGLISH",10) == 0)
           {
-            xastir_snprintf(lang_to_use_or, sizeof(lang_to_use_or), "OldeEnglish");
+            astir_snprintf(lang_to_use_or, sizeof(lang_to_use_or), "OldeEnglish");
           }
           else if (strncasecmp(optarg,"PIGLATIN",10) == 0)
           {
-            xastir_snprintf(lang_to_use_or, sizeof(lang_to_use_or), "PigLatin");
+            astir_snprintf(lang_to_use_or, sizeof(lang_to_use_or), "PigLatin");
           }
           else if (strncasecmp(optarg,"PIRATEENGLISH",10) == 0)
           {
-            xastir_snprintf(lang_to_use_or, sizeof(lang_to_use_or), "PirateEnglish");
+            astir_snprintf(lang_to_use_or, sizeof(lang_to_use_or), "PirateEnglish");
           }
           else
           {
@@ -30263,8 +30263,8 @@ int main(int argc, char *argv[], char *envp[])
 
   if (ag_error)
   {
-    fprintf(stderr,"\nXastir Command line Options\n\n");
-    fprintf(stderr,"-c /path/dir       Xastir config dir\n");
+    fprintf(stderr,"\nAstir Command line Options\n\n");
+    fprintf(stderr,"-c /path/dir       Astir config dir\n");
     fprintf(stderr,"-f callsign        Track callsign\n");
     fprintf(stderr,"-i                 Install private Colormap\n");
     fprintf(stderr,"-geometry WxH+X+Y  Set Window Geometry\n");
@@ -30346,7 +30346,7 @@ int main(int argc, char *argv[], char *envp[])
   /* get User info */
   user_id   = getuid();
   user_info = getpwuid(user_id);
-  xastir_snprintf(user_dir,
+  astir_snprintf(user_dir,
                   sizeof(user_dir),
                   "%s",
                   user_info->pw_dir);
@@ -30570,12 +30570,12 @@ int main(int argc, char *argv[], char *envp[])
 
   /* do language links */
   if (strlen(lang_to_use_or) > 0)
-    xastir_snprintf(lang_to_use,
+    astir_snprintf(lang_to_use,
                     sizeof(lang_to_use),
                     "%s",
                     lang_to_use_or);
 
-  xastir_snprintf(temp, sizeof(temp), "help/help-%s.dat", lang_to_use);
+  astir_snprintf(temp, sizeof(temp), "help/help-%s.dat", lang_to_use);
   (void)unlink(get_user_base_dir("config/help.dat", temp_base_dir, sizeof(temp_base_dir)));
 
   // Note that this symlink will probably not fail.  It's easy to
@@ -30590,7 +30590,7 @@ int main(int argc, char *argv[], char *envp[])
     exit(0);  // Exiting 'cuz online help won't work.
   }
 
-  xastir_snprintf(temp, sizeof(temp), "config/language-%s.sys", lang_to_use);
+  astir_snprintf(temp, sizeof(temp), "config/language-%s.sys", lang_to_use);
   (void)unlink(get_user_base_dir("config/language.sys", temp_base_dir, sizeof(temp_base_dir)));
 
   // Note that this symlink will probably not fail.  It's easy to
@@ -30606,7 +30606,7 @@ int main(int argc, char *argv[], char *envp[])
   }
 
   /* (NEW) set help file area */
-  xastir_snprintf(HELP_FILE,
+  astir_snprintf(HELP_FILE,
                   sizeof(HELP_FILE),
                   "%s",
                   "config/help.dat");
@@ -30645,7 +30645,7 @@ int main(int argc, char *argv[], char *envp[])
       //
       appshell = XtVaOpenApplication(
                    &app_context,
-                   "Xastir",
+                   "Astir",
                    NULL,
                    0,
                    &argc,
@@ -30784,9 +30784,9 @@ int main(int argc, char *argv[], char *envp[])
       }
 
 
-      // Check whether we're running Xastir for the first time.
+      // Check whether we're running Astir for the first time.
       // If so, my_callsign will be "NOCALL".   In this case
-      // write something appropriate into ~/.xastir/config/selected_maps.sys
+      // write something appropriate into ~/.astir/config/selected_maps.sys
       // so that we get the default map on startup.  Also
       // request to bring up the Configure->Station dialog in
       // this case.
@@ -30843,14 +30843,14 @@ int main(int argc, char *argv[], char *envp[])
       Set_Log_Indicator();
 
 
-      if (getenv("XASTIR_ZOOMOUT"))
+      if (getenv("ASTIR_ZOOMOUT"))
       {
-        xa_zoomout_left = atoi(getenv("XASTIR_ZOOMOUT"));
+        xa_zoomout_left = atoi(getenv("ASTIR_ZOOMOUT"));
         fprintf(stderr, "[zoomout] %d steps requested\n", xa_zoomout_left);
         (void)XtAppAddTimeOut(app_context, 6000, xa_zoomout_tick, (XtPointer)da);
       }
 
-      if (getenv("XASTIR_BENCH"))
+      if (getenv("ASTIR_BENCH"))
       {
         fprintf(stderr, "[bench] scripted pan/zoom benchmark starting\n");
         (void)XtAppAddTimeOut(app_context, 5000, xa_bench_tick, (XtPointer)da);
@@ -30860,7 +30860,7 @@ int main(int argc, char *argv[], char *envp[])
       // map draws.  Letting the initial render finish first keeps the replay
       // out of the map-loading path, where it would compete for the same main
       // loop and make the arrival order depend on how long a map file took.
-      if (getenv("XASTIR_REPLAY"))
+      if (getenv("ASTIR_REPLAY"))
       {
         (void)XtAppAddTimeOut(app_context, 20000, xa_replay_tick, NULL);
       }

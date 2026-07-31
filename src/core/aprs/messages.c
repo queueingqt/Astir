@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -46,7 +46,7 @@
 #endif // HAVE_SYS_TIME_H
 #include <time.h>
 
-#include "core/xastir.h"
+#include "core/astir.h"
 #include "core/main.h"
 #include "core/aprs/db_funcs.h"
 #include "core/aprs/messages.h"
@@ -67,7 +67,7 @@
 // Moved from messages_gui.c.  db.c and this file take it as well as the send
 // dialog, so it is shared state, not the dialog's own.  init_critical_section()
 // for it still runs from messages_gui_init(); only the definition moved.
-xastir_mutex send_message_dialog_lock;
+astir_mutex send_message_dialog_lock;
 
 char group_data_file[400];
 char *group_data_list = NULL;   // Need this NULL for Solaris!
@@ -142,15 +142,15 @@ void group_build_list(char *filename)
   }
 
 
-// Make sure we always listen for ourself, XASTIR, & our Version groups
-  xastir_snprintf(&group_data_list[0],10,"%s",my_callsign);
-  xastir_snprintf(&group_data_list[10],10,"XASTIR");
-  xastir_snprintf(&group_data_list[20],10,"%s",XASTIR_TOCALL);
+// Make sure we always listen for ourself, ASTIR, & our Version groups
+  astir_snprintf(&group_data_list[0],10,"%s",my_callsign);
+  astir_snprintf(&group_data_list[10],10,"ASTIR");
+  astir_snprintf(&group_data_list[20],10,"%s",ASTIR_TOCALL);
   group_data_count = 3;
 // If we are in special group look for messages.
   if (altnet)
   {
-    xastir_snprintf(&group_data_list[group_data_count*10],10,"%s",altnet_call);
+    astir_snprintf(&group_data_list[group_data_count*10],10,"%s",altnet_call);
     group_data_count++;
   }
 //
@@ -256,7 +256,7 @@ int group_active(char *from)
 
     group_build_list( group_data_path );
     current_group_stat = group_stat;
-    xastir_snprintf(altgroup,sizeof(altgroup),"%s",VERSIONFRM);
+    astir_snprintf(altgroup,sizeof(altgroup),"%s",VERSIONFRM);
   }
   if (group_data_list != NULL)    // Causes segfault on Solaris 2.5 without this!
   {
@@ -321,7 +321,7 @@ int look_for_open_group_data(char *to)
 // message lines or duplicate acks for any particular QSO.  To do so
 // would cause the Send Message dialog to pop up on every such
 // received message, which is VERY annoying (that was the default in
-// Xastir for years, and nobody liked it!).
+// Astir for years, and nobody liked it!).
 //
 int check_popup_window(char *from_call_sign, int group)
 {
@@ -526,7 +526,7 @@ void change_path_outgoing_messages_to(char *callsign, char *new_path)
 //    callsign,
 //    new_path);
 
-  xastir_snprintf(my_callsign,
+  astir_snprintf(my_callsign,
                   sizeof(my_callsign),
                   "%s",
                   callsign);
@@ -550,7 +550,7 @@ void change_path_outgoing_messages_to(char *callsign, char *new_path)
 
 //fprintf(stderr,"\tFound an outgoing queued msg to change path on.\n");
 
-        xastir_snprintf(message_pool[ii].path,
+        astir_snprintf(message_pool[ii].path,
                         sizeof(message_pool[ii].path),
                         "%s",
                         new_path);
@@ -836,24 +836,24 @@ void output_message(char *from, char *to, char *message, char *path)
         }
 
 
-// Note that Xastir's messaging can lock up if we do a rollover and
+// Note that Astir's messaging can lock up if we do a rollover and
 // have unacked messages on each side of the rollover.  This is due
 // to the logic in db.c that looks for the lowest numbered unacked
 // message.  We get stuck on both sides of the fence at once.  To
 // avoid this condition we could reduce the compare number (8100) to
 // a smaller value, and only roll over when there are no unacked
 // messages?  Another way to do it would be to write a "0" to the
-// config file if we're more than 1000 when we quit Xastir?  That
+// config file if we're more than 1000 when we quit Astir?  That
 // would probably be easier.  It's still possible to get to 8100
 // messages during one runtime though.  Unlikely, but possible.
 
         message_pool[i].active = MESSAGE_ACTIVE;
         message_pool[i].wait_on_first_ack = wait_on_first_ack;
-        xastir_snprintf(message_pool[i].to_call_sign,
+        astir_snprintf(message_pool[i].to_call_sign,
                         sizeof(message_pool[i].to_call_sign),
                         "%s",
                         to);
-        xastir_snprintf(message_pool[i].from_call_sign,
+        astir_snprintf(message_pool[i].from_call_sign,
                         sizeof(message_pool[i].from_call_sign),
                         "%s",
                         from);
@@ -862,7 +862,7 @@ void output_message(char *from, char *to, char *message, char *path)
         message_pool[i].message_line[sizeof(message_pool[i].message_line)-1] = '\0';
 
         if (path != NULL)
-          xastir_snprintf(message_pool[i].path,
+          astir_snprintf(message_pool[i].path,
                           sizeof(message_pool[i].path),
                           "%s",
                           path);
@@ -873,13 +873,13 @@ void output_message(char *from, char *to, char *message, char *path)
 
 //                // We compute the base-90 sequence number here
 //                // This allows it to range from "!!" to "zz"
-//                xastir_snprintf(message_pool[i].seq,
+//                astir_snprintf(message_pool[i].seq,
 //                    sizeof(message_pool[i].seq),
 //                    "%c%c",
 //                    (char)(((message_counter / 90) % 90) + 33),
 //                    (char)((message_counter % 90) + 33));
 
-        xastir_snprintf(message_pool[i].seq,
+        astir_snprintf(message_pool[i].seq,
                         sizeof(message_pool[i].seq),
                         "%c%c",
                         message_counter[0],
@@ -941,13 +941,13 @@ void output_message(char *from, char *to, char *message, char *path)
 
 
 // Here we're doing some routing of the transmitted packets.  We
-// want to keep Xastir from transmitting on ports that aren't
+// want to keep Astir from transmitting on ports that aren't
 // actively being used in the QSO, but also cover the case where
 // ports can go up/down during the QSO.
 //
 // Note that igates might get into the act quite a bit for RF<->RF
 // QSO's if we're sending to the internet too, but that's a bug in
-// the igate software, and not something that Xastir should try to
+// the igate software, and not something that Astir should try to
 // correct itself.
 //
 void transmit_message_data(char *to, char *message, char *path)
@@ -1174,12 +1174,12 @@ void transmit_message_data_delayed(char *to, char *message,
   ptr = (delayed_ack_record_p)malloc(sizeof(delayed_ack_record));
 
   // Fill in the record
-  xastir_snprintf(ptr->to_call_sign,
+  astir_snprintf(ptr->to_call_sign,
                   sizeof(ptr->to_call_sign),
                   "%s",
                   to);
 
-  xastir_snprintf(ptr->message_line,
+  astir_snprintf(ptr->message_line,
                   sizeof(ptr->message_line),
                   "%s",
                   message);
@@ -1190,7 +1190,7 @@ void transmit_message_data_delayed(char *to, char *message,
   }
   else
   {
-    xastir_snprintf(ptr->path,
+    astir_snprintf(ptr->path,
                     sizeof(ptr->path),
                     "%s",
                     path);
@@ -1364,7 +1364,7 @@ void check_and_transmit_messages(time_t time)
             // Reply/Ack protocol capable.
             last_ack_ptr = get_most_recent_ack(to_call);
             if (last_ack_ptr != NULL)
-              xastir_snprintf(last_ack,
+              astir_snprintf(last_ack,
                               sizeof(last_ack),
                               "%s",
                               last_ack_ptr);
@@ -1373,7 +1373,7 @@ void check_and_transmit_messages(time_t time)
               last_ack[0] = '\0';
             }
 
-            xastir_snprintf(temp, sizeof(temp), ":%s:%s{%s}%s",
+            astir_snprintf(temp, sizeof(temp), ":%s:%s{%s}%s",
                             to_call,
                             message_pool[i].message_line,
                             message_pool[i].seq,
@@ -1467,7 +1467,7 @@ void check_and_transmit_messages(time_t time)
             char temp[150];
             char temp_to[20];
 
-            xastir_snprintf(temp,sizeof(temp),"To: %s, Msg: %s",
+            astir_snprintf(temp,sizeof(temp),"To: %s, Msg: %s",
                             message_pool[i].to_call_sign,
                             message_pool[i].message_line);
             //xa_ui_popup(langcode("POPEM00004"),langcode("POPEM00017"));
@@ -1484,7 +1484,7 @@ void check_and_transmit_messages(time_t time)
             // the message then needs this parameter to
             // do another compare (to enable the Send Msg
             // button again).
-            xastir_snprintf(temp_to,
+            astir_snprintf(temp_to,
                             sizeof(temp_to),
                             "%s",
                             message_pool[i].to_call_sign);
@@ -1536,7 +1536,7 @@ void clear_acked_message(char *from, char *to, char *seq)
 
 
   // Copy seq into local variable
-  xastir_snprintf(msg_id,
+  astir_snprintf(msg_id,
                   sizeof(msg_id),
                   "%s",
                   seq);
@@ -1553,7 +1553,7 @@ void clear_acked_message(char *from, char *to, char *seq)
 
   //lowest=100000;
   // Highest Base-90 2-char string
-  xastir_snprintf(lowest,sizeof(lowest),"zz");
+  astir_snprintf(lowest,sizeof(lowest),"zz");
   found= -1;
   for (i=0; i<MAX_OUTGOING_MESSAGES; i++)
   {
@@ -1604,7 +1604,7 @@ void clear_acked_message(char *from, char *to, char *seq)
                   if (strncmp(message_pool[i].seq,lowest,2) < 0)
                   {
                     //lowest=atoi(message_pool[i].seq);
-                    xastir_snprintf(lowest,
+                    astir_snprintf(lowest,
                                     sizeof(lowest),
                                     "%s",
                                     message_pool[i].seq);

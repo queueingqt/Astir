@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -41,8 +41,8 @@
 #include <Xm/XmAll.h>
 #include <X11/cursorfont.h>
 
-#include "core/xastir.h"
-#include "ui/motif/xastir_gui.h"
+#include "core/astir.h"
+#include "ui/motif/astir_gui.h"
 #include "ui/motif/wx_gui.h"
 #include "ui/motif/main_gui.h"
 #include "ui/motif/draw_symbols_gui.h"
@@ -280,7 +280,7 @@ void fetch_current_DR_strings(DataRow *p_station, char *lat_str,
  * create a new DataRow for our new packet.  In this case, we discard
  * any position entered in the modify dialog box and replace it with
  * dead-reckoned position.  I'm not sure this is a desirable feature, but
- * it was exactly what Xastir did before my refactor.
+ * it was exactly what Astir did before my refactor.
  *
  * returns zero if an error occurred, in which case the line is not to be
  * used by the caller
@@ -354,7 +354,7 @@ int Setup_object_item_data(char *line, int line_length, DataRow *p_station,
                                      prob_min, sizeof(prob_min),
                                      prob_max, sizeof(prob_max)))
   {
-    xastir_snprintf(last_object,sizeof(last_object),"%s",name);
+    astir_snprintf(last_object,sizeof(last_object),"%s",name);
 
     if (p_station != NULL)
     {
@@ -540,7 +540,7 @@ void Object_confirm_data_set(Widget widget, XtPointer clientData, XtPointer call
 
 
   temp_ptr = XmTextFieldGetString(object_name_data);
-  xastir_snprintf(line,
+  astir_snprintf(line,
                   sizeof(line),
                   "%s",
                   temp_ptr);
@@ -584,7 +584,7 @@ void Item_confirm_data_set(Widget widget, XtPointer clientData, XtPointer callDa
 
 
   temp_ptr = XmTextFieldGetString(object_name_data);
-  xastir_snprintf(line,
+  astir_snprintf(line,
                   sizeof(line),
                   "%s",
                   temp_ptr);
@@ -781,7 +781,7 @@ void Signpost_object_toggle( Widget widget, XtPointer UNUSED(clientData), XtPoin
 
   // Save name and comment fields temporarily
   temp_ptr = XmTextFieldGetString(object_name_data);
-  xastir_snprintf(signpost_name,
+  astir_snprintf(signpost_name,
                   sizeof(signpost_name),
                   "%s",
                   temp_ptr);
@@ -790,7 +790,7 @@ void Signpost_object_toggle( Widget widget, XtPointer UNUSED(clientData), XtPoin
   (void)remove_trailing_spaces(signpost_name);
 
   temp_ptr = XmTextFieldGetString(object_comment_data);
-  xastir_snprintf(comment,
+  astir_snprintf(comment,
                   sizeof(comment),
                   "%s",
                   temp_ptr);
@@ -877,7 +877,7 @@ void Probability_circle_toggle( Widget widget, XtPointer UNUSED(clientData), XtP
 
   // Save name and comment fields temporarily
   temp_ptr = XmTextFieldGetString(object_name_data);
-  xastir_snprintf(signpost_name,
+  astir_snprintf(signpost_name,
                   sizeof(signpost_name),
                   "%s",
                   temp_ptr);
@@ -886,7 +886,7 @@ void Probability_circle_toggle( Widget widget, XtPointer UNUSED(clientData), XtP
   (void)remove_trailing_spaces(signpost_name);
 
   temp_ptr = XmTextFieldGetString(object_comment_data);
-  xastir_snprintf(comment,
+  astir_snprintf(comment,
                   sizeof(comment),
                   "%s",
                   temp_ptr);
@@ -973,7 +973,7 @@ void  Area_object_toggle( Widget widget, XtPointer UNUSED(clientData), XtPointer
 
   // Save name and comment fields temporarily
   temp_ptr = XmTextFieldGetString(object_name_data);
-  xastir_snprintf(signpost_name,
+  astir_snprintf(signpost_name,
                   sizeof(signpost_name),
                   "%s",
                   temp_ptr);
@@ -982,7 +982,7 @@ void  Area_object_toggle( Widget widget, XtPointer UNUSED(clientData), XtPointer
   (void)remove_trailing_spaces(signpost_name);
 
   temp_ptr = XmTextFieldGetString(object_comment_data);
-  xastir_snprintf(comment,
+  astir_snprintf(comment,
                   sizeof(comment),
                   "%s",
                   temp_ptr);
@@ -1080,7 +1080,7 @@ void  DF_bearing_object_toggle( Widget widget, XtPointer UNUSED(clientData), XtP
 
   // Save name and comment fields temporarily
   temp_ptr = XmTextFieldGetString(object_name_data);
-  xastir_snprintf(signpost_name,
+  astir_snprintf(signpost_name,
                   sizeof(signpost_name),
                   "%s",
                   temp_ptr);
@@ -1089,7 +1089,7 @@ void  DF_bearing_object_toggle( Widget widget, XtPointer UNUSED(clientData), XtP
   (void)remove_trailing_spaces(signpost_name);
 
   temp_ptr = XmTextFieldGetString(object_comment_data);
-  xastir_snprintf(comment,
+  astir_snprintf(comment,
                   sizeof(comment),
                   "%s",
                   temp_ptr);
@@ -1185,7 +1185,7 @@ void  Map_View_object_toggle( Widget widget, XtPointer UNUSED(clientData), XtPoi
 
   // Save name and comment fields temporarily
   temp_ptr = XmTextFieldGetString(object_name_data);
-  xastir_snprintf(signpost_name,
+  astir_snprintf(signpost_name,
                   sizeof(signpost_name),
                   "%s",
                   temp_ptr);
@@ -1194,7 +1194,7 @@ void  Map_View_object_toggle( Widget widget, XtPointer UNUSED(clientData), XtPoi
   (void)remove_trailing_spaces(signpost_name);
 
   temp_ptr = XmTextFieldGetString(object_comment_data);
-  xastir_snprintf(comment,
+  astir_snprintf(comment,
                   sizeof(comment),
                   "%s",
                   temp_ptr);
@@ -1588,8 +1588,8 @@ void Populate_predefined_objects(predefinedObject *predefinedObjects)
 #endif
 
 
-  xastir_snprintf(line,sizeof(line),"%s","\0");
-  xastir_snprintf(predefined_object_definition_file,sizeof(predefined_object_definition_file),"config/%s",predefined_object_definition_filename);
+  astir_snprintf(line,sizeof(line),"%s","\0");
+  astir_snprintf(predefined_object_definition_file,sizeof(predefined_object_definition_file),"config/%s",predefined_object_definition_filename);
 
   get_user_base_dir(predefined_object_definition_file, predef_obj_path,
                     sizeof(predef_obj_path));
@@ -1612,7 +1612,7 @@ void Populate_predefined_objects(predefinedObject *predefinedObjects)
       fp_file = fopen(get_data_base_dir(predefined_object_definition_file),"r");
 #endif  // OBJECT_DEF_FILE_USER_BASE
 
-      xastir_snprintf(error_correct_location,
+      astir_snprintf(error_correct_location,
                       sizeof(error_correct_location),
                       "Loading from %s/%s \n",
 #ifdef OBJECT_DEF_FILE_USER_BASE
@@ -1642,9 +1642,9 @@ void Populate_predefined_objects(predefinedObject *predefinedObjects)
             value = strtok(NULL,"\t\r\n");
             if (value != NULL)
             {
-              xastir_snprintf(predefinedObjects[j].call,sizeof(predefinedObjects[j].call), "%s", value);
+              astir_snprintf(predefinedObjects[j].call,sizeof(predefinedObjects[j].call), "%s", value);
               // by default, set data to an empty string, allowing DATA to be ommitted
-              xastir_snprintf(predefinedObjects[j].data,sizeof(predefinedObjects[j].data),"%c",'\0');
+              astir_snprintf(predefinedObjects[j].data,sizeof(predefinedObjects[j].data),"%c",'\0');
               object_read_ok ++;
             }
           }
@@ -1653,7 +1653,7 @@ void Populate_predefined_objects(predefinedObject *predefinedObjects)
             value = strtok(NULL,"\t\r\n");
             if (value != NULL)
             {
-              xastir_snprintf(predefinedObjects[j].page,sizeof(predefinedObjects[j].page), "%s", value);
+              astir_snprintf(predefinedObjects[j].page,sizeof(predefinedObjects[j].page), "%s", value);
               object_read_ok ++;
             }
           }
@@ -1662,7 +1662,7 @@ void Populate_predefined_objects(predefinedObject *predefinedObjects)
             value = strtok(NULL,"\t\r\n");
             if (value != NULL)
             {
-              xastir_snprintf(predefinedObjects[j].symbol,sizeof(predefinedObjects[j].symbol), "%s", value);
+              astir_snprintf(predefinedObjects[j].symbol,sizeof(predefinedObjects[j].symbol), "%s", value);
               object_read_ok ++;
             }
           }
@@ -1671,11 +1671,11 @@ void Populate_predefined_objects(predefinedObject *predefinedObjects)
             value = strtok(NULL,"\t\r\n");
             if (value == NULL || strcmp(value,"NULL")==0)
             {
-              xastir_snprintf(predefinedObjects[j].data,sizeof(predefinedObjects[j].data),"%c",'\0');
+              astir_snprintf(predefinedObjects[j].data,sizeof(predefinedObjects[j].data),"%c",'\0');
             }
             else
             {
-              xastir_snprintf(predefinedObjects[j].data,sizeof(predefinedObjects[j].data), "%s", value);
+              astir_snprintf(predefinedObjects[j].data,sizeof(predefinedObjects[j].data), "%s", value);
             }
           }
           if (strcmp("MENU",variable)==0)
@@ -1683,7 +1683,7 @@ void Populate_predefined_objects(predefinedObject *predefinedObjects)
             value = strtok(NULL,"\t\r\n");
             if (value != NULL)
             {
-              xastir_snprintf(predefinedObjects[j].menu_call,sizeof(predefinedObjects[j].menu_call), "%s", value);
+              astir_snprintf(predefinedObjects[j].menu_call,sizeof(predefinedObjects[j].menu_call), "%s", value);
               object_read_ok ++;
             }
           }
@@ -1733,7 +1733,7 @@ void Populate_predefined_objects(predefinedObject *predefinedObjects)
 
       fprintf(stderr,"Error: Predefined objects menu file not found.\n");
 
-      xastir_snprintf(error_correct_location,
+      astir_snprintf(error_correct_location,
                       sizeof(error_correct_location),
                       "File should be in %s\n",
 #ifdef OBJECT_DEF_FILE_USER_BASE
@@ -1750,22 +1750,22 @@ void Populate_predefined_objects(predefinedObject *predefinedObjects)
     // file read failed or was not requested, display default SAR menu
 
     // command post
-    xastir_snprintf(predefinedObjects[j].call,sizeof(predefinedObjects[j].call),"ICP");
-    xastir_snprintf(predefinedObjects[j].page,sizeof(predefinedObjects[j].page),"/");
-    xastir_snprintf(predefinedObjects[j].symbol,sizeof(predefinedObjects[j].symbol),"c");
-    xastir_snprintf(predefinedObjects[j].data,sizeof(predefinedObjects[j].data),"%c",'\0');
-    xastir_snprintf(predefinedObjects[j].menu_call,sizeof(predefinedObjects[j].menu_call),"ICP: Command Post");
+    astir_snprintf(predefinedObjects[j].call,sizeof(predefinedObjects[j].call),"ICP");
+    astir_snprintf(predefinedObjects[j].page,sizeof(predefinedObjects[j].page),"/");
+    astir_snprintf(predefinedObjects[j].symbol,sizeof(predefinedObjects[j].symbol),"c");
+    astir_snprintf(predefinedObjects[j].data,sizeof(predefinedObjects[j].data),"%c",'\0');
+    astir_snprintf(predefinedObjects[j].menu_call,sizeof(predefinedObjects[j].menu_call),"ICP: Command Post");
     predefinedObjects[j].show_on_menu = 1;
     predefinedObjects[j].index_of_child = -1;
     predefinedObjects[j].index = j;
     j++;
 
     // Staging area
-    xastir_snprintf(predefinedObjects[j].call,sizeof(predefinedObjects[j].call),"Staging");
-    xastir_snprintf(predefinedObjects[j].page,sizeof(predefinedObjects[j].page),"S");
-    xastir_snprintf(predefinedObjects[j].symbol,sizeof(predefinedObjects[j].symbol),"0");
-    xastir_snprintf(predefinedObjects[j].data,sizeof(predefinedObjects[j].data),"%c",'\0');
-    xastir_snprintf(predefinedObjects[j].menu_call,sizeof(predefinedObjects[j].menu_call),"Staging");
+    astir_snprintf(predefinedObjects[j].call,sizeof(predefinedObjects[j].call),"Staging");
+    astir_snprintf(predefinedObjects[j].page,sizeof(predefinedObjects[j].page),"S");
+    astir_snprintf(predefinedObjects[j].symbol,sizeof(predefinedObjects[j].symbol),"0");
+    astir_snprintf(predefinedObjects[j].data,sizeof(predefinedObjects[j].data),"%c",'\0');
+    astir_snprintf(predefinedObjects[j].menu_call,sizeof(predefinedObjects[j].menu_call),"Staging");
     predefinedObjects[j].show_on_menu = 1;
     predefinedObjects[j].index_of_child = -1;
     predefinedObjects[j].index = j;
@@ -1773,21 +1773,21 @@ void Populate_predefined_objects(predefinedObject *predefinedObjects)
 
     // Initial Planning Point
     // set up to draw as two objects with different probability circles
-    xastir_snprintf(predefinedObjects[j].call,sizeof(predefinedObjects[j].call),"IPP_");
-    xastir_snprintf(predefinedObjects[j].page,sizeof(predefinedObjects[j].page),"/");
-    xastir_snprintf(predefinedObjects[j].symbol,sizeof(predefinedObjects[j].symbol),"/");
-    xastir_snprintf(predefinedObjects[j].data,sizeof(predefinedObjects[j].data)," Pmin0.75,Pmax1.0");
-    xastir_snprintf(predefinedObjects[j].menu_call,sizeof(predefinedObjects[j].menu_call),"[not shown]");
+    astir_snprintf(predefinedObjects[j].call,sizeof(predefinedObjects[j].call),"IPP_");
+    astir_snprintf(predefinedObjects[j].page,sizeof(predefinedObjects[j].page),"/");
+    astir_snprintf(predefinedObjects[j].symbol,sizeof(predefinedObjects[j].symbol),"/");
+    astir_snprintf(predefinedObjects[j].data,sizeof(predefinedObjects[j].data)," Pmin0.75,Pmax1.0");
+    astir_snprintf(predefinedObjects[j].menu_call,sizeof(predefinedObjects[j].menu_call),"[not shown]");
     // show on menu = 0 will hide this entry on menu
     predefinedObjects[j].show_on_menu = 0;
     predefinedObjects[j].index_of_child = -1;
     predefinedObjects[j].index = j;
     j++;
-    xastir_snprintf(predefinedObjects[j].call,sizeof(predefinedObjects[j].call),"IPP");
-    xastir_snprintf(predefinedObjects[j].page,sizeof(predefinedObjects[j].page),"/");
-    xastir_snprintf(predefinedObjects[j].symbol,sizeof(predefinedObjects[j].symbol),"/");
-    xastir_snprintf(predefinedObjects[j].data,sizeof(predefinedObjects[j].data)," Pmin0.25,Pmax0.5");
-    xastir_snprintf(predefinedObjects[j].menu_call,sizeof(predefinedObjects[j].menu_call),"IPP: InitialPlanningPoint");
+    astir_snprintf(predefinedObjects[j].call,sizeof(predefinedObjects[j].call),"IPP");
+    astir_snprintf(predefinedObjects[j].page,sizeof(predefinedObjects[j].page),"/");
+    astir_snprintf(predefinedObjects[j].symbol,sizeof(predefinedObjects[j].symbol),"/");
+    astir_snprintf(predefinedObjects[j].data,sizeof(predefinedObjects[j].data)," Pmin0.25,Pmax0.5");
+    astir_snprintf(predefinedObjects[j].menu_call,sizeof(predefinedObjects[j].menu_call),"IPP: InitialPlanningPoint");
     predefinedObjects[j].show_on_menu = 1;
     // index of child j - 1 will add additional callback to IPP_
     predefinedObjects[j].index_of_child = j - 1;
@@ -1795,11 +1795,11 @@ void Populate_predefined_objects(predefinedObject *predefinedObjects)
     j++;
 
     // Point last seen
-    xastir_snprintf(predefinedObjects[j].call,sizeof(predefinedObjects[j].call),"PLS");
-    xastir_snprintf(predefinedObjects[j].page,sizeof(predefinedObjects[j].page),"/");
-    xastir_snprintf(predefinedObjects[j].symbol,sizeof(predefinedObjects[j].symbol),"/");
-    xastir_snprintf(predefinedObjects[j].data,sizeof(predefinedObjects[j].data),"%c",'\0');
-    xastir_snprintf(predefinedObjects[j].menu_call,sizeof(predefinedObjects[j].menu_call),"PLS: Point Last Seen");
+    astir_snprintf(predefinedObjects[j].call,sizeof(predefinedObjects[j].call),"PLS");
+    astir_snprintf(predefinedObjects[j].page,sizeof(predefinedObjects[j].page),"/");
+    astir_snprintf(predefinedObjects[j].symbol,sizeof(predefinedObjects[j].symbol),"/");
+    astir_snprintf(predefinedObjects[j].data,sizeof(predefinedObjects[j].data),"%c",'\0');
+    astir_snprintf(predefinedObjects[j].menu_call,sizeof(predefinedObjects[j].menu_call),"PLS: Point Last Seen");
     predefinedObjects[j].show_on_menu = 1;
     predefinedObjects[j].index_of_child = -1;
     predefinedObjects[j].index = j;
@@ -1807,33 +1807,33 @@ void Populate_predefined_objects(predefinedObject *predefinedObjects)
 
 
     // Last known point
-    xastir_snprintf(predefinedObjects[j].call,sizeof(predefinedObjects[j].call),"LKP");
-    xastir_snprintf(predefinedObjects[j].page,sizeof(predefinedObjects[j].page),"/");
-    xastir_snprintf(predefinedObjects[j].symbol,sizeof(predefinedObjects[j].symbol),".");
-    xastir_snprintf(predefinedObjects[j].data,sizeof(predefinedObjects[j].data),"%c",'\0');
-    xastir_snprintf(predefinedObjects[j].menu_call,sizeof(predefinedObjects[j].menu_call),"LKP: Last Known Point");
+    astir_snprintf(predefinedObjects[j].call,sizeof(predefinedObjects[j].call),"LKP");
+    astir_snprintf(predefinedObjects[j].page,sizeof(predefinedObjects[j].page),"/");
+    astir_snprintf(predefinedObjects[j].symbol,sizeof(predefinedObjects[j].symbol),".");
+    astir_snprintf(predefinedObjects[j].data,sizeof(predefinedObjects[j].data),"%c",'\0');
+    astir_snprintf(predefinedObjects[j].menu_call,sizeof(predefinedObjects[j].menu_call),"LKP: Last Known Point");
     predefinedObjects[j].show_on_menu = 1;
     predefinedObjects[j].index_of_child = -1;
     predefinedObjects[j].index = j;
     j++;
 
     // Base
-    xastir_snprintf(predefinedObjects[j].call,sizeof(predefinedObjects[j].call),"Base");
-    xastir_snprintf(predefinedObjects[j].page,sizeof(predefinedObjects[j].page),"B");
-    xastir_snprintf(predefinedObjects[j].symbol,sizeof(predefinedObjects[j].symbol),"0");
-    xastir_snprintf(predefinedObjects[j].data,sizeof(predefinedObjects[j].data),"%c",'\0');
-    xastir_snprintf(predefinedObjects[j].menu_call,sizeof(predefinedObjects[j].menu_call),"Base");
+    astir_snprintf(predefinedObjects[j].call,sizeof(predefinedObjects[j].call),"Base");
+    astir_snprintf(predefinedObjects[j].page,sizeof(predefinedObjects[j].page),"B");
+    astir_snprintf(predefinedObjects[j].symbol,sizeof(predefinedObjects[j].symbol),"0");
+    astir_snprintf(predefinedObjects[j].data,sizeof(predefinedObjects[j].data),"%c",'\0');
+    astir_snprintf(predefinedObjects[j].menu_call,sizeof(predefinedObjects[j].menu_call),"Base");
     predefinedObjects[j].show_on_menu = 1;
     predefinedObjects[j].index_of_child = -1;
     predefinedObjects[j].index = j;
     j++;
 
     // Helibase (helicopter support base)
-    xastir_snprintf(predefinedObjects[j].call,sizeof(predefinedObjects[j].call),"Helibase");
-    xastir_snprintf(predefinedObjects[j].page,sizeof(predefinedObjects[j].page),"H");
-    xastir_snprintf(predefinedObjects[j].symbol,sizeof(predefinedObjects[j].symbol),"0");
-    xastir_snprintf(predefinedObjects[j].data,sizeof(predefinedObjects[j].data),"%c",'\0');
-    xastir_snprintf(predefinedObjects[j].menu_call,sizeof(predefinedObjects[j].menu_call),"Helibase");
+    astir_snprintf(predefinedObjects[j].call,sizeof(predefinedObjects[j].call),"Helibase");
+    astir_snprintf(predefinedObjects[j].page,sizeof(predefinedObjects[j].page),"H");
+    astir_snprintf(predefinedObjects[j].symbol,sizeof(predefinedObjects[j].symbol),"0");
+    astir_snprintf(predefinedObjects[j].data,sizeof(predefinedObjects[j].data),"%c",'\0');
+    astir_snprintf(predefinedObjects[j].menu_call,sizeof(predefinedObjects[j].menu_call),"Helibase");
     predefinedObjects[j].show_on_menu = 1;
     predefinedObjects[j].index_of_child = -1;
     predefinedObjects[j].index = j;
@@ -1842,22 +1842,22 @@ void Populate_predefined_objects(predefinedObject *predefinedObjects)
     // Helispot  (helicopter landing spot)
     // Heli- will be created as Heli-1, Heli-2, Heli-3, etc.
     // terminal - on a call is a magic character. see Create_SAR+Object.
-    xastir_snprintf(predefinedObjects[j].call,sizeof(predefinedObjects[j].call),"Heli-");
-    xastir_snprintf(predefinedObjects[j].page,sizeof(predefinedObjects[j].page),"/");
-    xastir_snprintf(predefinedObjects[j].symbol,sizeof(predefinedObjects[j].symbol),"/");
-    xastir_snprintf(predefinedObjects[j].data,sizeof(predefinedObjects[j].data),"%c",'\0');
-    xastir_snprintf(predefinedObjects[j].menu_call,sizeof(predefinedObjects[j].menu_call),"Heli-n: Helispot");
+    astir_snprintf(predefinedObjects[j].call,sizeof(predefinedObjects[j].call),"Heli-");
+    astir_snprintf(predefinedObjects[j].page,sizeof(predefinedObjects[j].page),"/");
+    astir_snprintf(predefinedObjects[j].symbol,sizeof(predefinedObjects[j].symbol),"/");
+    astir_snprintf(predefinedObjects[j].data,sizeof(predefinedObjects[j].data),"%c",'\0');
+    astir_snprintf(predefinedObjects[j].menu_call,sizeof(predefinedObjects[j].menu_call),"Heli-n: Helispot");
     predefinedObjects[j].show_on_menu = 1;
     predefinedObjects[j].index_of_child = -1;
     predefinedObjects[j].index = j;
     j++;
 
     // Camp
-    xastir_snprintf(predefinedObjects[j].call,sizeof(predefinedObjects[j].call),"Camp");
-    xastir_snprintf(predefinedObjects[j].page,sizeof(predefinedObjects[j].page),"C");
-    xastir_snprintf(predefinedObjects[j].symbol,sizeof(predefinedObjects[j].symbol),"0");
-    xastir_snprintf(predefinedObjects[j].data,sizeof(predefinedObjects[j].data),"%c",'\0');
-    xastir_snprintf(predefinedObjects[j].menu_call,sizeof(predefinedObjects[j].menu_call),"Camp");
+    astir_snprintf(predefinedObjects[j].call,sizeof(predefinedObjects[j].call),"Camp");
+    astir_snprintf(predefinedObjects[j].page,sizeof(predefinedObjects[j].page),"C");
+    astir_snprintf(predefinedObjects[j].symbol,sizeof(predefinedObjects[j].symbol),"0");
+    astir_snprintf(predefinedObjects[j].data,sizeof(predefinedObjects[j].data),"%c",'\0');
+    astir_snprintf(predefinedObjects[j].menu_call,sizeof(predefinedObjects[j].menu_call),"Camp");
     predefinedObjects[j].show_on_menu = 1;
     predefinedObjects[j].index_of_child = -1;
     predefinedObjects[j].index = j;
@@ -1914,9 +1914,9 @@ void Create_SAR_Object(Widget UNUSED(w), XtPointer clientData, XtPointer UNUSED(
 
 
   // set some defaults in case of a non-matched value
-  xastir_snprintf(page,sizeof(page),"/");
-  xastir_snprintf(symbol,sizeof(symbol),"/");
-  xastir_snprintf(call, sizeof(call), "Marker");
+  astir_snprintf(page,sizeof(page),"/");
+  astir_snprintf(symbol,sizeof(symbol),"/");
+  astir_snprintf(call, sizeof(call), "Marker");
 
   //for (i=0;i<number_of_predefined_objects;i++) {
   //   if (strcmp((char *)clientData,predefinedObjects[i].call)==0) {
@@ -1925,10 +1925,10 @@ void Create_SAR_Object(Widget UNUSED(w), XtPointer clientData, XtPointer UNUSED(
   {
     if (i <= number_of_predefined_objects)
     {
-      xastir_snprintf(page,sizeof(page), "%s", predefinedObjects[i].page);
-      xastir_snprintf(symbol,sizeof(symbol), "%s", predefinedObjects[i].symbol);
-      xastir_snprintf(call, sizeof(call), "%s", predefinedObjects[i].call);
-      xastir_snprintf(symbol_plus, sizeof(symbol_plus), "%s%s",symbol,predefinedObjects[i].data);
+      astir_snprintf(page,sizeof(page), "%s", predefinedObjects[i].page);
+      astir_snprintf(symbol,sizeof(symbol), "%s", predefinedObjects[i].symbol);
+      astir_snprintf(call, sizeof(call), "%s", predefinedObjects[i].call);
+      astir_snprintf(symbol_plus, sizeof(symbol_plus), "%s%s",symbol,predefinedObjects[i].data);
     }
   }
 
@@ -1953,7 +1953,7 @@ void Create_SAR_Object(Widget UNUSED(w), XtPointer clientData, XtPointer UNUSED(
   // and again as we try to come up with a unique name for the
   // object.
   //
-  xastir_snprintf(orig_call,
+  astir_snprintf(orig_call,
                   sizeof(orig_call),
                   "%s",
                   call);
@@ -2089,7 +2089,7 @@ void Create_SAR_Object(Widget UNUSED(w), XtPointer clientData, XtPointer UNUSED(
     //
     // Note: Converting to float only to use width specifiers
     // properly and quiet a compiler warning.
-    xastir_snprintf(num_string, sizeof(num_string), "%2.0f", (float)extra_num);
+    astir_snprintf(num_string, sizeof(num_string), "%2.0f", (float)extra_num);
     strcpy(call, orig_call);
     call[sizeof(call)-1] = '\0';  // Terminate string
     strcat(call, num_string);
@@ -2115,16 +2115,16 @@ void Create_SAR_Object(Widget UNUSED(w), XtPointer clientData, XtPointer UNUSED(
   }
 
 
-  xastir_snprintf(origin,
+  astir_snprintf(origin,
                   sizeof(origin),
                   "%s", my_callsign);
-  xastir_snprintf(time, sizeof(time), "%02d%02d%02d",
+  astir_snprintf(time, sizeof(time), "%02d%02d%02d",
                   get_hours(),
                   get_minutes(),
                   get_seconds() );
   // Prepare APRS data string using latitude and longitude from mouse click location
   // and page, symbol, and any additional data from the prepared object.
-  xastir_snprintf(data,
+  astir_snprintf(data,
                   sizeof(data),
                   ";%-9s*%sh%s%s%s%s",
                   call,
@@ -4933,7 +4933,7 @@ void Set_Del_Object( Widget w, XtPointer clientData, XtPointer calldata)
         {
           char temp[100];
 
-          xastir_snprintf(temp,
+          astir_snprintf(temp,
                           sizeof(temp),
                           "%s%s",
                           p_station->power_gain,
@@ -4972,7 +4972,7 @@ void Set_Del_Object( Widget w, XtPointer clientData, XtPointer calldata)
             XmToggleButtonSetState(toption2, TRUE, TRUE);
             XmToggleButtonGadgetSetState(open_filled_toggle, FALSE, TRUE);
             if (p_station->aprs_symbol.area_object.corridor_width > 0)
-              xastir_snprintf(temp_data, sizeof(temp_data), "%d",
+              astir_snprintf(temp_data, sizeof(temp_data), "%d",
                               p_station->aprs_symbol.area_object.corridor_width );
             else
             {
@@ -4985,7 +4985,7 @@ void Set_Del_Object( Widget w, XtPointer clientData, XtPointer calldata)
             XmToggleButtonGadgetSetState(toption3, TRUE, TRUE);
             XmToggleButtonGadgetSetState(open_filled_toggle, FALSE, TRUE);
             if (p_station->aprs_symbol.area_object.corridor_width > 0)
-              xastir_snprintf(temp_data, sizeof(temp_data), "%d",
+              astir_snprintf(temp_data, sizeof(temp_data), "%d",
                               p_station->aprs_symbol.area_object.corridor_width );
             else
             {
@@ -5090,13 +5090,13 @@ void Set_Del_Object( Widget w, XtPointer clientData, XtPointer calldata)
             break;
         }
 
-        xastir_snprintf(temp_data, sizeof(temp_data), "%d",
+        astir_snprintf(temp_data, sizeof(temp_data), "%d",
                         p_station->aprs_symbol.area_object.sqrt_lat_off
                         * p_station->aprs_symbol.area_object.sqrt_lat_off );
 
         XmTextFieldSetString( ob_lat_offset_data, temp_data );
 
-        xastir_snprintf(temp_data, sizeof(temp_data), "%d",
+        astir_snprintf(temp_data, sizeof(temp_data), "%d",
                         p_station->aprs_symbol.area_object.sqrt_lon_off
                         * p_station->aprs_symbol.area_object.sqrt_lon_off );
 
@@ -5110,7 +5110,7 @@ void Set_Del_Object( Widget w, XtPointer clientData, XtPointer calldata)
         // Handle Generic Options (common to Signpost/Normal Objects)
         if (strlen(p_station->speed) != 0)
         {
-          xastir_snprintf(temp_data, sizeof(temp_data), "%d",
+          astir_snprintf(temp_data, sizeof(temp_data), "%d",
                           (int)(atof(p_station->speed) + 0.5) );
 
           XmTextFieldSetString( ob_speed_data, temp_data );
@@ -5360,7 +5360,7 @@ void Set_Del_Object( Widget w, XtPointer clientData, XtPointer calldata)
       // Convert altitude from meters to feet
       if (strlen(p_station->altitude) != 0)
       {
-        xastir_snprintf(temp_data, sizeof(temp_data), "%d",
+        astir_snprintf(temp_data, sizeof(temp_data), "%d",
                         (int)((atof(p_station->altitude) / 0.3048) + 0.5) );
 
         XmTextFieldSetString( ob_altitude_data, temp_data );
@@ -5534,7 +5534,7 @@ void Set_Del_Object( Widget w, XtPointer clientData, XtPointer calldata)
 
 //fprintf(stderr,"Range:%04d miles\n", (int)(max_range + 0.5));
 
-        xastir_snprintf(range,
+        astir_snprintf(range,
                         sizeof(range),
                         "RNG%04d",
                         (int)(max_range + 0.5)); // Poor man's rounding
@@ -5736,9 +5736,9 @@ void Modify_object( Widget w, XtPointer clientData, XtPointer calldata)
 
 
 //
-// Function to load saved objects and items back into Xastir.  This
+// Function to load saved objects and items back into Astir.  This
 // is called on startup.  This implements persistent objects/items
-// across Xastir restarts.
+// across Astir restarts.
 //
 // Note that the length of "line" can be up to MAX_DEVICE_BUFFER,
 // which is currently set to 4096.
@@ -5778,7 +5778,7 @@ void reload_object_item(void)
 
       if (line[0] != '#')     // Skip comment lines
       {
-        xastir_snprintf(line2,
+        astir_snprintf(line2,
                         sizeof(line2),
                         "%s>%s:%s",
                         my_callsign,
@@ -5900,7 +5900,7 @@ int Read_object_item_dialog_values(char *name, size_t name_size,
   // All the generic data fields
   // name
   tmp_ptr = XmTextFieldGetString(object_name_data);
-  xastir_snprintf(name,name_size,"%s",tmp_ptr);
+  astir_snprintf(name,name_size,"%s",tmp_ptr);
   XtFree(tmp_ptr);
   (void) remove_trailing_spaces(name);
 
@@ -5930,9 +5930,9 @@ int Read_object_item_dialog_values(char *name, size_t name_size,
     return (0);
 
   // Format both low and high precision versions.
-  xastir_snprintf(lat_str,lat_str_size, "%02d%05.2f%c",
+  astir_snprintf(lat_str,lat_str_size, "%02d%05.2f%c",
                   degrees, minutes, hemisphere);
-  xastir_snprintf(ext_lat_str,ext_lat_str_size, "%02d%06.3f%c",
+  astir_snprintf(ext_lat_str,ext_lat_str_size, "%02d%06.3f%c",
                   degrees, minutes, hemisphere);
 
   // assemble longitude
@@ -5961,9 +5961,9 @@ int Read_object_item_dialog_values(char *name, size_t name_size,
     return (0);
 
   // Format both low and high precision versions.
-  xastir_snprintf(lon_str,lon_str_size, "%03d%05.2f%c",
+  astir_snprintf(lon_str,lon_str_size, "%03d%05.2f%c",
                   degrees, minutes, hemisphere);
-  xastir_snprintf(ext_lon_str,ext_lon_str_size, "%03d%06.3f%c",
+  astir_snprintf(ext_lon_str,ext_lon_str_size, "%03d%06.3f%c",
                   degrees, minutes, hemisphere);
 
   // Get symbol
@@ -5987,11 +5987,11 @@ int Read_object_item_dialog_values(char *name, size_t name_size,
   {
     // this is a multiline comment, but thoseshould start with a space,
     // so add one
-    xastir_snprintf(comment,comment_size," %s",tmp_ptr);
+    astir_snprintf(comment,comment_size," %s",tmp_ptr);
   }
   else
   {
-    xastir_snprintf(comment,comment_size,"%s",tmp_ptr);
+    astir_snprintf(comment,comment_size,"%s",tmp_ptr);
   }
   XtFree(tmp_ptr);
 
@@ -6005,7 +6005,7 @@ int Read_object_item_dialog_values(char *name, size_t name_size,
     tmp_int = (tmp_int==0)?360:tmp_int;
     if (tmp_int >=1 && tmp_int <= 360)
     {
-      xastir_snprintf(course, course_size,"%03d",tmp_int);
+      astir_snprintf(course, course_size,"%03d",tmp_int);
     }
   }
   else
@@ -6020,7 +6020,7 @@ int Read_object_item_dialog_values(char *name, size_t name_size,
     int tmp_int = atoi(tmp_ptr);
     if (tmp_int >=0 && tmp_int <= 999)
     {
-      xastir_snprintf(speed, speed_size,"%3d",tmp_int);
+      astir_snprintf(speed, speed_size,"%3d",tmp_int);
     }
   }
   else
@@ -6037,7 +6037,7 @@ int Read_object_item_dialog_values(char *name, size_t name_size,
     {
       long tmp_int=atoi(tmp_ptr);
       if (tmp_int >= 0 && tmp_int <= 999999)
-        xastir_snprintf(altitude,altitude_size,"%06ld",tmp_int);
+        astir_snprintf(altitude,altitude_size,"%06ld",tmp_int);
     }
   }
   XtFree(tmp_ptr);
@@ -6064,13 +6064,13 @@ int Read_object_item_dialog_values(char *name, size_t name_size,
     tmp_ptr = XmTextFieldGetString(ob_lat_offset_data);
     if (strlen(tmp_ptr) != 0)
     {
-      xastir_snprintf(lat_offset_str,lat_offset_str_size,"%s",tmp_ptr);
+      astir_snprintf(lat_offset_str,lat_offset_str_size,"%s",tmp_ptr);
     }
     XtFree(tmp_ptr);
     tmp_ptr = XmTextFieldGetString(ob_lon_offset_data);
     if (strlen(tmp_ptr) != 0)
     {
-      xastir_snprintf(lon_offset_str,lon_offset_str_size,"%s",tmp_ptr);
+      astir_snprintf(lon_offset_str,lon_offset_str_size,"%s",tmp_ptr);
     }
     XtFree(tmp_ptr);
 
@@ -6082,7 +6082,7 @@ int Read_object_item_dialog_values(char *name, size_t name_size,
         int tmp_int = atoi(tmp_ptr);
         if (tmp_int >0 && tmp_int <= 999)
         {
-          xastir_snprintf(corridor,corridor_size,"%d",tmp_int);
+          astir_snprintf(corridor,corridor_size,"%d",tmp_int);
         }
       }
       XtFree(tmp_ptr);
@@ -6094,7 +6094,7 @@ int Read_object_item_dialog_values(char *name, size_t name_size,
     tmp_ptr = XmTextFieldGetString(signpost_data);
     if (strlen(tmp_ptr) >= 0 && strlen(tmp_ptr) <= 3)
     {
-      xastir_snprintf(signpost_str,signpost_str_size,"%s",tmp_ptr);
+      astir_snprintf(signpost_str,signpost_str_size,"%s",tmp_ptr);
     }
     XtFree(tmp_ptr);
   }
@@ -6111,7 +6111,7 @@ int Read_object_item_dialog_values(char *name, size_t name_size,
       // functions, and "object_shgd" is also set from callbacks using
       // values from the dialog box check- and radio-buttons.
       *omni_df=1;
-      xastir_snprintf(df_shgd,df_shgd_size,"%s",object_shgd);
+      astir_snprintf(df_shgd,df_shgd_size,"%s",object_shgd);
     }
     else // it's a beam-df
     {
@@ -6124,9 +6124,9 @@ int Read_object_item_dialog_values(char *name, size_t name_size,
 
       if (tmp_int < 1 || tmp_int > 360)
         tmp_int = 360;
-      xastir_snprintf(bearing,bearing_size,"%03d",tmp_int);
+      astir_snprintf(bearing,bearing_size,"%03d",tmp_int);
 
-      xastir_snprintf(NRQ,NRQ_size,"%s",object_NRQ);
+      astir_snprintf(NRQ,NRQ_size,"%s",object_NRQ);
     }
   }
   else      // just a normal object, but could have probability circles
@@ -6137,13 +6137,13 @@ int Read_object_item_dialog_values(char *name, size_t name_size,
       tmp_ptr = XmTextFieldGetString(probability_data_min);
       if (strlen(tmp_ptr)!=0)
       {
-        xastir_snprintf(prob_min,prob_min_size,"%s",tmp_ptr);
+        astir_snprintf(prob_min,prob_min_size,"%s",tmp_ptr);
       }
       XtFree(tmp_ptr);
       tmp_ptr = XmTextFieldGetString(probability_data_max);
       if (strlen(tmp_ptr)!=0)
       {
-        xastir_snprintf(prob_max,prob_max_size,"%s",tmp_ptr);
+        astir_snprintf(prob_max,prob_max_size,"%s",tmp_ptr);
       }
       XtFree(tmp_ptr);
     }

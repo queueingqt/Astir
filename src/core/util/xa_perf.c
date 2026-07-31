@@ -1,6 +1,6 @@
 /*
- * xa_perf.c -- lightweight phase timing for Xastir rendering work.
- * See xa_perf.h.  Inert unless XASTIR_PERF is set in the environment.
+ * xa_perf.c -- lightweight phase timing for Astir rendering work.
+ * See xa_perf.h.  Inert unless ASTIR_PERF is set in the environment.
  */
 
 #ifdef HAVE_CONFIG_H
@@ -84,7 +84,7 @@ int xa_perf_enabled(void)
 {
   if (perf_on < 0)
   {
-    const char *e = getenv("XASTIR_PERF");
+    const char *e = getenv("ASTIR_PERF");
     perf_on = (e && *e && strcmp(e, "0") != 0) ? 1 : 0;
   }
   return perf_on;
@@ -203,7 +203,7 @@ void xa_perf_report_totals(void)
     return;
   }
 
-  fprintf(stderr, "\n=== xastir perf summary ===\n");
+  fprintf(stderr, "\n=== astir perf summary ===\n");
   fprintf(stderr, "frames            : %ld\n", frame_count);
   fprintf(stderr, "mean frame        : %.1f ms\n",
           frame_ns_sum / 1e6 / (double)frame_count);

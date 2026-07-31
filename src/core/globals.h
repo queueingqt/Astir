@@ -1,7 +1,7 @@
 
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -22,7 +22,7 @@
  * Look at the README for more information on the program.
  */
 
-/* Defines used throughout Xastir, mostly, but not exclusively, in maps. */
+/* Defines used throughout Astir, mostly, but not exclusively, in maps. */
 
 #define MAX_FILENAME 2000
 #define MAX_CALLSIGN 9       // Objects are up to 9 chars

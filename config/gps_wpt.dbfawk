@@ -2,7 +2,7 @@
 # Copyright (C) 2000-2026 The Xastir Group
 #
 # This dbfawk file is used to map dbf data that accompanies a shapefile created
-# by the "Fetch GPS Waypoints" option of Xastir.
+# by the "Fetch GPS Waypoints" option of Astir.
 #
 # It simply attaches the name of the waypoint to the displayed waypoint.
 #

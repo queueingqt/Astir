@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -39,7 +39,7 @@
 
 // removed: #include <Xm/XmAll.h>   (no longer needed here)
 
-#include "core/xastir.h"
+#include "core/astir.h"
 #include "core/aprs/fcc_data.h"
 #include "core/state/xa_config.h"
 #include "core/main.h"
@@ -97,11 +97,11 @@ int build_fcc_index(int type)
 
   if (type==1)
   {
-    xastir_snprintf(database_name, sizeof(database_name), "fcc/appl.dat");
+    astir_snprintf(database_name, sizeof(database_name), "fcc/appl.dat");
   }
   else
   {
-    xastir_snprintf(database_name, sizeof(database_name), "fcc/EN.dat");
+    astir_snprintf(database_name, sizeof(database_name), "fcc/EN.dat");
   }
 
   /* ====================================================================    */
@@ -150,7 +150,7 @@ int build_fcc_index(int type)
   /*    write out the current callsign and RBA of the db file         */
   /*    skip (index_skip) records and do it again until no more        */
   /*                                    */
-  xastir_snprintf(fccdata,sizeof(fccdata)," ");
+  astir_snprintf(fccdata,sizeof(fccdata)," ");
   while(!feof(fdb))
   {
     call_offset = (unsigned long)ftell(fdb);
@@ -311,13 +311,13 @@ int search_fcc_data_appl(char *callsign, FccAppl *data)
   data->date_last_change[0] = '\0';
   data->id_examiner[0] = '\0';
   data->renewal_notice=' ';
-  xastir_snprintf(temp,
+  astir_snprintf(temp,
                   sizeof(temp),
                   "%s",
                   callsign);
   (void)call_only(temp);
 
-  xastir_snprintf(calltemp, sizeof(calltemp), "%-6.6s", temp);
+  astir_snprintf(calltemp, sizeof(calltemp), "%-6.6s", temp);
 // calltemp doesn't appear to get used anywhere...
 
   /* add end of field data */
@@ -468,11 +468,11 @@ int search_fcc_data_appl(char *callsign, FccAppl *data)
                       switch(i)
                       {
                         case(0):
-                          xastir_snprintf(data->id_file_num,sizeof(data->id_file_num),"%s",line+pos_it);
+                          astir_snprintf(data->id_file_num,sizeof(data->id_file_num),"%s",line+pos_it);
                           break;
 
                         case(1):
-                          xastir_snprintf(data->type_purpose,sizeof(data->type_purpose),"%s",line+pos_it);
+                          astir_snprintf(data->type_purpose,sizeof(data->type_purpose),"%s",line+pos_it);
                           break;
 
                         case(2):
@@ -480,43 +480,43 @@ int search_fcc_data_appl(char *callsign, FccAppl *data)
                           break;
 
                         case(3):
-                          xastir_snprintf(data->name_licensee,sizeof(data->name_licensee),"%s",line+pos_it);
+                          astir_snprintf(data->name_licensee,sizeof(data->name_licensee),"%s",line+pos_it);
                           break;
 
                         case(4):
-                          xastir_snprintf(data->text_street,sizeof(data->text_street),"%s",line+pos_it);
+                          astir_snprintf(data->text_street,sizeof(data->text_street),"%s",line+pos_it);
                           break;
 
                         case(5):
-                          xastir_snprintf(data->text_pobox,sizeof(data->text_pobox),"%s",line+pos_it);
+                          astir_snprintf(data->text_pobox,sizeof(data->text_pobox),"%s",line+pos_it);
                           break;
 
                         case(6):
-                          xastir_snprintf(data->city,sizeof(data->city),"%s",line+pos_it);
+                          astir_snprintf(data->city,sizeof(data->city),"%s",line+pos_it);
                           break;
 
                         case(7):
-                          xastir_snprintf(data->state,sizeof(data->state),"%s",line+pos_it);
+                          astir_snprintf(data->state,sizeof(data->state),"%s",line+pos_it);
                           break;
 
                         case(8):
-                          xastir_snprintf(data->zipcode,sizeof(data->zipcode),"%s",line+pos_it);
+                          astir_snprintf(data->zipcode,sizeof(data->zipcode),"%s",line+pos_it);
                           break;
 
                         case(9):
-                          xastir_snprintf(data->date_issue,sizeof(data->date_issue),"%s",line+pos_it);
+                          astir_snprintf(data->date_issue,sizeof(data->date_issue),"%s",line+pos_it);
                           break;
 
                         case(11):
-                          xastir_snprintf(data->date_expire,sizeof(data->date_expire),"%s",line+pos_it);
+                          astir_snprintf(data->date_expire,sizeof(data->date_expire),"%s",line+pos_it);
                           break;
 
                         case(12):
-                          xastir_snprintf(data->date_last_change,sizeof(data->date_last_change),"%s",line+pos_it);
+                          astir_snprintf(data->date_last_change,sizeof(data->date_last_change),"%s",line+pos_it);
                           break;
 
                         case(13):
-                          xastir_snprintf(data->id_examiner,sizeof(data->id_examiner),"%s",line+pos_it);
+                          astir_snprintf(data->id_examiner,sizeof(data->id_examiner),"%s",line+pos_it);
                           break;
 
                         case(14):
@@ -532,27 +532,27 @@ int search_fcc_data_appl(char *callsign, FccAppl *data)
                       switch (i)
                       {
                         case(0):
-                          xastir_snprintf(data->id_file_num,sizeof(data->id_file_num),"%s",line+pos_it);
+                          astir_snprintf(data->id_file_num,sizeof(data->id_file_num),"%s",line+pos_it);
                           break;
 
                         case(2):
-                          xastir_snprintf(data->name_licensee,sizeof(data->name_licensee),"%s",line+pos_it);
+                          astir_snprintf(data->name_licensee,sizeof(data->name_licensee),"%s",line+pos_it);
                           break;
 
                         case(10):
-                          xastir_snprintf(data->text_street,sizeof(data->text_street),"%s",line+pos_it);
+                          astir_snprintf(data->text_street,sizeof(data->text_street),"%s",line+pos_it);
                           break;
 
                         case(11):
-                          xastir_snprintf(data->city,sizeof(data->city),"%s",line+pos_it);
+                          astir_snprintf(data->city,sizeof(data->city),"%s",line+pos_it);
                           break;
 
                         case(12):
-                          xastir_snprintf(data->state,sizeof(data->state),"%s",line+pos_it);
+                          astir_snprintf(data->state,sizeof(data->state),"%s",line+pos_it);
                           break;
 
                         case(13):
-                          xastir_snprintf(data->zipcode,sizeof(data->zipcode),"%s",line+pos_it);
+                          astir_snprintf(data->zipcode,sizeof(data->zipcode),"%s",line+pos_it);
                           break;
 
                         default:

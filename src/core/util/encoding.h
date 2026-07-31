@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 2000-2026 The Xastir Group
  *
  * This program is free software; you can redistribute it and/or
@@ -20,12 +20,12 @@
  * Look at the README for more information on the program.
  */
 
-#ifndef XASTIR_ENCODING_H
-#define XASTIR_ENCODING_H
+#ifndef ASTIR_ENCODING_H
+#define ASTIR_ENCODING_H
 
 #include <stddef.h>
 
 extern void utf8_to_latin1_inplace(char *buf);
 extern void latin1_to_utf8(const char *src, char *dst, size_t dst_size);
 
-#endif  /* XASTIR_ENCODING_H */
+#endif  /* ASTIR_ENCODING_H */

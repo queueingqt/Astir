@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -31,8 +31,8 @@
 
 #include <Xm/XmAll.h>
 
-#include "core/xastir.h"
-#include "ui/motif/xastir_gui.h"
+#include "core/astir.h"
+#include "ui/motif/astir_gui.h"
 #include "ui/motif/wx_gui.h"
 #include "ui/motif/main_gui.h"
 #include "ui/motif/draw_symbols_gui.h"
@@ -56,7 +56,7 @@ extern XmFontList fontlist1;    // Menu/System fontlist
 static Popup_Window pw[MAX_POPUPS];
 static Popup_Window pwb;
 
-static xastir_mutex popup_message_dialog_lock;
+static astir_mutex popup_message_dialog_lock;
 
 
 
@@ -247,7 +247,7 @@ void popup_message_always(char *banner, char *message)
                            XmNfontList, fontlist1,
                            NULL);
 
-      xastir_snprintf(pw[i].name,10,"%9d",i%1000);
+      astir_snprintf(pw[i].name,10,"%9d",i%1000);
 
       msg_str=XmStringCreateLtoR(message,XmFONTLIST_DEFAULT_TAG);
       XtVaSetValues(pw[i].popup_message_data,XmNlabelString,msg_str,NULL);

@@ -1,5 +1,5 @@
 
-# Test log file for weather alerts.  Bring this file into Xastir via
+# Test log file for weather alerts.  Bring this file into Astir via
 # the Open Log File option and within 30-60 seconds you should see
 # the alerts light up.  All except the first one listed here which
 # has a matching cancel:  See that alert as cancelled in the
@@ -9,7 +9,7 @@
 # change the date stamp ("30" here) to numbers closer to your
 # current date but into the future a bit.  Note that these are UTC
 # date/times.  You must be within XX days (mod 31) to see the
-# alerts, else Xastir assumes the date was from the previous month
+# alerts, else Astir assumes the date was from the previous month
 # and discards them.  The alert must be within 0-10 days into the
 # future (UTC) in order to be displayed, per
 # util.c:time_from_aprsstring()
@@ -113,7 +113,7 @@ SEWWSW>APRS::NWS-CURT :302119z,WINTER_STORM,PZ_Z082, {OKoAB
 SEWWSW>APRS::NWS-CURT :302119z,SNOW,CW_ABOI, {OKoAB
 #
 # hz28au04.shp
-# Support for this filename is not implemented in Xastir.
+# Support for this filename is not implemented in Astir.
 
 
 

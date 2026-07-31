@@ -1,6 +1,6 @@
 # Scenario for tools/trace_ab.sh -- drives the Send Message windows.
 #
-# Replayed with XASTIR_REPLAY, which is the File > Open Log File path without a
+# Replayed with ASTIR_REPLAY, which is the File > Open Log File path without a
 # human.  Lines starting with '#' are skipped by read_file_line().
 #
 # The configured callsign is WZ1EEE-10 (tools/snapshot/snap.cnf), which is
@@ -50,10 +50,10 @@ N7XYZ-1>APX200,WIDE2-2::WZ1EEE-10:Third message from N7XYZ{007
 
 KD7ABC>APX200,WIDE2-2::N7XYZ-1  :Message between two other stations{008
 
-# A group message.  group_build_list() always listens for XASTIR, so this is a
+# A group message.  group_build_list() always listens for ASTIR, so this is a
 # group we are in without needing a groups file.
 
-W1AW-9>APX200,WIDE2-2::XASTIR   :Group message to XASTIR{009
+W1AW-9>APX200,WIDE2-2::ASTIR   :Group message to ASTIR{009
 
 # NOT HERE: a message appearing to come from our own callsign.
 #

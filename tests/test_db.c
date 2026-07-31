@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 2025-2026 The Xastir Group
  *
  * This program is free software; you can redistribute it and/or
@@ -24,7 +24,7 @@
  * Test program for db.c functions
  * 
  * This test program tests standalone utility functions from db.c that
- * don't require complex Xastir infrastructure.
+ * don't require complex Astir infrastructure.
  */
 
 #include <stdio.h>

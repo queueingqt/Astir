@@ -11,19 +11,21 @@
 #   ui/      the front ends.  motif/ is built here; gtk4/ is built by
 #            tools/build_gtk4.sh, which links the same core objects against
 #            draw/gtk4 instead.
-#   apps/    standalone binaries that are not Xastir.
+#   apps/    standalone binaries that are not Astir.
 #
 # Includes are written as full paths from src/ ("core/util/util.h"), so a line
 # says which layer it reaches into.  That is deliberate: -I per directory would
 # have been a smaller change and would have made a core file including a Motif
 # header look exactly like every other include.
 
-bin_PROGRAMS = xastir xastir_udp_client testdbfawk
+# astir_testdbfawk, not testdbfawk: Xastir installs that name as well, and both
+# programs are installable side by side.
+bin_PROGRAMS = astir astir_udp_client astir_testdbfawk
 
 SUBDIRS = rtree
 DIST_SUBDIRS = rtree
 
-# Two backends ship but must not link into xastir: each defines the same
+# Two backends ship but must not link into astir: each defines the same
 # symbols as draw/x11.  tools/link_null.py and tools/build_gtk4.sh compile them
 # themselves.
 EXTRA_DIST = icon.xbm \
@@ -34,12 +36,12 @@ EXTRA_DIST = icon.xbm \
     ui/gtk4/xa_gtk4_main.c \
     ui/gtk4/xa_gtk4_palette.c
 
-XASTIR_SRC = \
+ASTIR_SRC = \
     core/globals.h \
     core/main.h \
     core/xa_ui.c \
     core/xa_ui.h \
-    core/xastir.h \
+    core/astir.h \
     core/aprs/alert.c \
     core/aprs/alert.h \
     core/aprs/cad_objects.c \
@@ -192,7 +194,7 @@ XASTIR_SRC = \
     ui/motif/view_message_gui.c \
     ui/motif/wx_gui.c \
     ui/motif/wx_gui.h \
-    ui/motif/xastir_gui.h
+    ui/motif/astir_gui.h
 
 # Conditionally compiled sources
 if HAVE_NOMINATIM
@@ -201,12 +203,12 @@ else
 NOMINATIM_SRC =
 endif
 
-xastir_SOURCES = $(XASTIR_SRC) $(NOMINATIM_SRC) core/util/compiledate.c
+astir_SOURCES = $(ASTIR_SRC) $(NOMINATIM_SRC) core/util/compiledate.c
 
-xastir_udp_client_SOURCES = \
-    apps/xastir_udp_client.c
+astir_udp_client_SOURCES = \
+    apps/astir_udp_client.c
 
-testdbfawk_SOURCES = \
+astir_testdbfawk_SOURCES = \
     apps/testdbfawk.c \
     core/map/awk.c \
     core/map/dbfawk.c \
@@ -214,17 +216,17 @@ testdbfawk_SOURCES = \
 
 .PHONY: core/util/compiledate.c
 
-core/util/compiledate.c: $(XASTIR_SRC)
+core/util/compiledate.c: $(ASTIR_SRC)
 	rm -f core/util/compiledate.c core/util/compiledate.$(OBJEXT)
-	echo 'char gitstring[] = "'"`$(top_srcdir)/scripts/XastirGitStamp.sh $(top_srcdir)`"'";' >> core/util/compiledate.c
+	echo 'char gitstring[] = "'"`$(top_srcdir)/scripts/AstirGitStamp.sh $(top_srcdir)`"'";' >> core/util/compiledate.c
 
 remove_compiledate:
 	rm -f core/util/compiledate.c core/util/compiledate.$(OBJEXT)
 
-xastir_LDADD=-Lrtree -lrtree
+astir_LDADD=-Lrtree -lrtree
 
-xastir_LINK=$(CC) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
+astir_LINK=$(CC) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
 
-xastir_udp_client_LINK=$(CC) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
+astir_udp_client_LINK=$(CC) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
 
-testdbfawk_LINK=$(CC) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
+astir_testdbfawk_LINK=$(CC) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@

@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 2000-2026 The Xastir Group
  *
  * This program is free software; you can redistribute it and/or
@@ -20,10 +20,10 @@
  * Look at the README for more information on the program.
  */
 
-#ifndef __XASTIR_SERVER_H
-#define __XASTIR_SERVER_H
+#ifndef __ASTIR_SERVER_H
+#define __ASTIR_SERVER_H
 
-//#include "core/xastir.h"
+//#include "core/astir.h"
 
 
 #define NET_CONNECT_TIMEOUT 20
@@ -32,10 +32,10 @@
 
 
 extern char *pname;
-extern int pipe_xastir_to_tcp_server;
-extern int pipe_tcp_server_to_xastir;
-extern int pipe_xastir_to_udp_server;
-extern int pipe_udp_server_to_xastir;
+extern int pipe_astir_to_tcp_server;
+extern int pipe_tcp_server_to_astir;
+extern int pipe_astir_to_udp_server;
+extern int pipe_udp_server_to_astir;
 
 extern int writen(int fd, char *ptr, int nbytes);
 extern int readline(int fd, char *ptr, int maxlen);
@@ -43,5 +43,5 @@ extern int Fork_TCP_server(int argc, char *argv[], char *envp[]);
 extern int Fork_UDP_server(int argc, char *argv[], char *envp[]);
 
 
-#endif /* XASTIR_SERVER_H */
+#endif /* ASTIR_SERVER_H */
 

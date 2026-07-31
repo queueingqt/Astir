@@ -21,8 +21,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef _XASTIR_COMPAT_SNPRINTF_H_
-#define _XASTIR_COMPAT_SNPRINTF_H_
+#ifndef _ASTIR_COMPAT_SNPRINTF_H_
+#define _ASTIR_COMPAT_SNPRINTF_H_
 
 #include <stdio.h>
 #include "config.h"
@@ -35,9 +35,9 @@
  * use our own.
  */
 #ifndef HAVE_VSNPRINTF
-  int xastir_vsnprintf(char *str, size_t count, const char *fmt, va_list ap);
+  int astir_vsnprintf(char *str, size_t count, const char *fmt, va_list ap);
 #else   // HAVE_VSNPRINTF
-  #define xastir_vsnprintf vsnprintf
+  #define astir_vsnprintf vsnprintf
 #endif  // HAVE_VSNPRINTF
 
 /* Use the system libraries version of snprintf() if available. Otherwise
@@ -45,14 +45,14 @@
  */
 #ifndef HAVE_SNPRINTF
   #ifdef __STDC__
-    int xastir_snprintf(char *str, size_t count, const char *fmt, ...);
+    int astir_snprintf(char *str, size_t count, const char *fmt, ...);
   #else // __STDC__
-    int xastir_snprintf();
+    int astir_snprintf();
   #endif    // __STDC__
 #else   // HAVE_SNPRINTF
-  #define xastir_snprintf snprintf
+  #define astir_snprintf snprintf
 #endif  // HAVE_SNPRINTF
 
-#endif  /* !XASTIR_COMPAT_SNPRINTF_H_ */
+#endif  /* !ASTIR_COMPAT_SNPRINTF_H_ */
 
 

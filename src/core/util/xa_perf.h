@@ -1,9 +1,9 @@
 /*
- * xa_perf.h -- lightweight phase timing for Xastir rendering work.
+ * xa_perf.h -- lightweight phase timing for Astir rendering work.
  *
  * Purpose: answer "where do the milliseconds go during pan/zoom" with measured
  * numbers instead of guesses.  Entirely inert unless the environment variable
- * XASTIR_PERF is set, so it can stay in the tree without affecting normal runs.
+ * ASTIR_PERF is set, so it can stay in the tree without affecting normal runs.
  *
  * Usage:
  *     xa_perf_frame_begin();

@@ -1,5 +1,5 @@
 /*
- * cairo_text.c - Cairo-based antialiased text rendering for Xastir
+ * cairo_text.c - Cairo-based antialiased text rendering for Astir
  *
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -54,7 +54,7 @@ static void parse_fontspec(const char *fontspec,
                             double *size)
 {
   *size = 10.0;
-  xastir_snprintf(family, family_len, "%s", "sans");
+  astir_snprintf(family, family_len, "%s", "sans");
 
   if (!fontspec || fontspec[0] == '\0')
     return;
@@ -64,7 +64,7 @@ static void parse_fontspec(const char *fontspec,
     /* XLFD: -fndry-family-weight-slant-swidth-adstyl-pxlsz-... */
     /* We want field 2 (family) and field 7 (pixel size). */
     char buf[256];
-    xastir_snprintf(buf, sizeof(buf), "%s", fontspec);
+    astir_snprintf(buf, sizeof(buf), "%s", fontspec);
 
     char *fields[14];
     int nf = 0;
@@ -81,7 +81,7 @@ static void parse_fontspec(const char *fontspec,
     }
     /* field[1] = family, field[6] = pixel size */
     if (nf > 2 && fields[1][0] != '\0' && fields[1][0] != '*')
-      xastir_snprintf(family, family_len, "%s", fields[1]);
+      astir_snprintf(family, family_len, "%s", fields[1]);
 
     if (nf > 7 && fields[6][0] != '\0' && fields[6][0] != '*')
     {
@@ -96,7 +96,7 @@ static void parse_fontspec(const char *fontspec,
   const char *colon = strchr(fontspec, ':');
   if (!colon)
   {
-    xastir_snprintf(family, family_len, "%s", fontspec);
+    astir_snprintf(family, family_len, "%s", fontspec);
     return;
   }
 
@@ -139,7 +139,7 @@ static void pixel_to_rgba(Display *dpy, Colormap cmap,
 }
 
 /*
- * Old Xastir strings may contain ISO-8859-1 bytes such as 0xB0 for the
+ * Old Astir strings may contain ISO-8859-1 bytes such as 0xB0 for the
  * degree symbol. Cairo's toy text API expects UTF-8, so validate first and
  * fall back to a Latin-1 to UTF-8 conversion when needed.
  */
@@ -337,7 +337,7 @@ static void cairo_draw_text_at(cairo_t *cr,
 /* Public API                                                              */
 /* ---------------------------------------------------------------------- */
 
-void xastir_cairo_draw_text(
+void astir_cairo_draw_text(
     Display      *dpy,
     Pixmap        target,
     int           x,
@@ -369,7 +369,7 @@ void xastir_cairo_draw_text(
   if (!XGetGeometry(dpy, target, &root_ret, &x_ret, &y_ret,
                     &width, &height, &border, &depth))
   {
-    fprintf(stderr, "xastir_cairo_draw_text: XGetGeometry failed\n");
+    fprintf(stderr, "astir_cairo_draw_text: XGetGeometry failed\n");
     free(utf8_text);
     return;
   }
@@ -384,7 +384,7 @@ void xastir_cairo_draw_text(
                                (int)width, (int)height);
   if (!surface || cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS)
   {
-    fprintf(stderr, "xastir_cairo_draw_text: cairo_xlib_surface_create failed\n");
+    fprintf(stderr, "astir_cairo_draw_text: cairo_xlib_surface_create failed\n");
     if (surface) cairo_surface_destroy(surface);
     free(utf8_text);
     return;
@@ -393,7 +393,7 @@ void xastir_cairo_draw_text(
   cairo_t *cr = cairo_create(surface);
   if (!cr || cairo_status(cr) != CAIRO_STATUS_SUCCESS)
   {
-    fprintf(stderr, "xastir_cairo_draw_text: cairo_create failed\n");
+    fprintf(stderr, "astir_cairo_draw_text: cairo_create failed\n");
     if (cr) cairo_destroy(cr);
     cairo_surface_destroy(surface);
     free(utf8_text);
@@ -435,7 +435,7 @@ void xastir_cairo_draw_text(
 }
 
 
-int xastir_cairo_text_width(const char *text, const char *fontspec)
+int astir_cairo_text_width(const char *text, const char *fontspec)
 {
   char *utf8_text;
 
@@ -474,7 +474,7 @@ int xastir_cairo_text_width(const char *text, const char *fontspec)
 }
 
 
-int xastir_cairo_text_height(const char *fontspec)
+int astir_cairo_text_height(const char *fontspec)
 {
   char family[128];
   double size;

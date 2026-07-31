@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -21,8 +21,8 @@
  * Look at the README for more information on the program.
  */
 
-#ifndef __XASTIR_MAPS_H
-#define __XASTIR_MAPS_H
+#ifndef __ASTIR_MAPS_H
+#define __ASTIR_MAPS_H
 
 // (was: Xt only, for the Widget and XtPointer in the declarations below)
 // was here for one field of map_index_record, which is now opaque.  Of the 21
@@ -150,7 +150,7 @@ void load_auto_maps(char *dir);
 void load_maps(void);
 void fill_in_new_alert_entries(void);
 void load_alert_maps(char *dir);
-void  index_update_xastir(char *filename, unsigned long bottom, unsigned long top, unsigned long left, unsigned long right, int default_map_layer);
+void  index_update_astir(char *filename, unsigned long bottom, unsigned long top, unsigned long left, unsigned long right, int default_map_layer);
 void  index_update_ll(char *filename, double bottom, double top, double left, double right, int default_map_layer);
 extern void get_horizontal_datum(char *datum, int sizeof_datum);
 void draw_grid (void);
@@ -232,6 +232,6 @@ typedef struct
 // front end needs it.
 extern long get_x_scale(long x, long y, long ysc);
 
-#endif /* __XASTIR_MAPS_H */
+#endif /* __ASTIR_MAPS_H */
 
 

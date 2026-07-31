@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -27,13 +27,13 @@
  * These four were declared in interface.h, which core files include --
  * interface.c is itself a core file.  Naming a Widget there worked only as long
  * as something else had already pulled in Xt, which stopped being true when
- * xastir.h gave up <X11/Intrinsic.h>.
+ * astir.h gave up <X11/Intrinsic.h>.
  *
  * Only the front end includes this header.
  */
 
-#ifndef XASTIR_INTERFACE_GUI_H
-#define XASTIR_INTERFACE_GUI_H
+#ifndef ASTIR_INTERFACE_GUI_H
+#define ASTIR_INTERFACE_GUI_H
 
 #include <X11/Intrinsic.h>
 
@@ -42,4 +42,4 @@ extern void Configure_interface(Widget w, XtPointer clientData, XtPointer callDa
 extern void control_interface(Widget w, XtPointer clientData, XtPointer callData);
 extern void interface_status(Widget w);
 
-#endif  /* XASTIR_INTERFACE_GUI_H */
+#endif  /* ASTIR_INTERFACE_GUI_H */

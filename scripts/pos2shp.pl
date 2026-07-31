@@ -101,7 +101,7 @@ while (<INOBJ>)
     $sym=substr($rest,18,1);
 
 # TODO: Do something with the comment field?  It appears that if we
-# add too much here we get strange results when displayed in Xastir.
+# add too much here we get strange results when displayed in Astir.
     $comment=substr($rest,19,100);
 #    $name = $name . ":" . $comment;
 

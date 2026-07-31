@@ -1,8 +1,8 @@
 # Copyright (C) 2000-2026 The Xastir Group
 #
-# Xastir Version : 1.0.0
+# Astir Version : 1.0.0
 # Creator        : Alessandro Frigeri, IK0YUP <ik0yup@myrealbox.com>
-# Maintained by  : The Xastir Group <xastir@xastir.org>
+# Maintained by  : The Xastir Group <astir@xastir.org>
 # Last Modified  : Tue 31 Aug 11:00:00 CEST 2004 by IK0YUP
 #
 # comment lines with pound signs in front are ignored
@@ -245,11 +245,11 @@ PULDNTNT09|Carica punti GPS|W|
 PULDNTNT10|Ricevi Waypoints Garmin RINO|G|
 #
 # Menù Aiuto
-PULDNHEL01|Versione di Xastir|A|
+PULDNHEL01|Versione di Astir|A|
 PULDNHEL02|Indice Guida|I|
 PULDNHEL03|EMERGENCY BEACON MODE ENABLE|E|
 PULDNHEL04|!!! EMERGENCY BEACON MODE !!!||
-PULDNHEL05|About Xastir||
+PULDNHEL05|About Astir||
 #
 #Mouse Menu Popup
 POPUPMA001|Opzioni||
@@ -1049,7 +1049,7 @@ POPEM00017|Non sono disponibili altre interfacce!||
 POPEM00018|Richiesta dati - Messaggio su linea singola|
 POPEM00019|La trasmissione dalla porta %d è disattivata|
 POPEM00020|Errore del Database!|
-POPEM00021|Supporto AX.25 non compilato in Xastir!||
+POPEM00021|Supporto AX.25 non compilato in Astir!||
 POPEM00022|Errore di input!|
 POPEM00023|Non e' stato specificato alcun nome per questo punto!|
 POPEM00024|Il nome assegnato al punto è già in uso!|
@@ -1340,18 +1340,18 @@ CADPUD014|Double Dash||
 #
 #
 # Format strings for map metadata in top border
-#"XASTIR Map of <utm_coord> (upper left) to <utm_coord> (lower right).  UTM <grid_size> m grid, <wgs84> datum. ",
-MDATA001|XASTIR Map of %s (upper left) to %s (lower right).  UTM %d m grid, %s datum. ||
+#"ASTIR Map of <utm_coord> (upper left) to <utm_coord> (lower right).  UTM <grid_size> m grid, <wgs84> datum. ",
+MDATA001|ASTIR Map of %s (upper left) to %s (lower right).  UTM %d m grid, %s datum. ||
 #
 #
 # Format strings for map metadata in top border
-#"XASTIR Map of <utm_coord> (upper left) to <utm_coord> (lower right).  UTM <grid_size> m grid, <wgs84> datum. ",
-MDATA002|XASTIR Map of %s (upper left) to %s %s (lower right).  Lat/Long grid, %s datum.||
+#"ASTIR Map of <utm_coord> (upper left) to <utm_coord> (lower right).  UTM <grid_size> m grid, <wgs84> datum. ",
+MDATA002|ASTIR Map of %s (upper left) to %s %s (lower right).  Lat/Long grid, %s datum.||
 #
 #
 # Format strings for map metadata in top border
-#"XASTIR Map of <utm_coord> (upper left) to <utm_coord> (lower right).  UTM <grid_size> m grid, <wgs84> datum. ",
-MDATA003|XASTIR Map of %s (upper left) to %s (lower right).  UTM zones, %s datum.||
+#"ASTIR Map of <utm_coord> (upper left) to <utm_coord> (lower right).  UTM <grid_size> m grid, <wgs84> datum. ",
+MDATA003|ASTIR Map of %s (upper left) to %s (lower right).  UTM zones, %s datum.||
 #
 # Text interpretation of integer values of database type and schema type
 # used for sql database configuration in interface_gui.c
@@ -1367,11 +1367,11 @@ XADBMST002|Postgreql with Postgis||
 # used for sql database configuration in interface_gui.c
 # DB_MYSQL 
 XADBMST003|MySQL (spatial)||
-# XASTIR_SCHEMA_SIMPLE]
-XASCHEMA01|Xastir Simple Schema||
-# XASTIR_SCHEMA_SIMPLE]
-XASCHEMA02|Xastir CAD Schema||
-# XASTIR_SCHEMA_SIMPLE]
-XASCHEMA03|Xastir full Schema||
-# XASTIR_SCHEMA_SIMPLE]
+# ASTIR_SCHEMA_SIMPLE]
+XASCHEMA01|Astir Simple Schema||
+# ASTIR_SCHEMA_SIMPLE]
+XASCHEMA02|Astir CAD Schema||
+# ASTIR_SCHEMA_SIMPLE]
+XASCHEMA03|Astir full Schema||
+# ASTIR_SCHEMA_SIMPLE]
 XASCHEMA04|APRSWorld Schema||

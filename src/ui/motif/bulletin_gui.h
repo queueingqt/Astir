@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -21,8 +21,8 @@
  * Look at the README for more information on the program.
  */
 
-#ifndef __XASTIR_BULLETIN_GUI_H
-#define __XASTIR_BULLETIN_GUI_H
+#ifndef __ASTIR_BULLETIN_GUI_H
+#define __ASTIR_BULLETIN_GUI_H
 
 extern int bulletin_range;
 
@@ -32,6 +32,6 @@ extern void bulletin_gui_init(void);
 extern void bulletin_data_add(char *call_sign, char *from_call, char *data, char *seq, char type, char from);
 extern void check_for_new_bulletins(int current_sec);
 
-#endif  // __XASTIR_BULLETIN_GUI_H
+#endif  // __ASTIR_BULLETIN_GUI_H
 
 

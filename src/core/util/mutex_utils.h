@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -21,8 +21,8 @@
  * Look at the README for more information on the program.
  */
 
-#ifndef __XASTIR_MUTEX_UTILS_H
-#define __XASTIR_MUTEX_UTILS_H
+#ifndef __ASTIR_MUTEX_UTILS_H
+#define __ASTIR_MUTEX_UTILS_H
 
 #include <stdio.h>
 #include <pthread.h>
@@ -31,11 +31,11 @@ typedef struct
 {
   pthread_mutex_t lock;
   pthread_t threadID;
-} xastir_mutex;
+} astir_mutex;
 
-extern void init_critical_section(xastir_mutex *lock);
-extern int begin_critical_section(xastir_mutex *lock, char *text);
-extern int end_critical_section(xastir_mutex *lock, char *text);
+extern void init_critical_section(astir_mutex *lock);
+extern int begin_critical_section(astir_mutex *lock, char *text);
+extern int end_critical_section(astir_mutex *lock, char *text);
 
 
 #endif

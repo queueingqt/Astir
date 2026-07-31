@@ -1,7 +1,7 @@
 // display_station, draw_trail, track_station and set_map_position moved to
 // station_draw.c; declared in station_draw.h.
-#ifndef XASTIR_DB_GUI_H
-#define XASTIR_DB_GUI_H
+#ifndef ASTIR_DB_GUI_H
+#define ASTIR_DB_GUI_H
 
 #include <Xm/XmAll.h>
 
@@ -64,4 +64,4 @@ extern void update_station_info(Widget w);
 int locate_station(Widget w, char *call, int follow_case, int get_match, int center_map);
 
 
-#endif // XASTIR_DB_GUI_H
+#endif // ASTIR_DB_GUI_H

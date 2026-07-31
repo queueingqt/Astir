@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -59,8 +59,8 @@ type_applicant - Indicates type of application.  Codes are:
 
 */
 
-#ifndef XASTIR_FCC_DATA_H
-#define XASTIR_FCC_DATA_H
+#ifndef ASTIR_FCC_DATA_H
+#define ASTIR_FCC_DATA_H
 
 #define FCC_DATA_LEN 200
 
@@ -87,4 +87,4 @@ typedef struct
 extern int check_fcc_data(void);
 extern int search_fcc_data_appl(char *callsign, FccAppl *data);
 
-#endif /* XASTIR_FCC_DATA_H */
+#endif /* ASTIR_FCC_DATA_H */

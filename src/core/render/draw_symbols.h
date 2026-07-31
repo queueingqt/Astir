@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -22,8 +22,8 @@
  */
 
 
-#ifndef __XASTIR_DRAW_SYMBOLS_H
-#define __XASTIR_DRAW_SYMBOLS_H
+#ifndef __ASTIR_DRAW_SYMBOLS_H
+#define __ASTIR_DRAW_SYMBOLS_H
 
 #define SYMBOL_ACTIVE    'A'
 #define SYMBOL_NOTACTIVE 'N'
@@ -70,6 +70,6 @@ extern int symbol_change_requested_from;
 extern void draw_symbols_init(void);
 extern void draw_deadreckoning_features(DataRow *p_station, xa_surface_id where);
 
-#endif  // __XASTIR_DRAW_SYMBOLS_H
+#endif  // __ASTIR_DRAW_SYMBOLS_H
 
 

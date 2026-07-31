@@ -1,28 +1,28 @@
-# Installing Xastir #
+# Installing Astir #
 
 This file is meant to replace the original "INSTALL" file that has
-been distributed with Xastir for years.
+been distributed with Astir for years.
 
 > [!NOTE]
 > This document makes a lot of references to the xastir.org wiki site,
 > which has been experiencing frequent downtime and may be unreachable
 > more often than not.  Please look at the Wiki on GitHub
-> at https://Xastir/Xastir/wiki for replacement, up-to-date
+> at https://Astir/Astir/wiki for replacement, up-to-date
 > documentation.  We apologize for the inconvenience.
 
 
 General build process:
 
 0. [Install all system packages required and any optional packages](#install-all-system-packages-required-and-any-optional-packages)
-1. [Get the Xastir source code](#get-the-xastir-source-code)
+1. [Get the Astir source code](#get-the-astir-source-code)
 2. [Bootstrap the source code to create the configure script](#bootstrap-the-source-code-to-create-the-configure-script)
 3. [Create a build directory and run configure in it with any necessary options](#create-a-build-directory-and-run-configure-in-it-with-any-necessary-options)
-4. [Build Xastir](#build-xastir)
+4. [Build Astir](#build-astir)
 5. [Install the code](#install-the-code)
-6. [Start using Xastir](#start-using-xastir)
+6. [Start using Astir](#start-using-astir)
 7. [Miscellaneous notes](#miscellaneous-notes)
 
-The procedure for building Xastir from source is fairly generic, and
+The procedure for building Astir from source is fairly generic, and
 the most difficult part is assuring that you have all dependent
 libraries.
 
@@ -36,7 +36,7 @@ before proceeding with the rest of this section.**
 
 ### Absolutely mandatory packages ###
 
-The packages you absolutely must have in order to build Xastir are:
+The packages you absolutely must have in order to build Astir are:
 
 * autoconf
 * automake
@@ -47,9 +47,9 @@ The packages you absolutely must have in order to build Xastir are:
 * make
 * git
 
-If you don't have at least these, you won't be able to build Xastir at
+If you don't have at least these, you won't be able to build Astir at
 all, and if this is all you have you'll get the most limited version
-of Xastir possible.
+of Astir possible.
 
 On some operating systems the libraries and headers needed for
 compiling against them are in separate packages, and that's why we
@@ -68,7 +68,7 @@ libraries and headers it needs to function.
 ### Optional packages ###
 
 Installing these optional packages enables additional features in
-Xastir.  You need both the library and development packages for any of
+Astir.  You need both the library and development packages for any of
 these packages for which both are available.
 
 * gv and ghostscript (Enables map printing)
@@ -101,51 +101,51 @@ Some of the packages listed above depend on other packages themselves,
 but the norm of modern package management systems is to install all
 the dependencies when the main package is installed.
 
-## Get the Xastir source code ##
-There are two ways to get Xastir source code:
+## Get the Astir source code ##
+There are two ways to get Astir source code:
 
 1. Get one of the source release "tarballs" from Github at
-  https://github.com/Xastir/Xastir/releases
+  https://github.com/Astir/Astir/releases
   and explode it.  (Replace X.Y.Z with the release number below)
 ```
-  mkdir -p ~/src/XASTIR
-  cp Xastir-Release-X.Y.Z.tar.gz ~/src/XASTIR
-  cd ~/src/XASTIR
-  tar xzvf Xastir-Release-X.Y.Z.tar.gz
+  mkdir -p ~/src/ASTIR
+  cp Astir-Release-X.Y.Z.tar.gz ~/src/ASTIR
+  cd ~/src/ASTIR
+  tar xzvf Astir-Release-X.Y.Z.tar.gz
 ```
   This gets you ONLY the source code for one single release of
-  Xastir.  The source code will live in the directory
-  `~/src/XASTIR/Xastir-Release-X.Y.Z`
+  Astir.  The source code will live in the directory
+  `~/src/ASTIR/Astir-Release-X.Y.Z`
 
 2. An alternative to the above steps is to use git to download the
-  Xastir sources:
+  Astir sources:
 ```
-  mkdir -p ~/src/XASTIR
-  cd ~/src/XASTIR
-  git  clone https://github.com/Xastir/Xastir.git
+  mkdir -p ~/src/ASTIR
+  cd ~/src/ASTIR
+  git  clone https://github.com/Astir/Astir.git
 ```
-  This will create a clone of the Xastir git repository in an
-  "Xastir" subdirectory of the current directory.  The Xastir source
-  code will be in `~/src/XASTIR/Xastir`
+  This will create a clone of the Astir git repository in an
+  "Astir" subdirectory of the current directory.  The Astir source
+  code will be in `~/src/ASTIR/Astir`
 
   All done!  You now have the latest development sources on your computer.
   Not only that, you have a complete copy of the entire project history
   and access to all prior releases.
 
 ## Bootstrap the source code to create the configure script ##
-Since Release 2.1.8 the Xastir project has not distributed source code
+Since Release 2.1.8 the Astir project has not distributed source code
 that is ready to build out of the box, even in release tarballs.  It
 must always be "bootstrapped" before proceeding.
 
 1. If you are working from a tarball of source code and followed the
    path suggestions above:
     ```
-      cd ~/src/XASTIR/Xastir-Release-X.Y.Z
+      cd ~/src/ASTIR/Astir-Release-X.Y.Z
       ./bootstrap.sh
     ```
 2. If you grabbed a clone from git and followed the recommendations above:
     ```
-      cd ~/src/XASTIR/Xastir
+      cd ~/src/ASTIR/Astir
       ./bootstrap.sh
     ```
 
@@ -170,7 +170,7 @@ the next step.
 
 ## Create a build directory and run configure in it with any necessary options ##
 
-In order to build Xastir, the configure script you just created must
+In order to build Astir, the configure script you just created must
 be run.  Configure tries to work out what you've got installed and
 whether it can find all of the pieces it needs.  In many cases on
 Linux you can get away with running it with no options at all and
@@ -180,7 +180,7 @@ headers. And there are a number of configure options that allow you to
 control whether to skip some features you don't want, even if you've
 got all the pieces installed that would normally enable them.
 
-We strongly recommend doing configuration and building of Xastir in a
+We strongly recommend doing configuration and building of Astir in a
 "build directory" rather than right in the same directory as the
 source code.  The reason for this is that doing so leaves the source
 code directory completely pristine, and only creates new stuff in the
@@ -198,19 +198,19 @@ configure.
 
 Create a new directory in which to build, and run configure in it:
 ```
-mkdir ~/MyXastirBuildDirectory
-cd ~/MyXastirBuildDirectory
-~/src/XASTIR/Xastir/configure
+mkdir ~/MyAstirBuildDirectory
+cd ~/MyAstirBuildDirectory
+~/src/ASTIR/Astir/configure
 ```
 
-Here we're assuming you got Xastir source code from git and ran
+Here we're assuming you got Astir source code from git and ran
 bootstrap.sh, and bootstrap.sh completed without error.
 
 This may be all you need, and if all you have done was install the
 minimum required libraries you should see configure exit with this
 message:
 ```
-xastir X.Y.Z has been configured to use the following
+astir X.Y.Z has been configured to use the following
 options and external libraries:
 
 MINIMUM OPTIONS:
@@ -230,8 +230,8 @@ FOR THE ADVENTUROUS:
   Festival (Text-to-speech) ................. : no
   GPSMan/gpsmanshp (GPS downloads) .......... : no
 
-xastir will be installed in /usr/local/bin.
-Type 'make' to build Xastir (Use 'gmake' instead on some systems).
+astir will be installed in /usr/local/bin.
+Type 'make' to build Astir (Use 'gmake' instead on some systems).
 ```
 
 If you've installed optional libraries and they were properly located
@@ -247,8 +247,8 @@ place to look for header files.  So on those systems one would have to
 do:
 
 ```
-cd ~/MyXastirBuildDirectory
-~/src/XASTIR/Xastir/configure CPPFLAGS="-I/usr/include/geotiff"
+cd ~/MyAstirBuildDirectory
+~/src/ASTIR/Astir/configure CPPFLAGS="-I/usr/include/geotiff"
 ```
 
 On most Linux systems, that's the extent of the complexity you might
@@ -261,8 +261,8 @@ install *anything* into "/usr/include" or "/usr/lib" but rather into
 "/usr/local/lib" or "/usr/local/include".  In that case, you'd have to
 tell the C preprocessor and linker to look in extra places, too:
 ```
-cd ~/MyXastirBuildDirectory
-~/src/XASTIR/Xastir/configure CPPFLAGS="-I/usr/local/include" LDFLAGS="-L/usr/local/lib"
+cd ~/MyAstirBuildDirectory
+~/src/ASTIR/Astir/configure CPPFLAGS="-I/usr/local/include" LDFLAGS="-L/usr/local/lib"
 ```
 
 Note that systems like Macs often require add-on package managers like
@@ -271,8 +271,8 @@ strange places where the C compiler and linker don't look by default.
 The techniques above apply there, too.  You can stack up options, too,
 such as:
 ```
-cd ~/MyXastirBuildDirectory
-~/src/XASTIR/Xastir/configure CPPFLAGS="-I/usr/local/include -I/some/weird/place/include" LDFLAGS="-L/usr/local/lib -L/some/weird/place/lib"
+cd ~/MyAstirBuildDirectory
+~/src/ASTIR/Astir/configure CPPFLAGS="-I/usr/local/include -I/some/weird/place/include" LDFLAGS="-L/usr/local/lib -L/some/weird/place/lib"
 ```
 
 ### A much more involved example ###
@@ -281,8 +281,8 @@ On my own system, the Berkeley DB libraries are in a weird place, and
 GraphicsMagick will not work with the default system C compiler at
 all.  So in my case, I have to run configure as:
 ```
-cd ~/MyXastirBuildDirectory
-~/src/XASTIR/Xastir/configure --with-bdb-incdir=/usr/local/include/db5 --with-bdb-libdir=/usr/local/lib CFLAGS="-O2 -g" CC=gcc13 CXX=g++13 LIBS="-ldb-5.3"
+cd ~/MyAstirBuildDirectory
+~/src/ASTIR/Astir/configure --with-bdb-incdir=/usr/local/include/db5 --with-bdb-libdir=/usr/local/lib CFLAGS="-O2 -g" CC=gcc13 CXX=g++13 LIBS="-ldb-5.3"
 ```
 
 Here, I'm telling it to look in special places when looking for
@@ -294,26 +294,26 @@ be found on the system.
 It is critically important when building with Berkeley DB that the
 headers in the bdb-incdir are for the same version of Berkeley DB as
 the most recent version present in the library directory.  If one
-has both Berkeley DB 5 and Berkeley DB 18.1 installed, Xastir will use
+has both Berkeley DB 5 and Berkeley DB 18.1 installed, Astir will use
 the most recent version present, even if one has told it to use an
-older set of headers.   The example above forces Xastir to use the
+older set of headers.   The example above forces Astir to use the
 older library even if a newer one is present, because it is also using
 the older header files per the setting of "--with-bdb-incdir".
 
 Since db5 is now very old and deprecated on FreeBSD, I can instead build
-Xastir with DB version 18.1, so long as I make sure to point to the right
+Astir with DB version 18.1, so long as I make sure to point to the right
 headers:
 
 ```
-cd ~/MyXastirBuildDirectory
-../Xastir/configure --with-bdb-incdir=/usr/local/include/db18 --with-bdb-libdir=/usr/local/lib CFLAGS="-O2 -g" CC=gcc13 CXX=g++13
+cd ~/MyAstirBuildDirectory
+../Astir/configure --with-bdb-incdir=/usr/local/include/db18 --with-bdb-libdir=/usr/local/lib CFLAGS="-O2 -g" CC=gcc13 CXX=g++13
 ```
 
 Here, all I've had to do is specify where the headers are.  Since db18.1 is
 the most recent version installed configure will find and use it by default,
 so I don't need to specify LIBS in this case.
 
-## Build Xastir ##
+## Build Astir ##
 
 Once configure has completed, has announced that it has really
 succeeded and that you can "make" the code, and all the options it
@@ -332,11 +332,11 @@ handful of warnings, but you can safely ignore those).
 Once it's all done you can make a quick test to make sure a valid
 executable was created by typing:
 ```
-./src/xastir -V
+./src/astir -V
 ```
 which should respond with a version number, such as:
 ```
-Xastir V2.1.9 (Release-2.1.8-47-g00ce2b88)
+Astir V2.1.9 (Release-2.1.8-47-g00ce2b88)
 ```
 
 This particular version number indicates that we're building from a
@@ -346,96 +346,96 @@ commit reference is 00ce2b88.  You can ignore all that if you don't
 know what it means.  The important thing that it produced a version
 number and not an error message.
 
-That's it, you've built Xastir with the options that configure said
+That's it, you've built Astir with the options that configure said
 you enabled.
 
 ## Install the code ##
 
-You've built Xastir, but it still lives in your home directory
+You've built Astir, but it still lives in your home directory
 somewhere.  If you want it to be generally accessible on your system,
 you need to install it.  You must be root to do this.
 
 ```
-cd ~/MyXastirBuildDirectory
+cd ~/MyAstirBuildDirectory
 sudo make install
 ```
 
-Xastir will by default have installed itself into /usr/local/bin by
+Astir will by default have installed itself into /usr/local/bin by
 this process (and its support files will generally have been installed
-into /usr/local/share/xastir).
+into /usr/local/share/astir).
 
 If you're running on a Linux system and have enabled AX.25 networking,
 you also need to do the following command to give the binary access to
 kernel AX.25 ports:
 ```
-sudo chmod 4755 /usr/local/bin/xastir
+sudo chmod 4755 /usr/local/bin/astir
 ```
 
-## Start using Xastir
+## Start using Astir
 
-Xastir can now be run simply by typing its name at the command line.
+Astir can now be run simply by typing its name at the command line.
 
 The default map (the only one you can view with the bare minimum
 install) is ugly and ancient, but if you enabled GraphicsMagick and
 curl then there are many online map options available immediately in
 the map chooser.  I recommend `Online/OSM_tiled_mapnik.geo`.
 
-You will now have to get Xastir configured and connected to your TNC
+You will now have to get Astir configured and connected to your TNC
 or an internet APRS server.
 
-* [Starting Xastir](#starting-xastir)
+* [Starting Astir](#starting-astir)
 * [Changing the language](#changing-the-language)
-* [Configuring Xastir](#configuring-xastir)
-* [Various ways to manipulate Xastir](#various-ways-to-manipulate-xastir)
+* [Configuring Astir](#configuring-astir)
+* [Various ways to manipulate Astir](#various-ways-to-manipulate-astir)
 
-### Starting Xastir:
+### Starting Astir:
 
-NEVER RUN XASTIR AS THE ROOT USER!  You're risking the
+NEVER RUN ASTIR AS THE ROOT USER!  You're risking the
 security of your system by attempting it.  Create another regular
 user on your system and use that user for all of your normal
 activity.  This goes for any other normal activity on the system as
 well.  Only use the "root" account for maintenance activities, not
 for regular user activities.  You'll thank me later!
 
-Assuming you want to start Xastir up in the English language, you
+Assuming you want to start Astir up in the English language, you
 can type (from an xterm window):
 
-    xastir
+    astir
 
 which will start up the program without giving you back a
-command-prompt in your xterm window (until Xastir exits), or you can
+command-prompt in your xterm window (until Astir exits), or you can
 type (from an xterm window):
 
-     xastir &
+     astir &
 
-which will start Xastir in the background, giving you back your
+which will start Astir in the background, giving you back your
 xterm for more commands.  The typical way to start it is with
-"xastir &".  Of course you can get fancier and attach it to your
+"astir &".  Of course you can get fancier and attach it to your
 window manager's menus or create an icon on your desktop which
 starts it.  Those are operating system/window manager-specific, so
 we won't cover how to do that here.
 
-The first time you start Xastir it will show a default map of the
+The first time you start Astir it will show a default map of the
 world plus pop up the File->Configure->Station dialog.  Enter a
 callsign on that dialog and press the OK button.
 
 
 ### Changing the Language:
 
-If you want to start Xastir using some other language, you do that
-with command-line switches when you start Xastir.  Once you use one
+If you want to start Astir using some other language, you do that
+with command-line switches when you start Astir.  Once you use one
 of these switches, that language option becomes "sticky", meaning
 you won't have to enter that command-line switch again unless you
 wish to change languages.
 
-If you type "xastir -?", which is an invalid command-line option,
+If you type "astir -?", which is an invalid command-line option,
 you'll see this:
 
 ```
-  xastir: invalid option -- h
+  astir: invalid option -- h
 
-  Xastir Command line Options
-  -c /path/dir       Xastir config dir
+  Astir Command line Options
+  -c /path/dir       Astir config dir
   -f callsign        Track callsign
   -i                 Install private Colormap
   -geometry WxH+X+Y  Set Window Geometry
@@ -460,20 +460,20 @@ you'll see this:
 
 Ignore those for now unless you need to change the Language.
 
-OK, Xastir should show up on your screen at this point.  We're
+OK, Astir should show up on your screen at this point.  We're
 assuming that you're already running the X Window System environment
-at this point.  If you're in command-line Linux/Unix only, Xastir
+at this point.  If you're in command-line Linux/Unix only, Astir
 won't run.
 
 If you've configured in ShapeLib capability, you'll need to run
-/usr/local/share/xastir/scripts/get-NWSdata as the root user in order
+/usr/local/share/astir/scripts/get-NWSdata as the root user in order
 to get the NOAA data files you'll need for the weather alerts.  The
 script requires "wget" in order to work.  Run this script periodically
 (once every six months perhaps?) to keep your weather alert maps
 up-to-date.  If you're not in the U.S. or one of it's possessions then
 you can safely ignore this download.
 
-### Configuring Xastir:
+### Configuring Astir:
 
 * Note that the menus have a dashed line near the top.  If you
 click on that dashed line it acts like a cut-line for the menu and
@@ -522,8 +522,8 @@ toggling and see callsigns in the lower left status box if packets
 are coming in.
 
 One thing about configuration:  Most things don't get written to
-Xastir's config file until you choose either "File->Configure->Save
-Config Now!" or you exit Xastir.  Map Selections however are
+Astir's config file until you choose either "File->Configure->Save
+Config Now!" or you exit Astir.  Map Selections however are
 immediate.
 
 * Creating/starting interfaces for other types of devices is
@@ -537,18 +537,18 @@ mode.  You can do that via the Serial KISS TNC interface, or via
 AX.25 Kernel Networking ports.
 
 Some of the more esoteric types of interfaces may require some
-questions on the Xastir list.  Don't be afraid to ask them as we've
+questions on the Astir list.  Don't be afraid to ask them as we've
 all been there before.
 
 ## Miscellaneous notes
 
 These notes don't really belong in the installation instructions, and
-will be removed shortly.  They are properly part of Xastir operation,
+will be removed shortly.  They are properly part of Astir operation,
 not installation, and will be documented in the
-[Operating](https://github.com/Xastir/Xastir/wiki/Operating) page on
-the Xastir Github wiki.
+[Operating](https://github.com/Astir/Astir/wiki/Operating) page on
+the Astir Github wiki.
 
-### Various ways to manipulate Xastir
+### Various ways to manipulate Astir
 
 
 #### Context-Dependent Operations:
@@ -598,18 +598,18 @@ the "hot" letter (underlined letter) for each menu item.
 
 #### Other Possible External Stimuli:
 
-If you send Xastir a signal (using "kill"), you can force it to
+If you send Astir a signal (using "kill"), you can force it to
 perform some action based on which signal you send.
 
 * Send a SIGUSR1 to cause a snapshot to be taken.
-* Send a SIGHUP to cause Xastir to save/quit/restart.
-* Send a SIGINT, SIGQUIT, or SIGTERM to cause Xastir to quit.
+* Send a SIGHUP to cause Astir to save/quit/restart.
+* Send a SIGINT, SIGQUIT, or SIGTERM to cause Astir to quit.
 * Connect to TCP port 2023 if Server Port is enabled to send/receive packets.
-* Send to UDP port 2023 via the `xastir_udp_client` program to inject packets.
+* Send to UDP port 2023 via the `astir_udp_client` program to inject packets.
 
 ### A Note About the Map Directory:
 
-The map directory (/usr/local/share/xastir/maps/) is free-form,
+The map directory (/usr/local/share/astir/maps/) is free-form,
 meaning you can have links in there, subdirectories, etc.  Organize
 it in any way that makes sense to you.  From within the Map Chooser
 you can select a directory name, which will select every map
@@ -619,41 +619,41 @@ your maps.
 
 ### Enabling Weather Alerts:
 
-You must have Shapelib compiled into Xastir, which also requires the
+You must have Shapelib compiled into Astir, which also requires the
 PCRE2 library and its development headers to be installed.  Install
 NOAA shapefile maps as specified in [the Weather Alerts
-page](https://github.com/Xastir/Xastir/wiki/Weather-Alerts) on the
+page](https://github.com/Astir/Astir/wiki/Weather-Alerts) on the
 Github wiki.  These files must be
-installed into the /usr/local/share/xastir/Counties/ directory.  You
+installed into the /usr/local/share/astir/Counties/ directory.  You
 may use this script to download/install them for you:
 
-    "/usr/local/share/xastir/scripts/get-NWSdata"
+    "/usr/local/share/astir/scripts/get-NWSdata"
 
 which must be run as the root user, and requires "wget" to work.
 
 A neat trick:  You can copy some of these maps into the
-/usr/local/share/xastir/maps directory somewhere (a new subdirectory
+/usr/local/share/astir/maps directory somewhere (a new subdirectory
 under there is always fine), then you can select some of these maps
-as regular Xastir maps as well.
+as regular Astir maps as well.
 
 
 ### Enabling FCC/RAC Callsign Lookup:
 
-Run the /usr/local/share/xastir/scripts/get-fcc-rac.pl script as root,
+Run the /usr/local/share/astir/scripts/get-fcc-rac.pl script as root,
 which will download and install the proper databases into the
-/usr/local/share/xastir/fcc/ directory.  At that point the callsign
+/usr/local/share/astir/fcc/ directory.  At that point the callsign
 lookup features in the Station Info dialog and in the "Station->Find
 Station" menu option should be functional.
 
 
 ### Enabling Audio Alarms:
 
-Download and install sample audio files from Xastir's GitHub
+Download and install sample audio files from Astir's GitHub
 download site:
 
-    git clone http://github.com/Xastir/xastir-sounds
+    git clone http://github.com/Astir/astir-sounds
 
-Copy the files to your Xastir sounds directory, for instance `/usr/local/share/xastir/sounds/`
+Copy the files to your Astir sounds directory, for instance `/usr/local/share/astir/sounds/`
 
 Install a command-line audio player.  Call out the path/name of that
 player in the File->Configure->Audio Alarms dialog.  Common ones are
@@ -663,7 +663,7 @@ alarms you desire in that same dialog.
 You should be able to test it manually from a shell by typing the
 command in something like this:  vplay filename
 
-Once you find a command that works, type it into Xastir's Audio
+Once you find a command that works, type it into Astir's Audio
 Alarms dialog exactly the same except omit the filename.
 
 
@@ -672,10 +672,10 @@ Alarms dialog exactly the same except omit the filename.
 This is currently available only on  Linux/FreeBSD.
 
 * Install the Festival Speech Synthesizer.  Configure/compile support
-for it into Xastir.  Start up the Festival server before starting
-Xastir using `festival --server &`.  Xastir should start up and
+for it into Astir.  Start up the Festival server before starting
+Astir using `festival --server &`.  Astir should start up and
 connect to the server.  Use the options in File->Configure->Speech to
-decide which things you'd like Xastir to speak to you about.
+decide which things you'd like Astir to speak to you about.
 
 Note that the Proximity Alert option in the File->Configure->Speech
 dialog uses the distances set in the File->Configure->Audio Alarms
@@ -685,11 +685,11 @@ dialog.
 ### Enabling GPS Waypoint/Track/Route Download Support:
 
 Install GPSMan and gpsmanshp.  Configure/compile support for it in
-Xastir.  Start up GPSMan separately and configure it for your GPS
+Astir.  Start up GPSMan separately and configure it for your GPS
 and serial port.  You'll see download options for each type on the
 Interface menu.
 
-Note that Xastir requires a version of gpsman at least as recent as 6.1.  Older
+Note that Astir requires a version of gpsman at least as recent as 6.1.  Older
 versions of gpsman may not work.
 
 
@@ -714,16 +714,16 @@ dialog.  The global option sets restrictions on all igating.
 
 ### Where stuff is kept:
 
-Per-user configurations are kept in each user's ~/.xastir directory, by
-default.  In particular the ~/.xastir/config/xastir.cnf file is where most
+Per-user configurations are kept in each user's ~/.astir directory, by
+default.  In particular the ~/.astir/config/astir.cnf file is where most
 of the configs are kept.  This directory can be optionally specified using
 the -c /path/dir command line option.  Make sure you specify a directory,
-not a file!  Xastir will create the directory and several subdirectories if
+not a file!  Astir will create the directory and several subdirectories if
 they do not exist when you start up.
 
 A few executables are installed in /usr/local/bin/.
 
-Scripts are installed in /usr/local/share/xastir/scripts.
+Scripts are installed in /usr/local/share/astir/scripts.
 
-Maps are installed in /usr/local/share/xastir/maps/.  Lots of other
-directories are under /usr/local/share/xastir/.
+Maps are installed in /usr/local/share/astir/maps/.  Lots of other
+directories are under /usr/local/share/astir/.

@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -72,7 +72,7 @@
 // removed: #include <Xm/XmAll.h>   (this file names no X type;
 //          what it actually needed from it was the C library headers below)
 
-#include "core/xastir.h"
+#include "core/astir.h"
 #include "core/render/symbols.h"
 #include "core/main.h"
 #include "core/aprs/db_funcs.h"
@@ -127,16 +127,16 @@ iodevices dtype[MAX_IFACE_DEVICE_TYPES]; // device names
 // along.  init_critical_section() for the lock still runs from
 // interface_gui_init(); only the definitions moved.
 ioparam devices[MAX_IFACE_DEVICES];     // interface configuration
-xastir_mutex devices_lock;              // Protects the devices[] array
+astir_mutex devices_lock;              // Protects the devices[] array
 
 iface port_data[MAX_IFACE_DEVICES];     // shared port data
 
 int port_id[MAX_IFACE_DEVICES];         // shared port id data
 
-xastir_mutex port_data_lock;            // Protects the port_data[] array of structs
-xastir_mutex data_lock;                 // Protects incoming_data_queue
-xastir_mutex output_data_lock;          // Protects interface.c:channel_data() function only
-xastir_mutex connect_lock;              // Protects port_data[].thread_status and port_data[].connect_status
+astir_mutex port_data_lock;            // Protects the port_data[] array of structs
+astir_mutex data_lock;                 // Protects incoming_data_queue
+astir_mutex output_data_lock;          // Protects interface.c:channel_data() function only
+astir_mutex connect_lock;              // Protects port_data[].thread_status and port_data[].connect_status
 
 void port_write_string(int port, char *data);
 
@@ -390,7 +390,7 @@ int is_network_interface(int port)
 // setting up the account in AGWPE, as that's what we send to
 // authenticate.
 //
-void send_agwpe_packet(int xastir_interface,// Xastir interface port
+void send_agwpe_packet(int astir_interface,// Astir interface port
                        int RadioPort,       // AGWPE RadioPort
                        unsigned char type,
                        unsigned char *FromCall,
@@ -427,13 +427,13 @@ void send_agwpe_packet(int xastir_interface,// Xastir interface port
     output_string[0] = (unsigned char)RadioPort;
 
     if (FromCall)   // Write the FromCall string into the frame
-      xastir_snprintf((char *)&output_string[8],
+      astir_snprintf((char *)&output_string[8],
                       sizeof(output_string) - 8,
                       "%s",
                       FromCall);
 
     if (ToCall) // Write the ToCall string into the frame
-      xastir_snprintf((char *)&output_string[18],
+      astir_snprintf((char *)&output_string[18],
                       sizeof(output_string) - 18,
                       "%s",
                       ToCall);
@@ -447,7 +447,7 @@ void send_agwpe_packet(int xastir_interface,// Xastir interface port
     output_string[4] = type;
 
     // Send the packet to AGWPE
-    port_write_binary(xastir_interface,
+    port_write_binary(astir_interface,
                       output_string,
                       agwpe_header_size);
   }
@@ -467,7 +467,7 @@ void send_agwpe_packet(int xastir_interface,// Xastir interface port
 
       // Compute the callsign base string
       // (callsign minus SSID)
-      xastir_snprintf(callsign_base,
+      astir_snprintf(callsign_base,
                       sizeof(callsign_base),
                       "%s",
                       my_callsign);
@@ -485,19 +485,19 @@ void send_agwpe_packet(int xastir_interface,// Xastir interface port
       // Write login/password out as 255-byte strings each
 
       // Put the login string into the buffer
-      xastir_snprintf((char *)&output_string[agwpe_header_size],
+      astir_snprintf((char *)&output_string[agwpe_header_size],
                       sizeof(output_string) - agwpe_header_size,
                       "%s",
                       callsign_base);
 
       // Put the password string into the buffer
-      xastir_snprintf((char *)&output_string[agwpe_header_size+255],
+      astir_snprintf((char *)&output_string[agwpe_header_size+255],
                       sizeof(output_string) - agwpe_header_size - 255,
                       "%s",
                       Data);
 
       // Send the packet to AGWPE
-      port_write_binary(xastir_interface,
+      port_write_binary(astir_interface,
                         output_string,
                         255+255+agwpe_header_size);
     }
@@ -521,7 +521,7 @@ void send_agwpe_packet(int xastir_interface,// Xastir interface port
       full_length = length + agwpe_header_size;
 
       // Send the packet to AGWPE
-      port_write_binary(xastir_interface,
+      port_write_binary(astir_interface,
                         output_string,
                         full_length);
 
@@ -691,7 +691,7 @@ void send_agwpe_packet(int xastir_interface,// Xastir interface port
     full_length = data_length + agwpe_header_size;
 
     // Send the packet to AGWPE
-    port_write_binary(xastir_interface,
+    port_write_binary(astir_interface,
                       output_string,
                       full_length);
 
@@ -807,7 +807,7 @@ ASC:....K...K2RRT-9...APT311....C...........fbb`.d...@r..d......d......!4319.79N
 
 
 // Parse an AGWPE header.  Create a TAPR-2 style header out of the
-// data for feeding into the Xastir parsing code.  Input format is
+// data for feeding into the Astir parsing code.  Input format is
 // as follows:
 //
 //  RadioPort     4 bytes (0-3)
@@ -1051,7 +1051,7 @@ unsigned char *parse_agwpe_packet(unsigned char *input_string,
       data_length = strlen((const char *)&input_string[37]);
 
       // Send the processed string back for decoding
-      xastir_snprintf((char *)output_string,
+      astir_snprintf((char *)output_string,
                       output_string_length,
                       "%s",
                       &input_string[37]);
@@ -1382,7 +1382,7 @@ void channel_data(int port, unsigned char *string, volatile int length)
 {
   volatile int max;
   struct timeval tmv;
-  // Some messiness necessary because we're using xastir_mutex's
+  // Some messiness necessary because we're using astir_mutex's
   // instead of pthread_mutex_t's.
   pthread_mutex_t *cleanup_mutex1;
   pthread_mutex_t *cleanup_mutex2;
@@ -1399,11 +1399,11 @@ void channel_data(int port, unsigned char *string, volatile int length)
   // Save backup copies of the incoming string and the previous
   // string.  Used for debugging purposes.  If we get a segfault,
   // we can print out the last two messages received.
-  xastir_snprintf((char *)incoming_data_copy_previous,
+  astir_snprintf((char *)incoming_data_copy_previous,
                   sizeof(incoming_data_copy_previous),
                   "%s",
                   incoming_data_copy);
-  xastir_snprintf((char *)incoming_data_copy,
+  astir_snprintf((char *)incoming_data_copy,
                   sizeof(incoming_data_copy),
                   "Port%d:%s",
                   port,
@@ -1508,7 +1508,7 @@ void channel_data(int port, unsigned char *string, volatile int length)
         //
         if ( (length > 7) && (isRMC((char *)string)))
         {
-          xastir_snprintf(gprmc_save_string,
+          astir_snprintf(gprmc_save_string,
                           sizeof(gprmc_save_string),
                           "%s",
                           string);
@@ -1517,7 +1517,7 @@ void channel_data(int port, unsigned char *string, volatile int length)
         }
         else if ( (length > 7) && (isGGA((char *)string)))
         {
-          xastir_snprintf(gpgga_save_string,
+          astir_snprintf(gpgga_save_string,
                           sizeof(gpgga_save_string),
                           "%s",
                           string);
@@ -1712,14 +1712,14 @@ int ui_connect( int port, char *to[])
 
   if ((portcall = ax25_config_get_addr(port_data[port].device_name)) == NULL)
   {
-    xastir_snprintf(temp, sizeof(temp), langcode("POPEM00005"),
+    astir_snprintf(temp, sizeof(temp), langcode("POPEM00005"),
                     port_data[port].device_name);
     xa_ui_popup(langcode("POPEM00004"),temp);
     return -1;
   }
   if (ax25_aton_entry(portcall, axbind.fsa_digipeater[0].ax25_call) == -1)
   {
-    xastir_snprintf(temp, sizeof(temp), langcode("POPEM00006"),
+    astir_snprintf(temp, sizeof(temp), langcode("POPEM00006"),
                     port_data[port].device_name);
     xa_ui_popup(langcode("POPEM00004"), temp);
     return -1;
@@ -1727,7 +1727,7 @@ int ui_connect( int port, char *to[])
 
   if (ax25_aton_entry(port_data[port].ui_call, axbind.fsa_ax25.sax25_call.ax25_call) == -1)
   {
-    xastir_snprintf(temp, sizeof(temp), langcode("POPEM00007"), port_data[port].ui_call);
+    astir_snprintf(temp, sizeof(temp), langcode("POPEM00007"), port_data[port].ui_call);
     xa_ui_popup(langcode("POPEM00004"),temp);
     return -1;
   }
@@ -1744,7 +1744,7 @@ int ui_connect( int port, char *to[])
 
   if ((s = socket(AF_AX25, SOCK_DGRAM, 0)) < 0)
   {
-    xastir_snprintf(temp, sizeof(temp), langcode("POPEM00009"), strerror(errno));
+    astir_snprintf(temp, sizeof(temp), langcode("POPEM00009"), strerror(errno));
     xa_ui_popup(langcode("POPEM00004"),temp);
     return -1;
   }
@@ -1756,7 +1756,7 @@ int ui_connect( int port, char *to[])
   if (bind(s, (struct sockaddr *)&axbind, addrlen) != 0)
   {
     DISABLE_SETUID_PRIVILEGE;
-    xastir_snprintf(temp, sizeof(temp), langcode("POPEM00010"), strerror(errno));
+    astir_snprintf(temp, sizeof(temp), langcode("POPEM00010"), strerror(errno));
     xa_ui_popup(langcode("POPEM00004"),temp);
     return -1;
   }
@@ -1788,7 +1788,7 @@ int ui_connect( int port, char *to[])
 
   if (connect(s, (struct sockaddr *)&axconnect, addrlen) != 0)
   {
-    xastir_snprintf(temp, sizeof(temp), langcode("POPEM00011"), strerror(errno));
+    astir_snprintf(temp, sizeof(temp), langcode("POPEM00011"), strerror(errno));
     xa_ui_popup(langcode("POPEM00004"),temp);
     return -1;
   }
@@ -1853,7 +1853,7 @@ static void data_out_ax25(int port, unsigned char *string)
         if (temp != NULL)
         {
           substr(ui_mycall, temp, APRS_MAX_CALLSIGN_LEN);
-          xastir_snprintf(port_data[port].ui_call,
+          astir_snprintf(port_data[port].ui_call,
                           sizeof(port_data[port].ui_call),
                           "%s",
                           ui_mycall);
@@ -2210,7 +2210,7 @@ char *process_ax25_packet(unsigned char *bp, unsigned int len, char *buffer, int
   /* add terminating '\0' to allow handling as a string */
   message[l] = '\0';
 
-  xastir_snprintf(buffer,
+  astir_snprintf(buffer,
                   buffer_size,
                   "%s",
                   source);
@@ -2328,7 +2328,7 @@ int ax25_init(int port)
   {
     if ((dev = ax25_config_get_dev(port_data[port].device_name)) == NULL)
     {
-      xastir_snprintf(temp, sizeof(temp), langcode("POPEM00014"),
+      astir_snprintf(temp, sizeof(temp), langcode("POPEM00014"),
                       port_data[port].device_name);
       xa_ui_popup(langcode("POPEM00004"),temp);
 
@@ -2374,7 +2374,7 @@ int ax25_init(int port)
   xa_ui_interfaces_changed();
 
 #else /* HAVE_LIBAX25 */
-  fprintf(stderr,"AX.25 support not compiled into Xastir!\n");
+  fprintf(stderr,"AX.25 support not compiled into Astir!\n");
   xa_ui_popup(langcode("POPEM00004"),langcode("POPEM00021"));
 #endif /* HAVE_LIBAX25 */
   if (end_critical_section(&port_data_lock, "interface.c:ax25_init(5)" ) > 0)
@@ -2478,7 +2478,7 @@ int command_file_to_tnc_port(int port, char *filename)
             if (send_ctrl_C)
             {
               // Control-C desired
-              xastir_snprintf(command,
+              astir_snprintf(command,
                               sizeof(command),
                               "%c%s\r",
                               (char)03,   // Control-C
@@ -2487,7 +2487,7 @@ int command_file_to_tnc_port(int port, char *filename)
             else
             {
               // No Control-C desired
-              xastir_snprintf(command,
+              astir_snprintf(command,
                               sizeof(command),
                               "%s\r",
                               line);
@@ -2723,7 +2723,7 @@ int serial_detach(int port)
     }
 
     // Delete lockfile
-    xastir_snprintf(fn, sizeof(fn), "/var/lock/LCK..%s", get_device_name_only(port_data[port].device_name));
+    astir_snprintf(fn, sizeof(fn), "/var/lock/LCK..%s", get_device_name_only(port_data[port].device_name));
     if (debug_level & 2)
     {
       fprintf(stderr,"Delete lock file %s\n",fn);
@@ -2742,7 +2742,7 @@ int serial_detach(int port)
     // process owns the lockfile (the PID of the owner is inside
     // the lockfile).  If not, remove the lockfile 'cuz it may
     // have been ours from this or a previous run.  Note that we
-    // can now run multiple Xastir sessions from a single user,
+    // can now run multiple Astir sessions from a single user,
     // and the lockfiles must be kept straight between them.  If
     // a lockfile doesn't contain a PID from a running process,
     // it's fair game to delete the lockfile and/or take over
@@ -2835,7 +2835,7 @@ int serial_init (int port)
 
 
   // check for lockfile
-  xastir_snprintf(fn, sizeof(fn), "/var/lock/LCK..%s",
+  astir_snprintf(fn, sizeof(fn), "/var/lock/LCK..%s",
                   get_device_name_only(port_data[port].device_name));
 
   if (filethere(fn) == 1)
@@ -2891,7 +2891,7 @@ int serial_init (int port)
       // "lockfile_pid", so we can delete it.
       //
       // If "lockfile_pid == mypid", then this currently
-      // running instance of Xastir was the one that created
+      // running instance of Astir was the one that created
       // the lockfile and it is again ok to delete it.
       //
       if (status != lockfile_pid || lockfile_pid == mypid)
@@ -3029,7 +3029,7 @@ int serial_init (int port)
   }
 
   // Attempt to create the lockfile
-  xastir_snprintf(fn, sizeof(fn), "/var/lock/LCK..%s", get_device_name_only(port_data[port].device_name));
+  astir_snprintf(fn, sizeof(fn), "/var/lock/LCK..%s", get_device_name_only(port_data[port].device_name));
   if (debug_level & 2)
   {
     fprintf(stderr,"Create lock file %s\n",fn);
@@ -3046,12 +3046,12 @@ int serial_init (int port)
     // get user info
     user_id = getuid();
     user_info = getpwuid(user_id);
-    xastir_snprintf(temp,
+    astir_snprintf(temp,
                     sizeof(temp),
                     "%s",
                     user_info->pw_name);
 
-    fprintf(lock,"%9d %s %s",(int)mypid,"xastir",temp);
+    fprintf(lock,"%9d %s %s",(int)mypid,"astir",temp);
     (void)fclose(lock);
     // We've successfully created our own lockfile
   }
@@ -3275,7 +3275,7 @@ static void* net_connect_thread(void *arg)
   struct addrinfo *res;
 
   // Some messiness necessary because we're using
-  // xastir_mutex's instead of pthread_mutex_t's.
+  // astir_mutex's instead of pthread_mutex_t's.
   pthread_mutex_t *cleanup_mutex;
 
 
@@ -3466,9 +3466,9 @@ int net_init(int port)
   hints.ai_socktype = SOCK_STREAM;
   hints.ai_protocol = 0;
   hints.ai_flags = AI_NUMERICSERV|AI_ADDRCONFIG;
-  xastir_snprintf(port_num, sizeof(port_num), "%d", port_data[port].socket_port);
+  astir_snprintf(port_num, sizeof(port_num), "%d", port_data[port].socket_port);
 
-  xastir_snprintf(st, sizeof(st), langcode("BBARSTA019"), port_data[port].device_host_name);
+  astir_snprintf(st, sizeof(st), langcode("BBARSTA019"), port_data[port].device_host_name);
   xa_ui_status(st);   // Looking up host
 
   if(port_data[port].addr_list)
@@ -3550,7 +3550,7 @@ int net_init(int port)
         fprintf(stderr,"connect_lock, Port = %d\n", port);
       }
 
-      xastir_snprintf(st, sizeof(st), langcode("BBARSTA025"), wait_time - sec_now() );
+      astir_snprintf(st, sizeof(st), langcode("BBARSTA025"), wait_time - sec_now() );
       xa_ui_status(st);           // Host found, connecting n
       if (debug_level & 2)
       {
@@ -3630,23 +3630,23 @@ int net_init(int port)
     switch (ok)
     {
       case 1: /* connection up */
-        xastir_snprintf(st, sizeof(st), langcode("BBARSTA020"), port_data[port].device_host_name);
+        astir_snprintf(st, sizeof(st), langcode("BBARSTA020"), port_data[port].device_host_name);
         xa_ui_status(st);               // Connected to ...
         break;
 
       case 0:
-        xastir_snprintf(st, sizeof(st), "%s", langcode("BBARSTA021"));
+        astir_snprintf(st, sizeof(st), "%s", langcode("BBARSTA021"));
         xa_ui_status(st);               // Net Connection Failed!
         ok = -1;
         break;
 
       case -1:
-        xastir_snprintf(st, sizeof(st), "%s", langcode("BBARSTA022"));
+        astir_snprintf(st, sizeof(st), "%s", langcode("BBARSTA022"));
         xa_ui_status(st);               // Could not bind socket
         break;
 
       case -2:
-        xastir_snprintf(st, sizeof(st), "%s", langcode("BBARSTA018"));
+        astir_snprintf(st, sizeof(st), "%s", langcode("BBARSTA018"));
         xa_ui_status(st);               // Net Connection timed out
         ok = 0;
         break;
@@ -3658,7 +3658,7 @@ int net_init(int port)
   }
   else if (gai_rc == FAI_TIMEOUT)   /* host lookup time out */
   {
-    xastir_snprintf(st, sizeof(st), "%s", langcode("BBARSTA018"));
+    astir_snprintf(st, sizeof(st), "%s", langcode("BBARSTA018"));
     xa_ui_status(st);                       // Net Connection timed out
     port_data[port].status = DEVICE_ERROR;
     if (debug_level & 2)
@@ -3673,7 +3673,7 @@ int net_init(int port)
   }
   else        /* Host ip look up failure (no ip address for that host) */
   {
-    xastir_snprintf(st, sizeof(st), "%s", langcode("BBARSTA023"));
+    astir_snprintf(st, sizeof(st), "%s", langcode("BBARSTA023"));
     xa_ui_status(st);                           // No IP for Host
     port_data[port].status = DEVICE_ERROR;
     if (debug_level & 2)
@@ -3775,7 +3775,7 @@ int net_detach(int port)
     // We wish to close down the socket (so both ends of the darn thing
     // go away), but we want to keep the number on those systems that
     // re-assign the same file descriptor again.  This is to prevent
-    // cross-connects from one interface to another in Xastir (big pain!).
+    // cross-connects from one interface to another in Astir (big pain!).
 
     // Close it
     stat = close(port_data[port].channel);
@@ -3894,7 +3894,7 @@ void fix_up_callsign(unsigned char *data, int data_size)
 
   // Write over the top of the input string with the newly
   // formatted callsign
-  xastir_snprintf((char *)data,
+  astir_snprintf((char *)data,
                   data_size,
                   "%s",
                   new_call);
@@ -4004,18 +4004,18 @@ void send_ax25_frame(int port, char *source, char *destination, char *path, char
   transmit_txt[0] = '\0';
 
   // Format the destination callsign
-  xastir_snprintf((char *)temp_dest,
+  astir_snprintf((char *)temp_dest,
                   sizeof(temp_dest),
                   "%s",
                   destination);
   fix_up_callsign(temp_dest, sizeof(temp_dest));
-  xastir_snprintf((char *)transmit_txt,
+  astir_snprintf((char *)transmit_txt,
                   sizeof(transmit_txt),
                   "%s",
                   temp_dest);
 
   // Format the source callsign
-  xastir_snprintf((char *)temp_source,
+  astir_snprintf((char *)temp_source,
                   sizeof(temp_source),
                   "%s",
                   source);
@@ -4520,7 +4520,7 @@ void port_read(int port)
 
             // AGWPE
             // Process AGWPE packets here.  Massage the frames so that they look
-            // like normal serial packets to the Xastir decoding functions?
+            // like normal serial packets to the Astir decoding functions?
             //
             // We turn on monitoring of packets when we first connect.  We now
             // need to throw away all but the "U" packets, which are unconnected
@@ -5070,7 +5070,7 @@ void port_write(int port)
     if (port_data[port].status == DEVICE_UP)
     {
       // Some messiness necessary because we're using
-      // xastir_mutex's instead of pthread_mutex_t's.
+      // astir_mutex's instead of pthread_mutex_t's.
       pthread_mutex_t *cleanup_mutex;
 
 
@@ -5579,66 +5579,66 @@ void clear_all_port_data(void)
 //***********************************************************
 void init_device_names(void)
 {
-  xastir_snprintf(dtype[DEVICE_NONE].device_name,
+  astir_snprintf(dtype[DEVICE_NONE].device_name,
                   sizeof(dtype[DEVICE_NONE].device_name),
                   "%s",
                   langcode("IFDNL00000"));
-  xastir_snprintf(dtype[DEVICE_SERIAL_TNC].device_name,
+  astir_snprintf(dtype[DEVICE_SERIAL_TNC].device_name,
                   sizeof(dtype[DEVICE_SERIAL_TNC].device_name),
                   "%s",
                   langcode("IFDNL00001"));
-  xastir_snprintf(dtype[DEVICE_SERIAL_TNC_HSP_GPS].device_name,
+  astir_snprintf(dtype[DEVICE_SERIAL_TNC_HSP_GPS].device_name,
                   sizeof(dtype[DEVICE_SERIAL_TNC_HSP_GPS].device_name),
                   "%s",
                   langcode("IFDNL00002"));
-  xastir_snprintf(dtype[DEVICE_SERIAL_GPS].device_name,
+  astir_snprintf(dtype[DEVICE_SERIAL_GPS].device_name,
                   sizeof(dtype[DEVICE_SERIAL_GPS].device_name),
                   "%s",
                   langcode("IFDNL00003"));
-  xastir_snprintf(dtype[DEVICE_SERIAL_WX].device_name,
+  astir_snprintf(dtype[DEVICE_SERIAL_WX].device_name,
                   sizeof(dtype[DEVICE_SERIAL_WX].device_name),
                   "%s",
                   langcode("IFDNL00004"));
-  xastir_snprintf(dtype[DEVICE_NET_STREAM].device_name,
+  astir_snprintf(dtype[DEVICE_NET_STREAM].device_name,
                   sizeof(dtype[DEVICE_NET_STREAM].device_name),
                   "%s",
                   langcode("IFDNL00005"));
-  xastir_snprintf(dtype[DEVICE_AX25_TNC].device_name,
+  astir_snprintf(dtype[DEVICE_AX25_TNC].device_name,
                   sizeof(dtype[DEVICE_AX25_TNC].device_name),
                   "%s",
                   langcode("IFDNL00006"));
-  xastir_snprintf(dtype[DEVICE_NET_GPSD].device_name,
+  astir_snprintf(dtype[DEVICE_NET_GPSD].device_name,
                   sizeof(dtype[DEVICE_NET_GPSD].device_name),
                   "%s",
                   langcode("IFDNL00007"));
-  xastir_snprintf(dtype[DEVICE_NET_WX].device_name,
+  astir_snprintf(dtype[DEVICE_NET_WX].device_name,
                   sizeof(dtype[DEVICE_NET_WX].device_name),
                   "%s",
                   langcode("IFDNL00008"));
-  xastir_snprintf(dtype[DEVICE_SERIAL_TNC_AUX_GPS].device_name,
+  astir_snprintf(dtype[DEVICE_SERIAL_TNC_AUX_GPS].device_name,
                   sizeof(dtype[DEVICE_SERIAL_TNC_AUX_GPS].device_name),
                   "%s",
                   langcode("IFDNL00009"));
-  xastir_snprintf(dtype[DEVICE_SERIAL_KISS_TNC].device_name,
+  astir_snprintf(dtype[DEVICE_SERIAL_KISS_TNC].device_name,
                   sizeof(dtype[DEVICE_SERIAL_KISS_TNC].device_name),
                   "%s",
                   langcode("IFDNL00010"));
-  xastir_snprintf(dtype[DEVICE_NET_DATABASE].device_name,
+  astir_snprintf(dtype[DEVICE_NET_DATABASE].device_name,
                   sizeof(dtype[DEVICE_NET_DATABASE].device_name),
                   "%s",
                   langcode("IFDNL00011"));
-  xastir_snprintf(dtype[DEVICE_NET_AGWPE].device_name,
+  astir_snprintf(dtype[DEVICE_NET_AGWPE].device_name,
                   sizeof(dtype[DEVICE_NET_AGWPE].device_name),
                   "%s",
                   langcode("IFDNL00012"));
-  xastir_snprintf(dtype[DEVICE_SERIAL_MKISS_TNC].device_name,
+  astir_snprintf(dtype[DEVICE_SERIAL_MKISS_TNC].device_name,
                   sizeof(dtype[DEVICE_SERIAL_MKISS_TNC].device_name),
                   "%s",
                   langcode("IFDNL00013"));
 
 #ifdef HAVE_DB
   // SQL Database (experimental)
-  xastir_snprintf(dtype[DEVICE_SQL_DATABASE].device_name,
+  astir_snprintf(dtype[DEVICE_SQL_DATABASE].device_name,
                   sizeof(dtype[DEVICE_SQL_DATABASE].device_name),
                   "%s",
                   langcode("IFDNL00014"));
@@ -5689,7 +5689,7 @@ int del_device(int port)
 
           begin_critical_section(&devices_lock, "interface.c:del_device" );
 
-          xastir_snprintf(temp, sizeof(temp), "config/%s", devices[port].tnc_down_file);
+          astir_snprintf(temp, sizeof(temp), "config/%s", devices[port].tnc_down_file);
 
           end_critical_section(&devices_lock, "interface.c:del_device" );
 
@@ -5741,7 +5741,7 @@ int del_device(int port)
 
           begin_critical_section(&devices_lock, "interface.c:del_device" );
 
-          xastir_snprintf(temp, sizeof(temp), "config/%s", devices[port].tnc_down_file);
+          astir_snprintf(temp, sizeof(temp), "config/%s", devices[port].tnc_down_file);
 
           end_critical_section(&devices_lock, "interface.c:del_device" );
 
@@ -5995,7 +5995,7 @@ int add_device_by_ioparam(int port_avail, ioparam *device)
         clear_port_data(port_avail,0);
 
         port_data[port_avail].device_type = DEVICE_SQL_DATABASE;
-        xastir_snprintf(port_data[port_avail].device_host_name,
+        astir_snprintf(port_data[port_avail].device_host_name,
                         sizeof(port_data[port_avail].device_host_name),
                         "%s",
                         device->device_host_name);
@@ -6117,9 +6117,9 @@ int add_device(int port_avail,int dev_type,char *dev_nm,char *passwd,int dev_sck
     return(-1);
   }
 
-  xastir_snprintf(verstr,
+  astir_snprintf(verstr,
                   sizeof(verstr),
-                  "XASTIR %s",
+                  "ASTIR %s",
                   VERSION);
 
   ok = -1;
@@ -6218,7 +6218,7 @@ int add_device(int port_avail,int dev_type,char *dev_nm,char *passwd,int dev_sck
         clear_port_data(port_avail,0);
 
         port_data[port_avail].device_type = dev_type;
-        xastir_snprintf(port_data[port_avail].device_name,
+        astir_snprintf(port_data[port_avail].device_name,
                         sizeof(port_data[port_avail].device_name),
                         "%s",
                         dev_nm);
@@ -6244,11 +6244,11 @@ int add_device(int port_avail,int dev_type,char *dev_nm,char *passwd,int dev_sck
         clear_port_data(port_avail,0);
 
         port_data[port_avail].device_type = DEVICE_NET_STREAM;
-        xastir_snprintf(port_data[port_avail].device_host_name,
+        astir_snprintf(port_data[port_avail].device_host_name,
                         sizeof(port_data[port_avail].device_host_name),
                         "%s",
                         dev_nm);
-        xastir_snprintf(port_data[port_avail].device_host_pswd,
+        astir_snprintf(port_data[port_avail].device_host_pswd,
                         sizeof(port_data[port_avail].device_host_pswd),
                         "%s",
                         passwd);
@@ -6271,7 +6271,7 @@ int add_device(int port_avail,int dev_type,char *dev_nm,char *passwd,int dev_sck
               // Please note that "filter" must be the 8th
               // parameter on the line in order to be
               // parsed properly by the servers.
-              xastir_snprintf(logon_txt,
+              astir_snprintf(logon_txt,
                               sizeof(logon_txt),
                               "user %s pass %s vers %s filter %s%c%c",
                               my_callsign,
@@ -6283,7 +6283,7 @@ int add_device(int port_avail,int dev_type,char *dev_nm,char *passwd,int dev_sck
             }
             else    // No filter specified
             {
-              xastir_snprintf(logon_txt,
+              astir_snprintf(logon_txt,
                               sizeof(logon_txt),
                               "user %s pass %s vers %s%c%c",
                               my_callsign,
@@ -6295,7 +6295,7 @@ int add_device(int port_avail,int dev_type,char *dev_nm,char *passwd,int dev_sck
           }
           else
           {
-            xastir_snprintf(logon_txt,
+            astir_snprintf(logon_txt,
                             sizeof(logon_txt),
                             "user %s pass -1 vers %s %c%c",
                             my_callsign,
@@ -6316,7 +6316,7 @@ int add_device(int port_avail,int dev_type,char *dev_nm,char *passwd,int dev_sck
         clear_port_data(port_avail,0);
 
         port_data[port_avail].device_type = DEVICE_AX25_TNC;
-        xastir_snprintf(port_data[port_avail].device_name,
+        astir_snprintf(port_data[port_avail].device_name,
                         sizeof(port_data[port_avail].device_name),
                         "%s",
                         dev_nm);
@@ -6333,7 +6333,7 @@ int add_device(int port_avail,int dev_type,char *dev_nm,char *passwd,int dev_sck
         clear_port_data(port_avail,0);
 
         port_data[port_avail].device_type = DEVICE_NET_GPSD;
-        xastir_snprintf(port_data[port_avail].device_host_name,
+        astir_snprintf(port_data[port_avail].device_host_name,
                         sizeof(port_data[port_avail].device_host_name),
                         "%s",
                         dev_nm);
@@ -6345,7 +6345,7 @@ int add_device(int port_avail,int dev_type,char *dev_nm,char *passwd,int dev_sck
         {
 
           // Pre-2.90 GPSD protocol
-          xastir_snprintf(logon_txt, sizeof(logon_txt), "R\r\n");
+          astir_snprintf(logon_txt, sizeof(logon_txt), "R\r\n");
           port_write_string(port_avail,logon_txt);
 
           // Post-2.90 GPSD protocol is handled near the
@@ -6368,7 +6368,7 @@ int add_device(int port_avail,int dev_type,char *dev_nm,char *passwd,int dev_sck
         clear_port_data(port_avail,0);
 
         port_data[port_avail].device_type = DEVICE_NET_WX;
-        xastir_snprintf(port_data[port_avail].device_host_name,
+        astir_snprintf(port_data[port_avail].device_host_name,
                         sizeof(port_data[port_avail].device_host_name),
                         "%s",
                         dev_nm);
@@ -6383,7 +6383,7 @@ int add_device(int port_avail,int dev_type,char *dev_nm,char *passwd,int dev_sck
         if (ok == 1)
         {
           /* if connected now send call and program version */
-          xastir_snprintf(logon_txt, sizeof(logon_txt), "%s %s%c%c", my_callsign, VERSIONTXT, '\r', '\n');
+          astir_snprintf(logon_txt, sizeof(logon_txt), "%s %s%c%c", my_callsign, VERSIONTXT, '\r', '\n');
           port_write_string(port_avail,logon_txt);
         }
         break;
@@ -6397,7 +6397,7 @@ int add_device(int port_avail,int dev_type,char *dev_nm,char *passwd,int dev_sck
         clear_port_data(port_avail,0);
 
         port_data[port_avail].device_type = DEVICE_NET_DATABASE;
-        xastir_snprintf(port_data[port_avail].device_host_name,
+        astir_snprintf(port_data[port_avail].device_host_name,
                         sizeof(port_data[port_avail].device_host_name),
                         "%s",
                         dev_nm);
@@ -6412,7 +6412,7 @@ int add_device(int port_avail,int dev_type,char *dev_nm,char *passwd,int dev_sck
         if (ok == 1)
         {
           /* if connected now send call and program version */
-          xastir_snprintf(logon_txt, sizeof(logon_txt), "%s %s%c%c", my_callsign, VERSIONTXT, '\r', '\n');
+          astir_snprintf(logon_txt, sizeof(logon_txt), "%s %s%c%c", my_callsign, VERSIONTXT, '\r', '\n');
           port_write_string(port_avail,logon_txt);
         }
         break;
@@ -6426,7 +6426,7 @@ int add_device(int port_avail,int dev_type,char *dev_nm,char *passwd,int dev_sck
         clear_port_data(port_avail,0);
 
         port_data[port_avail].device_type = DEVICE_NET_AGWPE;
-        xastir_snprintf(port_data[port_avail].device_host_name,
+        astir_snprintf(port_data[port_avail].device_host_name,
                         sizeof(port_data[port_avail].device_host_name),
                         "%s",
                         dev_nm);
@@ -6486,7 +6486,7 @@ int add_device(int port_avail,int dev_type,char *dev_nm,char *passwd,int dev_sck
 
           if (ok == 1)
           {
-            xastir_snprintf(temp, sizeof(temp), "config/%s", devices[port_avail].tnc_up_file);
+            astir_snprintf(temp, sizeof(temp), "config/%s", devices[port_avail].tnc_up_file);
             (void)command_file_to_tnc_port(port_avail,get_data_base_dir(temp));
           }
           break;
@@ -6496,7 +6496,7 @@ int add_device(int port_avail,int dev_type,char *dev_nm,char *passwd,int dev_sck
           // Initialize KISS-Mode at startup
           if (devices[port_avail].init_kiss)
           {
-            xastir_snprintf(init_kiss_string,
+            astir_snprintf(init_kiss_string,
                             sizeof(init_kiss_string),
                             "\x1B@k\r");    // [ESC@K sets tnc from terminal- into kissmode
             port_write_string(port_avail,init_kiss_string);
@@ -6592,7 +6592,7 @@ int add_device(int port_avail,int dev_type,char *dev_nm,char *passwd,int dev_sck
           // Post-2.90 GPSD protocol
           // (Pre-2.90 protocol handled in a prior section of
           // this routine)
-          xastir_snprintf(logon_txt, sizeof(logon_txt), "?WATCH={\"enable\":true,\"nmea\":true}\r\n");
+          astir_snprintf(logon_txt, sizeof(logon_txt), "?WATCH={\"enable\":true,\"nmea\":true}\r\n");
           port_write_string(port_avail,logon_txt);
           break;
 
@@ -6603,7 +6603,7 @@ int add_device(int port_avail,int dev_type,char *dev_nm,char *passwd,int dev_sck
 
     if (ok == -1)
     {
-      xastir_snprintf(temp, sizeof(temp), langcode("POPEM00015"), port_avail);
+      astir_snprintf(temp, sizeof(temp), langcode("POPEM00015"), port_avail);
       xa_ui_popup(langcode("POPEM00004"),temp);
       port_avail = -1;
     }
@@ -6611,7 +6611,7 @@ int add_device(int port_avail,int dev_type,char *dev_nm,char *passwd,int dev_sck
     {
       if (ok == 0)
       {
-        xastir_snprintf(temp, sizeof(temp), langcode("POPEM00016"), port_avail);
+        astir_snprintf(temp, sizeof(temp), langcode("POPEM00016"), port_avail);
         xa_ui_popup(langcode("POPEM00004"),temp);
         port_avail = -1;
       }
@@ -7091,7 +7091,7 @@ unsigned char *select_unproto_path(int port)
       case 0:
         if (strlen(devices[port].unproto1) > 0)
         {
-          xastir_snprintf(unproto_path_txt,
+          astir_snprintf(unproto_path_txt,
                           sizeof(unproto_path_txt),
                           "%s",
                           devices[port].unproto1);
@@ -7108,7 +7108,7 @@ unsigned char *select_unproto_path(int port)
       case 1:
         if (strlen(devices[port].unproto2) > 0)
         {
-          xastir_snprintf(unproto_path_txt,
+          astir_snprintf(unproto_path_txt,
                           sizeof(unproto_path_txt),
                           "%s",
                           devices[port].unproto2);
@@ -7125,7 +7125,7 @@ unsigned char *select_unproto_path(int port)
       case 2:
         if (strlen(devices[port].unproto3) > 0)
         {
-          xastir_snprintf(unproto_path_txt,
+          astir_snprintf(unproto_path_txt,
                           sizeof(unproto_path_txt),
                           "%s",
                           devices[port].unproto3);
@@ -7159,7 +7159,7 @@ unsigned char *select_unproto_path(int port)
     // We found no entries in the unproto fields for the
     // interface.  Set a default path of "WIDE2-2".
 
-    xastir_snprintf(unproto_path_txt,
+    astir_snprintf(unproto_path_txt,
                     sizeof(unproto_path_txt),
                     "WIDE2-2");
   }
@@ -7245,7 +7245,7 @@ void output_my_aprs_data(void)
   }
   else
   {
-    xastir_snprintf(my_comment_tx,
+    astir_snprintf(my_comment_tx,
                     sizeof(my_comment_tx),
                     "%s",
                     my_comment);
@@ -7255,7 +7255,7 @@ void output_my_aprs_data(void)
   // Format latitude string for transmit later
   if (transmit_compressed_posit)      // High res version
   {
-    xastir_snprintf(my_output_lat,
+    astir_snprintf(my_output_lat,
                     sizeof(my_output_lat),
                     "%s",
                     my_lat);
@@ -7274,7 +7274,7 @@ void output_my_aprs_data(void)
                     sizeof(temp_data),
                     CONVERT_LP_NORMAL);
 
-    xastir_snprintf(my_output_lat,
+    astir_snprintf(my_output_lat,
                     sizeof(my_output_lat),
                     "%c%c%c%c.%c%c%c",
                     temp_data[0],
@@ -7295,7 +7295,7 @@ void output_my_aprs_data(void)
   // Format longitude string for transmit later
   if (transmit_compressed_posit)      // High res version
   {
-    xastir_snprintf(my_output_long,
+    astir_snprintf(my_output_long,
                     sizeof(my_output_long),
                     "%s",
                     my_long);
@@ -7314,7 +7314,7 @@ void output_my_aprs_data(void)
                     sizeof(temp_data),
                     CONVERT_LP_NORMAL);
 
-    xastir_snprintf(my_output_long,
+    astir_snprintf(my_output_long,
                     sizeof(my_output_long),
                     "%c%c%c%c%c.%c%c%c",
                     temp_data[0],
@@ -7357,7 +7357,7 @@ void output_my_aprs_data(void)
 
       case DEVICE_NET_STREAM:
 
-        xastir_snprintf(output_net,
+        astir_snprintf(output_net,
                         sizeof(output_net),
                         "%s>%s,TCPIP*:",
                         my_callsign,
@@ -7382,7 +7382,7 @@ void output_my_aprs_data(void)
         output_net[0] = '\0';
 
         /* Set my call sign */
-        xastir_snprintf(header_txt,
+        astir_snprintf(header_txt,
                         sizeof(header_txt),
                         "%c%s %s\r",
                         '\3',
@@ -7405,7 +7405,7 @@ void output_my_aprs_data(void)
         // sequence.
         unproto_path = (char *)select_unproto_path(port);
 
-        xastir_snprintf(header_txt,
+        astir_snprintf(header_txt,
                         sizeof(header_txt),
                         "%c%s %s VIA %s\r",
                         '\3',
@@ -7413,14 +7413,14 @@ void output_my_aprs_data(void)
                         VERSIONFRM,
                         unproto_path);
 
-        xastir_snprintf(header_txt_save,
+        astir_snprintf(header_txt_save,
                         sizeof(header_txt_save),
                         "%s>%s,%s:",
                         my_callsign,
                         VERSIONFRM,
                         unproto_path);
 
-        xastir_snprintf(path_txt,
+        astir_snprintf(path_txt,
                         sizeof(path_txt),
                         "%s",
                         unproto_path);
@@ -7442,7 +7442,7 @@ void output_my_aprs_data(void)
 
         // Set converse mode according to device's configuration setting.
         //
-        xastir_snprintf(header_txt, sizeof(header_txt), "%c%s\r", '\3', devices[port].device_converse_string);
+        astir_snprintf(header_txt, sizeof(header_txt), "%c%s\r", '\3', devices[port].device_converse_string);
 
         if ( (port_data[port].device_type != DEVICE_SERIAL_KISS_TNC)
              && (port_data[port].device_type != DEVICE_SERIAL_MKISS_TNC)
@@ -7479,7 +7479,7 @@ void output_my_aprs_data(void)
 
 
     if (transmit_compressed_posit)
-      xastir_snprintf(my_pos,
+      astir_snprintf(my_pos,
                       sizeof(my_pos),
                       "%s",
                       compress_posit(my_output_lat,
@@ -7491,7 +7491,7 @@ void output_my_aprs_data(void)
                                      my_phg));
     else   /* standard non compressed mode */
     {
-      xastir_snprintf(my_pos,
+      astir_snprintf(my_pos,
                       sizeof(my_pos),
                       "%s%c%s%c",
                       my_output_lat,
@@ -7500,13 +7500,13 @@ void output_my_aprs_data(void)
                       my_symbol);
       /* get PHG, if used for output */
       if (strlen(my_phg) >= 6)
-        xastir_snprintf(output_phg,
+        astir_snprintf(output_phg,
                         sizeof(output_phg),
                         "%s",
                         my_phg);
 
       /* get CSE/SPD, Always needed for output even if 0 */
-      xastir_snprintf(output_cs,
+      astir_snprintf(output_cs,
                       sizeof(output_cs),
                       "%03d/%03d",
                       my_last_course,
@@ -7514,7 +7514,7 @@ void output_my_aprs_data(void)
 
       /* get altitude */
       if (my_last_altitude_time > 0)
-        xastir_snprintf(output_alt,
+        astir_snprintf(output_alt,
                         sizeof(output_alt),
                         "/A=%06ld",
                         my_last_altitude);
@@ -7529,7 +7529,7 @@ void output_my_aprs_data(void)
 
         day_time = localtime(&sec);
 
-        xastir_snprintf(data_txt_save,
+        astir_snprintf(data_txt_save,
                         sizeof(data_txt_save),
                         "@%02d%02d%02d/%s%s%s%s",
                         day_time->tm_mday,
@@ -7574,7 +7574,7 @@ void output_my_aprs_data(void)
 
         day_time = gmtime(&sec);
 
-        xastir_snprintf(data_txt_save,
+        astir_snprintf(data_txt_save,
                         sizeof(data_txt_save),
                         "@%02d%02d%02dz%s%s%s%s",
                         day_time->tm_mday,
@@ -7619,7 +7619,7 @@ void output_my_aprs_data(void)
 
         day_time = gmtime(&sec);
 
-        xastir_snprintf(data_txt_save,
+        astir_snprintf(data_txt_save,
                         sizeof(data_txt_save),
                         "@%02d%02d%02dh%s%s%s%s",
                         day_time->tm_hour,
@@ -7665,7 +7665,7 @@ void output_my_aprs_data(void)
         if (sec != 0)
         {
 
-          xastir_snprintf(data_txt_save,
+          astir_snprintf(data_txt_save,
                           sizeof(data_txt_save),
                           "%c%s%s",
                           aprs_station_message_type,
@@ -7724,7 +7724,7 @@ void output_my_aprs_data(void)
         {
           day_time = gmtime(&sec);
 
-          xastir_snprintf(data_txt_save,
+          astir_snprintf(data_txt_save,
                           sizeof(data_txt_save),
                           "@%02d%02d%02dz%s%s",
                           day_time->tm_mday,
@@ -7824,7 +7824,7 @@ void output_my_aprs_data(void)
           // we call this routine!  Instead put the digipeaters into the
           // ViaCall fields.  We do this above by setting output_net to '\0'
           // before creating the data_txt string.
-          send_agwpe_packet(port,            // Xastir interface port
+          send_agwpe_packet(port,            // Astir interface port
                             atoi(devices[port].device_host_filter_string) - 1, // AGWPE RadioPort
                             '\0',                          // Type of frame
                             (unsigned char *)my_callsign,  // source
@@ -7848,7 +7848,7 @@ void output_my_aprs_data(void)
         /* add new line on network data */
         if (port_data[port].device_type == DEVICE_NET_STREAM)
         {
-          xastir_snprintf(data_txt2, sizeof(data_txt2), "\n");                 // Transmit a newline
+          astir_snprintf(data_txt2, sizeof(data_txt2), "\n");                 // Transmit a newline
           port_write_string(port, data_txt2);
         }
 
@@ -7961,7 +7961,7 @@ void output_my_aprs_data(void)
     strcat(data_txt, data_txt_save);
     data_txt[sizeof(data_txt)-1] = '\0';  // Terminate string
 
-    if (writen(pipe_xastir_to_tcp_server,
+    if (writen(pipe_astir_to_tcp_server,
                data_txt,
                strlen(data_txt)) != (int)strlen(data_txt))
     {
@@ -7970,7 +7970,7 @@ void output_my_aprs_data(void)
               errno);
     }
     // Terminate it with a linefeed
-    if (writen(pipe_xastir_to_tcp_server, "\n", 1) != 1)
+    if (writen(pipe_astir_to_tcp_server, "\n", 1) != 1)
     {
       fprintf(stderr,
               "my_aprs_data: Writen error: %d\n",
@@ -8105,7 +8105,7 @@ void output_my_data(char *message, int incoming_port, int type, int loopback_onl
           {
             fprintf(stderr,"%d Net\n",port);
           }
-          xastir_snprintf(output_net,
+          astir_snprintf(output_net,
                           sizeof(output_net),
                           "%s>%s,TCPIP*:",
                           my_callsign,
@@ -8132,7 +8132,7 @@ void output_my_data(char *message, int incoming_port, int type, int loopback_onl
           output_net[0] = '\0';   // clear this for a TNC
 
           /* Set my call sign */
-          xastir_snprintf(data_txt,
+          astir_snprintf(data_txt,
                           sizeof(data_txt),
                           "%c%s %s\r",
                           '\3',
@@ -8173,7 +8173,7 @@ void output_my_data(char *message, int incoming_port, int type, int loopback_onl
                                    langcode("WPUPCFT043"));
             }
 
-            xastir_snprintf(data_txt,
+            astir_snprintf(data_txt,
                             sizeof(data_txt),
                             "%c%s %s VIA %s\r",
                             '\3',
@@ -8181,14 +8181,14 @@ void output_my_data(char *message, int incoming_port, int type, int loopback_onl
                             VERSIONFRM,
                             devices[port].unproto_igate);
 
-            xastir_snprintf(data_txt_save,
+            astir_snprintf(data_txt_save,
                             sizeof(data_txt_save),
                             "%s>%s,%s:",
                             my_callsign,
                             VERSIONFRM,
                             devices[port].unproto_igate);
 
-            xastir_snprintf(path_txt,
+            astir_snprintf(path_txt,
                             sizeof(path_txt),
                             "%s",
                             devices[port].unproto_igate);
@@ -8206,14 +8206,14 @@ void output_my_data(char *message, int incoming_port, int type, int loopback_onl
             {
               // The user has requested a direct path
 
-              xastir_snprintf(data_txt,
+              astir_snprintf(data_txt,
                               sizeof(data_txt),
                               "%c%s %s\r",
                               '\3',
                               "UNPROTO",
                               VERSIONFRM);
 
-              xastir_snprintf(data_txt_save,
+              astir_snprintf(data_txt_save,
                               sizeof(data_txt_save),
                               "%s>%s:",
                               my_callsign,
@@ -8222,7 +8222,7 @@ void output_my_data(char *message, int incoming_port, int type, int loopback_onl
             else
             {
 
-              xastir_snprintf(data_txt,
+              astir_snprintf(data_txt,
                               sizeof(data_txt),
                               "%c%s %s VIA %s\r",
                               '\3',
@@ -8230,7 +8230,7 @@ void output_my_data(char *message, int incoming_port, int type, int loopback_onl
                               VERSIONFRM,
                               path);
 
-              xastir_snprintf(data_txt_save,
+              astir_snprintf(data_txt_save,
                               sizeof(data_txt_save),
                               "%s>%s,%s:",
                               my_callsign,
@@ -8245,7 +8245,7 @@ void output_my_data(char *message, int incoming_port, int type, int loopback_onl
             }
             else
             {
-              xastir_snprintf(path_txt,
+              astir_snprintf(path_txt,
                               sizeof(path_txt),
                               "%s",
                               path);
@@ -8269,7 +8269,7 @@ void output_my_data(char *message, int incoming_port, int type, int loopback_onl
             // in sequence.
             unproto_path = (char *)select_unproto_path(port);
 
-            xastir_snprintf(data_txt,
+            astir_snprintf(data_txt,
                             sizeof(data_txt),
                             "%c%s %s VIA %s\r",
                             '\3',
@@ -8277,14 +8277,14 @@ void output_my_data(char *message, int incoming_port, int type, int loopback_onl
                             VERSIONFRM,
                             unproto_path);
 
-            xastir_snprintf(data_txt_save,
+            astir_snprintf(data_txt_save,
                             sizeof(data_txt_save),
                             "%s>%s,%s:",
                             my_callsign,
                             VERSIONFRM,
                             unproto_path);
 
-            xastir_snprintf(path_txt,
+            astir_snprintf(path_txt,
                             sizeof(path_txt),
                             "%s",
                             unproto_path);
@@ -8305,7 +8305,7 @@ void output_my_data(char *message, int incoming_port, int type, int loopback_onl
           }
 
           // Set converse mode using approprate string from configuration.
-          xastir_snprintf(data_txt, sizeof(data_txt), "%c%s\r", '\3', devices[port].device_converse_string);
+          astir_snprintf(data_txt, sizeof(data_txt), "%c%s\r", '\3', devices[port].device_converse_string);
 
 
 
@@ -8335,7 +8335,7 @@ void output_my_data(char *message, int incoming_port, int type, int loopback_onl
     if (ok)
     {
       /* send data */
-      xastir_snprintf(data_txt, sizeof(data_txt), "%s%s\r", output_net, message);
+      astir_snprintf(data_txt, sizeof(data_txt), "%s%s\r", output_net, message);
       if ( (port_data[port].status == DEVICE_UP)
            && (devices[port].transmit_data == 1)
            && !transmit_disable
@@ -8378,7 +8378,7 @@ void output_my_data(char *message, int incoming_port, int type, int loopback_onl
                                    langcode("WPUPCFT043"));
             }
 
-            xastir_snprintf(path_txt,
+            astir_snprintf(path_txt,
                             sizeof(path_txt),
                             "%s",
                             devices[port].unproto_igate);
@@ -8392,7 +8392,7 @@ void output_my_data(char *message, int incoming_port, int type, int loopback_onl
             {
               unproto_path = (char *)select_unproto_path(port);
 
-              xastir_snprintf(path_txt,
+              astir_snprintf(path_txt,
                               sizeof(path_txt),
                               "%s",
                               unproto_path);
@@ -8409,7 +8409,7 @@ void output_my_data(char *message, int incoming_port, int type, int loopback_onl
             }
             else
             {
-              xastir_snprintf(path_txt,
+              astir_snprintf(path_txt,
                               sizeof(path_txt),
                               "%s",
                               path);
@@ -8422,7 +8422,7 @@ void output_my_data(char *message, int incoming_port, int type, int loopback_onl
 
             unproto_path = (char *)select_unproto_path(port);
 
-            xastir_snprintf(path_txt,
+            astir_snprintf(path_txt,
                             sizeof(path_txt),
                             "%s",
                             unproto_path);
@@ -8433,7 +8433,7 @@ void output_my_data(char *message, int incoming_port, int type, int loopback_onl
           // ViaCall fields.  We do this above by setting output_net to '\0'
           // before creating the data_txt string.
 
-          send_agwpe_packet(port,           // Xastir interface port
+          send_agwpe_packet(port,           // Astir interface port
                             atoi(devices[port].device_host_filter_string) - 1, // AGWPE RadioPort
                             '\0',                         // Type of frame
                             (unsigned char *)my_callsign, // source
@@ -8473,7 +8473,7 @@ void output_my_data(char *message, int incoming_port, int type, int loopback_onl
 
           if (strncmp(path, "DEFAULT PATH", 12) == 0)
           {
-            xastir_snprintf(temp,
+            astir_snprintf(temp,
                             sizeof(temp),
                             "%s>%s,%s:%s",
                             my_callsign,
@@ -8484,7 +8484,7 @@ void output_my_data(char *message, int incoming_port, int type, int loopback_onl
           else if (strncmp(path, "DIRECT PATH", 11) == 0)
           {
             // The user has requested a direct path
-            xastir_snprintf(temp,
+            astir_snprintf(temp,
                             sizeof(temp),
                             "%s>%s:%s",
                             my_callsign,
@@ -8493,7 +8493,7 @@ void output_my_data(char *message, int incoming_port, int type, int loopback_onl
           }
           else
           {
-            xastir_snprintf(temp,
+            astir_snprintf(temp,
                             sizeof(temp),
                             "%s>%s,%s:%s",
                             my_callsign,
@@ -8504,7 +8504,7 @@ void output_my_data(char *message, int incoming_port, int type, int loopback_onl
         }
         else
         {
-          xastir_snprintf(temp,
+          astir_snprintf(temp,
                           sizeof(temp),
                           "%s>%s,%s:%s",
                           my_callsign,
@@ -8524,7 +8524,7 @@ void output_my_data(char *message, int incoming_port, int type, int loopback_onl
       /* add newline on network data */
       if (port_data[port].device_type == DEVICE_NET_STREAM)
       {
-        xastir_snprintf(data_txt, sizeof(data_txt), "\n");
+        astir_snprintf(data_txt, sizeof(data_txt), "\n");
 
         if ( (port_data[port].status == DEVICE_UP)
              && (devices[port].transmit_data == 1)
@@ -8546,7 +8546,7 @@ void output_my_data(char *message, int incoming_port, int type, int loopback_onl
 
   // This will log a posit in the general format for a network interface
   // whether or not any network interfaces are currently up.
-  xastir_snprintf(data_txt, sizeof(data_txt), "%s>%s,TCPIP*:%s", my_callsign,
+  astir_snprintf(data_txt, sizeof(data_txt), "%s>%s,TCPIP*:%s", my_callsign,
                   VERSIONFRM, message);
   if (debug_level & 2)
   {
@@ -8565,7 +8565,7 @@ void output_my_data(char *message, int incoming_port, int type, int loopback_onl
   // have anything output to the log file here.
   if (data_txt_save[0] != '\0')
   {
-    xastir_snprintf(data_txt, sizeof(data_txt), "%s%s", data_txt_save, message);
+    astir_snprintf(data_txt, sizeof(data_txt), "%s%s", data_txt_save, message);
     if (xa_log[XA_LOG_TNC].enabled)
       log_data( get_user_base_dir(xa_log[XA_LOG_TNC].file, logfile_tmp_path,
                                   sizeof(logfile_tmp_path)),
@@ -8579,7 +8579,7 @@ void output_my_data(char *message, int incoming_port, int type, int loopback_onl
 
     if (type == 0)      // My data, add a header
     {
-      xastir_snprintf(data_txt,
+      astir_snprintf(data_txt,
                       sizeof(data_txt),
                       "%s>%s,TCPIP*:%s",
                       my_callsign,
@@ -8588,13 +8588,13 @@ void output_my_data(char *message, int incoming_port, int type, int loopback_onl
     }
     else    // Not my data, don't add a header
     {
-      xastir_snprintf(data_txt,
+      astir_snprintf(data_txt,
                       sizeof(data_txt),
                       "%s",
                       message);
     }
 
-    if (writen(pipe_xastir_to_tcp_server,
+    if (writen(pipe_astir_to_tcp_server,
                data_txt,
                strlen(data_txt)) != (int)strlen(data_txt))
     {
@@ -8603,7 +8603,7 @@ void output_my_data(char *message, int incoming_port, int type, int loopback_onl
               errno);
     }
     // Terminate it with a linefeed
-    if (writen(pipe_xastir_to_tcp_server, "\n", 1) != 1)
+    if (writen(pipe_astir_to_tcp_server, "\n", 1) != 1)
     {
       fprintf(stderr,
               "output_my_data: Writen error: %d\n",
@@ -8691,7 +8691,7 @@ void output_waypoint_data(char *message)
     if (ok)     // Found a GPS interface
     {
       /* send data */
-      xastir_snprintf(data_txt, sizeof(data_txt), "%s\r\n", message);
+      astir_snprintf(data_txt, sizeof(data_txt), "%s\r\n", message);
 
       if (port_data[i].status == DEVICE_UP)
       {
@@ -8909,7 +8909,7 @@ void output_fixed_position(char *data_txt_save, size_t data_txt_save_size,
                            char *output_net)
 {
 
-  xastir_snprintf(data_txt_save,
+  astir_snprintf(data_txt_save,
                   data_txt_save_size,
                   "%c%s%s%s%s",
                   aprs_station_message_type,

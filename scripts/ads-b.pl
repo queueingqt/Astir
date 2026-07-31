@@ -1,13 +1,13 @@
 #!/usr/bin/env perl
 use warnings;
 #
-# XASTIR, Amateur Station Tracking and Information Reporting
+# ASTIR, Amateur Station Tracking and Information Reporting
 # Copyright (C) 2000-2026 The Xastir Group
 #
-# Converts "dump1090" telnet port output to Xastir UDP input, for decoding
+# Converts "dump1090" telnet port output to Astir UDP input, for decoding
 # packets directly from aircraft.  This script will parse packets containing
-# lat/long, turn them into APRS-like packets, then use "xastir_udp_client"
-# to inject them into Xastir. Must have "dump1090" running, and optionally
+# lat/long, turn them into APRS-like packets, then use "astir_udp_client"
+# to inject them into Astir. Must have "dump1090" running, and optionally
 # "dump978" to dump packets into "dump1090" from the other frequency/protocol
 # for ADS-B.
 #
@@ -35,11 +35,11 @@ use warnings;
 # be min, if it's only reporting altitude and not lat/long.
 #
 # If you add " --logging" to the end, this script will save the APRS portion of
-# the output to a file called "~/.xastir/logs/planes.log". You can later suck
+# the output to a file called "~/.astir/logs/planes.log". You can later suck
 # this file back in to see the planes move around the map in hyperspeed. Useful
 # for a quick demo.
 #
-# Injecting them from "planes" or "p1anes" assures that Xastir won't try to adopt
+# Injecting them from "planes" or "p1anes" assures that Astir won't try to adopt
 # the APRS Item packets as its own and re-transmit them.
 #
 #
@@ -68,14 +68,14 @@ use warnings;
 # Then invoke this script in another xterm using "planes" as the callsign:
 #   "./ads-b.pl planes <passcode>"
 #
-# NOTE: Do NOT use the same callsign as your Xastir instance, else it will
+# NOTE: Do NOT use the same callsign as your Astir instance, else it will
 # "adopt" those APRS Item packets as its own and retransmit them. Code was
 # added to the script to prevent such operation, but using "planes" as the
 # callsign works great too!
 #
 #
 # This script snags packets from port 30003 of "dump1090", parses them, then injects
-# APRS packets into Xastir's UDP port (2023) if "Server Ports" are enabled in Xastir.
+# APRS packets into Astir's UDP port (2023) if "Server Ports" are enabled in Astir.
 #
 #
 # Port 30001 is an input port (dump978 connects there and dumps data in).
@@ -175,14 +175,14 @@ use IO::Socket;
 $my_alt = 600;     # In feet. Used by probability circles.
 
 
-# Fetch my lat/long from Xastir config file
-$my_lat = `grep STATION_LAT ~/.xastir/config/xastir.cnf`;
+# Fetch my lat/long from Astir config file
+$my_lat = `grep STATION_LAT ~/.astir/config/astir.cnf`;
 if (! ($my_lat =~ m/STATION_LAT:/) ) {
-  die "Couldn't get STATION_LAT from Xastir config file\n";
+  die "Couldn't get STATION_LAT from Astir config file\n";
 }
-$my_lon = `grep STATION_LONG ~/.xastir/config/xastir.cnf`;
+$my_lon = `grep STATION_LONG ~/.astir/config/astir.cnf`;
 if (! ($my_lon =~ m/STATION_LONG:/) ) {
-  die "Couldn't get STATION_LONG from Xastir config file\n";
+  die "Couldn't get STATION_LONG from Astir config file\n";
 }
 chomp $my_lat;
 chomp $my_lon;
@@ -193,34 +193,34 @@ $my_lon =~ s/(\d+\.\d\d)\d(.)/$1$2/;
 #print "$my_lat  $my_lon\n";
 
 
-$udp_client = "xastir_udp_client";
+$udp_client = "astir_udp_client";
 $dump1090_host = "localhost"; # Server where dump1090 is running
 $dump1090_port = 30003;     # 30003 is dump1090 default port
 
-$xastir_host = "localhost"; # Server where Xastir is running
-$xastir_port = 2023;        # 2023 is Xastir default UDP port
+$astir_host = "localhost"; # Server where Astir is running
+$astir_port = 2023;        # 2023 is Astir default UDP port
 
 $plane_TTL = 1;            # Secs after which posits too old to create APRS packets from
 
-$log_file = "~/.xastir/logs/planes.log";
+$log_file = "~/.astir/logs/planes.log";
 
 
-$xastir_user = shift;
-if (defined($xastir_user)) {
-  chomp $xastir_user;
+$astir_user = shift;
+if (defined($astir_user)) {
+  chomp $astir_user;
 }
-if ( (!defined($xastir_user)) || ($xastir_user eq "") ) {
-  print "Please enter a callsign for Xastir injection, but not Xastir's callsign/SSID!\n";
+if ( (!defined($astir_user)) || ($astir_user eq "") ) {
+  print "Please enter a callsign for Astir injection, but not Astir's callsign/SSID!\n";
   die;
 }
-$xastir_user =~ tr/a-z/A-Z/;
+$astir_user =~ tr/a-z/A-Z/;
 
-$xastir_pass = shift;
-if (defined($xastir_pass)) {
-  chomp $xastir_pass;
+$astir_pass = shift;
+if (defined($astir_pass)) {
+  chomp $astir_pass;
 }
-if ( (!defined($xastir_pass)) || ($xastir_pass eq "") ) {
-  print "Please enter a passcode for Xastir injection\n";
+if ( (!defined($astir_pass)) || ($astir_pass eq "") ) {
+  print "Please enter a passcode for Astir injection\n";
   die;
 }
 
@@ -263,23 +263,23 @@ $socket = IO::Socket::INET->new(PeerAddr => $dump1090_host,
 select((select(STDOUT), $| = 1)[0]);
 
 
-# Check Xastir's callsign/SSID to make sure we don't have a collision.  This
-# will prevent Xastir adopting the Items as its own and retransmitting them.
-#   xastir_udp_client localhost 2023 <callsign> <passcode> -identify
+# Check Astir's callsign/SSID to make sure we don't have a collision.  This
+# will prevent Astir adopting the Items as its own and retransmitting them.
+#   astir_udp_client localhost 2023 <callsign> <passcode> -identify
 #   Received: WE7U-13
 #
-$injection_call = $xastir_user;
+$injection_call = $astir_user;
 $injection_call =~ s/-\d+//;    # Get rid of dash and numbers
 
-$injection_ssid = $xastir_user;
+$injection_ssid = $astir_user;
 $injection_ssid =~ s/\w+//;     # Get rid of letters
 $injection_ssid =~ s/-//;       # Get rid of dash
 if ($injection_ssid eq "") { $injection_ssid = 0; }
 
-# Find out Callsign/SSID of Xastir instance
-$result = `$udp_client $xastir_host $xastir_port $xastir_user $xastir_pass -identify`;
+# Find out Callsign/SSID of Astir instance
+$result = `$udp_client $astir_host $astir_port $astir_user $astir_pass -identify`;
 if ($result =~ m/NACK/) {
-  die "Received NACK from Xastir: Callsign/Passcode don't match?\n";
+  die "Received NACK from Astir: Callsign/Passcode don't match?\n";
 }
 ($remote_call, $remote_ssid) = split('-', $result);
 
@@ -298,8 +298,8 @@ if (     ($remote_call eq $injection_call)
      &&  ($remote_ssid == $injection_ssid) ) {
     $remote_ssid++;
     $remote_ssid%= 16;  # Increment by 1 mod 16
-    $xastir_user = "$remote_call-$remote_ssid";
-    print "Injection conflict. Corrected. New user = $xastir_user\n";
+    $astir_user = "$remote_call-$remote_ssid";
+    print "Injection conflict. Corrected. New user = $astir_user\n";
 }
 
 
@@ -1417,19 +1417,19 @@ while (<$socket>)
       if ( !defined($tactical{$plane_id}) ) {
 
         # Assign tactical call = $plane_id + registry
-        # Max tactical call in Xastir is 57 chars (56 + terminator?)
+        # Max tactical call in Astir is 57 chars (56 + terminator?)
         #
         $tactical{$plane_id} = $plane_id . " (" . $registry . ")";
         $tactical{$plane_id} =~ s/\s+/ /g; # Change multiple spaces to one
-        $aprs = $xastir_user . '>' . "APRS::TACTICAL :" . $plane_id . "=" . $tactical{$plane_id};
+        $aprs = $astir_user . '>' . "APRS::TACTICAL :" . $plane_id . "=" . $tactical{$plane_id};
 
         $print6 = sprintf("%-18s", $tactical{$plane_id});
         print("$print1  $print2  $print3  $print4  $print6  $aprs\n");
 
-        # xastir_udp_client  <hostname> <port> <callsign> <passcode> {-identify | [-to_rf] <message>}
-        $result = `$udp_client $xastir_host $xastir_port $xastir_user $xastir_pass \"$aprs\"`;
+        # astir_udp_client  <hostname> <port> <callsign> <passcode> {-identify | [-to_rf] <message>}
+        $result = `$udp_client $astir_host $astir_port $astir_user $astir_pass \"$aprs\"`;
         if ($result =~ m/NACK/) {
-          die "Received NACK from Xastir: Callsign/Passcode don't match?\n";
+          die "Received NACK from Astir: Callsign/Passcode don't match?\n";
         }
 
         if ($enable_logging == 1) {
@@ -1464,21 +1464,21 @@ while (<$socket>)
       $newdata{$plane_id}++;    # Found a new tail or flight number!
  
       # Assign tactical call = tail number or flight number + registry (if defined)
-      # Max tactical call in Xastir is 57 chars (56 + terminator?)
+      # Max tactical call in Astir is 57 chars (56 + terminator?)
       #
       $tactical{$plane_id} = $temp_tail;
       if ($registry ne "Registry?") {
         $tactical{$plane_id} = $temp_tail . " (" . $registry . ")";
         $tactical{$plane_id} =~ s/\s+/ /g; # Change multiple spaces to one
       }
-      $aprs = $xastir_user . '>' . "APRS::TACTICAL :" . $plane_id . "=" . $tactical{$plane_id};
+      $aprs = $astir_user . '>' . "APRS::TACTICAL :" . $plane_id . "=" . $tactical{$plane_id};
 
       print("$print1  $print2  $print3  $print4  $print6  $aprs\n");
  
-      # xastir_udp_client  <hostname> <port> <callsign> <passcode> {-identify | [-to_rf] <message>}
-      $result = `$udp_client $xastir_host $xastir_port $xastir_user $xastir_pass \"$aprs\"`;
+      # astir_udp_client  <hostname> <port> <callsign> <passcode> {-identify | [-to_rf] <message>}
+      $result = `$udp_client $astir_host $astir_port $astir_user $astir_pass \"$aprs\"`;
       if ($result =~ m/NACK/) {
-        die "Received NACK from Xastir: Callsign/Passcode don't match?\n";
+        die "Received NACK from Astir: Callsign/Passcode don't match?\n";
       }
 
       if ($enable_logging == 1) {
@@ -1514,7 +1514,7 @@ while (<$socket>)
     $emergency = $fields[19];
   }
   if ( $emergency eq "-1" ) {       # Emergency of some type
-    $emerg_txt = " EMERGENCY=";     # Keyword triggers Xastir's emergency mode!!!
+    $emerg_txt = " EMERGENCY=";     # Keyword triggers Astir's emergency mode!!!
  
     # Check squawk code
     if ( defined($squawk{$plane_id}) ) {
@@ -1651,7 +1651,7 @@ while (<$socket>)
         #
         # We have a recent lat/lon
         #
-        $aprs="$xastir_user>APRS:)$plane_id!$lat{$plane_id}/$lon{$plane_id}$symbol$newtrack/$newspeed$newalt$newtail$emerg_txt$squawk_txt$onGroundTxt ($registry)";
+        $aprs="$astir_user>APRS:)$plane_id!$lat{$plane_id}/$lon{$plane_id}$symbol$newtrack/$newspeed$newalt$newtail$emerg_txt$squawk_txt$onGroundTxt ($registry)";
         $print_aprs = sprintf("%-95s", $aprs);
         if (    $age > 0                    # Lat/lon is aging a bit
              || $print5 eq "                 " ) {     # Didn't parse lat/lon this time
@@ -1663,11 +1663,11 @@ while (<$socket>)
           print("$print1  $print2  $print3  $print4  $print5  $print_aprs  $print_adsb_percentage\n");
         }
 
-        # xastir_udp_client  <hostname> <port> <callsign> <passcode> {-identify | [-to_rf] <message>}
-#        $result = `$udp_client $xastir_host $xastir_port $xastir_user $xastir_pass \"$aprs [Pmin0.0,]\"`;
-        $result = `$udp_client $xastir_host $xastir_port $xastir_user $xastir_pass \"$aprs\"`;
+        # astir_udp_client  <hostname> <port> <callsign> <passcode> {-identify | [-to_rf] <message>}
+#        $result = `$udp_client $astir_host $astir_port $astir_user $astir_pass \"$aprs [Pmin0.0,]\"`;
+        $result = `$udp_client $astir_host $astir_port $astir_user $astir_pass \"$aprs\"`;
         if ($result =~ m/NACK/) {
-          die "Received NACK from Xastir: Callsign/Passcode don't match?\n";
+          die "Received NACK from Astir: Callsign/Passcode don't match?\n";
         }
 
         if ($enable_logging == 1) {
@@ -1690,13 +1690,13 @@ while (<$socket>)
           $radius = ( ( ($altitude{$plane_id} - $my_alt) / 1000 ) * 2 );  # 40k = 80 miles, 20k = 40 miles, 10k = 20 miles, 1k = 2 miles
         }
         $print_radius = sprintf("%2.1f", $radius);
-        $aprs="$xastir_user>APRS:)$plane_id!$my_lat/$my_lon$symbol$newtrack/$newspeed$newalt$newtail$emerg_txt$squawk_txt$onGroundTxt ($registry) [Pmin$print_radius,]";
+        $aprs="$astir_user>APRS:)$plane_id!$my_lat/$my_lon$symbol$newtrack/$newspeed$newalt$newtail$emerg_txt$squawk_txt$onGroundTxt ($registry) [Pmin$print_radius,]";
   #     print "$aprs\n";
 
-        # xastir_udp_client  <hostname> <port> <callsign> <passcode> {-identify | [-to_rf] <message>}
-        $result = `$udp_client $xastir_host $xastir_port $xastir_user $xastir_pass \"$aprs\"`;
+        # astir_udp_client  <hostname> <port> <callsign> <passcode> {-identify | [-to_rf] <message>}
+        $result = `$udp_client $astir_host $astir_port $astir_user $astir_pass \"$aprs\"`;
         if ($result =~ m/NACK/) {
-          die "Received NACK from Xastir: Callsign/Passcode don't match?\n";
+          die "Received NACK from Astir: Callsign/Passcode don't match?\n";
         }
 
         if ($enable_logging == 1) {

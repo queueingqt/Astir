@@ -24,7 +24,7 @@
  * first, because message bodies contain newlines and a record that spans lines
  * makes the diff unreadable.
  *
- * Entirely inert unless XASTIR_TRACE names a file, so it can stay in the tree.
+ * Entirely inert unless ASTIR_TRACE names a file, so it can stay in the tree.
  * This header must never include an X11, Xt or Motif header.
  */
 

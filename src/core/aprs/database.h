@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -29,8 +29,8 @@
  *
  */
 
-#ifndef XASTIR_DATABASE_H
-#define XASTIR_DATABASE_H
+#ifndef ASTIR_DATABASE_H
+#define ASTIR_DATABASE_H
 #include <time.h>
 #include "core/globals.h"
 
@@ -141,7 +141,7 @@ enum APRS_Types
 #define MAX_MESSAGE_ORDER    10
 
 // track export file formats
-#define EXPORT_XASTIR_TRACK 0
+#define EXPORT_ASTIR_TRACK 0
 #define EXPORT_KML_TRACK 1
 
 
@@ -279,7 +279,7 @@ typedef struct                  //                      strlen
   char    wx_type;
   char    wx_station[MAX_WXSTATION];
   int     wx_compute_rain_rates;  //  Some stations provide rain rates
-  // directly, others require Xastir to
+  // directly, others require Astir to
   // compute from total rain.  Flag this,
   // so we don't clobber useful info from
   // a station.
@@ -367,8 +367,8 @@ typedef struct _DataRow
   // name
   char *tactical_call_sign;   // Tactical callsign.  NULL if not assigned
   APRS_Symbol aprs_symbol;
-  long coord_lon;             // Xastir coordinates 1/100 sec, 0 = 180°W
-  long coord_lat;             // Xastir coordinates 1/100 sec, 0 =  90°N
+  long coord_lon;             // Astir coordinates 1/100 sec, 0 = 180°W
+  long coord_lat;             // Astir coordinates 1/100 sec, 0 =  90°N
 
   int  time_sn;               // serial number for making time index unique
   time_t sec_heard;           // time last heard, used also for time index
@@ -431,7 +431,7 @@ typedef struct _DataRow
   // When the station is an object, it can include coordinates
   // of related points. Currently these are being used to draw
   // outlines of NWS severe weather watches and warnings, and
-  // storm regions. The coordinates are stored here in Xastir
+  // storm regions. The coordinates are stored here in Astir
   // coordinate form. Element [x][0] is the latitude, and
   // element [x][1] is the longitude.  --KG4NBB
   //
@@ -478,8 +478,8 @@ typedef struct _DataRow
 // Used to store one vertice in CADRow object
 typedef struct _VerticeRow
 {
-  long    latitude;           // Xastir coordinates 1/100sec, 0 = 180W
-  long    longitude;          // Xastir coordinates 1/100sec, 0 =  90N
+  long    latitude;           // Astir coordinates 1/100sec, 0 = 180W
+  long    longitude;          // Astir coordinates 1/100sec, 0 =  90N
   struct  _VerticeRow *next;  // Pointer to next record in list
 } VerticeRow;
 
@@ -558,4 +558,4 @@ typedef struct
 
 #endif /* HAVE_DB */
 
-#endif /* XASTIR_DATABASE_H */
+#endif /* ASTIR_DATABASE_H */

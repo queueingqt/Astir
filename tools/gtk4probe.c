@@ -38,7 +38,7 @@ static void activate(GtkApplication *app, gpointer u)
 
 int main(int argc, char **argv)
 {
-  GtkApplication *app = gtk_application_new("org.xastir.gtk4probe",
+  GtkApplication *app = gtk_application_new("org.astir.gtk4probe",
                                             G_APPLICATION_DEFAULT_FLAGS);
   g_signal_connect(app, "activate", G_CALLBACK(activate), NULL);
   int status = g_application_run(G_APPLICATION(app), argc, argv);

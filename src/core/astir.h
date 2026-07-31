@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -23,12 +23,12 @@
 
 /* All of the misc entry points to be included for all packages */
 
-#ifndef _XASTIR_H
-#define _XASTIR_H
+#ifndef _ASTIR_H
+#define _ASTIR_H
 
 
 
-// INT_TO_XTPOINTER / XTPOINTER_TO_INT moved to xastir_gui.h -- they name an
+// INT_TO_XTPOINTER / XTPOINTER_TO_INT moved to astir_gui.h -- they name an
 // Xt type, and this header is included by every file in the tree.
 
 
@@ -51,7 +51,7 @@
 
 // No X11 header.  This file is included by every core file in the tree, so an
 // include here puts Xt in front of the shapefile reader and the APRS parser.
-// The widget-typed declarations that needed it are in xastir_gui.h; the drawing
+// The widget-typed declarations that needed it are in astir_gui.h; the drawing
 // objects are in xa_draw.h, in neutral types.
 #include "draw/xa_draw.h"
 
@@ -65,7 +65,7 @@
 #define MAX_CALLSIGN 9       // Objects are up to 9 chars
 
 
-// MY_FG_COLOR and friends moved to xastir_gui.h: two of them expand to Motif
+// MY_FG_COLOR and friends moved to astir_gui.h: two of them expand to Motif
 // resource names.
 
 #ifndef M_PI                      /* if not defined in math.h */
@@ -77,7 +77,7 @@ extern char dangerous_operation[200];
 
 // gc, the pixmaps and colors[] moved to xa_draw.h, in the neutral types the
 // call sites already use.  `gc` was declared twice here.
-// appshell and resize_dialog() moved to xastir_gui.h.
+// appshell and resize_dialog() moved to astir_gui.h.
 
 extern int wait_to_redraw;
 
@@ -104,7 +104,7 @@ extern long scale_y;               // y scaling in 1/100 sec per pixel
 
 extern long screen_width;
 extern long screen_height;
-// screen_x_offset / screen_y_offset moved to xastir_gui.h -- Position is an Xt
+// screen_x_offset / screen_y_offset moved to astir_gui.h -- Position is an Xt
 // type and nothing outside main.c uses them.
 extern int long_lat_grid;
 //extern Pixmap  pixmap;
@@ -116,7 +116,7 @@ extern int map_lock_pan_zoom;
 extern int map_auto_maps;
 extern int auto_maps_skip_raster;
 extern time_t sec_remove;
-// da, text and app_context moved to xastir_gui.h.
+// da, text and app_context moved to astir_gui.h.
 extern int redraw_on_new_data;
 //extern Widget hidden_shell;
 extern int index_maps_on_startup;
@@ -143,7 +143,7 @@ extern char rotated_label_fontname[FONT_MAX][MAX_LABEL_FONTNAME];
 
 extern int net_map_timeout;
 
-// sort_list() and redraw_symbols() moved to xastir_gui.h -- both take a Widget.
+// sort_list() and redraw_symbols() moved to astir_gui.h -- both take a Widget.
 
 // cmap moved to xa_draw_x11.h.  Only the backend and the two renderer files
 // (color.c, cairo_text.c) use it, and all three include X11 themselves.
@@ -175,7 +175,7 @@ extern void map_pos_last_position(void);
 
 /* from location_gui.c */
 extern char locate_station_call[30];
-// Last_location() and Jump_location() moved to xastir_gui.h.
+// Last_location() and Jump_location() moved to astir_gui.h.
 extern void map_pos(long mid_y, long mid_x, long sz);
 extern char locate_gnis_filename[200];
 
@@ -200,9 +200,9 @@ extern void popup_ID_message(char *banner, char *message);
 
 /* from view_messages.c */
 extern void all_messages(char from, char *call_sign, char *from_call, char *message);
-// view_all_messages() moved to xastir_gui.h.
+// view_all_messages() moved to astir_gui.h.
 
 
-#endif /* XASTIR_H */
+#endif /* ASTIR_H */
 
 

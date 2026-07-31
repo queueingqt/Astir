@@ -1,12 +1,12 @@
 #
 # Copyright (C) 2000-2026 The Xastir Group
 #
-# This is the German Language file used for all the prompts in xastir
-# Dies ist die deutsche Sprachdatei für Menus und Textausgaben in Xastir
+# This is the German Language file used for all the prompts in astir
+# Dies ist die deutsche Sprachdatei für Menus und Textausgaben in Astir
 #
 # Creator        : Kai Altenfelder, DL3LBA <ka@suse.de>
-# Maintained by  : The Xastir Group <xastir@xastir.org>
-# Modified by    : 08.04.2007, Rolf Bleher, DK7IN <xastir@dk7in.de>
+# Maintained by  : The Xastir Group <astir@xastir.org>
+# Modified by    : 08.04.2007, Rolf Bleher, DK7IN <astir@dk7in.de>
 #
 # comment lines with pound signs in front are ignored
 # File format as follows:
@@ -258,7 +258,7 @@ PULDNHEL01|Version|V|
 PULDNHEL02|Hilfe Index|I|
 PULDNHEL03|NOTFALL BAKEN MODUS EINSCHALTEN|E|
 PULDNHEL04|!!! NOTFALL BAKEN MODUS !!!||
-PULDNHEL05|Über Xastir||
+PULDNHEL05|Über Astir||
 #
 # Mauszeiger PopUp Menu
 POPUPMA001|Mauszeiger-Menu||
@@ -1059,7 +1059,7 @@ POPEM00017|Keine weiteren Schnittstellen verfügbar!||
 POPEM00018|Datenanfrage - Single Message Line||
 POPEM00019|Senden abgeschaltet bei Port %d||
 POPEM00020|Datenbankfehler!||
-POPEM00021|AX.25-Unterstützung nicht in Xastir kompiliert!||
+POPEM00021|AX.25-Unterstützung nicht in Astir kompiliert!||
 POPEM00022|Eingabefehler!||
 POPEM00023|Es wurde kein Name angegeben!||
 POPEM00024|Der angegebene Name ist nicht mehr frei!||
@@ -1350,18 +1350,18 @@ CADPUD014|doppelt gestrichelt||
 #
 #
 # Format strings for map metadata in top border
-#"XASTIR Map of <utm_coord> (upper left) to <utm_coord> (lower right).  UTM <grid_size> m grid, <wgs84> datum. ",
-MDATA001|XASTIR Karte von %s (oben links) to %s (unten rechts).  UTM %d m Gitter, %s Datum. ||
+#"ASTIR Map of <utm_coord> (upper left) to <utm_coord> (lower right).  UTM <grid_size> m grid, <wgs84> datum. ",
+MDATA001|ASTIR Karte von %s (oben links) to %s (unten rechts).  UTM %d m Gitter, %s Datum. ||
 #
 #
 # Format strings for map metadata in top border
-#"XASTIR Map of <utm_coord> (upper left) to <utm_coord> (lower right).  UTM <grid_size> m grid, <wgs84> datum. ",
-MDATA002|XASTIR Karte von %s (oben links) to %s %s (unten rechts).  Breite/Länge Gitter, %s Datum.||
+#"ASTIR Map of <utm_coord> (upper left) to <utm_coord> (lower right).  UTM <grid_size> m grid, <wgs84> datum. ",
+MDATA002|ASTIR Karte von %s (oben links) to %s %s (unten rechts).  Breite/Länge Gitter, %s Datum.||
 #
 #
 # Format strings for map metadata in top border
-#"XASTIR Map of <utm_coord> (upper left) to <utm_coord> (lower right).  UTM <grid_size> m grid, <wgs84> datum. ",
-MDATA003|XASTIR Karte von %s (oben links) to %s (unten rechts).  UTM Zonen, %s Datum.||
+#"ASTIR Map of <utm_coord> (upper left) to <utm_coord> (lower right).  UTM <grid_size> m grid, <wgs84> datum. ",
+MDATA003|ASTIR Karte von %s (oben links) to %s (unten rechts).  UTM Zonen, %s Datum.||
 #
 # Text interpretation of integer values of database type and schema type
 # used for sql database configuration in interface_gui.c
@@ -1377,11 +1377,11 @@ XADBMST002|Postgreql with Postgis||
 # used for sql database configuration in interface_gui.c
 # DB_MYSQL 
 XADBMST003|MySQL (spatial)||
-# XASTIR_SCHEMA_SIMPLE]
-XASCHEMA01|Xastir Simple Schema||
-# XASTIR_SCHEMA_SIMPLE]
-XASCHEMA02|Xastir CAD Schema||
-# XASTIR_SCHEMA_SIMPLE]
-XASCHEMA03|Xastir full Schema||
-# XASTIR_SCHEMA_SIMPLE]
+# ASTIR_SCHEMA_SIMPLE]
+XASCHEMA01|Astir Simple Schema||
+# ASTIR_SCHEMA_SIMPLE]
+XASCHEMA02|Astir CAD Schema||
+# ASTIR_SCHEMA_SIMPLE]
+XASCHEMA03|Astir full Schema||
+# ASTIR_SCHEMA_SIMPLE]
 XASCHEMA04|APRSWorld Schema||

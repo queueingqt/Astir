@@ -38,7 +38,7 @@ MAP = {
     # XCreatePixmap(dpy, drawable, w, h, depth): the drawable only supplies a
     # screen and depth, both of which the backend resolves itself.
     "XCreatePixmap":      ("xa_surface_create",  [2, 3, 4], {}),
-    # XCreateGC(dpy, drawable, mask, values): Xastir always passes mask 0.
+    # XCreateGC(dpy, drawable, mask, values): Astir always passes mask 0.
     "XCreateGC":          ("xa_pen_create",      [1], {}),
     "XFreeGC":            ("xa_pen_destroy",     [1], {}),
     # XCopyArea(dpy, src, dst, gc, sx, sy, w, h, dx, dy)

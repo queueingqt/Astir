@@ -10,8 +10,8 @@ use warnings;
 # Finds the different lat/long representations corresponding to the
 # input numbers.  A space is required between the degrees portion
 # and the rest of the input.  Writes out a log file containing APRS
-# objects suitable for importing into Xastir, to graphically plot
-# the locations of the objects.  Now that Xastir has a server port
+# objects suitable for importing into Astir, to graphically plot
+# the locations of the objects.  Now that Astir has a server port
 # we could directly inject them into the program via that route as
 # well, but we currently don't do that.
 #

@@ -1,5 +1,5 @@
 /*
- * cairo_text.h - Cairo-based antialiased text rendering for Xastir
+ * cairo_text.h - Cairo-based antialiased text rendering for Astir
  *
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -44,7 +44,7 @@
  *   outline_pixel- X11 pixel value for outline color (used when draw_outline != 0)
  *   align        - BLEFT, BCENTRE, or BRIGHT
  */
-void xastir_cairo_draw_text(
+void astir_cairo_draw_text(
     Display      *dpy,
     Pixmap        target,
     int           x,
@@ -62,7 +62,7 @@ void xastir_cairo_draw_text(
  * Uses a temporary off-screen image surface so no display round-trip
  * is needed beyond what Cairo already does.
  */
-int xastir_cairo_text_width(
+int astir_cairo_text_width(
     const char *text,
     const char *fontspec);
 
@@ -70,7 +70,7 @@ int xastir_cairo_text_width(
  * Return the pixel height (ascent + descent) of text rendered
  * with 'fontspec'.
  */
-int xastir_cairo_text_height(
+int astir_cairo_text_height(
     const char *fontspec);
 
 #endif /* HAVE_CAIRO */

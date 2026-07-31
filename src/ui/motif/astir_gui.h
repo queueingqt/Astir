@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -22,9 +22,9 @@
  */
 
 /*
- * The parts of the old xastir.h that are made of widgets.
+ * The parts of the old astir.h that are made of widgets.
  *
- * xastir.h is included by every file in the tree, and it opened with
+ * astir.h is included by every file in the tree, and it opened with
  * `#include <X11/Intrinsic.h>` -- so a map driver, the shapefile reader and the
  * APRS parser all got Xt whether they wanted it or not.  That single line was
  * the difference between "no core object calls Motif", which was already true,
@@ -41,8 +41,8 @@
  * has been put on the wrong side.
  */
 
-#ifndef XASTIR_GUI_H
-#define XASTIR_GUI_H
+#ifndef ASTIR_GUI_H
+#define ASTIR_GUI_H
 
 #include <X11/Intrinsic.h>
 
@@ -79,4 +79,4 @@ extern void Jump_location(Widget w, XtPointer clientData, XtPointer callData);
 /* from view_message_gui.c */
 extern void view_all_messages(Widget w, XtPointer clientData, XtPointer callData);
 
-#endif  /* XASTIR_GUI_H */
+#endif  /* ASTIR_GUI_H */

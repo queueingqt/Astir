@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -21,8 +21,8 @@
  * Look at the README for more information on the program.
  */
 
-#ifndef XASTIR_MAIN_H
-#define XASTIR_MAIN_H
+#ifndef ASTIR_MAIN_H
+#define ASTIR_MAIN_H
 
 #include <sys/types.h>   // uid_t/gid_t, which used to arrive via Xos.h
 
@@ -65,7 +65,7 @@
 //#define TRANSMIT_RAW_WX
 
 // To use predefined object configuration files from within the
-// user's base directory e.g. ~/.xastir/config/predefined_SAR.sys
+// user's base directory e.g. ~/.astir/config/predefined_SAR.sys
 // rather than from the main base directory, enable this definition.
 //#define OBJECT_DEF_FILE_USER_BASE
 
@@ -78,13 +78,13 @@ extern FILE *read_file_ptr;
 extern int interrupt_drawing_now;
 
 
-#define VERSIONFRM  (!altnet?XASTIR_TOCALL:altnet_call) /* Packet version info */
+#define VERSIONFRM  (!altnet?ASTIR_TOCALL:altnet_call) /* Packet version info */
 
 
 #ifdef __LCLINT__
-  #define PACKAGE "xastir"
+  #define PACKAGE "astir"
   #define VERSION "lclint"
-  #define VERSIONTXT "xastir lclint debug version"
+  #define VERSIONTXT "astir lclint debug version"
 #else   // __LCLINT__
   #define VERSIONTXT PACKAGE " " VERSION
 #endif  // __LCLINT__
@@ -93,10 +93,10 @@ extern int interrupt_drawing_now;
 #define VERSIONLABEL VERSIONTXT
 
 // NOTE:  This is out of date and not used anymore anyway.
-#define VERSIONMESSAGE "XASTIR Version: " VERSION "\n\nAmateur Station Tracking and Information Reporting\nby Frank Giannandrea, KC2GJS was KC0DGE\n   Code added by:\n   Richard Hagemeyer - VE3UNW,  Curt Mills - WE7U,\n   Mike Sims - KA9KIM,   Gerald Stueve - K4INT was KE4NFJ,\n   Mark Grennan - KD5AMB,  Henk de Groot - PE1DNN,\n   Jim Sevilla - KD6VPE,  Jose R. Marte A. - HI8GN,\n   Michael G. Petry - N3NYN,   Lloyd Miller - VE6LFM,\n   Alessandro Frigeri - IK0YUP,\n   Chuck Byam - KG4IJB,   Rolf Bleher - DK7IN,   Ken Koster - N7IPB"
+#define VERSIONMESSAGE "ASTIR Version: " VERSION "\n\nAmateur Station Tracking and Information Reporting\nby Frank Giannandrea, KC2GJS was KC0DGE\n   Code added by:\n   Richard Hagemeyer - VE3UNW,  Curt Mills - WE7U,\n   Mike Sims - KA9KIM,   Gerald Stueve - K4INT was KE4NFJ,\n   Mark Grennan - KD5AMB,  Henk de Groot - PE1DNN,\n   Jim Sevilla - KD6VPE,  Jose R. Marte A. - HI8GN,\n   Michael G. Petry - N3NYN,   Lloyd Miller - VE6LFM,\n   Alessandro Frigeri - IK0YUP,\n   Chuck Byam - KG4IJB,   Rolf Bleher - DK7IN,   Ken Koster - N7IPB"
 
 // NOTE:  This is out of date and not used anymore anyway.
-#define ABOUTGNUL "XASTIR, Copyright (C) 1999, 2000 Frank Giannandrea\nXASTIR comes with ABSOLUTELY NO WARRANTY;\nThis is free software, and you are welcome\nto redistribute it under certain conditions;\nsee the GNU LICENSE for details.\n"
+#define ABOUTGNUL "ASTIR, Copyright (C) 1999, 2000 Frank Giannandrea\nASTIR comes with ABSOLUTELY NO WARRANTY;\nThis is free software, and you are welcome\nto redistribute it under certain conditions;\nsee the GNU LICENSE for details.\n"
 
 #define MAX_PHG      8
 #define MAX_COMMENT  80
@@ -118,7 +118,7 @@ extern int interrupt_drawing_now;
 extern void set_proc_title(char *fmt,...);
 extern void init_set_proc_title(int argc, char *argv[], char *envp[]);
 
-// New stuff defined by Xastir project:
+// New stuff defined by Astir project:
 extern int my_argc;
 extern char **my_argv;
 extern char **my_envp;
@@ -179,7 +179,7 @@ extern int emergency_beacon;
 
 // both moved to xa_settings.h
 // colors[], MAX_TRAIL_COLORS and trail_colors[] moved to xa_draw.h.  colors[]
-// was declared both here and in xastir.h; core drawing code uses all three.
+// was declared both here and in astir.h; core drawing code uses all three.
 extern int current_trail_color;
 extern int english_units;
 extern int do_dbstatus;
@@ -340,6 +340,6 @@ if (debug_level & 4) { fprintf(stderr, "Changing euid to %d and egid to %d\n", (
 #endif  // HAVE_LIBSHP
 
 
-#endif /* XASTIR_MAIN_H */
+#endif /* ASTIR_MAIN_H */
 
 

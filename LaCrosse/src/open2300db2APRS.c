@@ -20,7 +20,7 @@
         without position information from MySQL database
         weather information stored there by open2300
         (See http://open2300.sourceforge.net/ for source) to
-        xastir-1.2.1 (See http://www.xastir.org for source)
+        astir-1.2.1 (See http://www.xastir.org for source)
 
         Note:  Open2300 is a weather data accumulator
         aimed at LaCrosse weather stations, which stores weather
@@ -553,10 +553,10 @@ int APRS_str(char *APRS_buf,
   strcat(APRS_buf,pbuf);
 
   // NOW THIS MAKES THE STRING NO LONGER A VALID APRS WX REPORT, but
-  // we don't care:  Xastir does NOT just transmit this string, it parses it
+  // we don't care:  Astir does NOT just transmit this string, it parses it
   // and re-recreates the correct string to transmit.  We do this because
   // APRS doesn't have a "total rain" string in its weather report, but
-  // Xastir likes to have that value around.
+  // Astir likes to have that value around.
   if (valid_data_flgs & VALID_RAINTOT)
   {
     if (Metric_Data)

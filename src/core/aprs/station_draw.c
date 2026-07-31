@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -58,7 +58,7 @@
 
 #include <X11/Intrinsic.h>
 
-#include "core/xastir.h"
+#include "core/astir.h"
 #include "core/globals.h"
 #include "core/main.h"
 #include "core/aprs/db_funcs.h"
@@ -355,7 +355,7 @@ void display_station(DataRow *p_station, int single)
     {
       // Display tactical callsign instead if it has one
       // defined.
-      xastir_snprintf(temp_call,
+      astir_snprintf(temp_call,
                       sizeof(temp_call),
                       "%s",
                       p_station->tactical_call_sign);
@@ -363,7 +363,7 @@ void display_station(DataRow *p_station, int single)
     else
     {
       // Display normal callsign.
-      xastir_snprintf(temp_call,
+      astir_snprintf(temp_call,
                       sizeof(temp_call),
                       "%s",
                       p_station->call_sign);
@@ -383,7 +383,7 @@ void display_station(DataRow *p_station, int single)
     if (strlen(p_station->altitude)>0)
     {
       // Found it in the current data
-      xastir_snprintf(temp_altitude, sizeof(temp_altitude), "%.0f%s",
+      astir_snprintf(temp_altitude, sizeof(temp_altitude), "%.0f%s",
                       atof(p_station->altitude) * cvt_m2len, un_alt);
     }
 
@@ -397,7 +397,7 @@ void display_station(DataRow *p_station, int single)
       if ( p_station->newest_trackpoint->prev->altitude > -99999l)
       {
         // Found it in the tracklog
-        xastir_snprintf(temp_altitude, sizeof(temp_altitude), "%.0f%s",
+        astir_snprintf(temp_altitude, sizeof(temp_altitude), "%.0f%s",
                         (float)(p_station->newest_trackpoint->prev->altitude * cvt_dm2len),
                         un_alt);
 
@@ -426,7 +426,7 @@ void display_station(DataRow *p_station, int single)
     if ( (strlen(p_station->speed)>0) && (atof(p_station->speed) >= 0) )
     {
       speed_ok++;
-      xastir_snprintf(tmp,
+      astir_snprintf(tmp,
                       sizeof(tmp),
                       "%s",
                       un_spd);
@@ -435,7 +435,7 @@ void display_station(DataRow *p_station, int single)
         tmp[0] = '\0';  // without unit
       }
 
-      xastir_snprintf(temp_speed, sizeof(temp_speed), "%.0f%s",
+      astir_snprintf(temp_speed, sizeof(temp_speed), "%.0f%s",
                       atof(p_station->speed)*cvt_kn2len,tmp);
     }
     // Else check whether the previous position had speed
@@ -446,7 +446,7 @@ void display_station(DataRow *p_station, int single)
               && (p_station->newest_trackpoint->prev != NULL) )
     {
 
-      xastir_snprintf(tmp,
+      astir_snprintf(tmp,
                       sizeof(tmp),
                       "%s",
                       un_spd);
@@ -460,7 +460,7 @@ void display_station(DataRow *p_station, int single)
       {
         speed_ok++;
 
-        xastir_snprintf(temp_speed, sizeof(temp_speed), "%.0f%s",
+        astir_snprintf(temp_speed, sizeof(temp_speed), "%.0f%s",
                         p_station->newest_trackpoint->prev->speed * cvt_hm2len,
                         tmp);
       }
@@ -473,7 +473,7 @@ void display_station(DataRow *p_station, int single)
     if ( (strlen(p_station->course)>0) && (atof(p_station->course) > 0) )
     {
       course_ok++;
-      xastir_snprintf(temp_course, sizeof(temp_course), "%.0f\xB0",
+      astir_snprintf(temp_course, sizeof(temp_course), "%.0f\xB0",
                       atof(p_station->course));
     }
     // Else check whether the previous position had a course
@@ -486,14 +486,14 @@ void display_station(DataRow *p_station, int single)
       if( p_station->newest_trackpoint->prev->course > 0 )
       {
         course_ok++;
-        xastir_snprintf(temp_course, sizeof(temp_course), "%.0f\xB0",
+        astir_snprintf(temp_course, sizeof(temp_course), "%.0f\xB0",
                         (float)p_station->newest_trackpoint->prev->course);
       }
     }
   }
 
   // Save the speed into the dr string for later
-  xastir_snprintf(dr_speed,
+  astir_snprintf(dr_speed,
                   sizeof(dr_speed),
                   "%s",
                   temp_speed);
@@ -530,7 +530,7 @@ void display_station(DataRow *p_station, int single)
       sprintf(temp_my_distance,"%0.0f%s",value,un_dst);
     }
 
-    xastir_snprintf(temp_my_course, sizeof(temp_my_course), "%.0f\xB0",
+    astir_snprintf(temp_my_course, sizeof(temp_my_course), "%.0f\xB0",
                     atof(temp1_my_course));
   }
 
@@ -552,7 +552,7 @@ void display_station(DataRow *p_station, int single)
 
     if (strlen(weather->wx_temp) > 0)
     {
-      xastir_snprintf(tmp,
+      astir_snprintf(tmp,
                       sizeof(tmp),
                       "T:");
       if (Display_.temperature_only)
@@ -561,10 +561,10 @@ void display_station(DataRow *p_station, int single)
       }
 
       if (english_units)
-        xastir_snprintf(temp_wx_temp, sizeof(temp_wx_temp), "%s%.0f\xB0%s",
+        astir_snprintf(temp_wx_temp, sizeof(temp_wx_temp), "%s%.0f\xB0%s",
                         tmp, atof(weather->wx_temp),"F ");
       else
-        xastir_snprintf(temp_wx_temp, sizeof(temp_wx_temp), "%s%.0f\xB0%s",
+        astir_snprintf(temp_wx_temp, sizeof(temp_wx_temp), "%s%.0f\xB0%s",
                         tmp,((atof(weather->wx_temp)-32.0)*5.0)/9.0,"C ");
     }
 
@@ -572,7 +572,7 @@ void display_station(DataRow *p_station, int single)
     {
       if (strlen(weather->wx_hum) > 0)
       {
-        xastir_snprintf(wx_tm, sizeof(wx_tm), "H:%.0f%%", atof(weather->wx_hum));
+        astir_snprintf(wx_tm, sizeof(wx_tm), "H:%.0f%%", atof(weather->wx_hum));
         strncat(temp_wx_temp,
                 wx_tm,
                 sizeof(temp_wx_temp) - 1 - strlen(temp_wx_temp));
@@ -580,13 +580,13 @@ void display_station(DataRow *p_station, int single)
 
       if (strlen(weather->wx_speed) > 0)
       {
-        xastir_snprintf(temp_wx_wind, sizeof(temp_wx_wind), "S:%.0f%s ",
+        astir_snprintf(temp_wx_wind, sizeof(temp_wx_wind), "S:%.0f%s ",
                         atof(weather->wx_speed)*cvt_mi2len,un_spd);
       }
 
       if (strlen(weather->wx_gust) > 0)
       {
-        xastir_snprintf(wx_tm, sizeof(wx_tm), "G:%.0f%s ",
+        astir_snprintf(wx_tm, sizeof(wx_tm), "G:%.0f%s ",
                         atof(weather->wx_gust)*cvt_mi2len,un_spd);
         strncat(temp_wx_wind,
                 wx_tm,
@@ -595,7 +595,7 @@ void display_station(DataRow *p_station, int single)
 
       if (strlen(weather->wx_course) > 0)
       {
-        xastir_snprintf(wx_tm, sizeof(wx_tm), "C:%.0f\xB0", atof(weather->wx_course));
+        astir_snprintf(wx_tm, sizeof(wx_tm), "C:%.0f\xB0", atof(weather->wx_course));
         strncat(temp_wx_wind,
                 wx_tm,
                 sizeof(temp_wx_wind) - 1 - strlen(temp_wx_wind));
@@ -793,7 +793,7 @@ void display_station(DataRow *p_station, int single)
     // Still need to draw the circles in different colors for the
     // different ranges.  Might be nice to tint it as well.
 
-    xastir_snprintf(temp,
+    astir_snprintf(temp,
                     sizeof(temp),
                     "%s",
                     weather->wx_hurricane_radius);
@@ -809,7 +809,7 @@ void display_station(DataRow *p_station, int single)
                        temp_sec_heard);
     }
 
-    xastir_snprintf(temp,
+    astir_snprintf(temp,
                     sizeof(temp),
                     "%s",
                     weather->wx_trop_storm_radius);
@@ -824,7 +824,7 @@ void display_station(DataRow *p_station, int single)
                        temp_sec_heard);
     }
 
-    xastir_snprintf(temp,
+    astir_snprintf(temp,
                     sizeof(temp),
                     "%s",
                     weather->wx_whole_gale_radius);
@@ -897,8 +897,8 @@ void display_station(DataRow *p_station, int single)
       // GPGGA:             Truncation, ellipse/rectangle based on precision/HDOP/Augmentation
       // GPRMC:             Truncation, ellipse/rectangle based on precision
       // GPGLL:             Truncation, ellipse/rectangle based on precision
-      // Xastir APRS:       Truncation, rectangle
-      // Xastir Base91:     Truncation, ellipse
+      // Astir APRS:       Truncation, rectangle
+      // Astir Base91:     Truncation, ellipse
       // UI-View APRS:      ??, rectangle
       // UI-View Base91:    ??, ellipse
       // APRS+SA APRS:      ??, rectangle
@@ -1027,7 +1027,7 @@ void display_station(DataRow *p_station, int single)
 //                sec = ptr->sec_heard;
 //                time = localtime(&sec);
 
-        xastir_snprintf(temp2_my_gauge_data,
+        astir_snprintf(temp2_my_gauge_data,
                         sizeof(temp2_my_gauge_data),
                         "%s",
 //                    "%02d/%02d %02d:%02d %s",
@@ -1261,14 +1261,14 @@ void draw_ruler(void)
   {
     if (ruler_siz > 1609.3/2)
     {
-      xastir_snprintf(unit,
+      astir_snprintf(unit,
                       sizeof(unit),
                       "mi");
       ruler_siz /= 1609.3;
     }
     else
     {
-      xastir_snprintf(unit,
+      astir_snprintf(unit,
                       sizeof(unit),
                       "ft");
       ruler_siz /= 0.3048;
@@ -1276,12 +1276,12 @@ void draw_ruler(void)
   }
   else
   {
-    xastir_snprintf(unit,
+    astir_snprintf(unit,
                     sizeof(unit),
                     "m");
     if (ruler_siz > 1000/2)
     {
-      xastir_snprintf(unit,
+      astir_snprintf(unit,
                       sizeof(unit),
                       "km");
       ruler_siz /= 1000.0;
@@ -1313,7 +1313,7 @@ void draw_ruler(void)
       ruler_siz = 1.0 * mag;
     }
   }
-  xastir_snprintf(text, sizeof(text), "%.0f %s",ruler_siz,unit);      // Set up string
+  astir_snprintf(text, sizeof(text), "%.0f %s",ruler_siz,unit);      // Set up string
   //fprintf(stderr,"Ruler: %s, %d\n",text,ruler_pix);
 
   xa_pen_line(gc, 1, XA_LINE_SOLID, XA_CAP_ROUND, XA_JOIN_ROUND);
@@ -1651,7 +1651,7 @@ void draw_range_scale(void)
   // functions contained between them.
   xa_canvas_size(&width, &height);
 
-  // Convert points to Xastir coordinate system
+  // Convert points to Astir coordinate system
 
   // X
   x = center_longitude  - ((width *scale_x)/2);
@@ -1807,7 +1807,7 @@ void draw_range_scale(void)
   {
     if (small_flag)
     {
-      xastir_snprintf(text,
+      astir_snprintf(text,
                       sizeof(text),
                       "%s 1/%ld mi",
                       langcode("RANGE001"),   // "RANGE SCALE"
@@ -1815,7 +1815,7 @@ void draw_range_scale(void)
     }
     else
     {
-      xastir_snprintf(text,
+      astir_snprintf(text,
                       sizeof(text),
                       "%s %ld mi",
                       langcode("RANGE001"),   // "RANGE SCALE"
@@ -1826,7 +1826,7 @@ void draw_range_scale(void)
   {
     if (small_flag)
     {
-      xastir_snprintf(text,
+      astir_snprintf(text,
                       sizeof(text),
                       "%s %ld m",
                       langcode("RANGE001"),   // "RANGE SCALE"
@@ -1834,7 +1834,7 @@ void draw_range_scale(void)
     }
     else
     {
-      xastir_snprintf(text,
+      astir_snprintf(text,
                       sizeof(text),
                       "%s %ld km",
                       langcode("RANGE001"),   // "RANGE SCALE"

@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -21,8 +21,8 @@
  * Look at the README for more information on the program.
  */
 
-#ifndef XASTIR_MESSAGES_H
-#define XASTIR_MESSAGES_H
+#ifndef ASTIR_MESSAGES_H
+#define ASTIR_MESSAGES_H
 
 // this file uses structures defined in this header
 #include "core/util/mutex_utils.h"
@@ -84,7 +84,7 @@ extern void clear_outgoing_messages_to(char *callsign);
 extern void change_path_outgoing_messages_to(char *callsign, char *new_path);
 
 /* from messages_gui.c */
-extern xastir_mutex send_message_dialog_lock;
+extern astir_mutex send_message_dialog_lock;
 extern void messages_gui_init(void);
 extern void get_send_message_path(char *callsign, char *path, int path_size);
 void kick_outgoing_timer(char *callsign);
@@ -96,5 +96,5 @@ extern int view_message_limit;
 extern int Read_messages_packet_data_type;
 extern int Read_messages_mine_only;
 
-#endif  /*  XASTIR_MESSAGES_H */
+#endif  /*  ASTIR_MESSAGES_H */
 

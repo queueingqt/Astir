@@ -61,7 +61,7 @@ the backend and the files a backend replaces:
 ### How it was done
 
 `Message_Window mw[MAX_MESSAGE_WINDOWS+1]`, an array of Motif widgets, was
-**defined in `messages.c`** — a core file — and declared in `xastir.h`, which
+**defined in `messages.c`** — a core file — and declared in `astir.h`, which
 every core file includes. It now lives in `messages_gui.c`, declared in a new
 `messages_gui.h` that only the front end includes. That move is what forced the
 rest, and it is also what makes `link_core.py` a real test of it: `mw` is now
@@ -143,7 +143,7 @@ Verified three ways, all of which had to pass before it was committed:
 
 ### The core headers are off X11
 
-`xastir.h` opened with `#include <X11/Intrinsic.h>` and is included by every
+`astir.h` opened with `#include <X11/Intrinsic.h>` and is included by every
 core file, so the shapefile reader and the APRS parser got Xt whether they
 wanted it or not. `main.h` did the same. Both are gone, along with the same
 problem in `interface.h`, `draw_symbols.h`, `cad_objects.h`, `maps.h`, `wx.h`,
@@ -161,7 +161,7 @@ answers:
   became `xa_pen`. Not a widening: `Pixmap` and `Pixel` *are* `unsigned long`,
   and `GC` converts implicitly to `xa_pen`'s `void *`. Core drawing code already
   treated all of them this way.
-- **Widget-typed declarations** → six new `_gui.h` headers (`xastir_gui.h`,
+- **Widget-typed declarations** → six new `_gui.h` headers (`astir_gui.h`,
   `main_gui.h`, `interface_gui.h`, `draw_symbols_gui.h`, `cad_objects_gui.h`,
   `maps_gui.h`, `wx_gui.h`). None had a core caller.
 - **Things that were only pretending to need X** — `check_trans()` took an
@@ -179,7 +179,7 @@ decades. GCC names the header it wants in its diagnostic, which made the sweep
 mechanical -- remove the include, read the `note: include ‘<string.h>’`, add it,
 recompile.
 
-`build.sh` checks `xastir.h` and `interface.h` for X-freedom on every build.
+`build.sh` checks `astir.h` and `interface.h` for X-freedom on every build.
 
 **11 core files still reach X**, and they are the honest remainder rather than
 oversight: `draw_symbols.c` names `Display`, `map_shp.c` uses `XPoint` in its
@@ -213,9 +213,9 @@ msg_show win=0 pos=47
 msg_render_end win=0
 ```
 
-Three pieces: `src/xa_trace.[ch]` (inert unless `XASTIR_TRACE` names a file),
+Three pieces: `src/xa_trace.[ch]` (inert unless `ASTIR_TRACE` names a file),
 trace points at the message-window operations in `db.c` and `messages.c`, and
-`XASTIR_REPLAY=<file>` in `main.c`, which sets `read_file_ptr`/`read_file`
+`ASTIR_REPLAY=<file>` in `main.c`, which sets `read_file_ptr`/`read_file`
 exactly as `File > Open Log File` does so a scenario can run without a human.
 
 **It was proven three ways before being used for anything**, because a harness
@@ -258,20 +258,28 @@ holding up nothing.
 
 ## The GTK4 front end: how to run it, and what it does
 
+**Running uninstalled needs `ASTIR_DATA_BASE`.** The data directory compiled in
+is now `/usr/share/astir`, and nothing is installed there -- the dev tree has
+always borrowed the packaged install's data. Without it the shapefiles still
+draw, but with default styling instead of their dbfawk rules, which looks like
+a rendering regression and is not one:
+
+    ASTIR_DATA_BASE=/usr/share/xastir ./src/astir-gtk4
+
     ./build.sh                 # the core objects, as usual
     ./tools/build_gtk4.sh      # links them + xa_draw_gtk4.o, no Motif, no X
-    ./src/xastir-gtk4
+    ./src/astir-gtk4
 
 Environment hooks, all scripted-run conveniences, all inert unset:
 
 | | |
 |---|---|
-| `XASTIR_GTK4_RENDER_TO=<f.png>` | render one frame and exit. **Use this as a gate before launching anything interactively** |
-| `XASTIR_GTK4_SCALE=<n>` | start at a given `scale_y`; 1200 is a Los Angeles view |
-| `XASTIR_REPLAY=<log>` | ingest packets with no interface; `tools/trace/stations-la.log` has eight stations around that view |
-| `XASTIR_GTK4_SHOW_MENU=1` | pop the menu open, for screenshots |
-| `XASTIR_GTK4_TRACE_ZOOM=1` | log every zoom step and every render |
-| `XASTIR_DEBUG=<n>` | set `debug_level`; 16 traces map loading |
+| `ASTIR_GTK4_RENDER_TO=<f.png>` | render one frame and exit. **Use this as a gate before launching anything interactively** |
+| `ASTIR_GTK4_SCALE=<n>` | start at a given `scale_y`; 1200 is a Los Angeles view |
+| `ASTIR_REPLAY=<log>` | ingest packets with no interface; `tools/trace/stations-la.log` has eight stations around that view |
+| `ASTIR_GTK4_SHOW_MENU=1` | pop the menu open, for screenshots |
+| `ASTIR_GTK4_TRACE_ZOOM=1` | log every zoom step and every render |
+| `ASTIR_DEBUG=<n>` | set `debug_level`; 16 traces map loading |
 
 **Works**: OSM tiles, TIGER shapefiles, the lat/lon grid, station symbols and
 labels, the range-scale bar, the status line, pan by drag, scroll and button
@@ -279,7 +287,7 @@ zoom, a GMenu with working toggles. On Wayland under KWin.
 
 **Does not**: dialogs, interfaces, message windows, station list, configuration
 UI, weather alerts. It does not write the config back on exit, deliberately --
-`~/.xastir/config/xastir.cnf` is what the Motif pixel baseline depends on.
+`~/.astir/config/astir.cnf` is what the Motif pixel baseline depends on.
 
 ### Known broken: grey boxes behind station icons
 
@@ -299,7 +307,7 @@ to leave set. That cost difference is invisible in the interface.
 
 **Do it by masking only `xa_copy_area()`**, which is what symbol blitting
 actually uses, or by clearing the pen's mask after the symbol draw. Gate it on
-`XASTIR_GTK4_RENDER_TO` before it goes near a window.
+`ASTIR_GTK4_RENDER_TO` before it goes near a window.
 
 ### The render scheduler, and three bugs in it
 
@@ -333,7 +341,7 @@ report 1, a high-resolution wheel or touchpad tens -- so the per-event zoom is
 clamped to +/-1 and applied as `pow(1.15, step)`.
 
 Zoom-out stops once the whole world fits (`32400000 / screen_height`, 180
-degrees of latitude). Xastir's 500000 is not a view limit, only the largest
+degrees of latitude). Astir's 500000 is not a view limit, only the largest
 value the config can store.
 
 ### Station symbols are raster, by design
@@ -364,9 +372,9 @@ spine.
 ### It draws maps
 
 OSM tiles, the TIGER shapefile overlay and the lat/lon grid, with the status
-line live in the header bar. It renders at the config's own zoom with no override; `XASTIR_GTK4_SCALE`
+line live in the header bar. It renders at the config's own zoom with no override; `ASTIR_GTK4_SCALE`
 remains only as a scripted-render convenience.
-`XASTIR_GTK4_RENDER_TO=<file.png>` renders one frame and exits.
+`ASTIR_GTK4_RENDER_TO=<file.png>` renders one frame and exits.
 
     [perf] gtk4_render 544.8 ms | shp_read 119.1 shp_draw 26.1 dbfawk 280.0 |
            maps 2 shapes_read 122678 vertices 145799 draw_calls 576
@@ -378,7 +386,7 @@ map reports `MAP_NOT_VIS`, `load_maps()` draws nothing, and there is no error
 anywhere, because "not visible" is a perfectly normal answer. Three maps were
 found, three drivers selected, nothing drawn.
 
-It took Xastir's own `debug_level & 16` tracing to find: the trace prints the
+It took Astir's own `debug_level & 16` tracing to find: the trace prints the
 map path *after* the visibility test, so the geo map printed its path and the
 two shapefiles did not. That asymmetry was the whole clue.
 
@@ -387,7 +395,7 @@ and the position so a mile is the same number of pixels both ways, and it
 carries two guards: it returns `scale_y` unchanged near the poles and above
 `scale_y` 50000. The first version here multiplied `scale_y` by
 `calc_dscale_x()`, which is neither that formula nor the right shape --
-`calc_dscale_x` is metres per Xastir unit and the ratio wanted is `sc_y/sc_x`.
+`calc_dscale_x` is metres per Astir unit and the ratio wanted is `sc_y/sc_x`.
 Below 50000 that gave a wildly wrong x scale; at or above it the guard hid the
 error completely, which is why the config's own zoom looked fine and zooming in
 did not. It is re-derived on a pan too, since moving north or south changes it.
@@ -407,7 +415,7 @@ values), and About. One model, described once.
 
 ### What it does and does not draw (superseded above)
 
-`XASTIR_GTK4_RENDER_TO=<file.png>` renders one frame and exits. The output has
+`ASTIR_GTK4_RENDER_TO=<file.png>` renders one frame and exits. The output has
 the OSM driver's attribution logo and CC-BY-SA badge on the correct
 `colors[0xfd]` background, so the path from core through `xa_draw.h` through
 Cairo to a PNG is live.
@@ -432,7 +440,7 @@ Three things main.c did that a second front end has to repeat, each of which
 failed loudly and unhelpfully when missing:
 
 - `user_dir` from `getpwuid()`. `get_user_base_dir()` reads it and nothing in
-  the core fills it in, so every path came out as `/.xastir/...`.
+  the core fills it in, so every path came out as `/.astir/...`.
 - `InitializeMagick()` and `curl_global_init()`. Missing the first shows up as
   an assertion inside GraphicsMagick the first time a raster map loads.
 - The colour palette. `colors[]` is indexed by number by core drawing code, so
@@ -456,7 +464,7 @@ Three claims, each with its own evidence, and they are not the same claim:
 | a non-X toolkit can satisfy the interface | `tools/link_null.py src --backend=gtk4` -- the core links needing **0** X symbols |
 | the calls actually draw | `tools/gtk4_smoke.sh` -- 31 assertions, renders a PNG |
 
-**It has never drawn a frame of Xastir**, and cannot until a front end exists.
+**It has never drawn a frame of Astir**, and cannot until a front end exists.
 `main.c` is still 30,000 lines of Motif. Nothing here has been compared against
 the X11 backend pixel for pixel.
 
@@ -588,18 +596,18 @@ histogram should show `msg_insert 49` and `msg_scan_call 17`. Read that
 histogram rather than trusting the diff: it is the only statement of what the
 scenario actually reached.
 
-Do not run Xastir while building — `build.sh` explains why (a saturated compile
+Do not run Astir while building — `build.sh` explains why (a saturated compile
 plus a GUI app hung the GPU on this machine and corrupted five object files).
 
 **The branch is local-only.** `perf-and-gui` has no upstream tracking branch and
-is 11 commits ahead of nothing. `origin` is the fork, `upstream` is Xastir/Xastir.
+is 11 commits ahead of nothing. `origin` is the fork, `upstream` is Astir/Astir.
 Nothing here has been pushed.
 
 ## How to verify a change (read this first)
 
 Three harnesses, and picking the wrong one gives a confident wrong answer.
 
-- **`tools/snapshot_ab.sh <out.xpm>`** — pixels, via Xastir's own snapshot
+- **`tools/snapshot_ab.sh <out.xpm>`** — pixels, via Astir's own snapshot
   facility, so window stacking is irrelevant. Required for anything touching
   text, colour, images or drawing. `SNAP_BIN=<path>` runs a different binary,
   which is the only way to A/B a change that is already committed (build a
@@ -622,14 +630,14 @@ Do **not** use `ab-shot.sh` for A/B. It screenshots the whole screen.
 Found the hard way this session, after it produced a clean, reproducible,
 completely false regression that triggered a bisect.
 
-Xastir allocates its palette with `XAllocColor` from the shared colormap. Start
+Astir allocates its palette with `XAllocColor` from the shared colormap. Start
 it seconds after the previous instance exited and the server may still hold
 those entries, so allocation returns *approximations*. The frame renders,
 settles, passes the two-identical-snapshots check, and carries about 180 extra
 near-black shades. 822 colours becomes 964.
 
 It survived a revert-and-restore, because every "good" run happened to follow a
-five-minute rebuild and every "bad" one followed another Xastir within seconds.
+five-minute rebuild and every "bad" one followed another Astir within seconds.
 
 **The tell was in the numbers all along: the bad runs were 964 and 967.** Two
 runs of one build disagreeing is not a regression, it is a broken measurement.
@@ -646,7 +654,7 @@ be in the tree when the flake fired — here it named an innocent one, and the
 
 ### The harness was broken until this session, and silently
 
-`snapshot_ab.sh` deleted the snapshot before starting Xastir and took the first
+`snapshot_ab.sh` deleted the snapshot before starting Astir and took the first
 one that appeared. Snapshots fire the moment they are enabled — before the maps
 finish drawing — so the captured frame could be **partial**, with features simply
 absent, reading as background grey.
@@ -718,7 +726,7 @@ In rough order of value per unit of risk:
 2. ~~**`messages.c`**~~ and ~~**`db.c`'s `update_messages()`**~~ — **both done**,
     in one move, because `mw[]` could not leave `messages.c` until `db.c` had
     stopped naming it. Eight callbacks; trace byte-identical.
-3. ~~**Get `xastir.h` off `X11/Intrinsic.h`.**~~ **Done** — 28 of 65 core `.c`
+3. ~~**Get `astir.h` off `X11/Intrinsic.h`.**~~ **Done** — 28 of 65 core `.c`
     files now pull in no X header. **Two roots remain**, and they are the next
     job: `main.h:27` includes `<X11/Intrinsic.h>` and core files include
     `main.h` for non-GUI declarations; and `db.c` includes `db_gui.h`, a Motif
@@ -729,7 +737,7 @@ In rough order of value per unit of risk:
 4. ~~**Write a second backend.**~~ **Done twice** -- a null one to prove the
     header is neutral, and a real GTK4 one. See above.
     **Next**: the front end. That is the only thing left between this and a
-    running GTK4 Xastir, and it is by far the largest piece -- `main.c` is
+    running GTK4 Astir, and it is by far the largest piece -- `main.c` is
     ~30,800 lines and the front end ~69,000 across 16 files. The drawing half of
     the problem is solved and proven; the dialogs, menus and event loop are not
     started. A first target would be a GtkApplicationWindow with a
@@ -743,8 +751,8 @@ In rough order of value per unit of risk:
     it makes the scenario's sort order non-deterministic, and a flaky baseline
     is worse than an uncovered branch. See `tools/README.md`. Still open for
     `xa_image_*` (needs OSM
-    tiles) and `xa_bitmap_load` (needs an active alert); `XASTIR_REPLAY` is now
-    the tool for building all of them, since it drives Xastir from a packet log
+    tiles) and `xa_bitmap_load` (needs an active alert); `ASTIR_REPLAY` is now
+    the tool for building all of them, since it drives Astir from a packet log
     with no GUI interaction.
 
 `rotated.c` is the one core file with real Xlib left that is not the backend. It

@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -21,15 +21,15 @@
  * Look at the README for more information on the program.
  */
 
-#ifndef __XASTIR_MGRS_UTILS_H
-#define __XASTIR_MGRS_UTILS_H
+#ifndef __ASTIR_MGRS_UTILS_H
+#define __ASTIR_MGRS_UTILS_H
 
-extern void convert_xastir_to_MGRS_str_components(char *utmZone, int utmZone_len,
+extern void convert_astir_to_MGRS_str_components(char *utmZone, int utmZone_len,
     char *EastingL, int EastingL_len,
     char *NorthingL, int NorthingL_len,
     unsigned int *int_utmEasting, unsigned int *int_utmNorthing,
     long x,  long y,
     int nice_format, char *space_string, int space_string_len);
-extern void convert_xastir_to_MGRS_str(char *str, int str_len, long x, long y, int nice_format);
+extern void convert_astir_to_MGRS_str(char *str, int str_len, long x, long y, int nice_format);
 
 #endif

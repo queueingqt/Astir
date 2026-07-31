@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -25,12 +25,12 @@
   #include "config.h"
 #endif  // HAVE_CONFIG_H
 
-// Came in via <X11/Xos.h> until xastir.h/main.h gave up their X includes.
+// Came in via <X11/Xos.h> until astir.h/main.h gave up their X includes.
 #include <string.h>
 #include <stdlib.h>
 
 #include "core/util/snprintf.h"
-#include "core/xastir.h"
+#include "core/astir.h"
 #include "core/main.h"
 #include "core/geo/datum.h"
 
@@ -47,11 +47,11 @@
 // the easting and northing in order to line up more nicely with the
 // UTM output format.
 //
-// convert_xastir_to_MGRS_str is a wrapper around the components
+// convert_astir_to_MGRS_str is a wrapper around the components
 // function below that returns the MGRS coordinate of x and y as a
 // single MGRS string.
 //
-/* convert_xastir_to_MGRS_str_components returns each of the components
+/* convert_astir_to_MGRS_str_components returns each of the components
    of the MGRS string separately.
    Example MGRS string: 18T VK 66790 55998
    Parameters:
@@ -63,15 +63,15 @@
    NorthingL_len    length of the NorthingL char[]
    int_utmEasting   returns the MGRS easting: e.g. 66790
    int_utmNorthing  returns the MGRS northing: e.g. 55998
-   x                xastir x coordinate to obtain MGRS coordinate for.
-   y                xastir x coordinate to obtain MGRS coordinate for.
+   x                astir x coordinate to obtain MGRS coordinate for.
+   y                astir x coordinate to obtain MGRS coordinate for.
    nice_format      1 for populate space_string with three spaces
                     0 to make space_string and empty string, see above.
    space_string     Returned string that can be used to make MGRS strings
                     allign more cleanly with UTM strings.
    space_string_len length of the space_string char[]
 */
-void convert_xastir_to_MGRS_str_components(char *utmZone, int utmZone_len,
+void convert_astir_to_MGRS_str_components(char *utmZone, int utmZone_len,
     char *EastingL, int EastingL_len,
     char *NorthingL, int NorthingL_len,
     unsigned int *int_utmEasting, unsigned int *int_utmNorthing,
@@ -195,9 +195,9 @@ void convert_xastir_to_MGRS_str_components(char *utmZone, int utmZone_len,
       my_north = (int)(utmNorthing / 100000.0);
       my_north = my_north - 13;
 
-      xastir_snprintf(EastingL,EastingL_len,
+      astir_snprintf(EastingL,EastingL_len,
                       "%c", UPS_N_Easting[my_east]);
-      xastir_snprintf(NorthingL,NorthingL_len,
+      astir_snprintf(NorthingL,NorthingL_len,
                       "%c", UPS_N_Northing[my_north]);
     }
     else    // South polar UPS zone
@@ -211,9 +211,9 @@ void convert_xastir_to_MGRS_str_components(char *utmZone, int utmZone_len,
       my_north = (int)(utmNorthing / 100000.0);
       my_north = my_north - 8;
 
-      xastir_snprintf(EastingL,EastingL_len,
+      astir_snprintf(EastingL,EastingL_len,
                       "%c", UPS_S_Easting[my_east]);
-      xastir_snprintf(NorthingL,NorthingL_len,
+      astir_snprintf(NorthingL,NorthingL_len,
                       "%c", UPS_S_Northing[my_north]);
     }
   }
@@ -256,9 +256,9 @@ void convert_xastir_to_MGRS_str_components(char *utmZone, int utmZone_len,
     my_north = (int)(utmNorthing / 100000.0);
     my_north = my_north + start;
     my_north = my_north % 20;
-    xastir_snprintf(EastingL, EastingL_len,
+    astir_snprintf(EastingL, EastingL_len,
                     "%c", E_W[my_east]);
-    xastir_snprintf(NorthingL, NorthingL_len,
+    astir_snprintf(NorthingL, NorthingL_len,
                     "%c", N_S[my_north]);
   }
 }
@@ -267,18 +267,18 @@ void convert_xastir_to_MGRS_str_components(char *utmZone, int utmZone_len,
 
 
 
-/* Wrapper around convert_xastir_to_MGRS_str_components
+/* Wrapper around convert_astir_to_MGRS_str_components
    to return an MGRS coordinate as a single string.
    Parameters:
    str The character array to be populated with the MGRS string.
    str_len Length of str.
-   x xastir x coordinate.
-   y xastir y coordinate.
+   x astir x coordinate.
+   y astir y coordinate.
    If "nice_format" == 1, we add leading spaces plus spaces between
    the easting and northing in order to line up more nicely with the
    UTM output format.
 */
-void convert_xastir_to_MGRS_str(char *str, int str_len, long x, long y, int nice_format)
+void convert_astir_to_MGRS_str(char *str, int str_len, long x, long y, int nice_format)
 {
   char space_string[4] = "   ";    // Three spaces
   unsigned int intEasting = 0;
@@ -286,13 +286,13 @@ void convert_xastir_to_MGRS_str(char *str, int str_len, long x, long y, int nice
   char EastingL[3] = "  ";
   char NorthingL[3] = "  ";
   char utmZone[10];
-  convert_xastir_to_MGRS_str_components(utmZone, sizeof(utmZone),
+  convert_astir_to_MGRS_str_components(utmZone, sizeof(utmZone),
                                         EastingL, sizeof(EastingL),
                                         NorthingL, sizeof(NorthingL),
                                         &intEasting, &intNorthing,
                                         x,  y,
                                         nice_format, space_string, strlen(space_string)) ;
-  xastir_snprintf(str,
+  astir_snprintf(str,
                   str_len,
                   "%s %c%c %05d %s%05d",
                   utmZone,

@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -22,8 +22,8 @@
  */
 
 
-#ifndef __XASTIR_IGATE_H
-#define __XASTIR_IGATE_H
+#ifndef __ASTIR_IGATE_H
+#define __ASTIR_IGATE_H
 
 typedef struct
 {
@@ -36,6 +36,6 @@ extern void output_igate_net(char *line, int port, int third_party);
 extern void output_igate_rf(char *from, char *call, char *path, char *line, int port, int third_party, char *object_name);
 extern void output_nws_igate_rf(char *from, char *path, char *line, int port, int third_party);
 
-#endif  // __XASTIR_IGATE_H
+#endif  // __ASTIR_IGATE_H
 
 

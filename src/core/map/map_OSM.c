@@ -61,7 +61,7 @@
 
 #include <math.h>
 
-#include "core/xastir.h"
+#include "core/astir.h"
 #include "core/globals.h"
 #include "core/map/maps.h"
 #include "core/io/fetch_remote.h"
@@ -91,15 +91,15 @@
   #undef PACKAGE
   #undef VERSION
   /* JMT - stupid ImageMagick */
-  #define XASTIR_PACKAGE_BUGREPORT PACKAGE_BUGREPORT
+  #define ASTIR_PACKAGE_BUGREPORT PACKAGE_BUGREPORT
   #undef PACKAGE_BUGREPORT
-  #define XASTIR_PACKAGE_NAME PACKAGE_NAME
+  #define ASTIR_PACKAGE_NAME PACKAGE_NAME
   #undef PACKAGE_NAME
-  #define XASTIR_PACKAGE_STRING PACKAGE_STRING
+  #define ASTIR_PACKAGE_STRING PACKAGE_STRING
   #undef PACKAGE_STRING
-  #define XASTIR_PACKAGE_TARNAME PACKAGE_TARNAME
+  #define ASTIR_PACKAGE_TARNAME PACKAGE_TARNAME
   #undef PACKAGE_TARNAME
-  #define XASTIR_PACKAGE_VERSION PACKAGE_VERSION
+  #define ASTIR_PACKAGE_VERSION PACKAGE_VERSION
   #undef PACKAGE_VERSION
   #ifdef HAVE_MAGICK
     #ifdef HAVE_MAGICKCORE_MAGICKCORE_H
@@ -111,20 +111,20 @@
     #endif //HAVE_MAGICKCORE_MAGICKCORE_H
   #endif //HAVE_MAGICK
   #undef PACKAGE_BUGREPORT
-  #define PACKAGE_BUGREPORT XASTIR_PACKAGE_BUGREPORT
-  #undef XASTIR_PACKAGE_BUGREPORT
+  #define PACKAGE_BUGREPORT ASTIR_PACKAGE_BUGREPORT
+  #undef ASTIR_PACKAGE_BUGREPORT
   #undef PACKAGE_NAME
-  #define PACKAGE_NAME XASTIR_PACKAGE_NAME
-  #undef XASTIR_PACKAGE_NAME
+  #define PACKAGE_NAME ASTIR_PACKAGE_NAME
+  #undef ASTIR_PACKAGE_NAME
   #undef PACKAGE_STRING
-  #define PACKAGE_STRING XASTIR_PACKAGE_STRING
-  #undef XASTIR_PACKAGE_STRING
+  #define PACKAGE_STRING ASTIR_PACKAGE_STRING
+  #undef ASTIR_PACKAGE_STRING
   #undef PACKAGE_TARNAME
-  #define PACKAGE_TARNAME XASTIR_PACKAGE_TARNAME
-  #undef XASTIR_PACKAGE_TARNAME
+  #define PACKAGE_TARNAME ASTIR_PACKAGE_TARNAME
+  #undef ASTIR_PACKAGE_TARNAME
   #undef PACKAGE_VERSION
-  #define PACKAGE_VERSION XASTIR_PACKAGE_VERSION
-  #undef XASTIR_PACKAGE_VERSION
+  #define PACKAGE_VERSION ASTIR_PACKAGE_VERSION
+  #undef ASTIR_PACKAGE_VERSION
 
   // This matte color was chosen emphirically to work well with the
   // contours from topOSM.
@@ -157,13 +157,13 @@
 // Must be last include file
 #include "core/util/leak_detection.h"
 
-#define xastirColorsMatch(p,q) (((p).red == (q).red) && ((p).blue == (q).blue) \
+#define astirColorsMatch(p,q) (((p).red == (q).red) && ((p).blue == (q).blue) \
         && ((p).green == (q).green))
 
-// osm_scale_x - map Xastir scale_x value to an OSM binned value
+// osm_scale_x - map Astir scale_x value to an OSM binned value
 //
 // Note that the terms 'higher' and 'lower' are confusing because a
-// smaller Xastir scale number is a larger OSM zoom level. OSM zoom level
+// smaller Astir scale number is a larger OSM zoom level. OSM zoom level
 // 0 would show the whole world in a 256x256 pixel tile, OSM zoom level
 // 18 (the max) would require 2^18 tiles to simple wrap the equator.
 //
@@ -172,12 +172,12 @@
 //
 // direction = -1, zoom in
 // direction = 1, zoom out
-// direction = 0, nearst level out from the xastir scale
+// direction = 0, nearst level out from the astir scale
 //
 #define MAX_OSM_ZOOM_LEVEL 18
 #define OSM_ZOOM_LEVELS    (MAX_OSM_ZOOM_LEVEL + 1)
 
-static long osm_scale_x(long xastir_scale_x)
+static long osm_scale_x(long astir_scale_x)
 {
 
   long osm_level[OSM_ZOOM_LEVELS] = {1, 2, 4, 8, 15, 31, 62, 124, \
@@ -189,13 +189,13 @@ static long osm_scale_x(long xastir_scale_x)
 
   for (i=1; i <= MAX_OSM_ZOOM_LEVEL; i++)
   {
-    if (xastir_scale_x > osm_level[i])
+    if (astir_scale_x > osm_level[i])
     {
       continue;
     }
     else
     {
-      if (labs(osm_level[i - 1] - xastir_scale_x) < labs(osm_level[i] - xastir_scale_x))
+      if (labs(osm_level[i - 1] - astir_scale_x) < labs(osm_level[i] - astir_scale_x))
       {
         osm_scale_x = osm_level[i - 1];
       }
@@ -249,7 +249,7 @@ void adj_to_OSM_level( long *new_scale_x, long *new_scale_y)
  */
 unsigned int osm_zoom_level(long scale_x)
 {
-  double circumference = 360.0*3600.0*100.0; // Xastir Units = 1/100 second.
+  double circumference = 360.0*3600.0*100.0; // Astir Units = 1/100 second.
   double zf;
   int z;
   zf = (log(circumference / (double)scale_x) / log(2.0)) - 8.0;
@@ -354,7 +354,7 @@ static void get_OSM_local_file(char * local_filename, char * fileimg)
 
     set_dangerous("map_OSM: map_cache_fileid");
     cache_file_id = map_cache_fileid();
-    xastir_snprintf(local_filename,
+    astir_snprintf(local_filename,
                     MAX_FILENAME,           // hardcoded to avoid sizeof()
                     "%s/map_%s.%s",
                     get_user_base_dir("map_cache", temp_file_path, sizeof(temp_file_path)),
@@ -365,7 +365,7 @@ static void get_OSM_local_file(char * local_filename, char * fileimg)
 
 #else   // USE_MAP_CACHE
 
-  xastir_snprintf(local_filename,
+  astir_snprintf(local_filename,
                   MAX_FILENAME,               // hardcoded to avoid sizeof()
                   "%s/map.%s",
                   get_user_base_dir("tmp", temp_file_path, sizeof(temp_file_path)),
@@ -387,7 +387,7 @@ static void get_OSM_local_file(char * local_filename, char * fileimg)
     }
 
     // For debugging the MagickError/MagickWarning segfaults.
-    //system("cat /dev/null >/var/tmp/xastir_hacker_map.png");
+    //system("cat /dev/null >/var/tmp/astir_hacker_map.png");
 
 
 #ifdef USE_MAP_CACHE
@@ -416,7 +416,7 @@ static void get_OSM_local_file(char * local_filename, char * fileimg)
 
 
 #ifdef HAVE_MAGICK
-static long xastirLat2pixelLat(
+static long astirLat2pixelLat(
   long xlat, int osm_zoom )
 {
   double lat;  // in radians
@@ -425,7 +425,7 @@ static long xastirLat2pixelLat(
 
   lat = convert_lat_l2r(xlat);
 
-  // xastir latitude values can exceed +/- 90.0 degrees because
+  // astir latitude values can exceed +/- 90.0 degrees because
   // the latitude is the extent of the display window. Limit the
   // OSM latitude to less than +/- 90.0 degrees so that the projection
   // calculation does not blow up or return unreasonable values.
@@ -444,7 +444,7 @@ static long xastirLat2pixelLat(
   y = 1.0 - y;
   pixelLat = (long)((y * (double)(1<<(osm_zoom + 8))) / 2.0);
   return(pixelLat);
-} // xastirLat2pixelLat()
+} // astirLat2pixelLat()
 #endif  // HAVE_MAGICK
 
 
@@ -463,19 +463,19 @@ static double pixelLat2Lat(long osm_lat, int osm_zoom)
 
 
 #ifdef HAVE_MAGICK
-static long pixelLat2xastirLat(long osm_lat, int osm_zoom)
+static long pixelLat2astirLat(long osm_lat, int osm_zoom)
 {
   double lat;
-  long xastirLat;
+  long astirLat;
   lat = pixelLat2Lat(osm_lat, osm_zoom);
-  xastirLat = (long)((90.0 - lat) * 3600.0 * 100.0);
-  return (xastirLat);
-} // pixelLat2xastirLat()
+  astirLat = (long)((90.0 - lat) * 3600.0 * 100.0);
+  return (astirLat);
+} // pixelLat2astirLat()
 #endif  // HAVE_MAGICK
 
 
 #ifdef HAVE_MAGICK
-static long xastirLon2pixelLon(
+static long astirLon2pixelLon(
   long xlon, int osm_zoom)
 {
   double lon;
@@ -485,7 +485,7 @@ static long xastirLon2pixelLon(
   lon = lon / 360.0;
   pixelLon = lon;
   return(pixelLon);
-} // xastirLon2pixelLon()
+} // astirLon2pixelLon()
 #endif  // HAVE_MAGICK
 
 
@@ -501,12 +501,12 @@ static double pixelLon2Lon(long osm_lon, int osm_zoom)
 
 
 #ifdef HAVE_MAGICK
-static long pixelLon2xastirLon(long osm_lon, int osm_zoom)
+static long pixelLon2astirLon(long osm_lon, int osm_zoom)
 {
-  long xastirLon;
-  xastirLon = (long)(pixelLon2Lon(osm_lon, osm_zoom) * 3600.0 * 100.0);
-  return(xastirLon);
-} // pixelLon2xastirLon()
+  long astirLon;
+  astirLon = (long)(pixelLon2Lon(osm_lon, osm_zoom) * 3600.0 * 100.0);
+  return(astirLon);
+} // pixelLon2astirLon()
 #endif  // HAVE_MAGICK
 
 
@@ -655,7 +655,7 @@ static void draw_image(
       if (image->storage_class == PseudoClass)
       {
         // Make matte transparent
-        if (xastirColorsMatch(pixel_pack[l],image->matte_color))
+        if (astirColorsMatch(pixel_pack[l],image->matte_color))
         {
           continue;
         }
@@ -835,7 +835,7 @@ static void render_OSM_image_pixels(
   }
 
   /*
-  * Here are the corners of our viewport, using the Xastir
+  * Here are the corners of our viewport, using the Astir
   * coordinate system.  Notice that Y is upside down:
   *
   *   left edge of view = NW_corner_longitude
@@ -860,7 +860,7 @@ static void render_OSM_image_pixels(
   map_y_min = map_y_max = 0l;
   for (map_image_row = 0; map_image_row < (long)image->rows; map_image_row++)
   {
-    scr_y = (pixelLat2xastirLat(map_image_row + tpNW->y_lat, osm_zl) - NW_corner_latitude) / scale_y;
+    scr_y = (pixelLat2astirLat(map_image_row + tpNW->y_lat, osm_zl) - NW_corner_latitude) / scale_y;
     if (scr_y > 0)
     {
       if (scr_y < screen_height)
@@ -882,7 +882,7 @@ static void render_OSM_image_pixels(
   map_x_min = map_x_max = 0l;
   for (map_image_col = 0; map_image_col < (long)image->columns; map_image_col++)
   {
-    scr_x = (pixelLon2xastirLon(map_image_col + tpNW->x_long, osm_zl) - NW_corner_longitude) / scale_x;
+    scr_x = (pixelLon2astirLon(map_image_col + tpNW->x_long, osm_zl) - NW_corner_longitude) / scale_x;
     if (scr_x > 0)
     {
       if (scr_x < screen_width)
@@ -917,14 +917,14 @@ static void render_OSM_image_pixels(
       return;
     }
 
-    scr_y = (pixelLat2xastirLat(map_image_row + tpNW->y_lat, osm_zl)
+    scr_y = (pixelLat2astirLat(map_image_row + tpNW->y_lat, osm_zl)
              - NW_corner_latitude) / scale_y;
 
     // image rows do not match 1:1 with screen rows due to Mercator
     // scaling, so scr_dy will be passed to XFillRectangle to
     // handle that issue.
     // scr_dy is in rows and must be a minimum of 1 row.
-    scr_dy = ((  pixelLat2xastirLat(map_image_row + 1 + tpNW->y_lat, osm_zl)
+    scr_dy = ((  pixelLat2astirLat(map_image_row + 1 + tpNW->y_lat, osm_zl)
                  - NW_corner_latitude) / scale_y) - scr_y;
     if (scr_dy < 1)
     {
@@ -939,13 +939,13 @@ static void render_OSM_image_pixels(
       map_act = 0;
       for (map_image_col = map_x_min; map_image_col <= map_x_max; map_image_col++)
       {
-        scr_x = (  pixelLon2xastirLon(map_image_col + tpNW->x_long, osm_zl)
+        scr_x = (  pixelLon2astirLon(map_image_col + tpNW->x_long, osm_zl)
                    - NW_corner_longitude) / scale_x;
         // handle the case when here the horizontal resolution
         // of the image is less than the horizontal resolution
         // displayed. scr_dx is passed to XFillRectangle() below
         // and must be at least 1 column.
-        scr_dx = ( (pixelLon2xastirLon(map_image_col + 1 + tpNW->x_long, osm_zl)
+        scr_dx = ( (pixelLon2astirLon(map_image_col + 1 + tpNW->x_long, osm_zl)
                     - NW_corner_longitude) / scale_x) - scr_x;
         if (scr_dx < 1)
         {
@@ -966,7 +966,7 @@ static void render_OSM_image_pixels(
             if (image->storage_class == PseudoClass)
             {
               // Make matte transparent by skipping pixels
-              if (xastirColorsMatch(pixel_pack[l],image->matte_color))
+              if (astirColorsMatch(pixel_pack[l],image->matte_color))
               {
                 continue;
               }
@@ -977,7 +977,7 @@ static void render_OSM_image_pixels(
               // Skip transparent pixels and make matte
               // colored pixels transparent (by skipping)
               if ((pixel_pack[l].opacity == TransparentOpacity)
-                  || (xastirColorsMatch(pixel_pack[l], image->matte_color)))
+                  || (astirColorsMatch(pixel_pack[l], image->matte_color)))
               {
                 continue;
               }
@@ -1083,12 +1083,12 @@ static void draw_OSM_image(
 // MaxTextExtent is an ImageMagick/GraphicMagick constant
 #define MAX_TMPSTRING MaxTextExtent
 
-void draw_OSM_tiles (char *filenm,           // this is the name of the xastir map file
+void draw_OSM_tiles (char *filenm,           // this is the name of the astir map file
                      int destination_pixmap,
-                     char *server_url,      // if specified in xastir map file
-                     char *tileCacheDir,    // if specified in xastir map file
-                     char *mapName,         // if specified in xastir map file
-                     char *tileExt)         // if specified in xastir map file
+                     char *server_url,      // if specified in astir map file
+                     char *tileCacheDir,    // if specified in astir map file
+                     char *mapName,         // if specified in astir map file
+                     char *tileExt)         // if specified in astir map file
 {
 
   char serverURL[MAX_FILENAME];
@@ -1121,7 +1121,7 @@ void draw_OSM_tiles (char *filenm,           // this is the name of the xastir m
     // We're indexing only.  Save the extents in the index.
     // Force the extents to the edges of the earth for the
     // index file.
-    index_update_xastir(filenm, // Filename only
+    index_update_astir(filenm, // Filename only
                         64800000l,      // Bottom
                         0l,             // Top
                         0l,             // Left
@@ -1129,7 +1129,7 @@ void draw_OSM_tiles (char *filenm,           // this is the name of the xastir m
                         0);             // Default Map Level
 
     // Update statusline
-    xastir_snprintf(map_it,
+    astir_snprintf(map_it,
                     sizeof(map_it),
                     langcode ("BBARSTA039"),  // Indexing %s
                     short_filenm);
@@ -1142,35 +1142,35 @@ void draw_OSM_tiles (char *filenm,           // this is the name of the xastir m
   {
     if (tileCacheDir[0] == '/')
     {
-      xastir_snprintf(tileRootDir, sizeof(tileRootDir),
+      astir_snprintf(tileRootDir, sizeof(tileRootDir),
                       "%s", tileCacheDir);
     }
     else
     {
-      xastir_snprintf(tileRootDir, sizeof(tileRootDir),
+      astir_snprintf(tileRootDir, sizeof(tileRootDir),
                       "%s", get_user_base_dir(tileCacheDir, temp_file_path, sizeof(temp_file_path)));
     }
   }
   else
   {
-    xastir_snprintf(tileRootDir, sizeof(tileRootDir),
+    astir_snprintf(tileRootDir, sizeof(tileRootDir),
                     "%s", get_user_base_dir("OSMtiles", temp_file_path, sizeof(temp_file_path)));
   }
 
   if (mapName[0] != '\0')
   {
-    xastir_snprintf(tmpString, sizeof(tmpString), "/%s", mapName);
+    astir_snprintf(tmpString, sizeof(tmpString), "/%s", mapName);
     strncat(tileRootDir, tmpString, sizeof(tileRootDir) - 1 - strlen(tileRootDir));
   }
 
   if (server_url[0] != '\0')
   {
-    xastir_snprintf(serverURL, sizeof(serverURL),
+    astir_snprintf(serverURL, sizeof(serverURL),
                     "%s", server_url);
   }
   else
   {
-    xastir_snprintf(serverURL, sizeof(serverURL),
+    astir_snprintf(serverURL, sizeof(serverURL),
                     "%s", "http://tile.openstreetmap.org");
   }
 
@@ -1187,14 +1187,14 @@ void draw_OSM_tiles (char *filenm,           // this is the name of the xastir m
   if (debug_level & 512)
   {
     unsigned long lat, lon;
-    (void)convert_to_xastir_coordinates(&lon, &lat,
+    (void)convert_to_astir_coordinates(&lon, &lat,
                                         f_NW_corner_longitude, f_NW_corner_latitude);
     fprintf(stderr, "NW_corner_longitude = %f, %ld, %ld\n",
             f_NW_corner_longitude, NW_corner_longitude, lon);
     fprintf(stderr, "NW_corner_latitude = %f, %ld, %ld\n",
             f_NW_corner_latitude, NW_corner_latitude, lat);
 
-    (void)convert_to_xastir_coordinates(&lon, &lat,
+    (void)convert_to_astir_coordinates(&lon, &lat,
                                         f_SE_corner_longitude, f_SE_corner_latitude);
     fprintf(stderr, "SE_corner_longitude = %f, %ld, %ld\n",
             f_SE_corner_longitude, SE_corner_longitude, lon);
@@ -1207,7 +1207,7 @@ void draw_OSM_tiles (char *filenm,           // this is the name of the xastir m
                f_SE_corner_longitude, f_SE_corner_latitude,
                osm_zl, &tiles);
 
-  xastir_snprintf(map_it, sizeof(map_it), "%s",
+  astir_snprintf(map_it, sizeof(map_it), "%s",
                   langcode ("BBARSTA050")); // Downloading tiles...
   xa_ui_status(map_it);
   xa_ui_flush();
@@ -1230,7 +1230,7 @@ void draw_OSM_tiles (char *filenm,           // this is the name of the xastir m
     {
       if ((numTiles > 0) & (tileCnt <= numTiles))
       {
-        xastir_snprintf(map_it, sizeof(map_it), langcode("BBARSTA051"),
+        astir_snprintf(map_it, sizeof(map_it), langcode("BBARSTA051"),
                         tileCnt, numTiles);  // Downloading tile %ls of %ls
         xa_ui_status(map_it);
         xa_ui_flush();
@@ -1295,7 +1295,7 @@ void draw_OSM_tiles (char *filenm,           // this is the name of the xastir m
     /*
      * Create a canvas upon which the tiles will be composited.
     */
-    xastir_snprintf(map_it, sizeof(map_it), "%s",
+    astir_snprintf(map_it, sizeof(map_it), "%s",
                     langcode ("BBARSTA049")); // Reading tiles...
     xa_ui_status(map_it);
     xa_ui_flush();
@@ -1336,7 +1336,7 @@ void draw_OSM_tiles (char *filenm,           // this is the name of the xastir m
           tpTileSE.x_long = (row + 1) * 256;
           tpTileSE.y_lat  = (col + 1) * 256;
 
-          xastir_snprintf(tmpString, sizeof(tmpString),
+          astir_snprintf(tmpString, sizeof(tmpString),
                           "%s/%d/%u/%u.%s", tileRootDir, osm_zl, row, col,
                           tileExt[0] != '\0' ? tileExt : "png");
           strncpy(tile_info->filename, tmpString, MaxTextExtent);
@@ -1386,7 +1386,7 @@ void draw_OSM_tiles (char *filenm,           // this is the name of the xastir m
 
     // Display the OpenStreetMap attribution
     // Just reuse the tile structure rather than creating another.
-    xastir_snprintf(tmpString, sizeof(tmpString),
+    astir_snprintf(tmpString, sizeof(tmpString),
                     "%s/CC_OpenStreetMap.png", get_data_base_dir("maps"));
     strncpy(tile_info->filename, tmpString, MaxTextExtent);
 
@@ -1463,7 +1463,7 @@ void draw_OSM_map (char *filenm,
   // Create a shorter filename for display
   short_filename_for_status(filenm, short_filenm, sizeof(short_filenm));
 
-  xastir_snprintf(map_it,
+  astir_snprintf(map_it,
                   sizeof(map_it),
                   langcode ("BBARSTA028"),
                   short_filenm);
@@ -1478,7 +1478,7 @@ void draw_OSM_map (char *filenm,
     // We're indexing only.  Save the extents in the index.
     // Force the extents to the edges of the earth for the
     // index file.
-    index_update_xastir(filenm, // Filename only
+    index_update_astir(filenm, // Filename only
                         64800000l,      // Bottom
                         0l,             // Top
                         0l,             // Left
@@ -1486,7 +1486,7 @@ void draw_OSM_map (char *filenm,
                         0);             // Default Map Level
 
     // Update statusline
-    xastir_snprintf(map_it,
+    astir_snprintf(map_it,
                     sizeof(map_it),
                     langcode ("BBARSTA039"),
                     short_filenm);
@@ -1495,15 +1495,15 @@ void draw_OSM_map (char *filenm,
     return; // Done indexing this file
   }
 
-  // calculate the OSM zoom level (osm_zl) that is nearest the xastir scale
+  // calculate the OSM zoom level (osm_zl) that is nearest the astir scale
   osm_zl = osm_zoom_level(scale_x);
 
   // Calculate the image size to request. The size will be saved as tiepoints
   // for the top-left and bottom-right of the image.
-  tp[0].x_long = xastirLon2pixelLon(NW_corner_longitude, osm_zl); // OSM pixels
-  tp[1].x_long = xastirLon2pixelLon(SE_corner_longitude, osm_zl); // OSM pixels
-  tp[0].y_lat = xastirLat2pixelLat(NW_corner_latitude, osm_zl);  // OSM pixels
-  tp[1].y_lat = xastirLat2pixelLat(SE_corner_latitude, osm_zl);  // OSM pixels
+  tp[0].x_long = astirLon2pixelLon(NW_corner_longitude, osm_zl); // OSM pixels
+  tp[1].x_long = astirLon2pixelLon(SE_corner_longitude, osm_zl); // OSM pixels
+  tp[0].y_lat = astirLat2pixelLat(NW_corner_latitude, osm_zl);  // OSM pixels
+  tp[1].y_lat = astirLat2pixelLat(SE_corner_latitude, osm_zl);  // OSM pixels
 
   map_image_height = tp[1].y_lat - tp[0].y_lat;
   map_image_width = tp[1].x_long - tp[0].x_long;
@@ -1554,34 +1554,34 @@ void draw_OSM_map (char *filenm,
 
   if (url[0] != '\0')
   {
-    xastir_snprintf(OSMtmp, sizeof(OSMtmp), "%s", url);
+    astir_snprintf(OSMtmp, sizeof(OSMtmp), "%s", url);
   }
   else
   {
-    xastir_snprintf(OSMtmp, sizeof(OSMtmp), "http://ojw.dev.openstreetmap.org/StaticMap/");
+    astir_snprintf(OSMtmp, sizeof(OSMtmp), "http://ojw.dev.openstreetmap.org/StaticMap/");
   }
-  //xastir_snprintf(tmpstr, sizeof(tmpstr), "?mode=Export&att=text&show=1&");
-  xastir_snprintf(tmpstr, sizeof(tmpstr), "?mode=Export&show=1&");
+  //astir_snprintf(tmpstr, sizeof(tmpstr), "?mode=Export&att=text&show=1&");
+  astir_snprintf(tmpstr, sizeof(tmpstr), "?mode=Export&show=1&");
   strncat (OSMtmp, tmpstr, sizeof(OSMtmp) - 1 - strlen(OSMtmp));
 
   if (style[0] != '\0')
   {
-    xastir_snprintf(tmpstr, sizeof(tmpstr), "%s", style);
+    astir_snprintf(tmpstr, sizeof(tmpstr), "%s", style);
     strncat (OSMtmp, tmpstr, sizeof(OSMtmp) - 1 - strlen(OSMtmp));
   }
   else
   {
-    xastir_snprintf(tmpstr, sizeof(tmpstr), "layer=osmarender&");
+    astir_snprintf(tmpstr, sizeof(tmpstr), "layer=osmarender&");
     strncat (OSMtmp, tmpstr, sizeof(OSMtmp) - 1 - strlen(OSMtmp));
   }
 
-  xastir_snprintf(tmpstr, sizeof(tmpstr), "&lat=%f\046lon=%f\046", lat_center, long_center);
+  astir_snprintf(tmpstr, sizeof(tmpstr), "&lat=%f\046lon=%f\046", lat_center, long_center);
   strncat (OSMtmp, tmpstr, sizeof(OSMtmp) - 1 - strlen(OSMtmp));
 
-  xastir_snprintf(tmpstr, sizeof(tmpstr), "w=%i\046h=%i\046", map_image_width, map_image_height);
+  astir_snprintf(tmpstr, sizeof(tmpstr), "w=%i\046h=%i\046", map_image_width, map_image_height);
   strncat (OSMtmp, tmpstr, sizeof(OSMtmp) - 1 - strlen(OSMtmp));
 
-  xastir_snprintf(tmpstr, sizeof(tmpstr), "z=%d", osm_zl);
+  astir_snprintf(tmpstr, sizeof(tmpstr), "z=%d", osm_zl);
   strncat (OSMtmp, tmpstr, sizeof(OSMtmp) - 1 - strlen(OSMtmp));
 
   memcpy(fileimg, OSMtmp, sizeof(fileimg));
@@ -1617,7 +1617,7 @@ void draw_OSM_map (char *filenm,
   get_OSM_local_file(local_filename,fileimg);
 
   // Tell ImageMagick where to find it
-  xastir_snprintf(file,
+  astir_snprintf(file,
                   sizeof(file),
                   "%s",
                   local_filename);
@@ -1626,7 +1626,7 @@ void draw_OSM_map (char *filenm,
 
   image_info=CloneImageInfo((ImageInfo *) NULL);
 
-  xastir_snprintf(image_info->filename,
+  astir_snprintf(image_info->filename,
                   sizeof(image_info->filename),
                   "%s",
                   file);
@@ -1640,7 +1640,7 @@ void draw_OSM_map (char *filenm,
   }
 
   // We do a test read first to see if the file exists, so we
-  // don't kill Xastir in the ReadImage routine.
+  // don't kill Astir in the ReadImage routine.
   f = fopen (image_info->filename, "r");
   if (f == NULL)
   {
@@ -1736,7 +1736,7 @@ void draw_OSM_map (char *filenm,
   DestroyImage(image);
 
   // Display the OpenStreetMap attribution
-  xastir_snprintf(image_info->filename, MaxTextExtent,
+  astir_snprintf(image_info->filename, MaxTextExtent,
                   "%s/CC_OpenStreetMap.png", get_data_base_dir("maps"));
 
   image = ReadImage(image_info,&exception);

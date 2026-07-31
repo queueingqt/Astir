@@ -2,7 +2,7 @@
 use warnings;
 ###########################################################################
 #
-# XASTIR, Amateur Station Tracking and Information Reporting
+# ASTIR, Amateur Station Tracking and Information Reporting
 # Copyright (C) 2000-2026 The Xastir Group
 #
 # "ais_pp.pl", a Perl script that prints a formatted list of the 
@@ -18,8 +18,8 @@ use Data::Dumper;  # Only used for debugging vessel_hash
 
 $home = `echo ~`;
 chomp $home;
-$persistentFileSpec = "$home/.xastir/config/vessel_hash";
-#$persistentFileSpec = File::HomeDir->my_home . "/.xastir/config/vessel_hash";
+$persistentFileSpec = "$home/.astir/config/vessel_hash";
+#$persistentFileSpec = File::HomeDir->my_home . "/.astir/config/vessel_hash";
 #
 #
 # Hash to store vessel names in, for assigning tactical calls

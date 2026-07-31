@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -22,8 +22,8 @@
  */
 
 
-#ifndef __XASTIR_timer_UTILS_H
-#define __XASTIR_timer_UTILS_H
+#ifndef __ASTIR_timer_UTILS_H
+#define __ASTIR_timer_UTILS_H
 
 extern void start_timer(void);
 extern void stop_timer(void);

@@ -1,7 +1,7 @@
 #
 # Copyright (C) 2004 Bruce Bennett <bruts@adelphia.net>
 # Portions Copyright (C) 2000-2026 The Xastir Group
-# (Modified for the Xastir project under GPL license)
+# (Modified for the Astir project under GPL license)
 #
 #
 #                                               -*- Autoconf -*-

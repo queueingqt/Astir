@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -58,7 +58,7 @@
 
 #include <math.h>
 
-#include "core/xastir.h"
+#include "core/astir.h"
 #include "core/globals.h"
 #include "core/map/maps.h"
 #include "core/aprs/alert.h"
@@ -151,7 +151,7 @@ void get_alt_fgd_path(char *fullpath, int fullpath_length)
   // now overwrite the parent directory name with "metadata/"
   // The maximum number of characters allowed must take into account
   // the contents of the buffer.
-  xastir_snprintf(dir, fullpath_length-(strlen(fullpath)-strlen(dir))-1,
+  astir_snprintf(dir, fullpath_length-(strlen(fullpath)-strlen(dir))-1,
                   "metadata/%s", fname);
 
 }
@@ -184,7 +184,7 @@ int read_fgd_file ( char* tif_filename,
 
 
   /* Read the .fgd file to find corners of the map neat-line */
-  xastir_snprintf(fgd_file,
+  astir_snprintf(fgd_file,
                   sizeof(fgd_file),
                   "%s",
                   tif_filename);
@@ -456,29 +456,29 @@ void draw_geotiff_image_map (char *dir,
 
   uint32_t column;
 
-  float xastir_left_x_increment;
+  float astir_left_x_increment;
   float left_x_increment;
-  float xastir_left_y_increment;
+  float astir_left_y_increment;
   float left_y_increment;
-  float xastir_right_x_increment;
+  float astir_right_x_increment;
   float right_x_increment;
-  float xastir_right_y_increment;
+  float astir_right_y_increment;
   float right_y_increment;
-  float xastir_top_y_increment;
+  float astir_top_y_increment;
   float top_y_increment;
-  float xastir_bottom_y_increment;
+  float astir_bottom_y_increment;
   float bottom_y_increment;
-  //    float xastir_avg_y_increment;
+  //    float astir_avg_y_increment;
   float avg_y_increment;
   int row_offset;
-  unsigned long current_xastir_left;
-  unsigned long current_xastir_right;
+  unsigned long current_astir_left;
+  unsigned long current_astir_right;
   uint32_t current_left;
   uint32_t current_right;
   //    uint32_t current_line_width;
-  unsigned long xastir_current_y;
+  unsigned long astir_current_y;
   uint32_t column_offset;
-  unsigned long xastir_current_x;
+  unsigned long astir_current_x;
   double *PixelScale;
   int have_PixelScale;
   uint16_t qty;
@@ -486,15 +486,15 @@ void draw_geotiff_image_map (char *dir,
   unsigned long view_min_x, view_max_x;
   unsigned long view_min_y, view_max_y;
 
-  unsigned long xastir_total_y;
+  unsigned long astir_total_y;
   int NW_line_offset;
   int NE_line_offset;
-  int NW_xastir_x_offset;
-  int NE_xastir_x_offset;
-  int NW_xastir_y_offset;
+  int NW_astir_x_offset;
+  int NE_astir_x_offset;
+  int NW_astir_y_offset;
   int NW_x_offset;
   int NE_x_offset;
-  float xastir_avg_left_right_y_increment;
+  float astir_avg_left_right_y_increment;
   float total_avg_y_increment;
   unsigned long view_left_minus_pixel_width;
   unsigned long view_top_minus_pixel_height;
@@ -511,7 +511,7 @@ void draw_geotiff_image_map (char *dir,
   }
 
 
-  xastir_snprintf(file, sizeof(file), "%s/%s", dir, filenm);
+  astir_snprintf(file, sizeof(file), "%s/%s", dir, filenm);
 
   // Create a shorter filename for display
   short_filename_for_status(filenm, short_filenm, sizeof(short_filenm));
@@ -547,7 +547,7 @@ void draw_geotiff_image_map (char *dir,
    */
 
 
-  /* convert_to_xastir_coordinates( x,y,longitude,latitude ); */
+  /* convert_to_astir_coordinates( x,y,longitude,latitude ); */
   if (have_fgd)   /* Could be a USGS file */
   {
     int temp_ok1, temp_ok2;
@@ -563,13 +563,13 @@ void draw_geotiff_image_map (char *dir,
 
     crop_it = 1;        /* The map collar needs to be cropped */
 
-    temp_ok1 = convert_to_xastir_coordinates(  &west_bounding,
+    temp_ok1 = convert_to_astir_coordinates(  &west_bounding,
                &north_bounding,
                f_west_bounding,
                f_north_bounding );
 
 
-    temp_ok2 = convert_to_xastir_coordinates(  &east_bounding,
+    temp_ok2 = convert_to_astir_coordinates(  &east_bounding,
                &south_bounding,
                f_east_bounding,
                f_south_bounding );
@@ -594,7 +594,7 @@ void draw_geotiff_image_map (char *dir,
      *
      * Perhaps add a bit to the corners (the max datum shift?)
      * to do our quick check?  I decided to add about 10 seconds
-     * to the map edges, which equates to 1000 in the Xastir
+     * to the map edges, which equates to 1000 in the Astir
      * coordinate system.  That should be greater than any datum
      * shift in North America for USGS topos.  I'm artificially
      * inflating the size of the map just for this quick
@@ -1078,11 +1078,11 @@ void draw_geotiff_image_map (char *dir,
 
   /*
    * Convert new datum-translated bounding coordinates to the
-   * Xastir coordinate system.
-   * convert_to_xastir_coordinates( x,y,longitude,latitude )
+   * Astir coordinate system.
+   * convert_to_astir_coordinates( x,y,longitude,latitude )
    */
   // NW corner
-  if (!convert_to_xastir_coordinates(  &NW_x_bounding_wgs84,
+  if (!convert_to_astir_coordinates(  &NW_x_bounding_wgs84,
                                        &NW_y_bounding_wgs84,
                                        (float)f_NW_x_bounding_wgs84,
                                        (float)f_NW_y_bounding_wgs84 ) )
@@ -1093,7 +1093,7 @@ void draw_geotiff_image_map (char *dir,
   }
 
   // NE corner
-  if (!convert_to_xastir_coordinates(  &NE_x_bounding_wgs84,
+  if (!convert_to_astir_coordinates(  &NE_x_bounding_wgs84,
                                        &NE_y_bounding_wgs84,
                                        (float)f_NE_x_bounding_wgs84,
                                        (float)f_NE_y_bounding_wgs84 ) )
@@ -1105,7 +1105,7 @@ void draw_geotiff_image_map (char *dir,
   }
 
   // SW corner
-  if (!convert_to_xastir_coordinates(  &SW_x_bounding_wgs84,
+  if (!convert_to_astir_coordinates(  &SW_x_bounding_wgs84,
                                        &SW_y_bounding_wgs84,
                                        (float)f_SW_x_bounding_wgs84,
                                        (float)f_SW_y_bounding_wgs84 ) )
@@ -1117,7 +1117,7 @@ void draw_geotiff_image_map (char *dir,
   }
 
   // SE corner
-  if (!convert_to_xastir_coordinates(  &SE_x_bounding_wgs84,
+  if (!convert_to_astir_coordinates(  &SE_x_bounding_wgs84,
                                        &SE_y_bounding_wgs84,
                                        (float)f_SE_x_bounding_wgs84,
                                        (float)f_SE_y_bounding_wgs84 ) )
@@ -1179,14 +1179,14 @@ void draw_geotiff_image_map (char *dir,
        || (destination_pixmap == INDEX_NO_TIMESTAMPS) )
   {
 
-    xastir_snprintf(map_it,
+    astir_snprintf(map_it,
                     sizeof(map_it),
                     langcode ("BBARSTA039"),
                     short_filenm);
     xa_ui_status(map_it);       // Indexing ...
 
     // We're indexing only.  Save the extents in the index.
-    index_update_xastir(filenm, // Filename only
+    index_update_astir(filenm, // Filename only
                         south_bounding_wgs84,   // Bottom
                         north_bounding_wgs84,   // Top
                         west_bounding_wgs84,    // Left
@@ -1204,7 +1204,7 @@ void draw_geotiff_image_map (char *dir,
   }
   else
   {
-    xastir_snprintf(map_it,
+    astir_snprintf(map_it,
                     sizeof(map_it),
                     langcode ("BBARSTA028"),
                     short_filenm);
@@ -1413,7 +1413,7 @@ void draw_geotiff_image_map (char *dir,
      * Note that we already have the datum-shifted values for all
      * the corners in the *_wgs84 variables.  In short:  We use the
      * non datum-shifted values to work with the tiff file, and the
-     * datum-shifted values to plot the points in Xastir.
+     * datum-shifted values to plot the points in Astir.
      */
 
     xa_ui_pump_events();
@@ -2059,7 +2059,7 @@ void draw_geotiff_image_map (char *dir,
   // straight lines.
 
   // At this point we have these variables defined.  The
-  // first column contains map corners in Xastir coordinates,
+  // first column contains map corners in Astir coordinates,
   // the second column contains map corners in pixels:
   //
   // NW corner:
@@ -2079,7 +2079,7 @@ void draw_geotiff_image_map (char *dir,
   // SE_y_bounding_wgs84  <-> SE_y
 
   // I should be able to use these variables to figure out
-  // the xastir coordinates of each scanline pixel using
+  // the astir coordinates of each scanline pixel using
   // linear interpolation along each edge.
   //
   // I don't want to use the crop values in general.  I'd
@@ -2087,7 +2087,7 @@ void draw_geotiff_image_map (char *dir,
   // rectangular crop.
   //
   // Define lines along the left/right edges so that I can
-  // compute the Xastir coordinates of each pixel along these
+  // compute the Astir coordinates of each pixel along these
   // two lines.  These will be the start/finish of each of my
   // scanlines, and I can use these values to compute the
   // x/y_increment values for each line.  This way I can
@@ -2104,17 +2104,17 @@ void draw_geotiff_image_map (char *dir,
   // and from:
   // east_bounding_wgs84,north_bounding_wgs84 -> east_bounding_wgs84,south_bounding_wgs84
   //
-  // Simpler:  Along each line, Xastir coordinates change how much
+  // Simpler:  Along each line, Astir coordinates change how much
   // and in what direction as we move down one scanline?
 
 
-  // These increments are how much we change in Xastir coordinates and
+  // These increments are how much we change in Astir coordinates and
   // in pixel coordinates as we move down either the left or right
   // neatline one pixel.
   // Be prepared for 0 angle of rotation as well (x-increments = 0).
 
 
-  // Xastir Coordinate System:
+  // Astir Coordinate System:
   //
   //              0 (90 deg. or 90N)
   //
@@ -2129,12 +2129,12 @@ void draw_geotiff_image_map (char *dir,
   //
   // Left Edge X Increment Per Scanline (Going from top to bottom).
   // This increment will help me to keep track of the left edge of
-  // the image, both in Xastir coordinates and in pixel coordinates.
+  // the image, both in Astir coordinates and in pixel coordinates.
   //
   if (SW_y != NW_y)
   {
-    // Xastir coordinates
-    xastir_left_x_increment = (float)
+    // Astir coordinates
+    astir_left_x_increment = (float)
                               (1.0 * labs( (long)SW_x_bounding_wgs84 - (long)NW_x_bounding_wgs84 )   // Need to add one pixel worth here yet
                                / abs(SW_y - NW_y));
 
@@ -2144,7 +2144,7 @@ void draw_geotiff_image_map (char *dir,
 
     if (SW_x_bounding_wgs84 < NW_x_bounding_wgs84)
     {
-      xastir_left_x_increment = -xastir_left_x_increment;
+      astir_left_x_increment = -astir_left_x_increment;
     }
 
     if (SW_x < NW_x)
@@ -2155,12 +2155,12 @@ void draw_geotiff_image_map (char *dir,
     //WE7U
     //if (abs(left_x_increment) > (width/10)) {
     //    left_x_increment = 0.0;
-    //    xastir_left_x_increment = 0.0;
+    //    astir_left_x_increment = 0.0;
     //}
 
     if (debug_level & 16)
-      fprintf(stderr,"xastir_left_x_increment: %f  %ld  %ld     %f  %d  %d  %d  %d\n",
-              xastir_left_x_increment,
+      fprintf(stderr,"astir_left_x_increment: %f  %ld  %ld     %f  %d  %d  %d  %d\n",
+              astir_left_x_increment,
               SW_x_bounding_wgs84,
               NW_x_bounding_wgs84,
               left_x_increment,
@@ -2171,8 +2171,8 @@ void draw_geotiff_image_map (char *dir,
   }
   else
   {
-    // Xastir coordinates
-    xastir_left_x_increment = 0;
+    // Astir coordinates
+    astir_left_x_increment = 0;
 
     // Pixel coordinates
     left_x_increment = 0;
@@ -2182,12 +2182,12 @@ void draw_geotiff_image_map (char *dir,
   //
   // Left Edge Y Increment Per Scanline (Going from top to bottom)
   // This increment will help me to keep track of the left edge of
-  // the image, both in Xastir coordinates and in pixel coordinates.
+  // the image, both in Astir coordinates and in pixel coordinates.
   //
   if (SW_y != NW_y)
   {
-    // Xastir coordinates
-    xastir_left_y_increment = (float)
+    // Astir coordinates
+    astir_left_y_increment = (float)
                               (1.0 * labs( (long)SW_y_bounding_wgs84 - (long)NW_y_bounding_wgs84 )   // Need to add one pixel worth here yet
                                / abs(SW_y - NW_y));
 
@@ -2196,17 +2196,17 @@ void draw_geotiff_image_map (char *dir,
 
     if (SW_y_bounding_wgs84 < NW_y_bounding_wgs84)  // Ain't gonn'a happen
     {
-      xastir_left_y_increment = -xastir_left_y_increment;
+      astir_left_y_increment = -astir_left_y_increment;
     }
 
     //WE7U
     //if (abs(left_y_increment) > (width/10)) {
-    //    xastir_left_y_increment = 0.0;
+    //    astir_left_y_increment = 0.0;
     //}
 
     if (debug_level & 16)
-      fprintf(stderr,"xastir_left_y_increment: %f  %ld  %ld     %f  %d  %d  %d  %d\n",
-              xastir_left_y_increment,
+      fprintf(stderr,"astir_left_y_increment: %f  %ld  %ld     %f  %d  %d  %d  %d\n",
+              astir_left_y_increment,
               SW_y_bounding_wgs84,
               NW_y_bounding_wgs84,
               left_y_increment,
@@ -2217,8 +2217,8 @@ void draw_geotiff_image_map (char *dir,
   }
   else
   {
-    // Xastir coordinates
-    xastir_left_y_increment = 0;
+    // Astir coordinates
+    astir_left_y_increment = 0;
 
     // Pixel coordinates
     left_y_increment = 0;
@@ -2228,12 +2228,12 @@ void draw_geotiff_image_map (char *dir,
   //
   // Right Edge X Increment Per Scanline (Going from top to bottom)
   // This increment will help me to keep track of the right edge of
-  // the image, both in Xastir coordinates and image coordinates.
+  // the image, both in Astir coordinates and image coordinates.
   //
   if (SE_y != NE_y)
   {
-    // Xastir coordinates
-    xastir_right_x_increment = (float)
+    // Astir coordinates
+    astir_right_x_increment = (float)
                                (1.0 * labs( (long)SE_x_bounding_wgs84 - (long)NE_x_bounding_wgs84 )   // Need to add one pixel worth here yet
                                 / abs(SE_y - NE_y));
 
@@ -2243,7 +2243,7 @@ void draw_geotiff_image_map (char *dir,
 
     if (SE_x_bounding_wgs84 < NE_x_bounding_wgs84)
     {
-      xastir_right_x_increment = -xastir_right_x_increment;
+      astir_right_x_increment = -astir_right_x_increment;
     }
 
     if (SE_x < NE_x)
@@ -2254,12 +2254,12 @@ void draw_geotiff_image_map (char *dir,
     //WE7U
     //if (abs(right_x_increment) > (width/10)) {
     //    right_x_increment = 0.0;
-    //    xastir_right_x_increment = 0.0;
+    //    astir_right_x_increment = 0.0;
     //}
 
     if (debug_level & 16)
-      fprintf(stderr,"xastir_right_x_increment: %f  %ld  %ld     %f  %d  %d  %d  %d\n",
-              xastir_right_x_increment,
+      fprintf(stderr,"astir_right_x_increment: %f  %ld  %ld     %f  %d  %d  %d  %d\n",
+              astir_right_x_increment,
               SE_x_bounding_wgs84,
               NE_x_bounding_wgs84,
               right_x_increment,
@@ -2270,8 +2270,8 @@ void draw_geotiff_image_map (char *dir,
   }
   else
   {
-    // Xastir coordinates
-    xastir_right_x_increment = 0;
+    // Astir coordinates
+    astir_right_x_increment = 0;
 
     // Pixel coordinates
     right_x_increment = 0;
@@ -2281,12 +2281,12 @@ void draw_geotiff_image_map (char *dir,
   //
   // Right Edge Y Increment Per Scanline (Going from top to bottom)
   // This increment will help me to keep track of the right edge of
-  // the image, both in Xastir coordinates and in image coordinates.
+  // the image, both in Astir coordinates and in image coordinates.
   //
   if (SE_y != NE_y)
   {
-    // Xastir coordinates
-    xastir_right_y_increment = (float)
+    // Astir coordinates
+    astir_right_y_increment = (float)
                                (1.0 * labs( (long)SE_y_bounding_wgs84 - (long)NE_y_bounding_wgs84 )   // Need to add one pixel worth here yet
                                 / abs(SE_y - NE_y));
 
@@ -2295,17 +2295,17 @@ void draw_geotiff_image_map (char *dir,
 
     if (SE_y_bounding_wgs84 < NE_y_bounding_wgs84)  // Ain't gonn'a happen
     {
-      xastir_right_y_increment = -xastir_right_y_increment;
+      astir_right_y_increment = -astir_right_y_increment;
     }
 
     //WE7U
     //if (abs(right_y_increment) > (width/10)) {
-    //    xastir_right_y_increment = 0.0;
+    //    astir_right_y_increment = 0.0;
     //}
 
     if (debug_level & 16)
-      fprintf(stderr,"xastir_right_y_increment: %f  %ld  %ld     %f  %d  %d  %d  %d\n",
-              xastir_right_y_increment,
+      fprintf(stderr,"astir_right_y_increment: %f  %ld  %ld     %f  %d  %d  %d  %d\n",
+              astir_right_y_increment,
               SE_y_bounding_wgs84,
               NE_y_bounding_wgs84,
               right_y_increment,
@@ -2316,8 +2316,8 @@ void draw_geotiff_image_map (char *dir,
   }
   else
   {
-    // Xastir coordinates
-    xastir_right_y_increment = 0;
+    // Astir coordinates
+    astir_right_y_increment = 0;
 
     // Pixel coordinates
     right_y_increment = 0;
@@ -2326,10 +2326,10 @@ void draw_geotiff_image_map (char *dir,
 
   if (debug_level & 16)
   {
-    fprintf(stderr," Left x increments: %f %f\n", xastir_left_x_increment, left_x_increment);
-    fprintf(stderr," Left y increments: %f %f\n", xastir_left_y_increment, left_y_increment);
-    fprintf(stderr,"Right x increments: %f %f\n", xastir_right_x_increment, right_x_increment);
-    fprintf(stderr,"Right y increments: %f %f\n", xastir_right_y_increment, right_y_increment);
+    fprintf(stderr," Left x increments: %f %f\n", astir_left_x_increment, left_x_increment);
+    fprintf(stderr," Left y increments: %f %f\n", astir_left_y_increment, left_y_increment);
+    fprintf(stderr,"Right x increments: %f %f\n", astir_right_x_increment, right_x_increment);
+    fprintf(stderr,"Right y increments: %f %f\n", astir_right_y_increment, right_y_increment);
   }
 
 
@@ -2341,8 +2341,8 @@ void draw_geotiff_image_map (char *dir,
   //
   if (NE_x != NW_x)
   {
-    // Xastir coordinates
-    xastir_top_y_increment = (float)
+    // Astir coordinates
+    astir_top_y_increment = (float)
                              (1.0 * labs( (long)NE_y_bounding_wgs84 - (long)NW_y_bounding_wgs84 )   // Need to add one pixel worth here yet
                               / abs(NE_x - NW_x));    // And a "+ 1.0" here?
 
@@ -2352,7 +2352,7 @@ void draw_geotiff_image_map (char *dir,
 
     if (NE_y_bounding_wgs84 < NW_y_bounding_wgs84)
     {
-      xastir_top_y_increment = -xastir_top_y_increment;
+      astir_top_y_increment = -astir_top_y_increment;
     }
 
     if (NE_y < NW_y)
@@ -2361,8 +2361,8 @@ void draw_geotiff_image_map (char *dir,
     }
 
     if (debug_level & 16)
-      fprintf(stderr,"xastir_top_y_increment: %f  %ld  %ld     %f  %d  %d  %d  %d\n",
-              xastir_top_y_increment,
+      fprintf(stderr,"astir_top_y_increment: %f  %ld  %ld     %f  %d  %d  %d  %d\n",
+              astir_top_y_increment,
               NE_y_bounding_wgs84,
               NW_y_bounding_wgs84,
               top_y_increment,
@@ -2373,8 +2373,8 @@ void draw_geotiff_image_map (char *dir,
   }
   else
   {
-    // Xastir coordinates
-    xastir_top_y_increment = 0;
+    // Astir coordinates
+    astir_top_y_increment = 0;
 
     // Pixel coordinates
     top_y_increment = 0;
@@ -2389,8 +2389,8 @@ void draw_geotiff_image_map (char *dir,
   //
   if (SE_x != SW_x)
   {
-    // Xastir coordinates
-    xastir_bottom_y_increment = (float)
+    // Astir coordinates
+    astir_bottom_y_increment = (float)
                                 (1.0 * labs( (long)SE_y_bounding_wgs84 - (long)SW_y_bounding_wgs84 )   // Need to add one pixel worth here yet
                                  / abs(SE_x - SW_x));    // And a "+ 1.0" here?
 
@@ -2400,7 +2400,7 @@ void draw_geotiff_image_map (char *dir,
 
     if (SE_y_bounding_wgs84 < SW_y_bounding_wgs84)
     {
-      xastir_bottom_y_increment = -xastir_bottom_y_increment;
+      astir_bottom_y_increment = -astir_bottom_y_increment;
     }
 
     if (SE_y < SW_y)
@@ -2409,8 +2409,8 @@ void draw_geotiff_image_map (char *dir,
     }
 
     if (debug_level & 16)
-      fprintf(stderr,"xastir_bottom_y_increment: %f  %ld  %ld     %f  %d  %d  %d  %d\n",
-              xastir_bottom_y_increment,
+      fprintf(stderr,"astir_bottom_y_increment: %f  %ld  %ld     %f  %d  %d  %d  %d\n",
+              astir_bottom_y_increment,
               SE_y_bounding_wgs84,
               SW_y_bounding_wgs84,
               bottom_y_increment,
@@ -2421,8 +2421,8 @@ void draw_geotiff_image_map (char *dir,
   }
   else
   {
-    // Xastir coordinates
-    xastir_bottom_y_increment = 0;
+    // Astir coordinates
+    astir_bottom_y_increment = 0;
 
     // Pixel coordinates
     bottom_y_increment = 0;
@@ -2430,11 +2430,11 @@ void draw_geotiff_image_map (char *dir,
 
 
   // Find the average change in Y as we traverse from left to right one pixel
-  //    xastir_avg_y_increment = (float)(xastir_top_y_increment + xastir_bottom_y_increment) / 2.0;
+  //    astir_avg_y_increment = (float)(astir_top_y_increment + astir_bottom_y_increment) / 2.0;
   avg_y_increment = (float)(top_y_increment + bottom_y_increment) / 2.0;
 
 
-  // Find edges of current viewport in Xastir coordinates
+  // Find edges of current viewport in Astir coordinates
   //
   view_min_x = NW_corner_longitude;  // left edge of view
   if (view_min_x > 129600000l)
@@ -2522,7 +2522,7 @@ void draw_geotiff_image_map (char *dir,
     }
     else
     {
-      coef=100*60*60;  // xastir coords are in 1/100 of a second,
+      coef=100*60*60;  // astir coords are in 1/100 of a second,
       // and lat/lon pixel scales will be in degrees
     }
     SkipRows = (int)( ( scale_y / ( *PixelScale * coef ) ) + 0.5 );
@@ -2562,17 +2562,17 @@ void draw_geotiff_image_map (char *dir,
   NW_line_offset = (int)(NW_y - top_crop);
   NE_line_offset = (int)(NE_y - top_crop);
 
-  NW_xastir_x_offset =  (int)(xastir_left_x_increment * NW_line_offset);
-  NE_xastir_x_offset = (int)(xastir_right_x_increment * NE_line_offset);
-  NW_xastir_y_offset =  (int)(xastir_left_y_increment * NW_line_offset);
+  NW_astir_x_offset =  (int)(astir_left_x_increment * NW_line_offset);
+  NE_astir_x_offset = (int)(astir_right_x_increment * NE_line_offset);
+  NW_astir_y_offset =  (int)(astir_left_y_increment * NW_line_offset);
 
   NW_x_offset =  (int)(1.0 * left_x_increment * NW_line_offset);
   NE_x_offset = (int)(1.0 * right_x_increment * NE_line_offset);
-  xastir_avg_left_right_y_increment = (float)((xastir_right_y_increment + xastir_left_y_increment) / 2.0);
-  total_avg_y_increment = (float)(xastir_avg_left_right_y_increment * avg_y_increment);
+  astir_avg_left_right_y_increment = (float)((astir_right_y_increment + astir_left_y_increment) / 2.0);
+  total_avg_y_increment = (float)(astir_avg_left_right_y_increment * avg_y_increment);
 
 
-  // (Xastir bottom - Xastir top) / height
+  // (Astir bottom - Astir top) / height
   //steph = (double)( (left_y_increment + right_y_increment) / 2);
   // NOTE:  This one does not take into account current height
   steph = (float)( (SW_y_bounding_wgs84 - NW_y_bounding_wgs84)
@@ -2649,26 +2649,26 @@ void draw_geotiff_image_map (char *dir,
     //fprintf(stderr,"row_offset: %d\n", row_offset);
 
 
-    // Compute the line end-points in Xastir coordinates
+    // Compute the line end-points in Astir coordinates
     // Initially was a problem here:  Offsetting from NW_x_bounding but
     // starting at top_crop line.  Fixed by last term added to two
     // equations below.
 
-    current_xastir_left = (unsigned long)
+    current_astir_left = (unsigned long)
                           ( NW_x_bounding_wgs84
-                            + ( 1.0 * xastir_left_x_increment * row_offset )
-                            -   NW_xastir_x_offset );
+                            + ( 1.0 * astir_left_x_increment * row_offset )
+                            -   NW_astir_x_offset );
 
-    current_xastir_right = (unsigned long)
+    current_astir_right = (unsigned long)
                            ( NE_x_bounding_wgs84
-                             + ( 1.0 * xastir_right_x_increment * row_offset )
-                             -   NE_xastir_x_offset );
+                             + ( 1.0 * astir_right_x_increment * row_offset )
+                             -   NE_astir_x_offset );
 
 
     //if (debug_level & 16)
     //  fprintf(stderr,"Left: %ld  Right:  %ld\n",
-    //      current_xastir_left,
-    //      current_xastir_right);
+    //      current_astir_left,
+    //      current_astir_right);
 
 
     // In pixel coordinates:
@@ -2701,12 +2701,12 @@ void draw_geotiff_image_map (char *dir,
     //         current_right, current_line_width);
 
 
-    // Compute original pixel size in Xastir coordinates.  Note
+    // Compute original pixel size in Astir coordinates.  Note
     // that this can change for each scanline in a USGS geoTIFF.
 
-    // (Xastir right - Xastir left) / width-of-line
+    // (Astir right - Astir left) / width-of-line
     // Need the "1.0 *" or the math will be incorrect (won't be a float)
-    stepw = (float)( (current_xastir_right - current_xastir_left)
+    stepw = (float)( (current_astir_right - current_astir_left)
                      / (1.0 * (current_right - current_left) ) );
 
 
@@ -2718,11 +2718,11 @@ void draw_geotiff_image_map (char *dir,
     stepwc = (int)( ( (1.0 * stepw / scale_x) + 1.0) + 0.5);
 
 
-    // In Xastir coordinates
-    xastir_current_y = (unsigned long)(NW_y_bounding_wgs84
-                                       + (xastir_left_y_increment * row_offset) );
+    // In Astir coordinates
+    astir_current_y = (unsigned long)(NW_y_bounding_wgs84
+                                       + (astir_left_y_increment * row_offset) );
 
-    xastir_current_y = (unsigned long)(xastir_current_y - NW_xastir_y_offset);
+    astir_current_y = (unsigned long)(astir_current_y - NW_astir_y_offset);
 
 
     view_left_minus_pixel_width = view_min_x - stepw;
@@ -2733,14 +2733,14 @@ void draw_geotiff_image_map (char *dir,
     // across the pixels.  If not, skip this line altogether.
 
     // Compute right edge of image
-    xastir_total_y = (unsigned long)
-                     ( xastir_current_y
+    astir_total_y = (unsigned long)
+                     ( astir_current_y
                        - ( total_avg_y_increment * (current_right - current_left) ) );
 
     // Check left edge y-value then right edge y-value.
     // If either are within view, process the line, else skip it.
-    if ( ( ( xastir_current_y <= view_max_y) && (xastir_total_y >= view_top_minus_pixel_height) )
-         || ( ( xastir_total_y <= view_max_y ) && ( xastir_total_y >= view_top_minus_pixel_height ) ) )
+    if ( ( ( astir_current_y <= view_max_y) && (astir_total_y >= view_top_minus_pixel_height) )
+         || ( ( astir_total_y <= view_max_y ) && ( astir_total_y >= view_top_minus_pixel_height ) ) )
     {
       // Read one geoTIFF scanline
       if (TIFFReadScanline(tif, imageMemory, row, 0) < 0)
@@ -2762,17 +2762,17 @@ void draw_geotiff_image_map (char *dir,
         //fprintf(stderr,"Column Offset: %ld\n", column_offset);  // Pixels
         //fprintf(stderr,"Current Left: %ld\n", current_left);    // Pixels
 
-        xastir_current_x = (unsigned long)
-                           current_xastir_left
-                           + (stepw * column_offset);    // In Xastir coordinates
+        astir_current_x = (unsigned long)
+                           current_astir_left
+                           + (stepw * column_offset);    // In Astir coordinates
 
         // Left line y value minus
         // avg y-increment per scanline * avg y-increment per x-pixel * column_offset
-        xastir_total_y = (unsigned long)
-                         ( xastir_current_y
+        astir_total_y = (unsigned long)
+                         ( astir_current_y
                            - ( total_avg_y_increment * column_offset ) );
 
-        //fprintf(stderr,"Xastir current: %ld %ld\n", xastir_current_x, xastir_current_y);
+        //fprintf(stderr,"Astir current: %ld %ld\n", astir_current_x, astir_current_y);
 
 
         // Check whether pixel fits within boundary lines (USGS maps)
@@ -2780,8 +2780,8 @@ void draw_geotiff_image_map (char *dir,
         // the top and bottom of the image.
         if (have_fgd)   // USGS map
         {
-          if (   (xastir_total_y > SW_y_bounding_wgs84)
-                 || (xastir_total_y < NW_y_bounding_wgs84) )
+          if (   (astir_total_y > SW_y_bounding_wgs84)
+                 || (astir_total_y < NW_y_bounding_wgs84) )
           {
             skip++;
           }
@@ -2792,10 +2792,10 @@ void draw_geotiff_image_map (char *dir,
           // pixels to white (changes map border to less obtrusive color).
           if ( *(imageMemory + column) == 0x00 )  // If pixel is Black
           {
-            if ( (xastir_total_y > (SW_y_bounding_wgs84 - 25) )
-                 || (xastir_total_y < (NW_y_bounding_wgs84 + 25) )
-                 || (xastir_current_x < (SW_x_bounding_wgs84 + 25) )
-                 || (xastir_current_x > (SE_x_bounding_wgs84 - 25) ) )
+            if ( (astir_total_y > (SW_y_bounding_wgs84 - 25) )
+                 || (astir_total_y < (NW_y_bounding_wgs84 + 25) )
+                 || (astir_current_x < (SW_x_bounding_wgs84 + 25) )
+                 || (astir_current_x > (SE_x_bounding_wgs84 - 25) ) )
             {
               //WE7U: column is unsigned so "column >= 0" is always true
               //                            if ((int)column < bytesPerRow && column >= 0) {
@@ -2816,12 +2816,12 @@ void draw_geotiff_image_map (char *dir,
 
         /* Look for left or right map boundaries inside view */
         if ( !skip
-             && ( xastir_current_x <= view_max_x )
-             && ( xastir_current_x >= view_left_minus_pixel_width )
-             && ( xastir_total_y <= view_max_y )
-             && ( xastir_total_y >= view_top_minus_pixel_height ) )
+             && ( astir_current_x <= view_max_x )
+             && ( astir_current_x >= view_left_minus_pixel_width )
+             && ( astir_total_y <= view_max_y )
+             && ( astir_total_y >= view_top_minus_pixel_height ) )
         {
-          // Here are the corners of our viewport, using the Xastir
+          // Here are the corners of our viewport, using the Astir
           // coordinate system.  Notice that Y is upside down:
           //
           // left edge of view = NW_corner_longitude
@@ -2831,8 +2831,8 @@ void draw_geotiff_image_map (char *dir,
 
 
           // Compute the screen position of the pixel and scale it
-          sxx = (xastir_current_x - NW_corner_longitude) / scale_x;
-          syy = (xastir_total_y   - NW_corner_latitude ) / scale_y;
+          sxx = (astir_current_x - NW_corner_longitude) / scale_x;
+          syy = (astir_total_y   - NW_corner_latitude ) / scale_y;
 
 
 

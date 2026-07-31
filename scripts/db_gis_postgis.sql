@@ -1,27 +1,27 @@
 -- POSTGRES/POSTGIS
 
-create database xastir;
+create database astir;
 
 --set the password and uncomment
---create user xastir_user with encrypted password '<password>';
+--create user astir_user with encrypted password '<password>';
 
 -- edit pg_hba.conf to allow access from local host
---local xastir xastir_user md5
---host xastir xastir_user 127.0.0.1/32 md5
+--local astir astir_user md5
+--host astir astir_user 127.0.0.1/32 md5
 
--- run create lang to add plpgsql to xastir db
---createlang --dbname=xastir plpgsql
--- run lwpostgis script to enable postgis for xastir db
---psql -d xastir -f lwpostgis.sql
+-- run create lang to add plpgsql to astir db
+--createlang --dbname=astir plpgsql
+-- run lwpostgis script to enable postgis for astir db
+--psql -d astir -f lwpostgis.sql
 
 --run the following sql commands in psql
---psql xastir
+--psql astir
 
 create table version (
      version_number int,
      compatable_series int
 );
-grant select on version to xastir_user;
+grant select on version to astir_user;
 
 insert into version (version_number,compatable_series) values (1,1);
 
@@ -54,12 +54,12 @@ INSERT INTO spatial_ref_sys (srid,auth_name,auth_srid,srtext,proj4text) VALUES (
 select AddGeometryColumn('','simpleStation','position',4326,'POINT',2);
 
 
-grant select, insert, update on simpleStation to xastir_user;
-grant select, update on simpleStation_simpleStationId_seq to xastir_user;
--- the next two grants allow xastir_user to be used in other applications
+grant select, insert, update on simpleStation to astir_user;
+grant select, update on simpleStation_simpleStationId_seq to astir_user;
+-- the next two grants allow astir_user to be used in other applications
 -- such as qgis that need access to the spatial metadata tables
-grant select on geometry_columns to xastir_user;
-grant select on spatial_ref_sys to xastir_user;
+grant select on geometry_columns to astir_user;
+grant select on spatial_ref_sys to astir_user;
 
 -- 0 update
 alter table simpleStation add column origin varchar(9) not null default '';

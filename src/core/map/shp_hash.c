@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -51,7 +51,7 @@
 
 #include <rtree/index.h>
 
-#include "core/xastir.h"
+#include "core/astir.h"
 #include "core/globals.h"
 #include "core/util/util.h"
 #include "core/util/hashtable.h"
@@ -165,7 +165,7 @@ void empty_shpinfo(shpinfo *si)
   {
     if (si->root)
     {
-      Xastir_RTreeDestroyNode(si->root);
+      Astir_RTreeDestroyNode(si->root);
       si->root=NULL;
     }
 
@@ -246,9 +246,9 @@ void add_shp_to_hash(char *filename, SHPHandle sHP)
 
   strncpy(temp->filename,filename,filenm_len+1);
   temp->filename[filenm_len]='\0';  // just to be safe
-//    xastir_snprintf(temp->filename,sizeof(shpinfo),"%s",filename);
+//    astir_snprintf(temp->filename,sizeof(shpinfo),"%s",filename);
 
-  temp->root = Xastir_RTreeNewIndex();
+  temp->root = Astir_RTreeNewIndex();
   temp->creation = sec_now();
   temp->last_access = temp->creation;
 
@@ -469,7 +469,7 @@ void build_rtree (struct Node **root, SHPHandle sHP, const char *shp_path)
   SHPGetInfo(sHP, &nEntities, NULL, NULL, NULL);
 
   // Collect every rectangle first, then pack the tree in one pass.  Repeated
-  // Xastir_RTreeInsertRect() was 92% of index construction (3990 ms of 4343 ms
+  // Astir_RTreeInsertRect() was 92% of index construction (3990 ms of 4343 ms
   // for 333,890 shapes); STR packing avoids the per-insert descent, node splits
   // and allocation.
   if (nEntities > 0)
@@ -564,7 +564,7 @@ void build_rtree (struct Node **root, SHPHandle sHP, const char *shp_path)
 
     {
       // Only insert the rect if it will not fail the assertion in
-      // Xastir_RTreeInsertRect --- this will cause us to ignore any shapes that
+      // Astir_RTreeInsertRect --- this will cause us to ignore any shapes that
       // have invalid bboxes (or that return invalid bboxes from shapelib
       // for whatever reason
       if (bbox_shape.boundary[0] <= bbox_shape.boundary[2] &&
@@ -576,9 +576,9 @@ void build_rtree (struct Node **root, SHPHandle sHP, const char *shp_path)
           bulk_ids[bulk_n]   = (void *)(i+1);
           bulk_n++;
         }
-        else if (!getenv("XASTIR_RTREE_NOINSERT"))
+        else if (!getenv("ASTIR_RTREE_NOINSERT"))
         {
-          Xastir_RTreeInsertRect(&bbox_shape, (void *)(i+1), root, 0);
+          Astir_RTreeInsertRect(&bbox_shape, (void *)(i+1), root, 0);
         }
       }
     }
@@ -592,9 +592,9 @@ void build_rtree (struct Node **root, SHPHandle sHP, const char *shp_path)
 
   if (bulk_rects != NULL)
   {
-    if (!getenv("XASTIR_RTREE_NOINSERT"))
+    if (!getenv("ASTIR_RTREE_NOINSERT"))
     {
-      struct Node *packed = Xastir_RTreeBulkLoad(bulk_rects, bulk_ids, bulk_n);
+      struct Node *packed = Astir_RTreeBulkLoad(bulk_rects, bulk_ids, bulk_n);
 
       if (packed != NULL)
       {
@@ -602,7 +602,7 @@ void build_rtree (struct Node **root, SHPHandle sHP, const char *shp_path)
         // inserted into it on this path, so freeing the single node is enough.
         if (*root != NULL)
         {
-          Xastir_RTreeFreeNode(*root);
+          Astir_RTreeFreeNode(*root);
         }
         *root = packed;
       }
@@ -612,7 +612,7 @@ void build_rtree (struct Node **root, SHPHandle sHP, const char *shp_path)
         int k;
         for (k = 0; k < bulk_n; k++)
         {
-          Xastir_RTreeInsertRect(&bulk_rects[k], bulk_ids[k], root, 0);
+          Astir_RTreeInsertRect(&bulk_rects[k], bulk_ids[k], root, 0);
         }
       }
     }

@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 2025-2026 The Xastir Group
  *
  * This program is free software; you can redistribute it and/or
@@ -44,7 +44,7 @@ extern void load_wx_alerts_from_log_working_sub(time_t time_now, char *filename)
 
 static void test_path(char *buf, size_t buf_size, const char *suffix)
 {
-  snprintf(buf, buf_size, "/tmp/xastir_test_wxalert_%d_%s.log",
+  snprintf(buf, buf_size, "/tmp/astir_test_wxalert_%d_%s.log",
            (int)getpid(), suffix);
 }
 

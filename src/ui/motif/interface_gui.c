@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -33,8 +33,8 @@
 #include <termios.h>
 #include <Xm/XmAll.h>
 
-#include "core/xastir.h"
-#include "ui/motif/xastir_gui.h"
+#include "core/astir.h"
+#include "ui/motif/astir_gui.h"
 #include "ui/motif/wx_gui.h"
 #include "ui/motif/main_gui.h"
 #include "ui/motif/draw_symbols_gui.h"
@@ -71,7 +71,7 @@ Widget control_interface_dialog = NULL;
 Widget control_iface_list = NULL;
 
 
-static xastir_mutex control_interface_dialog_lock;
+static astir_mutex control_interface_dialog_lock;
 
 // devices[] and devices_lock now live in interface.c.  They are the interface
 // configuration table -- five core objects read it (db, gps, igate, interface,
@@ -350,7 +350,7 @@ void Config_TNC_change_data(Widget widget, XtPointer clientData, XtPointer callD
   begin_critical_section(&devices_lock, "interface_gui.c:Config_TNC_change_data" );
 
   temp_ptr = XmTextFieldGetString(TNC_device_name_data);
-  xastir_snprintf(devices[TNC_port].device_name,
+  astir_snprintf(devices[TNC_port].device_name,
                   sizeof(devices[TNC_port].device_name),
                   "%s",
                   temp_ptr);
@@ -359,7 +359,7 @@ void Config_TNC_change_data(Widget widget, XtPointer clientData, XtPointer callD
   (void)remove_trailing_spaces(devices[TNC_port].device_name);
 
   temp_ptr = XmTextFieldGetString(TNC_converse_string);
-  xastir_snprintf(devices[TNC_port].device_converse_string,
+  astir_snprintf(devices[TNC_port].device_converse_string,
                   sizeof(devices[TNC_port].device_converse_string),
                   "%s",
                   temp_ptr);
@@ -368,7 +368,7 @@ void Config_TNC_change_data(Widget widget, XtPointer clientData, XtPointer callD
   (void)remove_trailing_spaces(devices[TNC_port].device_converse_string);
 
   temp_ptr = XmTextFieldGetString(TNC_comment);
-  xastir_snprintf(devices[TNC_port].comment,
+  astir_snprintf(devices[TNC_port].comment,
                   sizeof(devices[TNC_port].comment),
                   "%s",
                   temp_ptr);
@@ -381,7 +381,7 @@ void Config_TNC_change_data(Widget widget, XtPointer clientData, XtPointer callD
 
     // If MKISS, fetch "radio_port".  If empty, store a zero.
     temp_ptr = XmTextFieldGetString(TNC_radio_port_data);
-    xastir_snprintf(devices[TNC_port].radio_port,
+    astir_snprintf(devices[TNC_port].radio_port,
                     sizeof(devices[TNC_port].radio_port),
                     "%s",
                     temp_ptr);
@@ -391,7 +391,7 @@ void Config_TNC_change_data(Widget widget, XtPointer clientData, XtPointer callD
 
     if (strcmp(devices[TNC_port].radio_port,"") == 0)
     {
-      xastir_snprintf(devices[TNC_port].radio_port,
+      astir_snprintf(devices[TNC_port].radio_port,
                       sizeof(devices[TNC_port].radio_port),
                       "0");
     }
@@ -507,7 +507,7 @@ void Config_TNC_change_data(Widget widget, XtPointer clientData, XtPointer callD
   devices[TNC_port].igate_options=device_igate_options;
 
   temp_ptr = XmTextFieldGetString(TNC_unproto1_data);
-  xastir_snprintf(devices[TNC_port].unproto1,
+  astir_snprintf(devices[TNC_port].unproto1,
                   sizeof(devices[TNC_port].unproto1),
                   "%s",
                   temp_ptr);
@@ -522,7 +522,7 @@ void Config_TNC_change_data(Widget widget, XtPointer clientData, XtPointer callD
   }
 
   temp_ptr = XmTextFieldGetString(TNC_unproto2_data);
-  xastir_snprintf(devices[TNC_port].unproto2,
+  astir_snprintf(devices[TNC_port].unproto2,
                   sizeof(devices[TNC_port].unproto2),
                   "%s",
                   temp_ptr);
@@ -537,7 +537,7 @@ void Config_TNC_change_data(Widget widget, XtPointer clientData, XtPointer callD
   }
 
   temp_ptr = XmTextFieldGetString(TNC_unproto3_data);
-  xastir_snprintf(devices[TNC_port].unproto3,
+  astir_snprintf(devices[TNC_port].unproto3,
                   sizeof(devices[TNC_port].unproto3),
                   "%s",
                   temp_ptr);
@@ -552,7 +552,7 @@ void Config_TNC_change_data(Widget widget, XtPointer clientData, XtPointer callD
   }
 
   temp_ptr = XmTextFieldGetString(TNC_igate_data);
-  xastir_snprintf(devices[TNC_port].unproto_igate,
+  astir_snprintf(devices[TNC_port].unproto_igate,
                   sizeof(devices[TNC_port].unproto_igate),
                   "%s",
                   temp_ptr);
@@ -581,7 +581,7 @@ void Config_TNC_change_data(Widget widget, XtPointer clientData, XtPointer callD
 
 //WE7U:  Modify for MKISS:  Must send to the proper Radio Port.
     temp_ptr = XmTextFieldGetString(TNC_txdelay);
-    xastir_snprintf(devices[TNC_port].txdelay,
+    astir_snprintf(devices[TNC_port].txdelay,
                     sizeof(devices[TNC_port].txdelay),
                     "%s",
                     temp_ptr);
@@ -590,7 +590,7 @@ void Config_TNC_change_data(Widget widget, XtPointer clientData, XtPointer callD
     send_kiss_config(TNC_port,0,0x01,atoi(devices[TNC_port].txdelay));
 
     temp_ptr = XmTextFieldGetString(TNC_persistence);
-    xastir_snprintf(devices[TNC_port].persistence,
+    astir_snprintf(devices[TNC_port].persistence,
                     sizeof(devices[TNC_port].persistence),
                     "%s",
                     temp_ptr);
@@ -599,7 +599,7 @@ void Config_TNC_change_data(Widget widget, XtPointer clientData, XtPointer callD
     send_kiss_config(TNC_port,0,0x02,atoi(devices[TNC_port].persistence));
 
     temp_ptr = XmTextFieldGetString(TNC_slottime);
-    xastir_snprintf(devices[TNC_port].slottime,
+    astir_snprintf(devices[TNC_port].slottime,
                     sizeof(devices[TNC_port].slottime),
                     "%s",
                     temp_ptr);
@@ -608,7 +608,7 @@ void Config_TNC_change_data(Widget widget, XtPointer clientData, XtPointer callD
     send_kiss_config(TNC_port,0,0x03,atoi(devices[TNC_port].slottime));
 
     temp_ptr = XmTextFieldGetString(TNC_txtail);
-    xastir_snprintf(devices[TNC_port].txtail,
+    astir_snprintf(devices[TNC_port].txtail,
                     sizeof(devices[TNC_port].txtail),
                     "%s",
                     temp_ptr);
@@ -639,7 +639,7 @@ void Config_TNC_change_data(Widget widget, XtPointer clientData, XtPointer callD
   else
   {
     temp_ptr = XmTextFieldGetString(TNC_up_file_data);
-    xastir_snprintf(devices[TNC_port].tnc_up_file,
+    astir_snprintf(devices[TNC_port].tnc_up_file,
                     sizeof(devices[TNC_port].tnc_up_file),
                     "%s",
                     temp_ptr);
@@ -648,7 +648,7 @@ void Config_TNC_change_data(Widget widget, XtPointer clientData, XtPointer callD
     (void)remove_trailing_spaces(devices[TNC_port].tnc_up_file);
 
     temp_ptr = XmTextFieldGetString(TNC_down_file_data);
-    xastir_snprintf(devices[TNC_port].tnc_down_file,
+    astir_snprintf(devices[TNC_port].tnc_down_file,
                     sizeof(devices[TNC_port].tnc_down_file),
                     "%s",
                     temp_ptr);
@@ -1268,7 +1268,7 @@ void Config_TNC( Widget UNUSED(w), int device_type, int config_type, int port)
                                     XmNfontList, fontlist1,
                                     NULL);
 
-    xastir_snprintf(temp, sizeof(temp), langcode("WPUPCFT012"), VERSIONFRM);
+    astir_snprintf(temp, sizeof(temp), langcode("WPUPCFT012"), VERSIONFRM);
 
     proto1 = XtVaCreateManagedWidget(temp, xmLabelWidgetClass, form,
                                      XmNorientation, XmHORIZONTAL,
@@ -1305,7 +1305,7 @@ void Config_TNC( Widget UNUSED(w), int device_type, int config_type, int port)
                         XmNfontList, fontlist1,
                         NULL);
 
-    xastir_snprintf(temp, sizeof(temp), langcode("WPUPCFT013"), VERSIONFRM);
+    astir_snprintf(temp, sizeof(temp), langcode("WPUPCFT013"), VERSIONFRM);
 
     proto2 = XtVaCreateManagedWidget(temp, xmLabelWidgetClass, form,
                                      XmNorientation, XmHORIZONTAL,
@@ -1344,7 +1344,7 @@ void Config_TNC( Widget UNUSED(w), int device_type, int config_type, int port)
                         XmNfontList, fontlist1,
                         NULL);
 
-    xastir_snprintf(temp, sizeof(temp), langcode("WPUPCFT014"), VERSIONFRM);
+    astir_snprintf(temp, sizeof(temp), langcode("WPUPCFT014"), VERSIONFRM);
 
     proto3 = XtVaCreateManagedWidget(temp, xmLabelWidgetClass, form,
                                      XmNorientation, XmHORIZONTAL,
@@ -1381,7 +1381,7 @@ void Config_TNC( Widget UNUSED(w), int device_type, int config_type, int port)
                         XmNfontList, fontlist1,
                         NULL);
 
-    xastir_snprintf(temp, sizeof(temp), "%s", langcode("IGPUPCF004"));
+    astir_snprintf(temp, sizeof(temp), "%s", langcode("IGPUPCF004"));
     igate_label = XtVaCreateManagedWidget(temp, xmLabelWidgetClass, form,
                                           XmNorientation, XmHORIZONTAL,
                                           XmNtopAttachment,XmATTACH_WIDGET,
@@ -2197,7 +2197,7 @@ void Config_GPS_change_data(Widget widget, XtPointer clientData, XtPointer callD
   begin_critical_section(&devices_lock, "interface_gui.c:Config_GPS_change_data" );
 
   temp_ptr = XmTextFieldGetString(GPS_device_name_data);
-  xastir_snprintf(devices[GPS_port].device_name,
+  astir_snprintf(devices[GPS_port].device_name,
                   sizeof(devices[GPS_port].device_name),
                   "%s",
                   temp_ptr);
@@ -2206,7 +2206,7 @@ void Config_GPS_change_data(Widget widget, XtPointer clientData, XtPointer callD
   (void)remove_trailing_spaces(devices[GPS_port].device_name);
 
   temp_ptr = XmTextFieldGetString(GPS_comment);
-  xastir_snprintf(devices[GPS_port].comment,
+  astir_snprintf(devices[GPS_port].comment,
                   sizeof(devices[GPS_port].comment),
                   "%s",
                   temp_ptr);
@@ -2818,7 +2818,7 @@ void Config_WX_change_data(Widget widget, XtPointer clientData, XtPointer callDa
   begin_critical_section(&devices_lock, "interface_gui.c:Config_WX_change_data" );
 
   temp_ptr = XmTextFieldGetString(WX_device_name_data);
-  xastir_snprintf(devices[WX_port].device_name,
+  astir_snprintf(devices[WX_port].device_name,
                   sizeof(devices[WX_port].device_name),
                   "%s",
                   temp_ptr);
@@ -2827,7 +2827,7 @@ void Config_WX_change_data(Widget widget, XtPointer clientData, XtPointer callDa
   (void)remove_trailing_spaces(devices[WX_port].device_name);
 
   temp_ptr = XmTextFieldGetString(WX_comment);
-  xastir_snprintf(devices[WX_port].comment,
+  astir_snprintf(devices[WX_port].comment,
                   sizeof(devices[WX_port].comment),
                   "%s",
                   temp_ptr);
@@ -2847,7 +2847,7 @@ void Config_WX_change_data(Widget widget, XtPointer clientData, XtPointer callDa
   set_port_speed(WX_port);
   devices[WX_port].style=device_style;
 
-  xastir_snprintf(devices[WX_port].device_host_pswd,
+  astir_snprintf(devices[WX_port].device_host_pswd,
                   sizeof( devices[WX_port].device_host_pswd), "%d", device_data_type);
 
   /* reopen */
@@ -3548,7 +3548,7 @@ void Config_NWX_change_data(Widget widget, XtPointer clientData, XtPointer callD
   begin_critical_section(&devices_lock, "interface_gui.c:Config_NWX_change_data" );
 
   temp_ptr = XmTextFieldGetString(NWX_host_name_data);
-  xastir_snprintf(devices[NWX_port].device_host_name,
+  astir_snprintf(devices[NWX_port].device_host_name,
                   sizeof(devices[NWX_port].device_host_name),
                   "%s",
                   temp_ptr);
@@ -3561,7 +3561,7 @@ void Config_NWX_change_data(Widget widget, XtPointer clientData, XtPointer callD
   XtFree(temp_ptr);
 
   temp_ptr = XmTextFieldGetString(NWX_comment);
-  xastir_snprintf(devices[NWX_port].comment,
+  astir_snprintf(devices[NWX_port].comment,
                   sizeof(devices[NWX_port].comment),
                   "%s",
                   temp_ptr);
@@ -3587,7 +3587,7 @@ void Config_NWX_change_data(Widget widget, XtPointer clientData, XtPointer callD
     devices[NWX_port].reconnect=0;
   }
 
-  xastir_snprintf(devices[NWX_port].device_host_pswd,
+  astir_snprintf(devices[NWX_port].device_host_pswd,
                   sizeof(devices[NWX_port].device_host_pswd), "%d", device_data_type);
 
   /* reopen if was up*/
@@ -3978,7 +3978,7 @@ void Config_NWX( Widget UNUSED(w), int config_type, int port)
       /* reconfig */
 
       XmTextFieldSetString(NWX_host_name_data,devices[NWX_port].device_host_name);
-      xastir_snprintf(temp, sizeof(temp), "%d", devices[NWX_port].sp); /* port number */
+      astir_snprintf(temp, sizeof(temp), "%d", devices[NWX_port].sp); /* port number */
       XmTextFieldSetString(NWX_host_port_data,temp);
 
       XmTextFieldSetString(NWX_comment,devices[NWX_port].comment);
@@ -4123,7 +4123,7 @@ void Config_NGPS_change_data(Widget widget, XtPointer clientData, XtPointer call
   begin_critical_section(&devices_lock, "interface_gui.c:Config_NGPS_change_data" );
 
   temp_ptr = XmTextFieldGetString(NGPS_host_name_data);
-  xastir_snprintf(devices[NGPS_port].device_host_name,
+  astir_snprintf(devices[NGPS_port].device_host_name,
                   sizeof(devices[NGPS_port].device_host_name),
                   "%s",
                   temp_ptr);
@@ -4136,7 +4136,7 @@ void Config_NGPS_change_data(Widget widget, XtPointer clientData, XtPointer call
   XtFree(temp_ptr);
 
   temp_ptr = XmTextFieldGetString(NGPS_comment);
-  xastir_snprintf(devices[NGPS_port].comment,
+  astir_snprintf(devices[NGPS_port].comment,
                   sizeof(devices[NGPS_port].comment),
                   "%s",
                   temp_ptr);
@@ -4470,7 +4470,7 @@ void Config_NGPS( Widget UNUSED(w), int config_type, int port)
       begin_critical_section(&devices_lock, "interface_gui.c:Config_NGPS" );
 
       XmTextFieldSetString(NGPS_host_name_data,devices[NGPS_port].device_host_name);
-      xastir_snprintf(temp, sizeof(temp), "%d", devices[NGPS_port].sp); /* port number */
+      astir_snprintf(temp, sizeof(temp), "%d", devices[NGPS_port].sp); /* port number */
       XmTextFieldSetString(NGPS_host_port_data,temp);
       XmTextFieldSetString(NGPS_comment,devices[NGPS_port].comment);
 
@@ -4580,7 +4580,7 @@ void Config_AX25_change_data(Widget widget, XtPointer clientData, XtPointer call
   begin_critical_section(&devices_lock, "interface_gui.c:Config_AX25_change_data" );
 
   temp_ptr = XmTextFieldGetString(AX25_device_name_data);
-  xastir_snprintf(devices[AX25_port].device_name,
+  astir_snprintf(devices[AX25_port].device_name,
                   sizeof(devices[AX25_port].device_name),
                   "%s",
                   temp_ptr);
@@ -4589,7 +4589,7 @@ void Config_AX25_change_data(Widget widget, XtPointer clientData, XtPointer call
   (void)remove_trailing_spaces(devices[AX25_port].device_name);
 
   temp_ptr = XmTextFieldGetString(AX25_comment);
-  xastir_snprintf(devices[AX25_port].comment,
+  astir_snprintf(devices[AX25_port].comment,
                   sizeof(devices[AX25_port].comment),
                   "%s",
                   temp_ptr);
@@ -4629,7 +4629,7 @@ void Config_AX25_change_data(Widget widget, XtPointer clientData, XtPointer call
   devices[AX25_port].igate_options=device_igate_options;
 
   temp_ptr = XmTextFieldGetString(AX25_unproto1_data);
-  xastir_snprintf(devices[AX25_port].unproto1,
+  astir_snprintf(devices[AX25_port].unproto1,
                   sizeof(devices[AX25_port].unproto1),
                   "%s",
                   temp_ptr);
@@ -4644,7 +4644,7 @@ void Config_AX25_change_data(Widget widget, XtPointer clientData, XtPointer call
   }
 
   temp_ptr = XmTextFieldGetString(AX25_unproto2_data);
-  xastir_snprintf(devices[AX25_port].unproto2,
+  astir_snprintf(devices[AX25_port].unproto2,
                   sizeof(devices[AX25_port].unproto2),
                   "%s",
                   temp_ptr);
@@ -4659,7 +4659,7 @@ void Config_AX25_change_data(Widget widget, XtPointer clientData, XtPointer call
   }
 
   temp_ptr = XmTextFieldGetString(AX25_unproto3_data);
-  xastir_snprintf(devices[AX25_port].unproto3,
+  astir_snprintf(devices[AX25_port].unproto3,
                   sizeof(devices[AX25_port].unproto3),
                   "%s",
                   temp_ptr);
@@ -4674,7 +4674,7 @@ void Config_AX25_change_data(Widget widget, XtPointer clientData, XtPointer call
   }
 
   temp_ptr = XmTextFieldGetString(AX25_igate_data);
-  xastir_snprintf(devices[AX25_port].unproto_igate,
+  astir_snprintf(devices[AX25_port].unproto_igate,
                   sizeof(devices[AX25_port].unproto_igate),
                   "%s",
                   temp_ptr);
@@ -4955,7 +4955,7 @@ void Config_AX25( Widget UNUSED(w), int config_type, int port)
                                     XmNfontList, fontlist1,
                                     NULL);
 
-    xastir_snprintf(temp, sizeof(temp), langcode("WPUPCFT012"), VERSIONFRM);
+    astir_snprintf(temp, sizeof(temp), langcode("WPUPCFT012"), VERSIONFRM);
 
     proto1 = XtVaCreateManagedWidget(temp, xmLabelWidgetClass, form,
                                      XmNorientation, XmHORIZONTAL,
@@ -4992,7 +4992,7 @@ void Config_AX25( Widget UNUSED(w), int config_type, int port)
                          XmNfontList, fontlist1,
                          NULL);
 
-    xastir_snprintf(temp, sizeof(temp), langcode("WPUPCFT013"), VERSIONFRM);
+    astir_snprintf(temp, sizeof(temp), langcode("WPUPCFT013"), VERSIONFRM);
 
     proto2 = XtVaCreateManagedWidget(temp, xmLabelWidgetClass, form,
                                      XmNorientation, XmHORIZONTAL,
@@ -5029,7 +5029,7 @@ void Config_AX25( Widget UNUSED(w), int config_type, int port)
                          XmNfontList, fontlist1,
                          NULL);
 
-    xastir_snprintf(temp, sizeof(temp), langcode("WPUPCFT014"), VERSIONFRM);
+    astir_snprintf(temp, sizeof(temp), langcode("WPUPCFT014"), VERSIONFRM);
 
     proto3 = XtVaCreateManagedWidget(temp, xmLabelWidgetClass, form,
                                      XmNorientation, XmHORIZONTAL,
@@ -5066,7 +5066,7 @@ void Config_AX25( Widget UNUSED(w), int config_type, int port)
                          XmNfontList, fontlist1,
                          NULL);
 
-    xastir_snprintf(temp, sizeof(temp), "%s", langcode("IGPUPCF004"));
+    astir_snprintf(temp, sizeof(temp), "%s", langcode("IGPUPCF004"));
     igate_label = XtVaCreateManagedWidget(temp, xmLabelWidgetClass, form,
                                           XmNorientation, XmHORIZONTAL,
                                           XmNtopAttachment,XmATTACH_WIDGET,
@@ -5319,7 +5319,7 @@ void Inet_change_data(Widget widget, XtPointer clientData, XtPointer callData)
   begin_critical_section(&devices_lock, "interface_gui.c:Inet_change_data" );
 
   temp_ptr = XmTextFieldGetString(Inet_host_data);
-  xastir_snprintf(devices[Inet_port].device_host_name,
+  astir_snprintf(devices[Inet_port].device_host_name,
                   sizeof(devices[Inet_port].device_host_name),
                   "%s",
                   temp_ptr);
@@ -5328,7 +5328,7 @@ void Inet_change_data(Widget widget, XtPointer clientData, XtPointer callData)
   (void)remove_trailing_spaces(devices[Inet_port].device_host_name);
 
   temp_ptr = XmTextFieldGetString(Inet_password_data);
-  xastir_snprintf(devices[Inet_port].device_host_pswd,
+  astir_snprintf(devices[Inet_port].device_host_pswd,
                   sizeof(devices[Inet_port].device_host_pswd),
                   "%s",
                   temp_ptr);
@@ -5337,7 +5337,7 @@ void Inet_change_data(Widget widget, XtPointer clientData, XtPointer callData)
   (void)remove_trailing_spaces(devices[Inet_port].device_host_pswd);
 
   temp_ptr = XmTextFieldGetString(Inet_filter_data);
-  xastir_snprintf(devices[Inet_port].device_host_filter_string,
+  astir_snprintf(devices[Inet_port].device_host_filter_string,
                   sizeof(devices[Inet_port].device_host_filter_string),
                   "%s",
                   temp_ptr);
@@ -5346,7 +5346,7 @@ void Inet_change_data(Widget widget, XtPointer clientData, XtPointer callData)
   (void)remove_trailing_spaces(devices[Inet_port].device_host_filter_string);
 
   temp_ptr = XmTextFieldGetString(Inet_comment);
-  xastir_snprintf(devices[Inet_port].comment,
+  astir_snprintf(devices[Inet_port].comment,
                   sizeof(devices[Inet_port].comment),
                   "%s",
                   temp_ptr);
@@ -5777,7 +5777,7 @@ void Config_Inet( Widget UNUSED(w), int config_type, int port)
       }
 
       XmTextFieldSetString(Inet_host_data,devices[Inet_port].device_host_name);
-      xastir_snprintf(temp, sizeof(temp), "%d", devices[Inet_port].sp);
+      astir_snprintf(temp, sizeof(temp), "%d", devices[Inet_port].sp);
       XmTextFieldSetString(Inet_port_data,temp);
       XmTextFieldSetString(Inet_password_data,devices[Inet_port].device_host_pswd);
       XmTextFieldSetString(Inet_filter_data,devices[Inet_port].device_host_filter_string);
@@ -5871,7 +5871,7 @@ void Database_change_data(Widget widget, XtPointer clientData, XtPointer callDat
   begin_critical_section(&devices_lock, "interface_gui.c:Database_change_data" );
 
   temp_ptr = XmTextFieldGetString(Database_host_data);
-  xastir_snprintf(devices[Database_port].device_host_name,
+  astir_snprintf(devices[Database_port].device_host_name,
                   sizeof(devices[Database_port].device_host_name),
                   "%s",
                   temp_ptr);
@@ -5880,7 +5880,7 @@ void Database_change_data(Widget widget, XtPointer clientData, XtPointer callDat
   (void)remove_trailing_spaces(devices[Database_port].device_host_name);
 
   temp_ptr = XmTextFieldGetString(Database_password_data);
-  xastir_snprintf(devices[Database_port].device_host_pswd,
+  astir_snprintf(devices[Database_port].device_host_pswd,
                   sizeof(devices[Database_port].device_host_pswd),
                   "%s",
                   temp_ptr);
@@ -5889,7 +5889,7 @@ void Database_change_data(Widget widget, XtPointer clientData, XtPointer callDat
   (void)remove_trailing_spaces(devices[Database_port].device_host_pswd);
 
   temp_ptr = XmTextFieldGetString(Database_filter_data);
-  xastir_snprintf(devices[Database_port].device_host_filter_string,
+  astir_snprintf(devices[Database_port].device_host_filter_string,
                   sizeof(devices[Database_port].device_host_filter_string),
                   "%s",
                   temp_ptr);
@@ -5898,7 +5898,7 @@ void Database_change_data(Widget widget, XtPointer clientData, XtPointer callDat
   (void)remove_trailing_spaces(devices[Database_port].device_host_filter_string);
 
   temp_ptr = XmTextFieldGetString(Database_comment);
-  xastir_snprintf(devices[Database_port].comment,
+  astir_snprintf(devices[Database_port].comment,
                   sizeof(devices[Database_port].comment),
                   "%s",
                   temp_ptr);
@@ -6322,7 +6322,7 @@ void Config_Database( Widget UNUSED(w), int config_type, int port)
       }
 
       XmTextFieldSetString(Database_host_data,devices[Database_port].device_host_name);
-      xastir_snprintf(temp, sizeof(temp), "%d", devices[Database_port].sp);
+      astir_snprintf(temp, sizeof(temp), "%d", devices[Database_port].sp);
       XmTextFieldSetString(Database_port_data,temp);
       XmTextFieldSetString(Database_password_data,devices[Database_port].device_host_pswd);
       XmTextFieldSetString(Database_filter_data,devices[Database_port].device_host_filter_string);
@@ -6370,7 +6370,7 @@ Widget Sql_Database_comment;
 Widget Sql_Database_password_data;
 Widget Sql_Database_transmit_data;
 Widget Sql_Database_reconnect_data;
-int    Sql_Database_port;   // xastir interface port number, not tcp/ip port
+int    Sql_Database_port;   // astir interface port number, not tcp/ip port
 Widget Sql_Database_username_data;
 Widget Sql_Database_schema_name_data;
 
@@ -6402,10 +6402,10 @@ void Sql_Database_set_defaults_mysql(Widget widget, XtPointer clientData,  XtPoi
 {
   XmString cb_item;
   //cb_item = XmStringCreateLtoR("MySQL (lat/long)", XmFONTLIST_DEFAULT_TAG);
-  cb_item = XmStringCreateLtoR(&xastir_dbms_type[DB_MYSQL][0], XmFONTLIST_DEFAULT_TAG);
+  cb_item = XmStringCreateLtoR(&astir_dbms_type[DB_MYSQL][0], XmFONTLIST_DEFAULT_TAG);
   //cb_item = XmStringCreateLtoR("MySQL (spatial)", XmFONTLIST_DEFAULT_TAG);
 #ifdef HAVE_MYSQL_SPATIAL
-  cb_item = XmStringCreateLtoR(&xastir_dbms_type[DB_MYSQL_SPATIAL][0], XmFONTLIST_DEFAULT_TAG);
+  cb_item = XmStringCreateLtoR(&astir_dbms_type[DB_MYSQL_SPATIAL][0], XmFONTLIST_DEFAULT_TAG);
 #endif /* HAVE_MYSQL_SPATIAL */
 #ifdef USE_COMBO_BOX
   XmComboBoxSelectItem(Sql_Database_dbms_data,cb_item);
@@ -6414,16 +6414,16 @@ void Sql_Database_set_defaults_mysql(Widget widget, XtPointer clientData,  XtPoi
   sddd_value = DB_MYSQL_SPATIAL;
 #endif // USE_COMBO_BOX   
   XmStringFree(cb_item);
-  //cb_item = XmStringCreateLtoR("Xastir - simple", XmFONTLIST_DEFAULT_TAG);
-  cb_item = XmStringCreateLtoR(&xastir_schema_type[XASTIR_SCHEMA_SIMPLE][0], XmFONTLIST_DEFAULT_TAG);
+  //cb_item = XmStringCreateLtoR("Astir - simple", XmFONTLIST_DEFAULT_TAG);
+  cb_item = XmStringCreateLtoR(&astir_schema_type[ASTIR_SCHEMA_SIMPLE][0], XmFONTLIST_DEFAULT_TAG);
   XmComboBoxSelectItem(Sql_Database_schema_type_data,cb_item);
   XmStringFree(cb_item);
   XmToggleButtonSetState(Sql_Database_active_on_startup,TRUE,FALSE);
   XmToggleButtonSetState(Sql_Database_transmit_data,TRUE,FALSE);
   XmTextFieldSetString(Sql_Database_host_data,"localhost");
   XmTextFieldSetString(Sql_Database_iport_data,"3306");
-  XmTextFieldSetString(Sql_Database_username_data,"xastir_user");
-  XmTextFieldSetString(Sql_Database_schema_name_data,"xastir");
+  XmTextFieldSetString(Sql_Database_username_data,"astir_user");
+  XmTextFieldSetString(Sql_Database_schema_name_data,"astir");
   // **  get default from mysql_config at configure time
   XmTextFieldSetString(Sql_Database_unix_socket_data,"/var/lib/mysql/mysql.sock");
   XmTextFieldSetString(Sql_Database_comment,"");
@@ -6443,7 +6443,7 @@ void Sql_Database_set_defaults_postgis(Widget widget, XtPointer clientData,  XtP
 {
   XmString cb_item;
   //cb_item = XmStringCreateLtoR("Postgres/Postgis", XmFONTLIST_DEFAULT_TAG);
-  cb_item = XmStringCreateLtoR(&xastir_dbms_type[DB_POSTGIS][0], XmFONTLIST_DEFAULT_TAG);
+  cb_item = XmStringCreateLtoR(&astir_dbms_type[DB_POSTGIS][0], XmFONTLIST_DEFAULT_TAG);
 #ifdef USE_COMBO_BOX
   XmComboBoxSelectItem(Sql_Database_dbms_data,cb_item);
 #else
@@ -6451,16 +6451,16 @@ void Sql_Database_set_defaults_postgis(Widget widget, XtPointer clientData,  XtP
   sddd_value = DB_POSTGIS;
 #endif // USE_COMBO_BOX
   XmStringFree(cb_item);
-  //cb_item = XmStringCreateLtoR("Xastir - simple", XmFONTLIST_DEFAULT_TAG);
-  cb_item = XmStringCreateLtoR(&xastir_schema_type[XASTIR_SCHEMA_SIMPLE][0], XmFONTLIST_DEFAULT_TAG);
+  //cb_item = XmStringCreateLtoR("Astir - simple", XmFONTLIST_DEFAULT_TAG);
+  cb_item = XmStringCreateLtoR(&astir_schema_type[ASTIR_SCHEMA_SIMPLE][0], XmFONTLIST_DEFAULT_TAG);
   XmComboBoxSelectItem(Sql_Database_schema_type_data,cb_item);
   XmStringFree(cb_item);
   XmToggleButtonSetState(Sql_Database_active_on_startup,TRUE,FALSE);
   XmToggleButtonSetState(Sql_Database_transmit_data,TRUE,FALSE);
   XmTextFieldSetString(Sql_Database_host_data,"localhost");
   XmTextFieldSetString(Sql_Database_iport_data,"5432");
-  XmTextFieldSetString(Sql_Database_username_data,"xastir_user");
-  XmTextFieldSetString(Sql_Database_schema_name_data,"xastir");
+  XmTextFieldSetString(Sql_Database_username_data,"astir_user");
+  XmTextFieldSetString(Sql_Database_schema_name_data,"astir");
   // **  get default from mysql_config at configure time
   XmTextFieldSetString(Sql_Database_unix_socket_data,"");
   XmTextFieldSetString(Sql_Database_comment,"");
@@ -6538,7 +6538,7 @@ void Sql_Database_change_data(Widget widget, XtPointer clientData, XtPointer cal
 
   // hostname
   temp_ptr = XmTextFieldGetString(Sql_Database_host_data);
-  xastir_snprintf(devices[Sql_Database_port].device_host_name,
+  astir_snprintf(devices[Sql_Database_port].device_host_name,
                   sizeof(devices[Sql_Database_port].device_host_name),
                   "%s",
                   temp_ptr);
@@ -6552,7 +6552,7 @@ void Sql_Database_change_data(Widget widget, XtPointer clientData, XtPointer cal
 
   //username
   temp_ptr = XmTextFieldGetString(Sql_Database_username_data);
-  xastir_snprintf(devices[Sql_Database_port].database_username,
+  astir_snprintf(devices[Sql_Database_port].database_username,
                   sizeof(devices[Sql_Database_port].database_username),
                   "%s",
                   temp_ptr);
@@ -6561,7 +6561,7 @@ void Sql_Database_change_data(Widget widget, XtPointer clientData, XtPointer cal
 
   //password
   temp_ptr = XmTextFieldGetString(Sql_Database_password_data);
-  xastir_snprintf(devices[Sql_Database_port].device_host_pswd,
+  astir_snprintf(devices[Sql_Database_port].device_host_pswd,
                   sizeof(devices[Sql_Database_port].device_host_pswd),
                   "%s",
                   temp_ptr);
@@ -6570,7 +6570,7 @@ void Sql_Database_change_data(Widget widget, XtPointer clientData, XtPointer cal
 
   // schema name
   temp_ptr = XmTextFieldGetString(Sql_Database_schema_name_data);
-  xastir_snprintf(devices[Sql_Database_port].database_schema,
+  astir_snprintf(devices[Sql_Database_port].database_schema,
                   sizeof(devices[Sql_Database_port].database_schema),
                   "%s",
                   temp_ptr);
@@ -6613,12 +6613,12 @@ void Sql_Database_change_data(Widget widget, XtPointer clientData, XtPointer cal
   else
   {
     // If no selection, default to simple schema.
-    devices[Sql_Database_port].database_schema_type = XASTIR_SCHEMA_SIMPLE;
+    devices[Sql_Database_port].database_schema_type = ASTIR_SCHEMA_SIMPLE;
   }
 
   // unix socket
   temp_ptr = XmTextFieldGetString(Sql_Database_unix_socket_data);
-  xastir_snprintf(devices[Sql_Database_port].database_unix_socket,
+  astir_snprintf(devices[Sql_Database_port].database_unix_socket,
                   sizeof(devices[Sql_Database_port].database_unix_socket),
                   "%s",
                   temp_ptr);
@@ -6626,7 +6626,7 @@ void Sql_Database_change_data(Widget widget, XtPointer clientData, XtPointer cal
   (void)remove_trailing_spaces(devices[Sql_Database_port].database_unix_socket);
 
   // reset the error message to a blank
-  xastir_snprintf(devices[Sql_Database_port].database_errormessage,
+  astir_snprintf(devices[Sql_Database_port].database_errormessage,
                   sizeof(devices[Sql_Database_port].database_errormessage),
                   " ");
 
@@ -6634,7 +6634,7 @@ void Sql_Database_change_data(Widget widget, XtPointer clientData, XtPointer cal
 
   // comment to display on interface list
   temp_ptr = XmTextFieldGetString(Sql_Database_comment);
-  xastir_snprintf(devices[Sql_Database_port].comment,
+  astir_snprintf(devices[Sql_Database_port].comment,
                   sizeof(devices[Sql_Database_port].comment),
                   "%s",
                   temp_ptr);
@@ -6761,17 +6761,17 @@ void Config_sql_Database( Widget w, int config_type, int port)
   /*
   // configuration parameters for a sql server database
   char   database_username[20];                 // username to use to connect to database
-                                                // default xastir
+                                                // default astir
   int    database_type;                         // type of dbms (posgresql, mysql, etc)
                                                 // default mysql
   char   database_schema[20];                   // name of database or schema to use
-                                                // default xastir
+                                                // default astir
   char   database_errormessage[255];            // most recent error message from
                                                    attempting to make a
                                                    connection with using this descriptor.
   int    database_schema_type;         // table structures to use in the database
                                            A database schema could contain both APRSWorld
-                                           and XASTIR table structures, but a separate database
+                                           and ASTIR table structures, but a separate database
                                            descriptor should be defined for each.
                                        // default simple
   char   database_unix_socket[255];             // MySQL - unix socket parameter (path and
@@ -6783,7 +6783,7 @@ void Config_sql_Database( Widget w, int config_type, int port)
 
   if(!config_Sql_Database_dialog)
   {
-    // port is position in xastir interface list, not tcp port on which to connect
+    // port is position in astir interface list, not tcp port on which to connect
     Sql_Database_port=port;
 
     // SQL Server Database
@@ -6841,10 +6841,10 @@ void Config_sql_Database( Widget w, int config_type, int port)
                                          NULL);
     // Combo box to pick dbms
     cb_items [0] = (XmString *) XtMalloc ( sizeof (XmString) * 4 );
-    // Combo box items are defined by xastir_dbms_type, defined in db_gis.c
-    cb_items[0][0] = XmStringCreateLtoR( &xastir_dbms_type[1][0], XmFONTLIST_DEFAULT_TAG);
-    cb_items[0][1] = XmStringCreateLtoR( &xastir_dbms_type[2][0], XmFONTLIST_DEFAULT_TAG);
-    cb_items[0][2] = XmStringCreateLtoR( &xastir_dbms_type[3][0], XmFONTLIST_DEFAULT_TAG);
+    // Combo box items are defined by astir_dbms_type, defined in db_gis.c
+    cb_items[0][0] = XmStringCreateLtoR( &astir_dbms_type[1][0], XmFONTLIST_DEFAULT_TAG);
+    cb_items[0][1] = XmStringCreateLtoR( &astir_dbms_type[2][0], XmFONTLIST_DEFAULT_TAG);
+    cb_items[0][2] = XmStringCreateLtoR( &astir_dbms_type[3][0], XmFONTLIST_DEFAULT_TAG);
     // mysql
     //cb_items[0][0] = XmStringCreateLtoR("MySQL (lat/long)", XmFONTLIST_DEFAULT_TAG);
     // postgresql
@@ -6946,13 +6946,13 @@ void Config_sql_Database( Widget w, int config_type, int port)
     // *** when localizing these strings propagate the localizations to
     // the set default functions above and to constants for picklist
     // selection recognition.  ***
-    //cb_item = XmStringCreateLtoR(&xastir_dbms_type[DB_MYSQL][0], XmFONTLIST_DEFAULT_TAG);
+    //cb_item = XmStringCreateLtoR(&astir_dbms_type[DB_MYSQL][0], XmFONTLIST_DEFAULT_TAG);
     //XmComboBoxAddItem(Sql_Database_dbms_data,cb_item,1,1);
     //XmStringFree(cb_item);
-    //cb_item = XmStringCreateLtoR(&xastir_dbms_type[DB_POSTGIS][0], XmFONTLIST_DEFAULT_TAG);
+    //cb_item = XmStringCreateLtoR(&astir_dbms_type[DB_POSTGIS][0], XmFONTLIST_DEFAULT_TAG);
     //XmComboBoxAddItem(Sql_Database_dbms_data,cb_item,2,1);
     //XmStringFree(cb_item);
-    //cb_item = XmStringCreateLtoR(&xastir_dbms_type[DB_MYSQL_SPATIAL][0], XmFONTLIST_DEFAULT_TAG);
+    //cb_item = XmStringCreateLtoR(&astir_dbms_type[DB_MYSQL_SPATIAL][0], XmFONTLIST_DEFAULT_TAG);
     //XmComboBoxAddItem(Sql_Database_dbms_data,cb_item,3,1);
     //XmStringFree(cb_item);
 
@@ -6986,12 +6986,12 @@ void Config_sql_Database( Widget w, int config_type, int port)
                                     XmNfontList, fontlist1,
                                     NULL);
     // *** need to add constants for order and localization ***
-    // ? use an array - schm_typ[XASTIR_SCHEMA_SIMPLE]=langcode("codeforxastirsimple").... ?
+    // ? use an array - schm_typ[ASTIR_SCHEMA_SIMPLE]=langcode("codeforastirsimple").... ?
     // ?or some other form of key-value pairs?
 
     // simple
-    //cb_item = XmStringCreateLtoR("Xastir - simple", XmFONTLIST_DEFAULT_TAG);
-    cb_item = XmStringCreateLtoR(&xastir_schema_type[XASTIR_SCHEMA_SIMPLE][0], XmFONTLIST_DEFAULT_TAG);
+    //cb_item = XmStringCreateLtoR("Astir - simple", XmFONTLIST_DEFAULT_TAG);
+    cb_item = XmStringCreateLtoR(&astir_schema_type[ASTIR_SCHEMA_SIMPLE][0], XmFONTLIST_DEFAULT_TAG);
     XmComboBoxAddItem(Sql_Database_schema_type_data,cb_item,1,1);
     XmStringFree(cb_item);
 
@@ -7002,12 +7002,12 @@ void Config_sql_Database( Widget w, int config_type, int port)
             XmStringFree(cb_item);
 
             // full
-            cb_item = XmStringCreateLtoR("Xastir - full", XmFONTLIST_DEFAULT_TAG);
+            cb_item = XmStringCreateLtoR("Astir - full", XmFONTLIST_DEFAULT_TAG);
             XmComboBoxAddItem(cad_line_style_data,cb_item,2,1);
             XmStringFree(cb_item);
 
             // cad
-            cb_item = XmStringCreateLtoR("Xastir - CAD", XmFONTLIST_DEFAULT_TAG);
+            cb_item = XmStringCreateLtoR("Astir - CAD", XmFONTLIST_DEFAULT_TAG);
             XmComboBoxAddItem(cad_line_style_data,cb_item,2,1);
             XmStringFree(cb_item);
     */
@@ -7077,7 +7077,7 @@ void Config_sql_Database( Widget w, int config_type, int port)
                              XmNfontList, fontlist1,
                              NULL);
 
-    // tcp port for server, not xastir interface port
+    // tcp port for server, not astir interface port
     // port
     iport = XtVaCreateManagedWidget(langcode("WPUPCFID03"),xmLabelWidgetClass, form,
                                     XmNtopAttachment,    XmATTACH_WIDGET,
@@ -7455,7 +7455,7 @@ void Config_sql_Database( Widget w, int config_type, int port)
       begin_critical_section(&devices_lock, "interface_gui.c:Config_sql_Database" );
 
       // *** need to look up localized string for database_type ***
-      cb_item = XmStringCreateLtoR(&xastir_dbms_type[devices[Sql_Database_port].database_type][0], XmFONTLIST_DEFAULT_TAG);
+      cb_item = XmStringCreateLtoR(&astir_dbms_type[devices[Sql_Database_port].database_type][0], XmFONTLIST_DEFAULT_TAG);
 #ifdef USE_COMBO_BOX
       XmComboBoxSelectItem(Sql_Database_dbms_data,cb_item);
       XmComboBoxSetItem(Sql_Database_dbms_data,cb_item);
@@ -7468,7 +7468,7 @@ void Config_sql_Database( Widget w, int config_type, int port)
 #endif
       XmStringFree(cb_item);
 
-      cb_item = XmStringCreateLtoR(&xastir_schema_type[devices[Sql_Database_port].database_schema_type][0], XmFONTLIST_DEFAULT_TAG);
+      cb_item = XmStringCreateLtoR(&astir_schema_type[devices[Sql_Database_port].database_schema_type][0], XmFONTLIST_DEFAULT_TAG);
       XmComboBoxSelectItem(Sql_Database_schema_type_data,cb_item);
       XmComboBoxSetItem(Sql_Database_schema_type_data,cb_item);
       XmStringFree(cb_item);
@@ -7503,7 +7503,7 @@ void Config_sql_Database( Widget w, int config_type, int port)
 
       XmTextFieldSetString(Sql_Database_host_data,devices[Sql_Database_port].device_host_name);
       XmTextFieldSetString(Sql_Database_schema_name_data,devices[Sql_Database_port].database_schema);
-      xastir_snprintf(temp, sizeof(temp), "%d", devices[Sql_Database_port].sp);
+      astir_snprintf(temp, sizeof(temp), "%d", devices[Sql_Database_port].sp);
       XmTextFieldSetString(Sql_Database_iport_data,temp);
       XmTextFieldSetString(Sql_Database_username_data,devices[Sql_Database_port].database_username);
       XmTextFieldSetString(Sql_Database_password_data,devices[Sql_Database_port].device_host_pswd);
@@ -7606,7 +7606,7 @@ void AGWPE_change_data(Widget widget, XtPointer clientData, XtPointer callData)
   devices[AGWPE_port].igate_options=device_igate_options;
 
   temp_ptr = XmTextFieldGetString(AGWPE_host_data);
-  xastir_snprintf(devices[AGWPE_port].device_host_name,
+  astir_snprintf(devices[AGWPE_port].device_host_name,
                   sizeof(devices[AGWPE_port].device_host_name),
                   "%s",
                   temp_ptr);
@@ -7615,7 +7615,7 @@ void AGWPE_change_data(Widget widget, XtPointer clientData, XtPointer callData)
   (void)remove_trailing_spaces(devices[AGWPE_port].device_host_name);
 
   temp_ptr = XmTextFieldGetString(AGWPE_password_data);
-  xastir_snprintf(devices[AGWPE_port].device_host_pswd,
+  astir_snprintf(devices[AGWPE_port].device_host_pswd,
                   sizeof(devices[AGWPE_port].device_host_pswd),
                   "%s",
                   temp_ptr);
@@ -7624,7 +7624,7 @@ void AGWPE_change_data(Widget widget, XtPointer clientData, XtPointer callData)
   (void)remove_trailing_spaces(devices[AGWPE_port].device_host_pswd);
 
   temp_ptr = XmTextFieldGetString(AGWPE_comment);
-  xastir_snprintf(devices[AGWPE_port].comment,
+  astir_snprintf(devices[AGWPE_port].comment,
                   sizeof(devices[AGWPE_port].comment),
                   "%s",
                   temp_ptr);
@@ -7637,7 +7637,7 @@ void AGWPE_change_data(Widget widget, XtPointer clientData, XtPointer callData)
   XtFree(temp_ptr);
 
   temp_ptr = XmTextFieldGetString(AGWPE_unproto1_data);
-  xastir_snprintf(devices[AGWPE_port].unproto1,
+  astir_snprintf(devices[AGWPE_port].unproto1,
                   sizeof(devices[AGWPE_port].unproto1),
                   "%s",
                   temp_ptr);
@@ -7652,7 +7652,7 @@ void AGWPE_change_data(Widget widget, XtPointer clientData, XtPointer callData)
   }
 
   temp_ptr = XmTextFieldGetString(AGWPE_unproto2_data);
-  xastir_snprintf(devices[AGWPE_port].unproto2,
+  astir_snprintf(devices[AGWPE_port].unproto2,
                   sizeof(devices[AGWPE_port].unproto2),
                   "%s",
                   temp_ptr);
@@ -7667,7 +7667,7 @@ void AGWPE_change_data(Widget widget, XtPointer clientData, XtPointer callData)
   }
 
   temp_ptr = XmTextFieldGetString(AGWPE_unproto3_data);
-  xastir_snprintf(devices[AGWPE_port].unproto3,
+  astir_snprintf(devices[AGWPE_port].unproto3,
                   sizeof(devices[AGWPE_port].unproto3),
                   "%s",
                   temp_ptr);
@@ -7682,7 +7682,7 @@ void AGWPE_change_data(Widget widget, XtPointer clientData, XtPointer callData)
   }
 
   temp_ptr = XmTextFieldGetString(AGWPE_igate_data);
-  xastir_snprintf(devices[AGWPE_port].unproto_igate,
+  astir_snprintf(devices[AGWPE_port].unproto_igate,
                   sizeof(devices[AGWPE_port].unproto_igate),
                   "%s",
                   temp_ptr);
@@ -7698,7 +7698,7 @@ void AGWPE_change_data(Widget widget, XtPointer clientData, XtPointer callData)
 
 
   temp_ptr = XmTextFieldGetString(AGWPE_radioport_data);
-  xastir_snprintf(devices[AGWPE_port].device_host_filter_string,
+  astir_snprintf(devices[AGWPE_port].device_host_filter_string,
                   sizeof(devices[AGWPE_port].device_host_filter_string),
                   "%s",
                   temp_ptr);
@@ -8116,7 +8116,7 @@ void Config_AGWPE( Widget UNUSED(w), int config_type, int port)
                                     XmNfontList, fontlist1,
                                     NULL);
 
-    xastir_snprintf(temp, sizeof(temp), langcode("WPUPCFT012"), VERSIONFRM);
+    astir_snprintf(temp, sizeof(temp), langcode("WPUPCFT012"), VERSIONFRM);
 
     proto1 = XtVaCreateManagedWidget(temp, xmLabelWidgetClass, form,
                                      XmNorientation, XmHORIZONTAL,
@@ -8153,7 +8153,7 @@ void Config_AGWPE( Widget UNUSED(w), int config_type, int port)
                           XmNfontList, fontlist1,
                           NULL);
 
-    xastir_snprintf(temp, sizeof(temp), langcode("WPUPCFT013"), VERSIONFRM);
+    astir_snprintf(temp, sizeof(temp), langcode("WPUPCFT013"), VERSIONFRM);
 
     proto2 = XtVaCreateManagedWidget(temp, xmLabelWidgetClass, form,
                                      XmNorientation, XmHORIZONTAL,
@@ -8190,7 +8190,7 @@ void Config_AGWPE( Widget UNUSED(w), int config_type, int port)
                           XmNfontList, fontlist1,
                           NULL);
 
-    xastir_snprintf(temp, sizeof(temp), langcode("WPUPCFT014"), VERSIONFRM);
+    astir_snprintf(temp, sizeof(temp), langcode("WPUPCFT014"), VERSIONFRM);
 
     proto3 = XtVaCreateManagedWidget(temp, xmLabelWidgetClass, form,
                                      XmNorientation, XmHORIZONTAL,
@@ -8229,7 +8229,7 @@ void Config_AGWPE( Widget UNUSED(w), int config_type, int port)
                           NULL);
 
 
-    xastir_snprintf(temp, sizeof(temp), "%s", langcode("IGPUPCF004"));
+    astir_snprintf(temp, sizeof(temp), "%s", langcode("IGPUPCF004"));
     igate_label = XtVaCreateManagedWidget(temp, xmLabelWidgetClass, form,
                                           XmNorientation, XmHORIZONTAL,
                                           XmNtopAttachment,XmATTACH_WIDGET,
@@ -8379,7 +8379,7 @@ void Config_AGWPE( Widget UNUSED(w), int config_type, int port)
       XtSetSensitive(AGWPE_relay_digipeat, FALSE);
 
       XmTextFieldSetString(AGWPE_host_data,devices[AGWPE_port].device_host_name);
-      xastir_snprintf(temp, sizeof(temp), "%d", devices[AGWPE_port].sp);
+      astir_snprintf(temp, sizeof(temp), "%d", devices[AGWPE_port].sp);
       XmTextFieldSetString(AGWPE_port_data,temp);
       XmTextFieldSetString(AGWPE_password_data,devices[AGWPE_port].device_host_pswd);
       XmTextFieldSetString(AGWPE_comment,devices[AGWPE_port].comment);
@@ -8592,7 +8592,7 @@ void modify_device_list(int option, int port)
             case DEVICE_SERIAL_KISS_TNC:
             case DEVICE_SERIAL_GPS:
             case DEVICE_SERIAL_WX:
-              xastir_snprintf(temp,
+              astir_snprintf(temp,
                               sizeof(temp),
                               langcode("IFDIN00000"),
                               langcode("UNIOP00006"),
@@ -8606,7 +8606,7 @@ void modify_device_list(int option, int port)
               break;
 
             case DEVICE_SERIAL_MKISS_TNC:
-              xastir_snprintf(temp,
+              astir_snprintf(temp,
                               sizeof(temp),
                               langcode("IFDIN00001"),
                               langcode("UNIOP00006"),
@@ -8626,7 +8626,7 @@ void modify_device_list(int option, int port)
             case DEVICE_NET_GPSD:
             case DEVICE_NET_WX:
             case DEVICE_NET_AGWPE:
-              xastir_snprintf(temp,
+              astir_snprintf(temp,
                               sizeof(temp),
                               langcode("IFDIN00001"),
                               langcode("UNIOP00006"),
@@ -8641,7 +8641,7 @@ void modify_device_list(int option, int port)
               break;
 
             case DEVICE_AX25_TNC:
-              xastir_snprintf(temp,
+              astir_snprintf(temp,
                               sizeof(temp),
                               langcode("IFDIN00002"),
                               langcode("UNIOP00006"),
@@ -8671,28 +8671,28 @@ void modify_device_list(int option, int port)
             switch (port_data[i].status)
             {
               case DEVICE_DOWN:
-                xastir_snprintf(temp2,
+                astir_snprintf(temp2,
                                 sizeof(temp2),
                                 "%s",
                                 langcode("IFDIN00006"));
                 break;
 
               case DEVICE_UP:
-                xastir_snprintf(temp2,
+                astir_snprintf(temp2,
                                 sizeof(temp2),
                                 "%s",
                                 langcode("IFDIN00007"));
                 break;
 
               case DEVICE_ERROR:
-                xastir_snprintf(temp2,
+                astir_snprintf(temp2,
                                 sizeof(temp2),
                                 "%s",
                                 langcode("IFDIN00008"));
                 break;
 
               default:
-                xastir_snprintf(temp2,
+                astir_snprintf(temp2,
                                 sizeof(temp2),
                                 "%s",
                                 langcode("IFDIN00009"));
@@ -8701,7 +8701,7 @@ void modify_device_list(int option, int port)
           }
           else
           {
-            xastir_snprintf(temp2,
+            astir_snprintf(temp2,
                             sizeof(temp2),
                             "%s",
                             langcode("IFDIN00006"));
@@ -8714,7 +8714,7 @@ void modify_device_list(int option, int port)
             case DEVICE_SERIAL_TNC_AUX_GPS:
             case DEVICE_SERIAL_GPS:
             case DEVICE_SERIAL_WX:
-              xastir_snprintf(temp,
+              astir_snprintf(temp,
                               sizeof(temp),
                               langcode("IFDIN00003"),
                               langcode("UNIOP00006"),
@@ -8729,7 +8729,7 @@ void modify_device_list(int option, int port)
               break;
 
             case DEVICE_SERIAL_MKISS_TNC:
-              xastir_snprintf(temp,
+              astir_snprintf(temp,
                               sizeof(temp),
                               langcode("IFDIN00004"),
                               langcode("UNIOP00006"),
@@ -8750,7 +8750,7 @@ void modify_device_list(int option, int port)
             case DEVICE_NET_GPSD:
             case DEVICE_NET_WX:
             case DEVICE_NET_AGWPE:
-              xastir_snprintf(temp,
+              astir_snprintf(temp,
                               sizeof(temp),
                               langcode("IFDIN00004"),
                               langcode("UNIOP00006"),
@@ -8766,7 +8766,7 @@ void modify_device_list(int option, int port)
               break;
 
             case DEVICE_AX25_TNC:
-              xastir_snprintf(temp,
+              astir_snprintf(temp,
                               sizeof(temp),
                               langcode("IFDIN00005"),
                               langcode("UNIOP00006"),
@@ -8973,7 +8973,7 @@ void interface_setup(Widget w, XtPointer clientData,  XtPointer UNUSED(callData)
               fprintf(stderr,"ADD AX.25 TNC\n");
             Config_AX25(w, 0, port);
 #else   // HAVE_LIBAX25
-              fprintf(stderr,"AX.25 support not compiled into Xastir!\n");
+              fprintf(stderr,"AX.25 support not compiled into Astir!\n");
             popup_message(langcode("POPEM00004"),langcode("POPEM00021"));
 
 #endif  // HAVE_LIBAX25

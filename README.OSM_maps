@@ -2,7 +2,7 @@
 Copyright (C) 2000-2026 The Xastir Group
 
 
-  Using OpenStreetMap in Xastir
+  Using OpenStreetMap in Astir
   ------------------------------------------------------------------------
   CONTENTS
      Introduction
@@ -24,18 +24,18 @@ Copyright (C) 2000-2026 The Xastir Group
 
     The tag line for the map is "The Free Wiki World Map".
 
-    Xastir will display bitmap versions of the OSM. There are multiple
+    Astir will display bitmap versions of the OSM. There are multiple
     renderings of the OSM to choose from and, by default, three
-    are available in Xastir.
+    are available in Astir.
 
   Map Types
   ---------
-    Xastir can use two different map types based on OSM: static and
-    tiled. Static maps are bitmaps that are least as large as the Xastir
+    Astir can use two different map types based on OSM: static and
+    tiled. Static maps are bitmaps that are least as large as the Astir
     window. Tiled maps are built up from 256x256 pixel images.
 
     Static maps are also assembled from tiles, but the assembly occurs
-    at the server and the full size image is downloaded to Xastir. There
+    at the server and the full size image is downloaded to Astir. There
     is a major disadvantage to static maps: even slight changes in map
     position requires a new map download.
 
@@ -63,14 +63,14 @@ Copyright (C) 2000-2026 The Xastir Group
     It takes 2^zoom tiles to represent 360 degrees. Since the tiles are
     256 pixel squares, there are 2^(zoom + 8) pixels in 360 degrees.
 
-    When the Xastir scale is different from a bitmap image's zoom
+    When the Astir scale is different from a bitmap image's zoom
     level, the bitmap image is scaled. However, scaled bitmaps tend to
     look ugly. The scaled bitmap can have jagged lines, unequal pixel
     sizes, and/or missing information. At best a scaled bitmap looks
     blurred, but more typically some pixels will be enlarged into visible
     blocks or compressed invisibility.
 
-    You can use the F4 key to adjust the Xastir scale to approximate the
+    You can use the F4 key to adjust the Astir scale to approximate the
     OSM zoom level and refresh the display. (The key can be changed by
     modifying a variable in the OSM definition (GEO) files.
 
@@ -87,15 +87,15 @@ Copyright (C) 2000-2026 The Xastir Group
   Map Cache
   ---------
     Static maps are cached with other bitmap map images in the
-    ~/.xastir/map_cache/ directory.
+    ~/.astir/map_cache/ directory.
 
     Tiles are cached separately to make it possible to share them
     with other applications. By default tiles are cached in
-    ~/.xastir/map_cache/OSMtiles/, but that location can be changed on a
+    ~/.astir/map_cache/OSMtiles/, but that location can be changed on a
     by-style basis. The tiles are organized directories by style, zoom
     level, and longitude:
 
-      ~/.xastir/map_cache/OSMtiles/
+      ~/.astir/map_cache/OSMtiles/
                              + <style1>/
                              |    + <zoom>/
                              |         <longitude>/
@@ -105,7 +105,7 @@ Copyright (C) 2000-2026 The Xastir Group
 
      Note that 'longitude' is a tile number between 0 and (2^zoom -1).
 
-     Xastir downloads tiles as needed. If Xastir is compiled with
+     Astir downloads tiles as needed. If Astir is compiled with
      libcurl support, then it will check for updates to tiles that have
      been cached for 7 days or more.
      See http://wiki.openstreetmap.org/wiki/Tile_usage_policy
@@ -114,17 +114,17 @@ Copyright (C) 2000-2026 The Xastir Group
      file is not usable image, then the downloaded file (if any) will be
      deleted and a red area will be shown in it's place on the display.
 
-     NOTE: Run Xastir at debug level 512 (-v 512) for more information
+     NOTE: Run Astir at debug level 512 (-v 512) for more information
            on download issues. At debug level 512, corrupt tile files
            will not be deleted. Examining the contents of the corrupt
            files can be informative.
 
-           If Xastir is compiled with libcurl support, then debug level
+           If Astir is compiled with libcurl support, then debug level
            8192 will enable verbose output from libcurl.
 
      WARNING: Corrupt tile files will not be deleted when running at
               debug level 512. If you do not delete them manually before
-              restarting Xastir, then the first time Xastir displays the
+              restarting Astir, then the first time Astir displays the
               tile it will be shown in red and then deleted from the
               cache.
 
@@ -133,27 +133,27 @@ Copyright (C) 2000-2026 The Xastir Group
   -------------
      The directory structure used to cache tiles is common to other
      programs, though the style names are typically different. An
-     example of a program that can share tiles with Xastir is TangoGPS
+     example of a program that can share tiles with Astir is TangoGPS
      (http://www.tangogps.org).
 
      Here are some examples of how you can share tiles with TangoGPS
      (the setup for other programs would be similar):
 
        1) Setup a symlink at the style level of the caches
-           $ cd ~/.xastir/OSMmaps/
-           $ ln ~/Maps/<tangoStyleName>/ <xastirStyleName>
+           $ cd ~/.astir/OSMmaps/
+           $ ln ~/Maps/<tangoStyleName>/ <astirStyleName>
 
-       2) Change the Xastir map definition file to specify the TangoGPS
+       2) Change the Astir map definition file to specify the TangoGPS
           cache by changing the following variables (see the next
           section for more information):
              OSM_TILED_MAP-<tangoStyleName>
              TILE_DIR /home/<user>/Maps
 
        3) Share all styles and tiles by creating a symlink at the top
-          level of the cache. This also requires changing the Xastir
+          level of the cache. This also requires changing the Astir
           map definition files to specify the style names used by
           TangoGPS:
-             $ cd ~/.xastir
+             $ cd ~/.astir
              $ rm -rf OSMmaps/
              $ ln -s ../Maps OSMmaps
 
@@ -161,8 +161,8 @@ Copyright (C) 2000-2026 The Xastir Group
   Map Definition Files
   --------------------
     OSM map type, style, server, cache directory, and function keys are
-    specified in Xastir GEO files. By default the files are located in
-    the /usr/local/share/xastir/maps/Online/ directory. The supplied
+    specified in Astir GEO files. By default the files are located in
+    the /usr/local/share/astir/maps/Online/ directory. The supplied
     definition files have filenames of this form:
 
        OSM_<name>.geo        - static maps
@@ -197,7 +197,7 @@ Copyright (C) 2000-2026 The Xastir Group
 
     You can change between the two label styles by changing a symlink:
 
-       $ cd /usr/local/share/xastir/maps/   # your installing may differ!
+       $ cd /usr/local/share/astir/maps/   # your installing may differ!
        $ rm CC_OpenStreetMap.png
        $ ln -s CC_OpenStreetMap_txt.png CC_OpenStreetMap.png
           or

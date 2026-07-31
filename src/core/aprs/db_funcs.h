@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -24,8 +24,8 @@
 /* Note: this file should be called db.h, but was renamed to db_funcs.h
  * to avoid conflicts with the Berkeley DB package.  */
 
-#ifndef XASTIR_DB_FUNCS_H
-#define XASTIR_DB_FUNCS_H
+#ifndef ASTIR_DB_FUNCS_H
+#define ASTIR_DB_FUNCS_H
 #include <time.h>
 #include <stdio.h>
 

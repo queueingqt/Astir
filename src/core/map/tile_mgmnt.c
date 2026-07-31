@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 2000-2026 The Xastir Group
  *
  * This program is free software; you can redistribute it and/or
@@ -35,7 +35,7 @@
 #include <time.h>
 #include <errno.h>
 
-#include "core/xastir.h"
+#include "core/astir.h"
 #include "core/globals.h"
 #include "core/io/fetch_remote.h"
 #include "core/util/util.h"
@@ -181,7 +181,7 @@ int tilesMissing (unsigned long startx,
     for (y = starty; y <= endy; y++)
     {
 
-      xastir_snprintf(local_filename, sizeof(local_filename),
+      astir_snprintf(local_filename, sizeof(local_filename),
                       "%s/%u/%lu/%lu.%s", cacheDir, zoom, x, y, tileExt);
 
       if (stat(local_filename, &sb) == -1)
@@ -237,9 +237,9 @@ int getOneTile (char *baseURL,
   char local_filename[1100];
   int result = 0;
 
-  xastir_snprintf(url, sizeof(url), "%s/%u/%lu/%lu.%s", baseURL, zoom,
+  astir_snprintf(url, sizeof(url), "%s/%u/%lu/%lu.%s", baseURL, zoom,
                   x, y, tileExt);
-  xastir_snprintf(local_filename, sizeof(local_filename),
+  astir_snprintf(local_filename, sizeof(local_filename),
                   "%s/%u/%lu/%lu.%s", baseDir, zoom, x, y, tileExt);
 
   if (stat(local_filename, &sb) == -1)
@@ -314,7 +314,7 @@ static void mkpath(const char *dir)
   char *p = NULL;
   size_t len;
 
-  xastir_snprintf(tmp, sizeof(tmp),"%s", dir);
+  astir_snprintf(tmp, sizeof(tmp),"%s", dir);
   len = strlen(tmp);
   if(tmp[len - 1] == '/')
   {
@@ -356,12 +356,12 @@ void mkOSMmapDirs (char *baseDir,
   unsigned long dnum;
 
 
-  xastir_snprintf(fullPath, sizeof(fullPath), "%s/%u/", baseDir, zoom);
+  astir_snprintf(fullPath, sizeof(fullPath), "%s/%u/", baseDir, zoom);
   mkpath(fullPath);
 
   for (dnum = startx; dnum <= endx; dnum++)
   {
-    xastir_snprintf(fullPath, sizeof(fullPath), "%s/%u/%lu/",
+    astir_snprintf(fullPath, sizeof(fullPath), "%s/%u/%lu/",
                     baseDir, zoom, dnum);
     mkdir(fullPath, S_IRWXU);
 

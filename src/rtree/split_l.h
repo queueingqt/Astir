@@ -1,6 +1,6 @@
 /* -*- c-basic-offset: 4; indent-tabs-mode: nil -*-
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -37,9 +37,9 @@
 
 #define METHODS 1
 
-struct Branch Xastir_BranchBuf[MAXCARD+1];
-int Xastir_BranchCount;
-struct Rect Xastir_CoverSplit;
+struct Branch Astir_BranchBuf[MAXCARD+1];
+int Astir_BranchCount;
+struct Rect Astir_CoverSplit;
 
 /* variables for finding a partition */
 struct PartitionVars
@@ -50,4 +50,4 @@ struct PartitionVars
   int count[2];
   struct Rect cover[2];
   RectReal area[2];
-} Xastir_Partitions[METHODS];
+} Astir_Partitions[METHODS];

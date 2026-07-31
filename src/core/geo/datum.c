@@ -18,7 +18,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-#include "core/xastir.h"
+#include "core/astir.h"
 #include "core/geo/datum.h"
 #include "core/main.h"
 #include "core/util/util.h"
@@ -554,7 +554,7 @@ void ll_to_utm_ups(short ellipsoidID, const double lat, const double lon,
   {
     // We're in the UPS areas (near the poles).  ZoneNumber
     // should not be printed in this case.
-    xastir_snprintf(utmZone,
+    astir_snprintf(utmZone,
                     utmZoneLength,
                     "%c",
                     utm_letter_designator(lat, lon));
@@ -562,7 +562,7 @@ void ll_to_utm_ups(short ellipsoidID, const double lat, const double lon,
   else    // We're in the UTM areas (not near the poles).
   {
     //compute the UTM Zone from the latitude and longitude
-    xastir_snprintf(utmZone,
+    astir_snprintf(utmZone,
                     utmZoneLength,
                     "%d%c",
                     ZoneNumber,

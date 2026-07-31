@@ -40,7 +40,7 @@ SRC = "src"
 # The core subsystems.  A file is listed by stem; its .c and .h travel together.
 #
 # This is the judgement call in the whole script.  The rule used: what would
-# still make sense if the rest of Xastir were deleted?  A datum conversion
+# still make sense if the rest of Astir were deleted?  A datum conversion
 # would; a station-list window would not.
 # ---------------------------------------------------------------------------
 SUBSYSTEM = {
@@ -68,7 +68,7 @@ SUBSYSTEM = {
     "render": ["draw_symbols", "symbols"],
     # Settings, view state, and the config file.
     "state": ["xa_config", "xa_settings", "xa_state"],
-    # Generic helpers that carry no Xastir concepts.
+    # Generic helpers that carry no Astir concepts.
     "util": [
         "util", "snprintf", "hashtable", "hashtable_itr", "hashtable_private",
         "mutex_utils", "timer_utils", "log_utils", "debug_utils", "encoding",
@@ -85,7 +85,7 @@ SUBSYSTEM = {
 # was named after main.c and the settings extraction hollowed out the rest.
 # Splitting it is separate work; putting it in ui/motif/ would be filing it by
 # its history rather than by what it is.
-CORE_ROOT = ["xa_ui", "main", "xastir", "globals"]
+CORE_ROOT = ["xa_ui", "main", "astir", "globals"]
 
 # The xa_draw.h contract and the backends implementing it.
 BACKEND = {
@@ -95,8 +95,8 @@ BACKEND = {
     "draw/null":  ["xa_draw_null"],
 }
 
-# Standalone binaries, not part of xastir itself.
-APPS = ["callpass", "testdbfawk", "xastir_udp_client"]
+# Standalone binaries, not part of astir itself.
+APPS = ["callpass", "testdbfawk", "astir_udp_client"]
 
 # Motif headers that do not end in _gui.  popup.h is the only one: it declares
 # a struct whose members are Widgets, and only Motif files include it.

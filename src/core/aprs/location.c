@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -33,7 +33,7 @@
 
 #include <Xm/XmAll.h>
 
-#include "core/xastir.h"
+#include "core/astir.h"
 #include "core/map/maps.h"   // get_x_scale()
 #include "core/main.h"
 #include "core/aprs/db_funcs.h"

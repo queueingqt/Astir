@@ -5,9 +5,9 @@
 # lines that begin with a pound sign are comments.
 #
 # This configuration sets up Control-E mode for a KPC-3+ (GPS
-# connected to the 2nd serial port).  When Xastir is actively
-# getting GPS fixes, the TNC beacons only what Xastir sends to it.
-# When Xastir stops getting GPS data from the TNC, the TNC will
+# connected to the 2nd serial port).  When Astir is actively
+# getting GPS fixes, the TNC beacons only what Astir sends to it.
+# When Astir stops getting GPS data from the TNC, the TNC will
 # revert to dumb-tracker mode and start sending NMEA strings out all
 # by itself at a 20-minute rate.  If the GPS get disconnected or
 # turned off, the dumb-tracker mode will cease to send out beacons.

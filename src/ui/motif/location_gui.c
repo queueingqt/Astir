@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -31,8 +31,8 @@
 
 #include <Xm/XmAll.h>
 
-#include "core/xastir.h"
-#include "ui/motif/xastir_gui.h"
+#include "core/astir.h"
+#include "ui/motif/astir_gui.h"
 #include "ui/motif/wx_gui.h"
 #include "ui/motif/main_gui.h"
 #include "ui/motif/draw_symbols_gui.h"
@@ -54,7 +54,7 @@ extern XmFontList fontlist1;    // Menu/System fontlist
 Widget location_dialog = (Widget)NULL;
 Widget location_list;
 
-static xastir_mutex location_dialog_lock;
+static astir_mutex location_dialog_lock;
 
 
 
@@ -154,7 +154,7 @@ void location_view(Widget UNUSED(w), XtPointer UNUSED(clientData), XtPointer UNU
             memcpy(name, temp, sizeof(name));
             name[sizeof(name)-1] = '\0';  // Terminate string
             temp_ptr=strtok(NULL,"|");  /* get the pos */
-            xastir_snprintf(pos,
+            astir_snprintf(pos,
                             sizeof(pos),
                             "%s",
                             temp_ptr);
@@ -288,7 +288,7 @@ void location_delete(Widget UNUSED(w), XtPointer UNUSED(clientData), XtPointer U
               memcpy(name, temp, sizeof(name));
               name[sizeof(name)-1] = '\0';  // Terminate string
               temp_ptr=strtok(NULL,"|");  /* get the pos */
-              xastir_snprintf(pos,
+              astir_snprintf(pos,
                               sizeof(pos),
                               "%s",
                               temp_ptr);
@@ -319,12 +319,12 @@ void location_delete(Widget UNUSED(w), XtPointer UNUSED(clientData), XtPointer U
   if (ok==1)
   {
 
-    xastir_snprintf(filen,
+    astir_snprintf(filen,
                     sizeof(filen),
                     "%s",
                     location_file_path);
 
-    xastir_snprintf(filen_bak,
+    astir_snprintf(filen_bak,
                     sizeof(filen_bak),
                     "%s",
                     location_sys_path);
@@ -363,7 +363,7 @@ void location_add(Widget UNUSED(w), XtPointer clientData, XtPointer UNUSED(callD
 
 
   temp_ptr = XmTextFieldGetString(my_text);
-  xastir_snprintf(name,
+  astir_snprintf(name,
                   sizeof(name),
                   "%s",
                   temp_ptr);

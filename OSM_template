@@ -31,9 +31,9 @@
 #ZOOM_LEVEL_MIN 0
 #ZOOM_LEVEL_MAX 18
 
-# The tile cache can be changed from the default (~/.xastir/OSMtiles) by
+# The tile cache can be changed from the default (~/.astir/OSMtiles) by
 # setting the following variable. If path does not begin with a '/' then
-# it will be relative to ~/.xastir/.
+# it will be relative to ~/.astir/.
 #
 #TILE_DIR OSMtiles
 

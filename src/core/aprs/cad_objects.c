@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -30,7 +30,7 @@
 #include <strings.h>
 #include "core/util/snprintf.h"
 
-#include "core/xastir.h"
+#include "core/astir.h"
 #include "core/globals.h"
 #include "core/main.h"
 #include "core/state/xa_config.h"
@@ -840,7 +840,7 @@ void Save_CAD_Objects_to_file(void)
 
   fprintf(stderr,"Saving CAD objects to file\n");
 
-  // Save in ~/.xastir/config/CAD_object.log
+  // Save in ~/.astir/config/CAD_object.log
   file = get_user_base_dir("config/CAD_object.log", temp_file_path, sizeof(temp_file_path));
   f = fopen(file,"w+");
 
@@ -894,8 +894,8 @@ void Save_CAD_Objects_to_file(void)
 
 
 
-// Called by main() when we start Xastir.  Restores CAD objects
-// created in earlier Xastir sessions.
+// Called by main() when we start Astir.  Restores CAD objects
+// created in earlier Astir sessions.
 //
 void Restore_CAD_Objects_from_file(void)
 {
@@ -907,7 +907,7 @@ void Restore_CAD_Objects_from_file(void)
   fprintf(stderr,"Restoring CAD objects from file\n");
 #endif
 
-  // Restore from ~/.xastir/config/CAD_object.log
+  // Restore from ~/.astir/config/CAD_object.log
   file = get_user_base_dir("config/CAD_object.log", temp_file_path, sizeof(temp_file_path));
   f = fopen(file,"r");
 
@@ -1027,7 +1027,7 @@ void Restore_CAD_Objects_from_file(void)
     else if (strncasecmp(line,"label:",6) == 0)
     {
       //fprintf(stderr,"Found label:\n");
-      xastir_snprintf(CAD_list_head->label,
+      astir_snprintf(CAD_list_head->label,
                       sizeof(CAD_list_head->label),
                       "%s",
                       line+7);
@@ -1035,14 +1035,14 @@ void Restore_CAD_Objects_from_file(void)
     else if (strncasecmp(line,"comment:",8) == 0)
     {
       //fprintf(stderr,"Found comment:\n");
-      xastir_snprintf(CAD_list_head->comment,
+      astir_snprintf(CAD_list_head->comment,
                       sizeof(CAD_list_head->comment),
                       "%s",
                       line+9);
 
       if (strcmp(CAD_list_head->comment,"NULL")==0)
       {
-        xastir_snprintf(CAD_list_head->comment,
+        astir_snprintf(CAD_list_head->comment,
                         sizeof(CAD_list_head->comment),
                         "%c",
                         '\0'
@@ -1105,7 +1105,7 @@ void Draw_All_CAD_Objects(void)
     while (object_ptr != NULL)
     {
       probability = CAD_object_get_raw_probability(object_ptr,1);
-      xastir_snprintf(probability_string,
+      astir_snprintf(probability_string,
                       sizeof(probability_string),
                       "%01.1f%%",
                       probability);
@@ -1267,7 +1267,7 @@ void Format_area_for_output(double *area_km2, char *area_description, int sizeof
     if (area < 2787840.0)   // Switch at 0.5 miles squared
     {
       // Smaller area: Output in feet squared
-      xastir_snprintf(area_description,
+      astir_snprintf(area_description,
                       sizeof_area_description,
                       "A:%0.2f %s %s",
                       area,
@@ -1279,7 +1279,7 @@ void Format_area_for_output(double *area_km2, char *area_description, int sizeof
     {
       // Larger area: Output in miles squared
       area = area / 27878400.0;
-      xastir_snprintf(area_description,
+      astir_snprintf(area_description,
                       sizeof_area_description,
                       "A:%0.2f %s %s",
                       area,
@@ -1295,7 +1295,7 @@ void Format_area_for_output(double *area_km2, char *area_description, int sizeof
     if (area < 100000.0)   // Switch at 0.1 km squared
     {
       // Smaller area: Output in meters squared
-      xastir_snprintf(area_description,
+      astir_snprintf(area_description,
                       sizeof_area_description,
                       "A:%0.2f %s %s",
                       area,
@@ -1307,7 +1307,7 @@ void Format_area_for_output(double *area_km2, char *area_description, int sizeof
     {
       // Larger ara: Output in kilometers squared
       area = area / 1000000.0;
-      xastir_snprintf(area_description,
+      astir_snprintf(area_description,
                       sizeof_area_description,
                       "A:%0.2f %s %s",
                       area,

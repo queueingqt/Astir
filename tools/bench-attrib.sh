@@ -1,44 +1,44 @@
 #!/bin/bash
-# Run xastir at a known scale and collect the perf breakdown.  No screenshot,
+# Run astir at a known scale and collect the perf breakdown.  No screenshot,
 # so it does not care whether the session is locked or the screen has blanked.
 #
 #   ./bench-attrib.sh <lod_px> <zoomout_steps> <tag> [extra env assignments...]
 #
-# Example:  ./bench-attrib.sh 1.0 4 attrib XASTIR_FORCE_INDEX=1
+# Example:  ./bench-attrib.sh 1.0 4 attrib ASTIR_FORCE_INDEX=1
 set -eu
 LOD="$1"; ZOOM="$2"; TAG="$3"; shift 3
 cd "$(dirname "$0")/.."
 export XAUTHORITY=/run/user/1000/xauth_ZUnYLn DISPLAY=:0
 
 LOG="bench-${TAG}.log"
-# Bound this wait.  Xastir does not always die on SIGTERM -- an instance once
+# Bound this wait.  Astir does not always die on SIGTERM -- an instance once
 # survived it for 36 minutes and left this loop spinning forever, which is the
 # same unbounded-wait bug that already cost a session once.  Escalate, then give
 # up loudly rather than hanging.
-pkill -x xastir 2>/dev/null || true
+pkill -x astir 2>/dev/null || true
 waited=0
-while pgrep -x xastir >/dev/null; do
+while pgrep -x astir >/dev/null; do
   sleep 1; waited=$((waited+1))
-  [ "$waited" -eq 10 ] && pkill -KILL -x xastir 2>/dev/null || true
+  [ "$waited" -eq 10 ] && pkill -KILL -x astir 2>/dev/null || true
   if [ "$waited" -ge 20 ]; then
-    echo "a previous xastir will not die (pid $(pgrep -x xastir | head -1)); aborting" >&2
+    echo "a previous astir will not die (pid $(pgrep -x astir | head -1)); aborting" >&2
     exit 1
   fi
 done
 
-# Xastir saves zoom/centre on exit, so consecutive runs would each start where
+# Astir saves zoom/centre on exit, so consecutive runs would each start where
 # the previous finished.  Pin the same baseline view every run.
-BASE="$(pwd)/ab-baseline-xastir.cnf"
+BASE="$(pwd)/ab-baseline-astir.cnf"
 [ -f "$BASE" ] || { echo "missing $BASE"; exit 1; }
-cp "$BASE" ~/.xastir/config/xastir.cnf
+cp "$BASE" ~/.astir/config/astir.cnf
 
-env XASTIR_PERF=1 XASTIR_LOD_PX="$LOD" XASTIR_ZOOMOUT="$ZOOM" "$@" \
-  ./src/xastir > "$LOG" 2>&1 &
+env ASTIR_PERF=1 ASTIR_LOD_PX="$LOD" ASTIR_ZOOMOUT="$ZOOM" "$@" \
+  ./src/astir > "$LOG" 2>&1 &
 
 # Startup
 waited=0
 until grep -qa 'Done with WX Alert log files' "$LOG" 2>/dev/null; do
-  pgrep -x xastir >/dev/null || { echo "xastir exited early"; tail -5 "$LOG"; exit 1; }
+  pgrep -x astir >/dev/null || { echo "astir exited early"; tail -5 "$LOG"; exit 1; }
   sleep 3; waited=$((waited+3))
   [ "$waited" -lt 180 ] || { echo "startup timed out"; exit 1; }
 done
@@ -46,7 +46,7 @@ done
 if [ "$ZOOM" -gt 0 ]; then
   waited=0
   until grep -qa 'holding at final scale' "$LOG" 2>/dev/null; do
-    pgrep -x xastir >/dev/null || { echo "xastir exited early"; exit 1; }
+    pgrep -x astir >/dev/null || { echo "astir exited early"; exit 1; }
     sleep 5; waited=$((waited+5))
     [ "$waited" -lt 300 ] || { echo "never reached final scale"; break; }
   done
@@ -64,9 +64,9 @@ while [ "$waited" -lt "$MAXWAIT" ]; do
 done
 echo "== $TAG (lod=$LOD zoomout=$ZOOM $*) : $n frame(s) =="
 
-kill -TERM "$(pgrep -x xastir | head -1)" 2>/dev/null || true
-until ! pgrep -x xastir >/dev/null; do sleep 2; done
+kill -TERM "$(pgrep -x astir | head -1)" 2>/dev/null || true
+until ! pgrep -x astir >/dev/null; do sleep 2; done
 
 grep -a '^\[perf\]' "$LOG" || echo "  (no perf lines)"
 echo "--- session summary ---"
-sed -n '/=== xastir perf summary ===/,/^===========/p' "$LOG" || true
+sed -n '/=== astir perf summary ===/,/^===========/p' "$LOG" || true

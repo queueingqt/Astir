@@ -1,7 +1,7 @@
 # Copyright (C) 2000-2026 The Xastir Group
 #
 # This dbfawk file is used to map arbitrary dbf data that accompanies
-# a shapefile into Xastir canoncical values of:
+# a shapefile into Astir canoncical values of:
 #   key     - search key
 #   lanes   - width of feature (usually a road but applies to rivers, etc. too)
 #   color   - color to draw the road
@@ -16,7 +16,7 @@
 #  compatible.
 #
 # This file is used to map US Census Tiger/Line  shapefiles which are
-# converted to shapefiles using the Xastir_tigerpoly.py utility 
+# converted to shapefiles using the Astir_tigerpoly.py utility 
 
 # BEGIN is called once per dbf file which contains multiple records.
 BEGIN {

@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -43,8 +43,8 @@
 
 #include "core/util/snprintf.h"
 
-#include "core/xastir.h"
-#include "ui/motif/xastir_gui.h"
+#include "core/astir.h"
+#include "ui/motif/astir_gui.h"
 #include "ui/motif/wx_gui.h"
 #include "ui/motif/main_gui.h"
 #include "ui/motif/draw_symbols_gui.h"
@@ -143,11 +143,11 @@ void Set_CAD_object_parameters (Widget widget,
   target_object = (CADRow *)clientData;
 
   // set label, comment, and probability for area
-  xastir_snprintf(target_object->label,
+  astir_snprintf(target_object->label,
                   sizeof(target_object->label),
                   "%s", XmTextGetString(cad_label_data)
                  );
-  xastir_snprintf(target_object->comment,
+  astir_snprintf(target_object->comment,
                   sizeof(target_object->comment),
                   "%s", XmTextGetString(cad_comment_data)
                  );
@@ -678,7 +678,7 @@ void Set_CAD_object_parameters_dialog(char *area_description, CADRow *CAD_object
     // given an existing object, fill form with its information
     XmTextFieldSetString(cad_label_data,CAD_object->label);
     XmTextFieldSetString(cad_comment_data,CAD_object->comment);
-    xastir_snprintf(probability_string,
+    astir_snprintf(probability_string,
                     sizeof(probability_string),
                     "%01.2f",
                     CAD_object_get_raw_probability(CAD_object,1));
@@ -1157,7 +1157,7 @@ void Show_selected_CAD_object_details ( Widget UNUSED(w),
   int done = 0;        // has a cad object with a name matching the current selection been found
   double area;
   char area_description[sizeof_area_description];
-  xastir_snprintf(area_description, sizeof_area_description, "Area");
+  astir_snprintf(area_description, sizeof_area_description, "Area");
 
   if (cad_list_dialog!=NULL)
   {
@@ -1454,7 +1454,7 @@ void Draw_CAD_Objects_close_polygon( Widget UNUSED(widget),
   int n;
   //char temp_course[20];
   char area_description[sizeof_area_description];
-  xastir_snprintf(area_description, sizeof_area_description, "Area");
+  astir_snprintf(area_description, sizeof_area_description, "Area");
 
   // Check whether we're currently working on a polygon.  If not,
   // get out of here.

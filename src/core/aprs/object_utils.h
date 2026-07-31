@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -20,8 +20,8 @@
  *
  * Look at the README for more information on the program.
  */
-#ifndef __XASTIR_OBJECT_UTILS_H
-#define __XASTIR_OBJECT_UTILS_H
+#ifndef __ASTIR_OBJECT_UTILS_H
+#define __ASTIR_OBJECT_UTILS_H
 
 #include <stddef.h>
 

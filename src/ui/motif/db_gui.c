@@ -6,8 +6,8 @@
 #include "core/aprs/db_funcs.h"
 #include "ui/motif/db_gui.h"
 #include "core/util/snprintf.h"
-#include "core/xastir.h"
-#include "ui/motif/xastir_gui.h"
+#include "core/astir.h"
+#include "ui/motif/astir_gui.h"
 #include "ui/motif/wx_gui.h"
 #include "ui/motif/main_gui.h"
 #include "ui/motif/draw_symbols_gui.h"
@@ -87,8 +87,8 @@ char *db_station_info_callsign = NULL;
 XtPointer station_info_select_global = NULL;
 
 // Static mutex globals
-static xastir_mutex db_station_info_lock;
-static xastir_mutex db_station_popup_lock;
+static astir_mutex db_station_info_lock;
+static astir_mutex db_station_popup_lock;
 
 
 // ========================================================================
@@ -194,7 +194,7 @@ void Track_from_Station_data(Widget UNUSED(w), XtPointer clientData, XtPointer U
 
   if (p_station->call_sign[0] != '\0')
   {
-    xastir_snprintf(tracking_station_call,
+    astir_snprintf(tracking_station_call,
                     sizeof(tracking_station_call),
                     "%s",
                     p_station->call_sign);
@@ -320,7 +320,7 @@ void Station_data_add_fcc(Widget UNUSED(w), XtPointer clientData, XtPointer UNUS
   if (search_fcc_data_appl(station, &my_data)==1)
   {
     /*fprintf(stderr,"FCC call %s\n",station);*/
-    xastir_snprintf(temp, sizeof(temp), "%s\n%s %s\n%s %s %s\n%s %s, %s %s, %s %s\n\n",
+    astir_snprintf(temp, sizeof(temp), "%s\n%s %s\n%s %s %s\n%s %s, %s %s, %s %s\n\n",
                     langcode("STIFCC0001"),
                     langcode("STIFCC0003"),my_data.name_licensee,
                     langcode("STIFCC0004"),my_data.text_street,my_data.text_pobox,
@@ -345,7 +345,7 @@ void Station_data_add_rac(Widget UNUSED(w), XtPointer clientData, XtPointer UNUS
   rac_record my_data;
   char *station = (char *) clientData;
 
-  xastir_snprintf(temp,
+  astir_snprintf(temp,
                   sizeof(temp),
                   " ");
   (void)check_rac_data();
@@ -354,7 +354,7 @@ void Station_data_add_rac(Widget UNUSED(w), XtPointer clientData, XtPointer UNUS
   if (search_rac_data(station, &my_data)==1)
   {
     /*fprintf(stderr,"IC call %s\n",station);*/
-    xastir_snprintf(temp, sizeof(temp), "%s\n%s %s\n%s\n%s, %s\n%s\n",
+    astir_snprintf(temp, sizeof(temp), "%s\n%s %s\n%s\n%s, %s\n%s\n",
                     langcode("STIFCC0002"),my_data.first_name,my_data.last_name,my_data.address,
                     my_data.city,my_data.province,my_data.postal_code);
 
@@ -384,7 +384,7 @@ void Station_data_add_rac(Widget UNUSED(w), XtPointer clientData, XtPointer UNUS
 
     if (strlen(my_data.club_name) > 1)
     {
-      xastir_snprintf(club, sizeof(club), "%s\n%s\n%s, %s\n%s\n",
+      astir_snprintf(club, sizeof(club), "%s\n%s\n%s, %s\n%s\n",
                       my_data.club_name, my_data.club_address,
                       my_data.club_city, my_data.club_province, my_data.club_postal_code);
       strncat(temp,
@@ -473,7 +473,7 @@ void Station_query_trace(Widget UNUSED(w), XtPointer clientData, XtPointer UNUSE
   char call[25];
 
   pad_callsign(call,station);
-  xastir_snprintf(temp, sizeof(temp), ":%s:?APRST", call);
+  astir_snprintf(temp, sizeof(temp), ":%s:?APRST", call);
 
   // Nice to return via the reverse path here?  No!  Better to use the
   // default paths instead of a calculated reverse path.
@@ -492,7 +492,7 @@ void Station_query_messages(Widget UNUSED(w), XtPointer clientData, XtPointer UN
   char call[25];
 
   pad_callsign(call,station);
-  xastir_snprintf(temp, sizeof(temp), ":%s:?APRSM", call);
+  astir_snprintf(temp, sizeof(temp), ":%s:?APRSM", call);
 
   // Nice to return via the reverse path here?  No!  Better to use the
   // default paths instead of a calculated reverse path.
@@ -511,7 +511,7 @@ void Station_query_direct(Widget UNUSED(w), XtPointer clientData, XtPointer UNUS
   char call[25];
 
   pad_callsign(call,station);
-  xastir_snprintf(temp, sizeof(temp), ":%s:?APRSD", call);
+  astir_snprintf(temp, sizeof(temp), ":%s:?APRSD", call);
 
   // Nice to return via the reverse path here?  No!  Better to use the
   // default paths instead of a calculated reverse path.
@@ -530,7 +530,7 @@ void Station_query_version(Widget UNUSED(w), XtPointer clientData, XtPointer UNU
   char call[25];
 
   pad_callsign(call,station);
-  xastir_snprintf(temp, sizeof(temp), ":%s:?VER", call);
+  astir_snprintf(temp, sizeof(temp), ":%s:?VER", call);
 
   // Nice to return via the reverse path here?  No!  Better to use the
   // default paths instead of a calculated reverse path.
@@ -544,7 +544,7 @@ void General_query(Widget UNUSED(w), XtPointer clientData, XtPointer UNUSED(call
   char *location = (char *) clientData;
   char temp[50];
 
-  xastir_snprintf(temp, sizeof(temp), "?APRS?%s", location);
+  astir_snprintf(temp, sizeof(temp), "?APRS?%s", location);
   output_my_data(temp,-1,0,0,0,NULL);  // Not igating
 }
 
@@ -585,23 +585,23 @@ void Show_Aloha_Stats(Widget UNUSED(w), XtPointer UNUSED(clientData), XtPointer 
     minutes = time_since_aloha_update/60;
 
     if (hours == 1)
-      xastir_snprintf(Hours,sizeof(Hours),"%s",
+      astir_snprintf(Hours,sizeof(Hours),"%s",
                       langcode("TIME003")); // Hour
     else
-      xastir_snprintf(Hours,sizeof(Hours),"%s",
+      astir_snprintf(Hours,sizeof(Hours),"%s",
                       langcode("TIME004")); // Hours
 
 
     if (minutes == 1)
-      xastir_snprintf(Minutes,sizeof(Minutes),"%s",
+      astir_snprintf(Minutes,sizeof(Minutes),"%s",
                       langcode("TIME005")); // Minute
     else
-      xastir_snprintf(Minutes,sizeof(Minutes),"%s",
+      astir_snprintf(Minutes,sizeof(Minutes),"%s",
                       langcode("TIME006")); // Minutes
 
     // Build up the whole format string
     // "Aloha radius %d"
-    xastir_snprintf(format,sizeof(format),"%s",langcode("WPUPALO001"));
+    astir_snprintf(format,sizeof(format),"%s",langcode("WPUPALO001"));
     strncat(format,"\n",sizeof(format) - 1 - strlen(format));
     // "Stations inside...: %d"
     strncat(format,langcode("WPUPALO002"),sizeof(format) - 1 - strlen(format));
@@ -626,7 +626,7 @@ void Show_Aloha_Stats(Widget UNUSED(w), XtPointer UNUSED(clientData), XtPointer 
     strncat(format,"\n",sizeof(format) - 1 - strlen(format));
 
     // We now have the whole format string, now print using it:
-    xastir_snprintf(temp,sizeof(temp),format,
+    astir_snprintf(temp,sizeof(temp),format,
                     (english_units) ? (int)aloha_radius : (int)(aloha_radius * cvt_mi2len),
                     (english_units)?" miles":" km",
                     the_aloha_stats.total,
@@ -715,20 +715,20 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
     weather = p_station->weather_data;
 
     pos += strlen(temp);
-    xastir_snprintf(temp, sizeof(temp), langcode("WPUPSTI024"),weather->wx_type,weather->wx_station);
+    astir_snprintf(temp, sizeof(temp), langcode("WPUPSTI024"),weather->wx_type,weather->wx_station);
     XmTextInsert(si_text,pos,temp);
     pos += strlen(temp);
     sprintf(temp, "\n");
-    xastir_snprintf(temp, sizeof(temp), "\n");
+    astir_snprintf(temp, sizeof(temp), "\n");
     XmTextInsert(si_text,pos,temp);
     pos += strlen(temp);
     if (english_units)
     {
-      xastir_snprintf(temp, sizeof(temp), langcode("WPUPSTI026"),weather->wx_course,weather->wx_speed);
+      astir_snprintf(temp, sizeof(temp), langcode("WPUPSTI026"),weather->wx_course,weather->wx_speed);
     }
     else
     {
-      xastir_snprintf(temp, sizeof(temp), langcode("WPUPSTI025"),weather->wx_course,(int)(atof(weather->wx_speed)*1.6094));
+      astir_snprintf(temp, sizeof(temp), langcode("WPUPSTI025"),weather->wx_course,(int)(atof(weather->wx_speed)*1.6094));
     }
 
     XmTextInsert(si_text,pos,temp);
@@ -738,11 +738,11 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
     {
       if (english_units)
       {
-        xastir_snprintf(temp, sizeof(temp), langcode("WPUPSTI028"),weather->wx_gust);
+        astir_snprintf(temp, sizeof(temp), langcode("WPUPSTI028"),weather->wx_gust);
       }
       else
       {
-        xastir_snprintf(temp, sizeof(temp), langcode("WPUPSTI027"),(int)(atof(weather->wx_gust)*1.6094));
+        astir_snprintf(temp, sizeof(temp), langcode("WPUPSTI027"),(int)(atof(weather->wx_gust)*1.6094));
       }
 
       strncat(temp,
@@ -751,7 +751,7 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
     }
     else
     {
-      xastir_snprintf(temp, sizeof(temp), "\n");
+      astir_snprintf(temp, sizeof(temp), "\n");
     }
 
     XmTextInsert(si_text, pos, temp);
@@ -761,12 +761,12 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
     {
       if (english_units)
       {
-        xastir_snprintf(temp, sizeof(temp), langcode("WPUPSTI030"),weather->wx_temp);
+        astir_snprintf(temp, sizeof(temp), langcode("WPUPSTI030"),weather->wx_temp);
       }
       else
       {
         temp_out_C =(((atof(weather->wx_temp)-32)*5.0)/9.0);
-        xastir_snprintf(temp, sizeof(temp), langcode("WPUPSTI029"),temp_out_C);
+        astir_snprintf(temp, sizeof(temp), langcode("WPUPSTI029"),temp_out_C);
       }
       XmTextInsert(si_text,pos,temp);
       pos += strlen(temp);
@@ -774,7 +774,7 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
 
     if (strlen(weather->wx_hum) > 0)
     {
-      xastir_snprintf(temp, sizeof(temp), langcode("WPUPSTI031"),weather->wx_hum);
+      astir_snprintf(temp, sizeof(temp), langcode("WPUPSTI031"),weather->wx_hum);
       XmTextInsert(si_text,pos,temp);
       pos += strlen(temp);
     }
@@ -792,7 +792,7 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
       e = (float)(6.112 * pow(10,(7.5 * temp_out_C)/(237.7 + temp_out_C)) * atof(weather->wx_hum) / 100.0);
       humidex = (temp_out_C + ((5.0/9.0) * (e-10.0)));
 
-      xastir_snprintf(temp, sizeof(temp), langcode("WPUPSTI032"),humidex);
+      astir_snprintf(temp, sizeof(temp), langcode("WPUPSTI032"),humidex);
       XmTextInsert(si_text,pos,temp);
       pos += strlen(temp);
     }
@@ -801,19 +801,19 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
     {
       if (!english_units)    // hPa
       {
-        xastir_snprintf(temp, sizeof(temp),
+        astir_snprintf(temp, sizeof(temp),
                         langcode("WPUPSTI033"),
                         weather->wx_baro);
       }
       else    // Inches Mercury
       {
-        xastir_snprintf(temp, sizeof(temp),
+        astir_snprintf(temp, sizeof(temp),
                         langcode("WPUPSTI063"),
                         atof(weather->wx_baro)*0.02953);
       }
       XmTextInsert(si_text,pos,temp);
       pos += strlen(temp);
-      xastir_snprintf(temp, sizeof(temp), "\n");
+      astir_snprintf(temp, sizeof(temp), "\n");
       XmTextInsert(si_text,pos,temp);
       pos += strlen(temp);
     }
@@ -821,7 +821,7 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
     {
       if(last_pos!=pos)
       {
-        xastir_snprintf(temp, sizeof(temp), "\n");
+        astir_snprintf(temp, sizeof(temp), "\n");
         XmTextInsert(si_text,pos,temp);
         pos += strlen(temp);
       }
@@ -831,15 +831,15 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
     {
       if(english_units)
       {
-        xastir_snprintf(temp, sizeof(temp), langcode("WPUPSTI035"),atof(weather->wx_snow));
+        astir_snprintf(temp, sizeof(temp), langcode("WPUPSTI035"),atof(weather->wx_snow));
       }
       else
       {
-        xastir_snprintf(temp, sizeof(temp), langcode("WPUPSTI034"),atof(weather->wx_snow)*2.54);
+        astir_snprintf(temp, sizeof(temp), langcode("WPUPSTI034"),atof(weather->wx_snow)*2.54);
       }
       XmTextInsert(si_text,pos,temp);
       pos += strlen(temp);
-      xastir_snprintf(temp, sizeof(temp), "\n");
+      astir_snprintf(temp, sizeof(temp), "\n");
       XmTextInsert(si_text,pos,temp);
       pos += strlen(temp);
     }
@@ -847,7 +847,7 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
     if (strlen(weather->wx_rain) > 0 || strlen(weather->wx_prec_00) > 0
         || strlen(weather->wx_prec_24) > 0)
     {
-      xastir_snprintf(temp, sizeof(temp), "%s", langcode("WPUPSTI036"));
+      astir_snprintf(temp, sizeof(temp), "%s", langcode("WPUPSTI036"));
       XmTextInsert(si_text,pos,temp);
       pos += strlen(temp);
     }
@@ -856,11 +856,11 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
     {
       if (english_units)
       {
-        xastir_snprintf(temp, sizeof(temp), langcode("WPUPSTI038"),atof(weather->wx_rain)/100.0);
+        astir_snprintf(temp, sizeof(temp), langcode("WPUPSTI038"),atof(weather->wx_rain)/100.0);
       }
       else
       {
-        xastir_snprintf(temp, sizeof(temp), langcode("WPUPSTI037"),atof(weather->wx_rain)*.254);
+        astir_snprintf(temp, sizeof(temp), langcode("WPUPSTI037"),atof(weather->wx_rain)*.254);
       }
 
       XmTextInsert(si_text,pos,temp);
@@ -871,11 +871,11 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
     {
       if(english_units)
       {
-        xastir_snprintf(temp, sizeof(temp), langcode("WPUPSTI040"),atof(weather->wx_prec_24)/100.0);
+        astir_snprintf(temp, sizeof(temp), langcode("WPUPSTI040"),atof(weather->wx_prec_24)/100.0);
       }
       else
       {
-        xastir_snprintf(temp, sizeof(temp), langcode("WPUPSTI039"),atof(weather->wx_prec_24)*.254);
+        astir_snprintf(temp, sizeof(temp), langcode("WPUPSTI039"),atof(weather->wx_prec_24)*.254);
       }
 
       XmTextInsert(si_text,pos,temp);
@@ -886,11 +886,11 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
     {
       if (english_units)
       {
-        xastir_snprintf(temp, sizeof(temp), langcode("WPUPSTI042"),atof(weather->wx_prec_00)/100.0);
+        astir_snprintf(temp, sizeof(temp), langcode("WPUPSTI042"),atof(weather->wx_prec_00)/100.0);
       }
       else
       {
-        xastir_snprintf(temp, sizeof(temp), langcode("WPUPSTI041"),atof(weather->wx_prec_00)*.254);
+        astir_snprintf(temp, sizeof(temp), langcode("WPUPSTI041"),atof(weather->wx_prec_00)*.254);
       }
 
       XmTextInsert(si_text,pos,temp);
@@ -899,16 +899,16 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
 
     if (strlen(weather->wx_rain_total) > 0)
     {
-      xastir_snprintf(temp, sizeof(temp), "\n%s",langcode("WPUPSTI046"));
+      astir_snprintf(temp, sizeof(temp), "\n%s",langcode("WPUPSTI046"));
       XmTextInsert(si_text,pos,temp);
       pos += strlen(temp);
       if (english_units)
       {
-        xastir_snprintf(temp, sizeof(temp), langcode("WPUPSTI048"),atof(weather->wx_rain_total)/100.0);
+        astir_snprintf(temp, sizeof(temp), langcode("WPUPSTI048"),atof(weather->wx_rain_total)/100.0);
       }
       else
       {
-        xastir_snprintf(temp, sizeof(temp), langcode("WPUPSTI047"),atof(weather->wx_rain_total)*.254);
+        astir_snprintf(temp, sizeof(temp), langcode("WPUPSTI047"),atof(weather->wx_rain_total)*.254);
       }
 
       XmTextInsert(si_text,pos,temp);
@@ -920,12 +920,12 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
     {
       if (english_units)
       {
-        xastir_snprintf(temp, sizeof(temp), langcode("WPUPSTI061"),weather->wx_fuel_temp);
+        astir_snprintf(temp, sizeof(temp), langcode("WPUPSTI061"),weather->wx_fuel_temp);
       }
       else
       {
         temp_out_C =(((atof(weather->wx_fuel_temp)-32)*5.0)/9.0);
-        xastir_snprintf(temp, sizeof(temp), langcode("WPUPSTI060"),temp_out_C);
+        astir_snprintf(temp, sizeof(temp), langcode("WPUPSTI060"),temp_out_C);
       }
       XmTextInsert(si_text,pos,temp);
       pos += strlen(temp);
@@ -933,12 +933,12 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
 
     if (strlen(weather->wx_fuel_moisture) > 0)
     {
-      xastir_snprintf(temp, sizeof(temp), langcode("WPUPSTI062"),weather->wx_fuel_moisture);
+      astir_snprintf(temp, sizeof(temp), langcode("WPUPSTI062"),weather->wx_fuel_moisture);
       XmTextInsert(si_text,pos,temp);
       pos += strlen(temp);
     }
 
-    xastir_snprintf(temp, sizeof(temp), "\n\n");
+    astir_snprintf(temp, sizeof(temp), "\n\n");
 
     XmTextInsert(si_text,pos,temp);
     pos += strlen(temp);
@@ -946,11 +946,11 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
 
 
   // Packets received ...
-  xastir_snprintf(temp, sizeof(temp), langcode("WPUPSTI005"),p_station->num_packets);
+  astir_snprintf(temp, sizeof(temp), langcode("WPUPSTI005"),p_station->num_packets);
   XmTextInsert(si_text,pos,temp);
   pos += strlen(temp);
 
-  xastir_snprintf(temp,
+  astir_snprintf(temp,
                   sizeof(temp),
                   "%s",
                   p_station->packet_time);
@@ -959,7 +959,7 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
   XmTextInsert(si_text,pos,temp);
   pos += strlen(temp);
 
-  xastir_snprintf(temp,
+  astir_snprintf(temp,
                   sizeof(temp),
                   "%s",
                   p_station->packet_time+2);
@@ -968,7 +968,7 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
   XmTextInsert(si_text,pos,temp);
   pos += strlen(temp);
 
-  xastir_snprintf(temp,
+  astir_snprintf(temp,
                   sizeof(temp),
                   "%s",
                   p_station->packet_time+4);
@@ -977,7 +977,7 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
   XmTextInsert(si_text,pos,temp);
   pos += strlen(temp);
 
-  xastir_snprintf(temp,
+  astir_snprintf(temp,
                   sizeof(temp),
                   "%s",
                   p_station->packet_time+8);
@@ -986,7 +986,7 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
   XmTextInsert(si_text,pos,temp);
   pos += strlen(temp);
 
-  xastir_snprintf(temp,
+  astir_snprintf(temp,
                   sizeof(temp),
                   "%s",
                   p_station->packet_time+10);
@@ -995,7 +995,7 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
   XmTextInsert(si_text,pos,temp);
   pos += strlen(temp);
 
-  xastir_snprintf(temp,
+  astir_snprintf(temp,
                   sizeof(temp),
                   "%s",
                   p_station->packet_time+12);
@@ -1007,10 +1007,10 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
   // Object
   if (strlen(p_station->origin) > 0)
   {
-    xastir_snprintf(temp, sizeof(temp), langcode("WPUPSTI000"),p_station->origin);
+    astir_snprintf(temp, sizeof(temp), langcode("WPUPSTI000"),p_station->origin);
     XmTextInsert(si_text,pos,temp);
     pos += strlen(temp);
-    xastir_snprintf(temp, sizeof(temp), "\n");
+    astir_snprintf(temp, sizeof(temp), "\n");
     XmTextInsert(si_text,pos,temp);
     pos += strlen(temp);
   }
@@ -1019,10 +1019,10 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
   if (p_station->tactical_call_sign
       && p_station->tactical_call_sign[0] != '\0')
   {
-    xastir_snprintf(temp, sizeof(temp), langcode("WPUPSTI065"), p_station->tactical_call_sign);
+    astir_snprintf(temp, sizeof(temp), langcode("WPUPSTI065"), p_station->tactical_call_sign);
     XmTextInsert(si_text,pos,temp);
     pos += strlen(temp);
-    xastir_snprintf(temp, sizeof(temp), "\n");
+    astir_snprintf(temp, sizeof(temp), "\n");
     XmTextInsert(si_text,pos,temp);
     pos += strlen(temp);
   }
@@ -1030,13 +1030,13 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
   // Heard via TNC ...
   if ((p_station->flag & ST_VIATNC) != 0)          // test "via TNC" flag
   {
-    xastir_snprintf(temp, sizeof(temp), langcode("WPUPSTI006"),p_station->heard_via_tnc_port);
+    astir_snprintf(temp, sizeof(temp), langcode("WPUPSTI006"),p_station->heard_via_tnc_port);
     XmTextInsert(si_text,pos,temp);
     pos += strlen(temp);
   }
   else
   {
-    xastir_snprintf(temp, sizeof(temp), "%s", langcode("WPUPSTI007"));
+    astir_snprintf(temp, sizeof(temp), "%s", langcode("WPUPSTI007"));
     XmTextInsert(si_text,pos,temp);
     pos += strlen(temp);
   }
@@ -1044,27 +1044,27 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
   switch(p_station->data_via)
   {
     case('L'):
-      xastir_snprintf(temp, sizeof(temp), "%s", langcode("WPUPSTI008"));
+      astir_snprintf(temp, sizeof(temp), "%s", langcode("WPUPSTI008"));
       break;
 
     case('T'):
-      xastir_snprintf(temp, sizeof(temp), langcode("WPUPSTI009"),p_station->last_port_heard);
+      astir_snprintf(temp, sizeof(temp), langcode("WPUPSTI009"),p_station->last_port_heard);
       break;
 
     case('I'):
-      xastir_snprintf(temp, sizeof(temp), langcode("WPUPSTI010"),p_station->last_port_heard);
+      astir_snprintf(temp, sizeof(temp), langcode("WPUPSTI010"),p_station->last_port_heard);
       break;
 
     case('F'):
-      xastir_snprintf(temp, sizeof(temp), "%s", langcode("WPUPSTI011"));
+      astir_snprintf(temp, sizeof(temp), "%s", langcode("WPUPSTI011"));
       break;
 
     case(DATA_VIA_DATABASE):
-      xastir_snprintf(temp, sizeof(temp), "last via db on interface %d",p_station->last_port_heard);
+      astir_snprintf(temp, sizeof(temp), "last via db on interface %d",p_station->last_port_heard);
       break;
 
     default:
-      xastir_snprintf(temp, sizeof(temp), "%s", langcode("WPUPSTI012"));
+      astir_snprintf(temp, sizeof(temp), "%s", langcode("WPUPSTI012"));
       break;
   }
   XmTextInsert(si_text,pos,temp);
@@ -1072,11 +1072,11 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
 
   if (p_station->newest_trackpoint != NULL)
   {
-    xastir_snprintf(temp, sizeof(temp), "%s", langcode("WPUPSTI013"));
+    astir_snprintf(temp, sizeof(temp), "%s", langcode("WPUPSTI013"));
     XmTextInsert(si_text,pos,temp);
     pos += strlen(temp);
   }
-  xastir_snprintf(temp, sizeof(temp), "\n");
+  astir_snprintf(temp, sizeof(temp), "\n");
   XmTextInsert(si_text,pos,temp);
   pos += strlen(temp);
 
@@ -1085,7 +1085,7 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
   //    if (is_my_call(p_station->call_sign,1)) {
   if ( is_my_station(p_station) )
   {
-    xastir_snprintf(temp, sizeof(temp), "%s", langcode("WPUPSTI055"));
+    astir_snprintf(temp, sizeof(temp), "%s", langcode("WPUPSTI055"));
     XmTextInsert(si_text,pos,temp);
     pos += strlen(temp);
     for (i=0; i<6; i++)
@@ -1095,11 +1095,11 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
         break;
       }
 
-      xastir_snprintf(temp, sizeof(temp), " %s",echo_digis[i]);
+      astir_snprintf(temp, sizeof(temp), " %s",echo_digis[i]);
       XmTextInsert(si_text,pos,temp);
       pos += strlen(temp);
     }
-    xastir_snprintf(temp, sizeof(temp), "\n");
+    astir_snprintf(temp, sizeof(temp), "\n");
     XmTextInsert(si_text,pos,temp);
     pos += strlen(temp);
   }
@@ -1107,16 +1107,16 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
   // Data Path ...
   if (p_station->node_path_ptr != NULL)
   {
-    xastir_snprintf(temp, sizeof(temp), langcode("WPUPSTI043"),p_station->node_path_ptr);
+    astir_snprintf(temp, sizeof(temp), langcode("WPUPSTI043"),p_station->node_path_ptr);
   }
   else
   {
-    xastir_snprintf(temp, sizeof(temp), langcode("WPUPSTI043"), "");
+    astir_snprintf(temp, sizeof(temp), langcode("WPUPSTI043"), "");
   }
 
   XmTextInsert(si_text,pos,temp);
   pos += strlen(temp);
-  xastir_snprintf(temp, sizeof(temp), "\n");
+  astir_snprintf(temp, sizeof(temp), "\n");
   XmTextInsert(si_text,pos,temp);
   pos += strlen(temp);
 
@@ -1139,7 +1139,7 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
       sec = ptr->sec_heard;
       time = localtime(&sec);
 
-      xastir_snprintf(temp,
+      astir_snprintf(temp,
                       sizeof(temp),
                       langcode("WPUPSTI059"),
                       time->tm_mon + 1,
@@ -1150,7 +1150,7 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
       XmTextInsert(si_text,pos,temp);
       pos += strlen(temp);
 
-      xastir_snprintf(temp, sizeof(temp), "\n");
+      astir_snprintf(temp, sizeof(temp), "\n");
 
       XmTextInsert(si_text,pos,temp);
       pos += strlen(temp);
@@ -1161,10 +1161,10 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
 
 //    // Comments ...
 //    if(strlen(p_station->comments)>0) {
-//        xastir_snprintf(temp, sizeof(temp), langcode("WPUPSTI044"),p_station->comments);
+//        astir_snprintf(temp, sizeof(temp), langcode("WPUPSTI044"),p_station->comments);
 //        XmTextInsert(si_text,pos,temp);
 //        pos += strlen(temp);
-//        xastir_snprintf(temp, sizeof(temp), "\n");
+//        astir_snprintf(temp, sizeof(temp), "\n");
 //        XmTextInsert(si_text,pos,temp);
 //        pos += strlen(temp);
 //    }
@@ -1188,7 +1188,7 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
       sec = ptr->sec_heard;
       time = localtime(&sec);
 
-      xastir_snprintf(temp,
+      astir_snprintf(temp,
                       sizeof(temp),
                       langcode("WPUPSTI044"),
                       time->tm_mon + 1,
@@ -1199,7 +1199,7 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
       XmTextInsert(si_text,pos,temp);
       pos += strlen(temp);
 
-      xastir_snprintf(temp, sizeof(temp), "\n");
+      astir_snprintf(temp, sizeof(temp), "\n");
 
       XmTextInsert(si_text,pos,temp);
       pos += strlen(temp);
@@ -1214,7 +1214,7 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
     if (p_station->power_gain[0] == 'R')
     {
       // Found a Range
-      xastir_snprintf(temp,
+      astir_snprintf(temp,
                       sizeof(temp),
                       langcode("WPUPSTI067"),
                       atoi(&p_station->power_gain[3]));
@@ -1247,7 +1247,7 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
   }
   else if (p_station->flag & (ST_OBJECT | ST_ITEM))
   {
-    xastir_snprintf(temp,
+    astir_snprintf(temp,
                     sizeof(temp),
                     "%s %s",
                     langcode("WPUPSTI014"), // "Current Power Gain:"
@@ -1255,7 +1255,7 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
   }
   else if (english_units)
   {
-    xastir_snprintf(temp,
+    astir_snprintf(temp,
                     sizeof(temp),
                     "%s %s (9W @ 20ft %s, 3dB %s, %s 6.2mi)",
                     langcode("WPUPSTI014"), // "Current Power Gain:"
@@ -1267,7 +1267,7 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
   }
   else
   {
-    xastir_snprintf(temp,
+    astir_snprintf(temp,
                     sizeof(temp),
                     "%s %s (9W @ 6.1m %s, 3dB %s, %s 10.0km)",
                     langcode("WPUPSTI014"), // "Current Power Gain:"
@@ -1281,7 +1281,7 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
 
   XmTextInsert(si_text,pos,temp);
   pos += strlen(temp);
-  xastir_snprintf(temp, sizeof(temp), "\n");
+  astir_snprintf(temp, sizeof(temp), "\n");
   XmTextInsert(si_text,pos,temp);
   pos += strlen(temp);
 
@@ -1291,7 +1291,7 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
     shg_decode(langcode("WPUPSTI057"), p_station->signal_gain, temp, sizeof(temp) , english_units);
     XmTextInsert(si_text,pos,temp);
     pos += strlen(temp);
-    xastir_snprintf(temp, sizeof(temp), "\n");
+    astir_snprintf(temp, sizeof(temp), "\n");
     XmTextInsert(si_text,pos,temp);
     pos += strlen(temp);
   }
@@ -1300,7 +1300,7 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
     bearing_decode(langcode("WPUPSTI058"), p_station->bearing, p_station->NRQ, temp, sizeof(temp), english_units );
     XmTextInsert(si_text,pos,temp);
     pos += strlen(temp);
-    xastir_snprintf(temp, sizeof(temp), "\n");
+    astir_snprintf(temp, sizeof(temp), "\n");
     XmTextInsert(si_text,pos,temp);
     pos += strlen(temp);
   }
@@ -1308,10 +1308,10 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
   // Signpost Data
   if (strlen(p_station->signpost) > 0)
   {
-    xastir_snprintf(temp, sizeof(temp), "%s: %s",langcode("POPUPOB029"), p_station->signpost);
+    astir_snprintf(temp, sizeof(temp), "%s: %s",langcode("POPUPOB029"), p_station->signpost);
     XmTextInsert(si_text,pos,temp);
     pos += strlen(temp);
-    xastir_snprintf(temp, sizeof(temp), "\n");
+    astir_snprintf(temp, sizeof(temp), "\n");
     XmTextInsert(si_text,pos,temp);
     pos += strlen(temp);
   }
@@ -1322,11 +1322,11 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
   {
     if (english_units)
     {
-      xastir_snprintf(temp, sizeof(temp), langcode("WPUPSTI016"),atof(p_station->altitude)*3.28084,"ft");
+      astir_snprintf(temp, sizeof(temp), langcode("WPUPSTI016"),atof(p_station->altitude)*3.28084,"ft");
     }
     else
     {
-      xastir_snprintf(temp, sizeof(temp), langcode("WPUPSTI016"),atof(p_station->altitude),"m");
+      astir_snprintf(temp, sizeof(temp), langcode("WPUPSTI016"),atof(p_station->altitude),"m");
     }
 
     XmTextInsert(si_text,pos,temp);
@@ -1336,7 +1336,7 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
   // Course ...
   if (strlen(p_station->course) > 0)
   {
-    xastir_snprintf(temp, sizeof(temp), langcode("WPUPSTI017"),p_station->course);
+    astir_snprintf(temp, sizeof(temp), langcode("WPUPSTI017"),p_station->course);
     XmTextInsert(si_text,pos,temp);
     pos += strlen(temp);
   }
@@ -1346,12 +1346,12 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
   {
     if (english_units)
     {
-      xastir_snprintf(temp, sizeof(temp), langcode("WPUPSTI019"),atof(p_station->speed)*1.1508);
+      astir_snprintf(temp, sizeof(temp), langcode("WPUPSTI019"),atof(p_station->speed)*1.1508);
     }
 
     else
     {
-      xastir_snprintf(temp, sizeof(temp), langcode("WPUPSTI018"),atof(p_station->speed)*1.852);
+      astir_snprintf(temp, sizeof(temp), langcode("WPUPSTI018"),atof(p_station->speed)*1.852);
     }
 
     XmTextInsert(si_text,pos,temp);
@@ -1360,7 +1360,7 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
 
   if (last_pos!=pos)
   {
-    xastir_snprintf(temp, sizeof(temp), "\n");
+    astir_snprintf(temp, sizeof(temp), "\n");
     XmTextInsert(si_text,pos,temp);
     pos += strlen(temp);
   }
@@ -1386,7 +1386,7 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
     {
       if (value*1.15078 < 0.99)
       {
-        xastir_snprintf(temp_my_distance,
+        astir_snprintf(temp_my_distance,
                         sizeof(temp_my_distance),
                         "%d %s",
                         (int)(value*1.15078*1760),
@@ -1394,7 +1394,7 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
       }
       else
       {
-        xastir_snprintf(temp_my_distance,
+        astir_snprintf(temp_my_distance,
                         sizeof(temp_my_distance),
                         langcode("WPUPSTI020"),     // miles
                         value*1.15078);
@@ -1404,7 +1404,7 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
     {
       if (value*1.852 < 0.99)
       {
-        xastir_snprintf(temp_my_distance,
+        astir_snprintf(temp_my_distance,
                         sizeof(temp_my_distance),
                         "%d %s",
                         (int)(value*1.852*1000),
@@ -1412,21 +1412,21 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
       }
       else
       {
-        xastir_snprintf(temp_my_distance,
+        astir_snprintf(temp_my_distance,
                         sizeof(temp_my_distance),
                         langcode("WPUPSTI021"),     // km
                         value*1.852);
       }
     }
-    xastir_snprintf(temp_my_course, sizeof(temp_my_course), "%s\xB0",temp1_my_course);
-    xastir_snprintf(temp, sizeof(temp), langcode("WPUPSTI022"),temp_my_distance,temp_my_course);
+    astir_snprintf(temp_my_course, sizeof(temp_my_course), "%s\xB0",temp1_my_course);
+    astir_snprintf(temp, sizeof(temp), langcode("WPUPSTI022"),temp_my_distance,temp_my_course);
     XmTextInsert(si_text,pos,temp);
     pos += strlen(temp);
   }
 
   if(last_pos!=pos)
   {
-    xastir_snprintf(temp, sizeof(temp), "\n");
+    astir_snprintf(temp, sizeof(temp), "\n");
     XmTextInsert(si_text,pos,temp);
     pos += strlen(temp);
   }
@@ -1434,7 +1434,7 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
   // Last Position
   sec  = p_station->sec_heard;
   time = localtime(&sec);
-  xastir_snprintf(temp, sizeof(temp), "%s%02d/%02d  %02d:%02d   ",langcode("WPUPSTI023"),
+  astir_snprintf(temp, sizeof(temp), "%s%02d/%02d  %02d:%02d   ",langcode("WPUPSTI023"),
                   time->tm_mon + 1, time->tm_mday,time->tm_hour,time->tm_min);
   XmTextInsert(si_text,pos,temp);
   pos += strlen(temp);
@@ -1442,14 +1442,14 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
   if (coordinate_system == USE_UTM
       || coordinate_system == USE_UTM_SPECIAL)
   {
-    convert_xastir_to_UTM_str(temp, sizeof(temp),
+    convert_astir_to_UTM_str(temp, sizeof(temp),
                               p_station->coord_lon, p_station->coord_lat);
     XmTextInsert(si_text,pos,temp);
     pos += strlen(temp);
   }
   else if (coordinate_system == USE_MGRS)
   {
-    convert_xastir_to_MGRS_str(temp,
+    convert_astir_to_MGRS_str(temp,
                                sizeof(temp),
                                p_station->coord_lon,
                                p_station->coord_lat,
@@ -1474,7 +1474,7 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
     XmTextInsert(si_text,pos,temp);
     pos += strlen(temp);
 
-    xastir_snprintf(temp, sizeof(temp), "  ");
+    astir_snprintf(temp, sizeof(temp), "  ");
     XmTextInsert(si_text,pos,temp);
     pos += strlen(temp);
 
@@ -1496,7 +1496,7 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
 
   if (p_station->altitude[0] != '\0')
   {
-    xastir_snprintf(temp, sizeof(temp), " %5.0f%s", atof(p_station->altitude)*cvt_m2len, un_alt);
+    astir_snprintf(temp, sizeof(temp), " %5.0f%s", atof(p_station->altitude)*cvt_m2len, un_alt);
   }
   else
   {
@@ -1507,7 +1507,7 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
 
   if (p_station->speed[0] != '\0')
   {
-    xastir_snprintf(temp, sizeof(temp), " %4.0f%s",atof(p_station->speed)*cvt_kn2len,un_spd);
+    astir_snprintf(temp, sizeof(temp), " %4.0f%s",atof(p_station->speed)*cvt_kn2len,un_spd);
   }
   else
   {
@@ -1518,11 +1518,11 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
 
   if (p_station->course[0] != '\0')
   {
-    xastir_snprintf(temp, sizeof(temp), " %3d\xB0",atoi(p_station->course));
+    astir_snprintf(temp, sizeof(temp), " %3d\xB0",atoi(p_station->course));
   }
   else
   {
-    xastir_snprintf(temp, sizeof(temp), "     ");
+    astir_snprintf(temp, sizeof(temp), "     ");
   }
 
   XmTextInsert(si_text,pos,temp);
@@ -1530,18 +1530,18 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
 
   // dl9sau
   // Maidenhead Grid Locator
-  xastir_snprintf(temp, sizeof(temp), "  %s", sec_to_loc(p_station->coord_lon, p_station->coord_lat) );
+  astir_snprintf(temp, sizeof(temp), "  %s", sec_to_loc(p_station->coord_lon, p_station->coord_lat) );
   XmTextInsert(si_text,pos,temp);
   pos += strlen(temp);
 
   if ((p_station->flag & ST_DIRECT) != 0)
   {
-    xastir_snprintf(temp, sizeof(temp), " *\n");
+    astir_snprintf(temp, sizeof(temp), " *\n");
   }
 
   else
   {
-    xastir_snprintf(temp, sizeof(temp), "  \n");
+    astir_snprintf(temp, sizeof(temp), "  \n");
   }
 
   XmTextInsert(si_text,pos,temp);
@@ -1570,10 +1570,10 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
       sec  = ptr->sec;
       time = localtime(&sec);
       if ((ptr->flag & TR_NEWTRK) != '\0')
-        xastir_snprintf(temp, sizeof(temp), "            +  %02d/%02d  %02d:%02d   ",
+        astir_snprintf(temp, sizeof(temp), "            +  %02d/%02d  %02d:%02d   ",
                         time->tm_mon + 1,time->tm_mday,time->tm_hour,time->tm_min);
       else
-        xastir_snprintf(temp, sizeof(temp), "               %02d/%02d  %02d:%02d   ",
+        astir_snprintf(temp, sizeof(temp), "               %02d/%02d  %02d:%02d   ",
                         time->tm_mon + 1,time->tm_mday,time->tm_hour,time->tm_min);
 
       XmTextInsert(si_text,pos,temp);
@@ -1582,7 +1582,7 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
       if (coordinate_system == USE_UTM
           || coordinate_system == USE_UTM_SPECIAL)
       {
-        convert_xastir_to_UTM_str(temp, sizeof(temp),
+        convert_astir_to_UTM_str(temp, sizeof(temp),
                                   ptr->trail_long_pos,
                                   ptr->trail_lat_pos);
         XmTextInsert(si_text,pos,temp);
@@ -1590,7 +1590,7 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
       }
       else if (coordinate_system == USE_MGRS)
       {
-        convert_xastir_to_MGRS_str(temp,
+        convert_astir_to_MGRS_str(temp,
                                    sizeof(temp),
                                    ptr->trail_long_pos,
                                    ptr->trail_lat_pos,
@@ -1624,7 +1624,7 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
         XmTextInsert(si_text,pos,temp);
         pos += strlen(temp);
 
-        xastir_snprintf(temp, sizeof(temp), "  ");
+        astir_snprintf(temp, sizeof(temp), "  ");
         XmTextInsert(si_text,pos,temp);
         pos += strlen(temp);
 
@@ -1654,7 +1654,7 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
       }
 
       if (ptr->altitude > -99999l)
-        xastir_snprintf(temp, sizeof(temp), " %5.0f%s",
+        astir_snprintf(temp, sizeof(temp), " %5.0f%s",
                         ptr->altitude * cvt_dm2len,
                         un_alt);
       else
@@ -1666,7 +1666,7 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
       pos += strlen(temp);
 
       if (ptr->speed >= 0)
-        xastir_snprintf(temp, sizeof(temp), " %4.0f%s",
+        astir_snprintf(temp, sizeof(temp), " %4.0f%s",
                         ptr->speed * cvt_hm2len,
                         un_spd);
       else
@@ -1678,18 +1678,18 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
       pos += strlen(temp);
 
       if (ptr->course >= 0)
-        xastir_snprintf(temp, sizeof(temp), " %3d\xB0",
+        astir_snprintf(temp, sizeof(temp), " %3d\xB0",
                         ptr->course);
       else
       {
-        xastir_snprintf(temp, sizeof(temp), "     ");
+        astir_snprintf(temp, sizeof(temp), "     ");
       }
 
       XmTextInsert(si_text,pos,temp);
       pos += strlen(temp);
 
       // dl9sau
-      xastir_snprintf(temp, sizeof(temp), "  %s",
+      astir_snprintf(temp, sizeof(temp), "  %s",
                       sec_to_loc(ptr->trail_long_pos,
                                  ptr->trail_lat_pos) );
       XmTextInsert(si_text,pos,temp);
@@ -1697,11 +1697,11 @@ void station_data_fill_in ( Widget w, XtPointer clientData, XtPointer calldata )
 
       if ((ptr->flag & TR_LOCAL) != '\0')
       {
-        xastir_snprintf(temp, sizeof(temp), " *\n");
+        astir_snprintf(temp, sizeof(temp), " *\n");
       }
       else
       {
-        xastir_snprintf(temp, sizeof(temp), "  \n");
+        astir_snprintf(temp, sizeof(temp), "  \n");
       }
 
       XmTextInsert(si_text,pos,temp);
@@ -1764,7 +1764,7 @@ void Change_tactical_change_data(Widget widget, XtPointer clientData, XtPointer 
     }
     else
     {
-      xastir_snprintf(tactical_pointer->tactical_call_sign,
+      astir_snprintf(tactical_pointer->tactical_call_sign,
                       MAX_TACTICAL_CALL+1,
                       "%s",
                       temp);
@@ -2027,7 +2027,7 @@ void Station_data(Widget w, XtPointer clientData, XtPointer calldata)
 
 
   // Make a copy of the name.
-  xastir_snprintf(local_station,sizeof(local_station),"%s",station);
+  astir_snprintf(local_station,sizeof(local_station),"%s",station);
 
   if (search_station_name(&p_station,station,1)   // find call
       && (p_station->flag & ST_ACTIVE) != 0)      // ignore deleted objects
@@ -2305,7 +2305,7 @@ void Station_data(Widget w, XtPointer clientData, XtPointer calldata)
 
       // It turns out that objects transmitted by a station
       // called "WINLINK" are what mess up the RAC button for
-      // Canadian stations.  Xastir sees the 'W' of WINLINK
+      // Canadian stations.  Astir sees the 'W' of WINLINK
       // (the originating station) and assumes it is a U.S.
       // station.  Here's a sample packet:
       //
@@ -2316,7 +2316,7 @@ void Station_data(Widget w, XtPointer clientData, XtPointer calldata)
       // which should be a callsign.
       if (strncmp(p_station->origin,"WINLINK",7))
       {
-        xastir_snprintf(local_station,sizeof(local_station),"%s",p_station->origin);
+        astir_snprintf(local_station,sizeof(local_station),"%s",p_station->origin);
       }
     }
 
@@ -2369,7 +2369,7 @@ void Station_data(Widget w, XtPointer clientData, XtPointer calldata)
       // checked (most recent).
       //
 
-      xastir_snprintf(temp,
+      astir_snprintf(temp,
                       sizeof(temp),
                       "%s",
                       p_station->origin);
@@ -2557,7 +2557,7 @@ void Station_data(Widget w, XtPointer clientData, XtPointer calldata)
                                            XmNfontList, fontlist1,
                                            NULL);
 
-    xastir_snprintf(temp, sizeof(temp), "%c%c%c", p_station->aprs_symbol.aprs_type,
+    astir_snprintf(temp, sizeof(temp), "%c%c%c", p_station->aprs_symbol.aprs_type,
                     p_station->aprs_symbol.aprs_symbol,
                     p_station->aprs_symbol.special_overlay);
 
@@ -2832,7 +2832,7 @@ void Station_info_select_destroy_shell(Widget widget, XtPointer UNUSED(clientDat
     // DK7IN ?? should we not first close the PopUp, then call Station_data ??
     if (found)
     {
-      xastir_snprintf(temp2, sizeof(temp2), "%s", temp);
+      astir_snprintf(temp2, sizeof(temp2), "%s", temp);
       // Only keep the station info, remove Tactical Call Sign
       temp2[strcspn(temp2, "(")] = '\0';
       remove_trailing_spaces(temp2);
@@ -2918,7 +2918,7 @@ void Station_info(Widget w, XtPointer clientData, XtPointer UNUSED(calldata) )
         // Here we calculate diff in terms of XX pixels,
         // changed into lat/long values.  This keeps the
         // affected rectangle the same at any zoom level.
-        // scale_y/scale_x is Xastir units/pixel.  Xastir
+        // scale_y/scale_x is Astir units/pixel.  Astir
         // units are in 1/100 of a second.  If we want to go
         // 10 pixels in any direction (roughly, scale_x
         // varies by latitude), then we want (10 * scale_y),
@@ -3102,7 +3102,7 @@ void Station_info(Widget w, XtPointer clientData, XtPointer UNUSED(calldata) )
                 /*fprintf(stderr,"Station %s\n",p_station->call_sign);*/
                 if (p_station->tactical_call_sign)
                 {
-                  xastir_snprintf(tactical_string, sizeof(tactical_string), "%s (%s)", p_station->call_sign,
+                  astir_snprintf(tactical_string, sizeof(tactical_string), "%s (%s)", p_station->call_sign,
                                   p_station->tactical_call_sign);
                   XmListAddItem(station_list, str_ptr = XmStringCreateLtoR(tactical_string,
                                                         XmFONTLIST_DEFAULT_TAG), (int)n++);
@@ -3200,13 +3200,13 @@ int locate_station(Widget w, char *call, int follow_case, int get_match, int cen
       }
     }
     call_find[ii] = '\0';
-    xastir_snprintf(call_find1,
+    astir_snprintf(call_find1,
                     sizeof(call_find1),
                     "%s",
                     call_find);
   }
   else
-    xastir_snprintf(call_find1,
+    astir_snprintf(call_find1,
                     sizeof(call_find1),
                     "%s",
                     call);

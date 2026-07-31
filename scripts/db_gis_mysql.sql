@@ -5,9 +5,9 @@
 -- to access this database.
 
 
-CREATE DATABASE IF NOT EXISTS xastir;
+CREATE DATABASE IF NOT EXISTS astir;
   
-USE xastir;
+USE astir;
 
 CREATE TABLE version (
      version_number INT,
@@ -64,7 +64,7 @@ CREATE TABLE simpleStation (
 -- to the database.
 -- 
 -- Change the password on the next line and uncomment the next four lines. 
--- GRANT USAGE ON xastir.* to 'xastir_user'@'localhost' identified by 'set_this_password';
--- GRANT SELECT ON xastir.version TO 'xastir_user'@'localhost';
--- GRANT SELECT, INSERT, UPDATE ON xastir.simpleStation to 'xastir_user'@'localhost';
--- GRANT SELECT, INSERT, UPDATE ON xastir.simpleStationSpatial TO 'xastir_user'@'localhost';
+-- GRANT USAGE ON astir.* to 'astir_user'@'localhost' identified by 'set_this_password';
+-- GRANT SELECT ON astir.version TO 'astir_user'@'localhost';
+-- GRANT SELECT, INSERT, UPDATE ON astir.simpleStation to 'astir_user'@'localhost';
+-- GRANT SELECT, INSERT, UPDATE ON astir.simpleStationSpatial TO 'astir_user'@'localhost';

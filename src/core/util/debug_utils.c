@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -24,7 +24,7 @@
 
 #include <stdio.h>
 
-#include "core/xastir.h"
+#include "core/astir.h"
 #include "core/main.h"
 
 
@@ -33,8 +33,8 @@
 // messages during various stages of debugging.
 //
 // As far as I can tell, this was defined in utils.c but never, ever called
-// anywhere in Xastir.
-void xastir_debug(int my_debug_level, char *debug_string)
+// anywhere in Astir.
+void astir_debug(int my_debug_level, char *debug_string)
 {
 
   if (debug_level & my_debug_level)

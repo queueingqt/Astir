@@ -46,20 +46,20 @@ CORE_DIRS = ("core", "draw")
 
 
 def link_command(srcdir):
-  """The real link line for xastir, from make, so this tracks ./configure."""
+  """The real link line for astir, from make, so this tracks ./configure."""
   # -W pretends main.c changed, so make prints the relink without touching
   # anything.  Without it make says "up to date" and prints no link line at all.
-  mk = subprocess.run(["make", "-n", "-W", "ui/motif/main.c", "xastir"], cwd=srcdir,
+  mk = subprocess.run(["make", "-n", "-W", "ui/motif/main.c", "astir"], cwd=srcdir,
                       capture_output=True, text=True).stdout
   for line in mk.splitlines():
-    if " -o xastir " not in line:
+    if " -o astir " not in line:
       continue
     # Automake's silent rules prefix the real command with an echo, e.g.
-    #   echo "  GEN     " xastir;gcc -fopenmp ... -o xastir ...
+    #   echo "  GEN     " astir;gcc -fopenmp ... -o astir ...
     # so the compiler is not necessarily at the start of the line.
     for part in line.split(";"):
       part = part.strip()
-      if part.startswith(("gcc", "cc ", "clang")) and " -o xastir " in part:
+      if part.startswith(("gcc", "cc ", "clang")) and " -o astir " in part:
         return part
   return None
 
@@ -72,7 +72,7 @@ def main():
   cmd = link_command(srcdir)
   if not cmd:
     raise SystemExit("could not find the link command; run make first "
-                     "(it only prints it when xastir is out of date)")
+                     "(it only prints it when astir is out of date)")
 
   toks = cmd.split()
   objs, libs, flags, i = [], [], [], 1

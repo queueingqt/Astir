@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -40,8 +40,8 @@
   #include <Xbae/Matrix.h>
 #endif  // HAVE_XBAE_MATRIX_H
 
-#include "core/xastir.h"
-#include "ui/motif/xastir_gui.h"
+#include "core/astir.h"
+#include "ui/motif/astir_gui.h"
 #include "ui/motif/wx_gui.h"
 #include "ui/motif/main_gui.h"
 #include "ui/motif/draw_symbols_gui.h"
@@ -83,7 +83,7 @@ extern XmFontList fontlist1;    // Menu/System fontlist
 // 7: LST_NUM   - Number of lists; for use in array definitions below
 
 Widget station_list_dialog[LST_NUM];           // store list definitions
-static xastir_mutex station_list_dialog_lock;  // Mutex lock for above
+static astir_mutex station_list_dialog_lock;  // Mutex lock for above
 
 Widget SL_list[LST_NUM][SL_MAX];
 Widget SL_da[LST_NUM][SL_MAX];
@@ -670,7 +670,7 @@ void Station_List_fill(int type, int new_offset)
     {
       if (type != LST_TIM)
       {
-        xastir_snprintf(top_call[type],
+        astir_snprintf(top_call[type],
                         MAX_CALLSIGN+1,
                         "%s",
                         p_station->call_sign);  // remember call at list top
@@ -684,7 +684,7 @@ void Station_List_fill(int type, int new_offset)
     last_offset[type] = new_offset;
 
     // now fill the list rows
-    xastir_snprintf(temp, sizeof(temp), "%d", (rows+new_offset));                   // calculate needed string width
+    astir_snprintf(temp, sizeof(temp), "%d", (rows+new_offset));                   // calculate needed string width
     strwid = (int)strlen(temp);                             // to keep it right justified
 
     begin_critical_section(&station_list_dialog_lock, "list_gui.c:Station_List_fill" );
@@ -720,7 +720,7 @@ void Station_List_fill(int type, int new_offset)
         // Do this first as it is used for callback data later
         /* check to see if string changed and over write */
         temp_ptr = XmTextFieldGetString(SL_call[type][row]);
-        xastir_snprintf(temp_call, sizeof(temp_call), "%s", temp_ptr);
+        astir_snprintf(temp_call, sizeof(temp_call), "%s", temp_ptr);
         XtFree(temp_ptr);
 
         if (strcmp(temp_call, p_station->call_sign) != 0)
@@ -770,7 +770,7 @@ void Station_List_fill(int type, int new_offset)
                      );
 
         // number in list
-        xastir_snprintf(temp, sizeof(temp), "%*d", strwid, (row+1+new_offset));
+        astir_snprintf(temp, sizeof(temp), "%*d", strwid, (row+1+new_offset));
         XmTextFieldSetString(SL_list[type][row],temp);
         XtManageChild(SL_list[type][row]);
 
@@ -781,14 +781,14 @@ void Station_List_fill(int type, int new_offset)
           case LST_ALL:                       // stations list
           case LST_OBJ:                       // objects/items
           case LST_MYOBJ:                     // my objects/items
-            xastir_snprintf(stemp, sizeof(stemp), "%5d",
+            astir_snprintf(stemp, sizeof(stemp), "%5d",
                             (int)p_station->num_packets);
             XmTextFieldSetString(SL_packets[type][row],stemp);
             XtManageChild(SL_packets[type][row]);
 
             if (strlen(p_station->pos_time) > 13)
             {
-              xastir_snprintf(stemp, sizeof(stemp), "%c%c/%c%c %c%c:%c%c",
+              astir_snprintf(stemp, sizeof(stemp), "%c%c/%c%c %c%c:%c%c",
                               //sprintf(stemp,"%c%c/%c%c/%c%c%c%c %c%c:%c%c",
                               p_station->pos_time[0],
                               p_station->pos_time[1],
@@ -805,27 +805,27 @@ void Station_List_fill(int type, int new_offset)
             }
             else
             {
-              xastir_snprintf(stemp, sizeof(stemp), " ");
+              astir_snprintf(stemp, sizeof(stemp), " ");
             }
 
             XmTextFieldSetString(SL_pos_time[type][row],stemp);
             XtManageChild(SL_pos_time[type][row]);
 
-            xastir_snprintf(stemp, sizeof(stemp), "%s", p_station->node_path_ptr);
+            astir_snprintf(stemp, sizeof(stemp), "%s", p_station->node_path_ptr);
             XmTextFieldSetString(SL_node_path[type][row],stemp);
             XtManageChild(SL_node_path[type][row]);
 
-            xastir_snprintf(stemp, sizeof(stemp), "%s", p_station->power_gain);
+            astir_snprintf(stemp, sizeof(stemp), "%s", p_station->power_gain);
             XmTextFieldSetString(SL_power_gain[type][row],stemp);
             XtManageChild(SL_power_gain[type][row]);
 
 // Should we display only the first comment field we have stored, or
 // concatenate all of them up to the limit of stemp?
-            //xastir_snprintf(stemp, sizeof(stemp), "%s", p_station->comments);
+            //astir_snprintf(stemp, sizeof(stemp), "%s", p_station->comments);
             if ( (p_station->comment_data != NULL)
                  && (p_station->comment_data->text_ptr != NULL) )
             {
-              xastir_snprintf(stemp, sizeof(stemp), "%s", p_station->comment_data->text_ptr);
+              astir_snprintf(stemp, sizeof(stemp), "%s", p_station->comment_data->text_ptr);
             }
             else
             {
@@ -851,10 +851,10 @@ void Station_List_fill(int type, int new_offset)
             if (strlen(p_station->speed)>0)
             {
               if (!english_units)
-                xastir_snprintf(stemp, sizeof(stemp), "%.1f",
+                astir_snprintf(stemp, sizeof(stemp), "%.1f",
                                 atof(p_station->speed)*1.852);
               else
-                xastir_snprintf(stemp, sizeof(stemp), "%.1f",
+                astir_snprintf(stemp, sizeof(stemp), "%.1f",
                                 atof(p_station->speed)*1.1508);
 
               XmTextFieldSetString(SL_speed[type][row],stemp);
@@ -870,11 +870,11 @@ void Station_List_fill(int type, int new_offset)
             {
               if (!english_units)
               {
-                xastir_snprintf(stemp, sizeof(stemp), "%s", p_station->altitude);
+                astir_snprintf(stemp, sizeof(stemp), "%s", p_station->altitude);
               }
               else
               {
-                xastir_snprintf(stemp, sizeof(stemp), "%.1f", atof(p_station->altitude)*3.28084);
+                astir_snprintf(stemp, sizeof(stemp), "%.1f", atof(p_station->altitude)*3.28084);
               }
 
               XmTextFieldSetString(SL_alt[type][row],stemp);
@@ -890,17 +890,17 @@ void Station_List_fill(int type, int new_offset)
                 || coordinate_system == USE_UTM_SPECIAL)
             {
               // Create a UTM string from coordinates
-              // in Xastir coordinate system.
-              convert_xastir_to_UTM_str(stemp, sizeof(stemp), p_station->coord_lon, p_station->coord_lat);
+              // in Astir coordinate system.
+              convert_astir_to_UTM_str(stemp, sizeof(stemp), p_station->coord_lon, p_station->coord_lat);
               XmTextFieldSetString(SL_lat_long[type][row],stemp);
               XtManageChild(SL_lat_long[type][row]);
             }
             else if (coordinate_system == USE_MGRS)
             {
               // Create an MGRS string from
-              // coordinates in Xastir coordinate
+              // coordinates in Astir coordinate
               // system.
-              convert_xastir_to_MGRS_str(stemp,
+              convert_astir_to_MGRS_str(stemp,
                                          sizeof(stemp),
                                          p_station->coord_lon,
                                          p_station->coord_lat,
@@ -911,7 +911,7 @@ void Station_List_fill(int type, int new_offset)
             else
             {
               // Create lat/lon strings from coordinates
-              // in Xastir coordinate system.
+              // in Astir coordinate system.
               if (coordinate_system == USE_DDDDDD)
               {
                 convert_lat_l2s(p_station->coord_lat, stemp1, sizeof(stemp1), CONVERT_DEC_DEG);
@@ -927,19 +927,19 @@ void Station_List_fill(int type, int new_offset)
                 convert_lat_l2s(p_station->coord_lat, stemp1, sizeof(stemp1), CONVERT_HP_NORMAL);
                 convert_lon_l2s(p_station->coord_lon, stemp2, sizeof(stemp2), CONVERT_HP_NORMAL);
               }
-              xastir_snprintf(stemp, sizeof(stemp), "%s  %s", stemp1, stemp2);
+              astir_snprintf(stemp, sizeof(stemp), "%s  %s", stemp1, stemp2);
               XmTextFieldSetString(SL_lat_long[type][row],stemp);
               XtManageChild(SL_lat_long[type][row]);
             }
 
-            xastir_snprintf(stemp, sizeof(stemp), "%d",
+            astir_snprintf(stemp, sizeof(stemp), "%d",
                             (int)p_station->num_packets);
             XmTextFieldSetString(SL_packets[type][row],stemp);
             XtManageChild(SL_packets[type][row]);
 
             if (strlen(p_station->sats_visible)>0)
             {
-              xastir_snprintf(stemp, sizeof(stemp), "%d", atoi(p_station->sats_visible));
+              astir_snprintf(stemp, sizeof(stemp), "%d", atoi(p_station->sats_visible));
               XmTextFieldSetString(SL_sats[type][row],stemp);
             }
             else
@@ -958,11 +958,11 @@ void Station_List_fill(int type, int new_offset)
 
             if (english_units)
             {
-              xastir_snprintf(stemp1, sizeof(stemp1), "%0.1f", (value * 1.15078));
+              astir_snprintf(stemp1, sizeof(stemp1), "%0.1f", (value * 1.15078));
             }
             else
             {
-              xastir_snprintf(stemp1, sizeof(stemp1), "%0.1f", (value * 1.852));
+              astir_snprintf(stemp1, sizeof(stemp1), "%0.1f", (value * 1.852));
             }
 
             XmTextFieldSetString(SL_my_course[type][row],stemp);
@@ -996,11 +996,11 @@ void Station_List_fill(int type, int new_offset)
             {
               if (english_units)
               {
-                xastir_snprintf(stemp, sizeof(stemp), "%d", (int)atoi(weather->wx_speed));
+                astir_snprintf(stemp, sizeof(stemp), "%d", (int)atoi(weather->wx_speed));
               }
               else
               {
-                xastir_snprintf(stemp, sizeof(stemp), "%d", (int)(atof(weather->wx_speed)*1.6094));
+                astir_snprintf(stemp, sizeof(stemp), "%d", (int)(atof(weather->wx_speed)*1.6094));
               }
 
               XmTextFieldSetString(SL_wx_wind_speed[type][row],stemp);
@@ -1016,11 +1016,11 @@ void Station_List_fill(int type, int new_offset)
             {
               if (english_units)
               {
-                xastir_snprintf(stemp, sizeof(stemp), "%d", atoi(weather->wx_gust));
+                astir_snprintf(stemp, sizeof(stemp), "%d", atoi(weather->wx_gust));
               }
               else
               {
-                xastir_snprintf(stemp, sizeof(stemp), "%d", (int)(atof(weather->wx_gust)*1.6094));
+                astir_snprintf(stemp, sizeof(stemp), "%d", (int)(atof(weather->wx_gust)*1.6094));
               }
 
               XmTextFieldSetString(SL_wx_wind_gust[type][row],stemp);
@@ -1036,11 +1036,11 @@ void Station_List_fill(int type, int new_offset)
             {
               if (english_units)
               {
-                xastir_snprintf(stemp, sizeof(stemp), "%d", atoi(weather->wx_temp));
+                astir_snprintf(stemp, sizeof(stemp), "%d", atoi(weather->wx_temp));
               }
               else
               {
-                xastir_snprintf(stemp, sizeof(stemp), "%d", (int)(((atof(weather->wx_temp)-32)*5.0)/9.0));
+                astir_snprintf(stemp, sizeof(stemp), "%d", (int)(((atof(weather->wx_temp)-32)*5.0)/9.0));
               }
 
               XmTextFieldSetString(SL_wx_temp[type][row],stemp);
@@ -1078,7 +1078,7 @@ void Station_List_fill(int type, int new_offset)
                 char temp2[15];
 
                 tempf = atof(weather->wx_baro)*0.02953;
-                xastir_snprintf(temp2,
+                astir_snprintf(temp2,
                                 sizeof(temp2),
                                 "%0.2f",
                                 tempf);
@@ -1097,11 +1097,11 @@ void Station_List_fill(int type, int new_offset)
             {
               if (english_units)
               {
-                xastir_snprintf(stemp, sizeof(stemp), "%0.2f", atof(weather->wx_rain)/100.0);
+                astir_snprintf(stemp, sizeof(stemp), "%0.2f", atof(weather->wx_rain)/100.0);
               }
               else
               {
-                xastir_snprintf(stemp, sizeof(stemp), "%0.2f", atof(weather->wx_rain)*.254);
+                astir_snprintf(stemp, sizeof(stemp), "%0.2f", atof(weather->wx_rain)*.254);
               }
 
               XmTextFieldSetString(SL_wx_rain_h[type][row],stemp);
@@ -1117,11 +1117,11 @@ void Station_List_fill(int type, int new_offset)
             {
               if (english_units)
               {
-                xastir_snprintf(stemp, sizeof(stemp), "%0.2f", atof(weather->wx_prec_00)/100.0);
+                astir_snprintf(stemp, sizeof(stemp), "%0.2f", atof(weather->wx_prec_00)/100.0);
               }
               else
               {
-                xastir_snprintf(stemp, sizeof(stemp), "%0.2f", atof(weather->wx_prec_00)*.254);
+                astir_snprintf(stemp, sizeof(stemp), "%0.2f", atof(weather->wx_prec_00)*.254);
               }
 
               XmTextFieldSetString(SL_wx_rain_00[type][row],stemp);
@@ -1137,11 +1137,11 @@ void Station_List_fill(int type, int new_offset)
             {
               if (english_units)
               {
-                xastir_snprintf(stemp, sizeof(stemp), "%0.2f", atof(weather->wx_prec_24)/100.0);
+                astir_snprintf(stemp, sizeof(stemp), "%0.2f", atof(weather->wx_prec_24)/100.0);
               }
               else
               {
-                xastir_snprintf(stemp, sizeof(stemp), "%0.2f", atof(weather->wx_prec_24)*.254);
+                astir_snprintf(stemp, sizeof(stemp), "%0.2f", atof(weather->wx_prec_24)*.254);
               }
 
               XmTextFieldSetString(SL_wx_rain_24[type][row],stemp);
@@ -1166,7 +1166,7 @@ void Station_List_fill(int type, int new_offset)
         XtVaSetValues(SL_da[type][row],XmNlabelPixmap, SL_icon[type][row],NULL);
         XtManageChild(SL_da[type][row]);
 
-        xastir_snprintf(temp, sizeof(temp), "%*d", strwid, (row+1+new_offset));
+        astir_snprintf(temp, sizeof(temp), "%*d", strwid, (row+1+new_offset));
         XmTextFieldSetString(SL_list[type][row],temp);
         XtManageChild(SL_list[type][row]);
 
@@ -1441,49 +1441,49 @@ void Station_List(Widget UNUSED(w), XtPointer clientData, XtPointer UNUSED(callD
   switch(type)
   {
     case LST_ALL:
-      xastir_snprintf(temp,
+      astir_snprintf(temp,
                       sizeof(temp),
                       "%s",
                       langcode("LHPUPNI000"));        // All Stations
       break;
 
     case LST_MOB:
-      xastir_snprintf(temp,
+      astir_snprintf(temp,
                       sizeof(temp),
                       "%s",
                       langcode("LHPUPNI001"));        // Mobile Stations
       break;
 
     case LST_WX:
-      xastir_snprintf(temp,
+      astir_snprintf(temp,
                       sizeof(temp),
                       "%s",
                       langcode("LHPUPNI002"));        // Weather Stations
       break;
 
     case LST_TNC:
-      xastir_snprintf(temp,
+      astir_snprintf(temp,
                       sizeof(temp),
                       "%s",
                       langcode("LHPUPNI003"));        // Local Stations
       break;
 
     case LST_TIM:
-      xastir_snprintf(temp,
+      astir_snprintf(temp,
                       sizeof(temp),
                       "%s",
                       langcode("LHPUPNI004"));        // Last Stations
       break;
 
     case LST_OBJ:
-      xastir_snprintf(temp,
+      astir_snprintf(temp,
                       sizeof(temp),
                       "%s",
                       langcode("LHPUPNI005"));        // Objects/Items
       break;
 
     case LST_MYOBJ:
-      xastir_snprintf(temp,
+      astir_snprintf(temp,
                       sizeof(temp),
                       "%s",
                       langcode("LHPUPNI006"));        // My Objects/Items

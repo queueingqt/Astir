@@ -3,8 +3,8 @@
 # Script to retrieve NWS data files. 
 #
 # Run this from the INSTALLED location of the script, i.e.
-#    /usr/local/share/xastir/scripts
-# or /usr/share/xastir/scripts
+#    /usr/local/share/astir/scripts
+# or /usr/share/astir/scripts
 #
 #
 # Originally written 2006/03/07 by Steven, WM5Z, and Curt, WE7U.
@@ -52,7 +52,7 @@ FILE7="c_16ap26"    # RED: Counties, States, Provinces: U.S. Counties
 
 prefix=@prefix@
 
-cd ${prefix}/share/xastir/Counties || exit 1
+cd ${prefix}/share/astir/Counties || exit 1
 
 
 # Remove any old zip files hanging around in this directory
@@ -102,12 +102,12 @@ done
 ####################
 # After download/install of map files above, run commands such as these:
 #
-#   cd /usr/local/share/xastir; testdbfawk -D config -d Counties/mz11au16.dbf 2>&1 | head -5
-#   cd /usr/local/share/xastir; testdbfawk -D config -d Counties/w_11au16.dbf 2>&1 | head -5
+#   cd /usr/local/share/astir; testdbfawk -D config -d Counties/mz11au16.dbf 2>&1 | head -5
+#   cd /usr/local/share/astir; testdbfawk -D config -d Counties/w_11au16.dbf 2>&1 | head -5
 #
 # to determine whether there's dbfawk support for each of the NWS files. NWS
 # changes the signature on their files often so we need to create a new
-# dbfawk for each in xastir/config, test it, then add it into the
+# dbfawk for each in astir/config, test it, then add it into the
 # Makefile.am file there and commit, then do another "make install" to put
 # the dbfawk's into place.
 # Fixed the issue where there's an 'a' or 'b' after the filename root. NWS likes
@@ -126,7 +126,7 @@ for d in $FILE1 $FILE2 $FILE3 $FILE4 $FILE5 $FILE6 $FILE7; do
     echo
     echo $e.dbf
     # Run in a separate shell so we don't mess up the current directory for the -e test above
-    result=`cd ${prefix}/share/xastir; ${prefix}/bin/testdbfawk -D config -d Counties/$e.dbf 2>&1 | head -3 | tail -1`
+    result=`cd ${prefix}/share/astir; ${prefix}/bin/testdbfawk -D config -d Counties/$e.dbf 2>&1 | head -3 | tail -1`
     echo $result
     if [ "$result" = "No matching dbfawk signature found" ]; then
         echo "Fix dbfawk for $e!"

@@ -22,12 +22,12 @@
 #
 # Run it like this:
 #
-#   cd xastir/config
+#   cd astir/config
 #   ../scripts/langPirateEnglish.pl -split <language-English.sys >language-PirateEnglish.sys
 # or
 #   ../scripts/langPirateEnglish.pl <some-input-file >some-output-file
 #
-# "-split": Translate 2nd part of line only (Xastir language file).
+# "-split": Translate 2nd part of line only (Astir language file).
 # Without it:  Translate entire text.
 
 
@@ -36,7 +36,7 @@
 # http://dougal.gunters.org/blog/2004/08/30/text-filter-suite
 
 
-# Check whether we're translating an Xastir language file or plain
+# Check whether we're translating an Astir language file or plain
 # text:
 #   "-split" present:  Translate the 2nd piece of each line.
 #   "-split" absent:   Translate the entire text.
@@ -67,7 +67,7 @@ while ( <> ) {
     $_ = $pieces[1];
   }
 
-  # Custom for Xastir:
+  # Custom for Astir:
   s/\bham\b/matey/g;
   s/\bhi hi\b/it be a joke, matey/g;
   s/\bk7gps\b/Th\' Good Cap\'n/g; 
@@ -78,9 +78,9 @@ while ( <> ) {
   s/\bkb7uvc\b/scurvy dog/g;
   s/\bwa7nwp\b/cabin boy/g;
   s/\b[Mm]ap(s*)\b/Treasure Map/g;
-  s/\bXastir\b/HMS Xastir/g;
-  s/\bxastir\b/HMS xastir/g;
-  s/\bXASTIR\b/HMS XASTIR/g;
+  s/\bAstir\b/HMS Astir/g;
+  s/\bastir\b/HMS astir/g;
+  s/\bASTIR\b/HMS ASTIR/g;
   s/\bStation/Ship/g;
   s/\bstation/ship/g;
   s/\bView/Gander/g;

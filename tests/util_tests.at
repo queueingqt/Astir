@@ -5,60 +5,60 @@ AT_BANNER([Utility Functions])
 
 AT_BANNER([convert_lat/lon_l2s/s2l() tests])
 
-AT_SETUP([convert_lat_l2s: convert Xastir lat to high-prec string])
+AT_SETUP([convert_lat_l2s: convert Astir lat to high-prec string])
 AT_KEYWORDS([util convert_lat_l2s])
 AT_CHECK(["$abs_top_builddir/tests/test_util" convert_lat_l2s_basic], [0], [PASS: convert_lat_l2s: correct
 ])
 AT_CLEANUP
 
-AT_SETUP([convert_lon_l2s: convert Xastir lon to high-prec string])
+AT_SETUP([convert_lon_l2s: convert Astir lon to high-prec string])
 AT_KEYWORDS([util convert_lon_l2s])
 AT_CHECK(["$abs_top_builddir/tests/test_util" convert_lon_l2s_basic], [0], [PASS: convert_lon_l2s: correct
 ])
 AT_CLEANUP
-AT_SETUP([convert_lat_l2s: convert Xastir lat to high-prec string (south lat)])
+AT_SETUP([convert_lat_l2s: convert Astir lat to high-prec string (south lat)])
 AT_KEYWORDS([util convert_lat_l2s])
 AT_CHECK(["$abs_top_builddir/tests/test_util" convert_lat_l2s_basic_s], [0], [PASS: convert_lat_l2s: correct
 ])
 AT_CLEANUP
 
-AT_SETUP([convert_lon_l2s: convert Xastir lon to high-prec string (east long)])
+AT_SETUP([convert_lon_l2s: convert Astir lon to high-prec string (east long)])
 AT_KEYWORDS([util convert_lon_l2s])
 AT_CHECK(["$abs_top_builddir/tests/test_util" convert_lon_l2s_basic_e], [0], [PASS: convert_lon_l2s: correct
 ])
 AT_CLEANUP
 
-AT_SETUP([convert_lat_l2s: convert Xastir lat to low-prec string])
+AT_SETUP([convert_lat_l2s: convert Astir lat to low-prec string])
 AT_KEYWORDS([util convert_lat_l2s])
 AT_CHECK(["$abs_top_builddir/tests/test_util" convert_lat_l2s_lp], [0], [PASS: convert_lat_l2s: correct
 ])
 AT_CLEANUP
 
-AT_SETUP([convert_lon_l2s: convert Xastir lon to low-prec string])
+AT_SETUP([convert_lon_l2s: convert Astir lon to low-prec string])
 AT_KEYWORDS([util convert_lon_l2s])
 AT_CHECK(["$abs_top_builddir/tests/test_util" convert_lon_l2s_lp], [0], [PASS: convert_lon_l2s: correct
 ])
 AT_CLEANUP
 
-AT_SETUP([convert_lat_l2s: convert Xastir lat from high-prec string])
+AT_SETUP([convert_lat_l2s: convert Astir lat from high-prec string])
 AT_KEYWORDS([util convert_lat_s2l])
 AT_CHECK(["$abs_top_builddir/tests/test_util" convert_lat_s2l_basic], [0], [PASS: convert_lat_s2l: correct
 ])
 AT_CLEANUP
 
-AT_SETUP([convert_lon_l2s: convert Xastir lon from high-prec string])
+AT_SETUP([convert_lon_l2s: convert Astir lon from high-prec string])
 AT_KEYWORDS([util convert_lon_s2l])
 AT_CHECK(["$abs_top_builddir/tests/test_util" convert_lon_s2l_basic], [0], [PASS: convert_lon_s2l: correct
 ])
 AT_CLEANUP
 
-AT_SETUP([convert_lat_l2s: convert Xastir lat from high-prec string (south)])
+AT_SETUP([convert_lat_l2s: convert Astir lat from high-prec string (south)])
 AT_KEYWORDS([util convert_lat_s2l])
 AT_CHECK(["$abs_top_builddir/tests/test_util" convert_lat_s2l_basic_s], [0], [PASS: convert_lat_s2l: correct
 ])
 AT_CLEANUP
 
-AT_SETUP([convert_lon_l2s: convert Xastir lon from high-prec string (east)])
+AT_SETUP([convert_lon_l2s: convert Astir lon from high-prec string (east)])
 AT_KEYWORDS([util convert_lon_s2l])
 AT_CHECK(["$abs_top_builddir/tests/test_util" convert_lon_s2l_basic_e], [0], [PASS: convert_lon_s2l: correct
 ])
@@ -80,15 +80,15 @@ AT_CLEANUP
 
 AT_BANNER([tests of screen coordinate converters])
 
-AT_SETUP([convert_screen_to_xastir: center and corners convert as expected])
-AT_KEYWORDS([util convert_screen_to_xastir_coordinates])
-AT_CHECK(["$abs_top_builddir/tests/test_util" convert_screen_to_xastir_coordinates], [0], [PASS: convert_screen_to_xastir_coordinates: works as expected
+AT_SETUP([convert_screen_to_astir: center and corners convert as expected])
+AT_KEYWORDS([util convert_screen_to_astir_coordinates])
+AT_CHECK(["$abs_top_builddir/tests/test_util" convert_screen_to_astir_coordinates], [0], [PASS: convert_screen_to_astir_coordinates: works as expected
 ])
 AT_CLEANUP
 
-AT_SETUP([convert_xastir_to_screen: center and corners convert as expected])
-AT_KEYWORDS([util convert_xastir_to_screen_coordinates])
-AT_CHECK(["$abs_top_builddir/tests/test_util" convert_xastir_to_screen_coordinates], [0], [PASS: convert_xastir_to_screen_coordinates: works as expected
+AT_SETUP([convert_astir_to_screen: center and corners convert as expected])
+AT_KEYWORDS([util convert_astir_to_screen_coordinates])
+AT_CHECK(["$abs_top_builddir/tests/test_util" convert_astir_to_screen_coordinates], [0], [PASS: convert_astir_to_screen_coordinates: works as expected
 ])
 AT_CLEANUP
 

@@ -19,13 +19,13 @@
 #
 
 # This script will ask for an item designator, then create a file
-# with that name + ".log" in the ~/.xastir/logs directory.  The
+# with that name + ".log" in the ~/.astir/logs directory.  The
 # file will contain APRS items created from the downloaded Garmin
-# tracklog.  Reading that log file with Xastir will result in an
+# tracklog.  Reading that log file with Astir will result in an
 # object with a track being displayed on the map screen.
 
 # You may wish to bump up MAX_TRACKS in db.h to 1024 in order to see
-# the entire log, but be careful with Xastir's memory image growing
+# the entire log, but be careful with Astir's memory image growing
 # too fast if you're connected to the 'net after making this change.
 
 # This script uses the GPS::Garmin module which can be obtained
@@ -77,7 +77,7 @@ for ($i = 0; $i < length($name); $i++) {
 }
 $name = join("",@j);
 
-$filename = "~/.xastir/logs/$name.log";
+$filename = "~/.astir/logs/$name.log";
 
 # Get rid of spaces in the filename
 $filename =~ s/\s+//g;
@@ -155,7 +155,7 @@ while ($gps->records)
 }
 
 printf("\n\nThe data has been saved in: ($filename)\n");
-printf("Please open this logfile with Xastir to display the track\n");
+printf("Please open this logfile with Astir to display the track\n");
 printf("!!!Remember to set your GPS back to NMEA mode for APRS!!!\n");
 
 

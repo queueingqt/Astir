@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -34,8 +34,8 @@
 #include <unistd.h>
 #include <Xm/XmAll.h>
 
-#include "core/xastir.h"
-#include "ui/motif/xastir_gui.h"
+#include "core/astir.h"
+#include "ui/motif/astir_gui.h"
 #include "ui/motif/wx_gui.h"
 #include "ui/motif/main_gui.h"
 #include "ui/motif/draw_symbols_gui.h"
@@ -64,8 +64,8 @@ Widget track_station_dialog = (Widget)NULL;
 Widget track_station_data = (Widget)NULL;
 Widget download_findu_dialog = (Widget)NULL;
 
-static xastir_mutex track_station_dialog_lock;
-static xastir_mutex download_findu_dialog_lock;
+static astir_mutex track_station_dialog_lock;
+static astir_mutex download_findu_dialog_lock;
 
 // track values
 Widget track_case_data, track_match_data;
@@ -98,7 +98,7 @@ void track_gui_init(void)
 
   if (temp_tracking_station_call[0] != '\0')
   {
-    xastir_snprintf(tracking_station_call,
+    astir_snprintf(tracking_station_call,
                     sizeof(tracking_station_call),
                     "%s",
                     temp_tracking_station_call);
@@ -163,7 +163,7 @@ void Track_station_now(Widget w, XtPointer clientData, XtPointer callData)
 
 
   temp_ptr = XmTextFieldGetString(track_station_data);
-  xastir_snprintf(temp,
+  astir_snprintf(temp,
                   sizeof(temp),
                   "%s",
                   temp_ptr);
@@ -172,7 +172,7 @@ void Track_station_now(Widget w, XtPointer clientData, XtPointer callData)
   (void)remove_trailing_spaces(temp);
   (void)remove_trailing_dash_zero(temp);
 
-  xastir_snprintf(tracking_station_call,
+  astir_snprintf(tracking_station_call,
                   sizeof(tracking_station_call),
                   "%s",
                   temp);
@@ -187,7 +187,7 @@ void Track_station_now(Widget w, XtPointer clientData, XtPointer callData)
     track_station_on = 1;   // Track it whether we've seen it yet or not
     if (!found)
     {
-      xastir_snprintf(temp2, sizeof(temp2), langcode("POPEM00026"), temp);
+      astir_snprintf(temp2, sizeof(temp2), langcode("POPEM00026"), temp);
       popup_message_always(langcode("POPEM00025"),temp2);
     }
     // Check for exact match, includes SSID
@@ -201,7 +201,7 @@ void Track_station_now(Widget w, XtPointer clientData, XtPointer callData)
   {
     tracking_station_call[0] = '\0';    // Empty it out again
     track_station_on = 0;
-    xastir_snprintf(temp2, sizeof(temp2), langcode("POPEM00002"), temp);
+    astir_snprintf(temp2, sizeof(temp2), langcode("POPEM00002"), temp);
     popup_message_always(langcode("POPEM00003"),temp2);
   }
 
@@ -617,7 +617,7 @@ static void* findu_transfer_thread(void *arg)
   /*
   #ifdef HAVE_HTML2TEXT
       // Create temp filename
-      xastir_snprintf(log_filename_tmp, sizeof(log_filename_tmp), "%s%s",
+      astir_snprintf(log_filename_tmp, sizeof(log_filename_tmp), "%s%s",
           log_filename,
           ".tmp");
       // Create html2text command
@@ -741,7 +741,7 @@ void Download_trail_now(Widget w, XtPointer clientData, XtPointer callData)
   XmScaleGetValue(posit_length_value, &posit_length);
 
   temp_ptr = XmTextFieldGetString(download_trail_station_data);
-  xastir_snprintf(temp,
+  astir_snprintf(temp,
                   sizeof(temp),
                   "%s",
                   temp_ptr);
@@ -750,7 +750,7 @@ void Download_trail_now(Widget w, XtPointer clientData, XtPointer callData)
   (void)remove_trailing_spaces(temp);
   (void)remove_trailing_dash_zero(temp);
 
-  xastir_snprintf(download_trail_station_call,
+  astir_snprintf(download_trail_station_call,
                   sizeof(download_trail_station_call),
                   "%s",
                   temp);
@@ -772,7 +772,7 @@ void Download_trail_now(Widget w, XtPointer clientData, XtPointer callData)
 
 
 //        "http://www.findu.com/cgi-bin/rawposit.cgi?call=%s&start=%d&length=%d&time=1", // New, with timestamp
-  xastir_snprintf(fileimg, sizeof(fileimg),
+  astir_snprintf(fileimg, sizeof(fileimg),
                   //
                   // Posits only:
                   // "http://www.findu.com/cgi-bin/rawposit.cgi?call=%s&start=%d&length=%d",

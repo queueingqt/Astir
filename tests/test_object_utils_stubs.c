@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 2025-2026 The Xastir Group
  *
  * This program is free software; you can redistribute it and/or
@@ -25,7 +25,7 @@
  * but not used by the unit tests.
  * 
  * These stubs allow us to link with the real object_utils.o for testing
- * without pulling in the entire Xastir codebase.
+ * without pulling in the entire Astir codebase.
  */
 #include <stdlib.h>
 #include <stdio.h>

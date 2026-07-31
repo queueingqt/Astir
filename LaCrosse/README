@@ -2,10 +2,10 @@
 Copyright (C) 2006 Jim Chandler <jim@n0vh.org>
 Portions Copyright (C) 2004 Bruce Bennett <bruts@adelphia.net>
 Portions Copyright (C) 2000-2026 The Xastir Group
-(Modified for the Xastir project under GPL license)
+(Modified for the Astir project under GPL license)
 
 
-LaCrosse WS-23xx Weather Station support for Xastir - open2300db2APRS
+LaCrosse WS-23xx Weather Station support for Astir - open2300db2APRS
 
 
 OVERVIEW
@@ -13,19 +13,19 @@ OVERVIEW
 
 This is a bridge utility between "open2300", a LaCrosse Weather Station 
 data storage & display application by Kenneth Lavrsen (see 
-http://www.lavrsen.dk/twiki/bin/view/Open2300/WebHome) and "Xastir", 
+http://www.lavrsen.dk/twiki/bin/view/Open2300/WebHome) and "Astir", 
 the APRS package for Linux (see http://www.xastir.org). It allows your 
-LaCrosse WS-23xx weather data to be used by Xastir for local station data.
+LaCrosse WS-23xx weather data to be used by Astir for local station data.
 
-You will need to obtain and install Xastir, mysql and open2300 as 
-outlined in the following sections. After Xastir and open2300 are
+You will need to obtain and install Astir, mysql and open2300 as 
+outlined in the following sections. After Astir and open2300 are
 in working order, this utility can be run as a daemon to provide 
-weather data to Xastir (or any other APRS-format application).
+weather data to Astir (or any other APRS-format application).
 
 "open2300db2APRS" watches for new weather data in the database, retrieves
 the new data, formats it in APRS "position less" ASCII format and
-makes it available on a TCP port of your choosing. Xastir is 
-capable of reading this data (see note under Xastir installation).
+makes it available on a TCP port of your choosing. Astir is 
+capable of reading this data (see note under Astir installation).
 
 
 INSTALLATION
@@ -52,8 +52,8 @@ Steps in order:
    found in the weatherdump.sql file.  My database is setup for degree F, 
    inches of Mercury, inches of rain, and windspeed in knots.
 
-3) Install or update your installation for Xastir to the latest
-   version ("http://github.com/Xastir/Xastir" project Xastir) 
+3) Install or update your installation for Astir to the latest
+   version ("http://github.com/Astir/Astir" project Astir) 
 
 4) Install open2300db2APRS 
    See instructions below.
@@ -66,20 +66,20 @@ SETTINGS & STARTUP
    this usage it doesn't matter. In fact, it's a bit of a pain.
    TODO - open2300db2APRS has the annoying fault of clearly displaying 
    the password used for the mysql database for anyone to see via 
-   'ps -ef'. Start mysqld before open2300db2APRS, meteo and Xastir in your 
+   'ps -ef'. Start mysqld before open2300db2APRS, meteo and Astir in your 
    boot-time initializations.
 
 2) open2300 - my testing used a five minute data accumulation rate. 
-   Thirty seconds would more closely match Xastir, but the 
+   Thirty seconds would more closely match Astir, but the 
    database growth rate would be twelve as fast (about 600  
    Mbytes/year at 30 sec rate).  I run a cronjob every five minutes that
    calls mysql2300 to populate the data.  See the open2300 documentation.
 
 3) open2300db2APRS - see "open2300db2APRS RUN OPTIONS" below. Start this daemon 
-   after mysqld and before Xastir.  I start it with the command 
+   after mysqld and before Astir.  I start it with the command 
    "open2300db2APRS -r --password <db2passwd>
 
-4) xastir - start this last, if you are auto-opening the WX port.
+4) astir - start this last, if you are auto-opening the WX port.
    Set the weather port as a network weather station on 
    "localhost", port number as chosen in "db2APRS RUN OPTIONS" 
    (default is 1313). Make sure your station is set to one of the
@@ -154,12 +154,12 @@ this string at 25 second intervals, after new database entries
 are checked for.
 
 This daemon could run on any networked Linux machine instead of 
-the machine hosting Xastir, if desired (it's a good way around 
+the machine hosting Astir, if desired (it's a good way around 
 lack of processing power, disk space or serial ports!).
 
-Note that the open2300db2APRS daemon keeps providing data to Xastir even 
+Note that the open2300db2APRS daemon keeps providing data to Astir even 
 when no new entries in the database have been made. This could 
-lead to errors in the timestamp on the data that Xastir is 
+lead to errors in the timestamp on the data that Astir is 
 transmitting.
 
 
@@ -168,7 +168,7 @@ BUILD open2300db2APRS
 
 It's the usual:
 
-$ cd xastir/LaCrosse
+$ cd astir/LaCrosse
 $ ./bootstrap.sh
 $ ./configure
 $ make
@@ -194,7 +194,7 @@ Code portions and style taken from wx200d by Tim Witham
 mysql is the product of MySQL - see http://www.mysql.com for
 team details.
 
-and finally, Xastir is the brain child of Frank Giannandrea et. 
+and finally, Astir is the brain child of Frank Giannandrea et. 
 al. (see http://www.xastir.org for current EMAIL addresses)
 
 

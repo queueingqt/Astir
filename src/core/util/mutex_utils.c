@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -60,14 +60,14 @@
 // There's no easy way to get at it.  For that reason we'll create
 // another struct that contains both the process ID and a pointer to
 // the pthread_mutex_t, and pass pointers to those structs around in
-// our programs instead.  The new struct is "xastir_mutex".
+// our programs instead.  The new struct is "astir_mutex".
 //
 
 
-// Function to initialize the new xastir_mutex
+// Function to initialize the new astir_mutex
 // objects before use.
 //
-void init_critical_section(xastir_mutex *lock)
+void init_critical_section(astir_mutex *lock)
 {
 #ifdef MUTEX_DEBUG
   pthread_mutexattr_t attr;
@@ -96,12 +96,12 @@ void init_critical_section(xastir_mutex *lock)
 
 
 
-// Function which uses xastir_mutex objects to lock a
+// Function which uses astir_mutex objects to lock a
 // critical shared section of code or variables.  Makes
 // sure that only one thread can access the critical section
 // at a time.  If there are no problems, it returns zero.
 //
-int begin_critical_section(xastir_mutex *lock, char *text)
+int begin_critical_section(astir_mutex *lock, char *text)
 {
   pthread_t calling_thread;
   int problems;
@@ -181,7 +181,7 @@ int begin_critical_section(xastir_mutex *lock, char *text)
 // Function which ends the locking of a critical section
 // of code.  If there are no problems, it returns zero.
 //
-int end_critical_section(xastir_mutex *lock, char *text)
+int end_critical_section(astir_mutex *lock, char *text)
 {
   pthread_t calling_thread;
   int problems;

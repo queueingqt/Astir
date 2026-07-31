@@ -18,7 +18,7 @@
         without position information from MySQL database
         weather information stored there by meteo-0.9.4
         (See http://meteo.othello.ch for source) to
-        xastir-1.2.1 (See http://www.xastir.org for source)
+        astir-1.2.1 (See http://www.xastir.org for source)
 
         Note:  "meteo-0.9.x" is a weather data accumulator
         aimed at Davis weather stations, which stores weather

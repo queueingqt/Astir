@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -21,8 +21,8 @@
  * Look at the README for more information on the program.
  */
 
-#ifndef __XASTIR_DR_UTILS_H
-#define __XASTIR_DR_UTILS_H
+#ifndef __ASTIR_DR_UTILS_H
+#define __ASTIR_DR_UTILS_H
 
 extern void compute_DR_position(long x_long, long y_lat, double range, double course, long *x_long2, long *y_lat2);
 extern void compute_current_DR_position(DataRow *p_station, long *x_long, long *y_lat);

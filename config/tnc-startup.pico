@@ -78,8 +78,8 @@ TXDELAY 30
 XFLOW off
 #
 #
-# BEACON EVERY 0 must be set to 0 or both Xastir and your TNC will send
+# BEACON EVERY 0 must be set to 0 or both Astir and your TNC will send
 # beacons which will alternate in everyones lists and fill up their
-# logs.  Do NOT set BEACON EVERY to anything other than 0 while Xastir
+# logs.  Do NOT set BEACON EVERY to anything other than 0 while Astir
 # is running.
 

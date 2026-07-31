@@ -15,8 +15,8 @@ SUBDIRS = src config help scripts online-maps symbols callpass tests
 EXTRA_DIST = config.guess config.sub install-sh \
         missing placeholder FAQ LICENSE README README.GIT.md \
         README.CYGWIN CONTRIBUTING.md \
-        README.MAPS README.OSM_maps README.sudo testdbfawk.1 \
-        DEBUG_LEVELS bootstrap.sh INSTALL.md callpass.1 xastir.1 xastir_udp_client.1 \
+        README.MAPS README.OSM_maps README.sudo astir_testdbfawk.1 \
+        DEBUG_LEVELS bootstrap.sh INSTALL.md astir_callpass.1 astir.1 astir_udp_client.1 \
         worldhi.map \
         Davis LaCrosse \
         OSM_template \
@@ -63,7 +63,7 @@ install-data-hook:
 	$(LN_S) CC_OpenStreetMap_logo.png CC_OpenStreetMap.png
  
 mandir=@mandir@
-man_MANS=xastir.1 callpass.1 xastir_udp_client.1 testdbfawk.1
+man_MANS=astir.1 astir_callpass.1 astir_udp_client.1 astir_testdbfawk.1
 
 # Use tiles for these maps
 OSM_tiled_cycle.geo: OSM_template

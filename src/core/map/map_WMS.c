@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -56,7 +56,7 @@
 
 #include <math.h>
 
-#include "core/xastir.h"
+#include "core/astir.h"
 #include "core/globals.h"
 #include "core/map/maps.h"
 #include "core/aprs/alert.h"
@@ -86,15 +86,15 @@
   #undef PACKAGE
   #undef VERSION
   /* JMT - stupid ImageMagick */
-  #define XASTIR_PACKAGE_BUGREPORT PACKAGE_BUGREPORT
+  #define ASTIR_PACKAGE_BUGREPORT PACKAGE_BUGREPORT
   #undef PACKAGE_BUGREPORT
-  #define XASTIR_PACKAGE_NAME PACKAGE_NAME
+  #define ASTIR_PACKAGE_NAME PACKAGE_NAME
   #undef PACKAGE_NAME
-  #define XASTIR_PACKAGE_STRING PACKAGE_STRING
+  #define ASTIR_PACKAGE_STRING PACKAGE_STRING
   #undef PACKAGE_STRING
-  #define XASTIR_PACKAGE_TARNAME PACKAGE_TARNAME
+  #define ASTIR_PACKAGE_TARNAME PACKAGE_TARNAME
   #undef PACKAGE_TARNAME
-  #define XASTIR_PACKAGE_VERSION PACKAGE_VERSION
+  #define ASTIR_PACKAGE_VERSION PACKAGE_VERSION
   #undef PACKAGE_VERSION
   #ifdef HAVE_MAGICK
     #ifdef HAVE_MAGICKCORE_MAGICKCORE_H
@@ -106,20 +106,20 @@
     #endif //HAVE_MAGICKCORE_MAGICKCORE_H
   #endif //HAVE_MAGICK
   #undef PACKAGE_BUGREPORT
-  #define PACKAGE_BUGREPORT XASTIR_PACKAGE_BUGREPORT
-  #undef XASTIR_PACKAGE_BUGREPORT
+  #define PACKAGE_BUGREPORT ASTIR_PACKAGE_BUGREPORT
+  #undef ASTIR_PACKAGE_BUGREPORT
   #undef PACKAGE_NAME
-  #define PACKAGE_NAME XASTIR_PACKAGE_NAME
-  #undef XASTIR_PACKAGE_NAME
+  #define PACKAGE_NAME ASTIR_PACKAGE_NAME
+  #undef ASTIR_PACKAGE_NAME
   #undef PACKAGE_STRING
-  #define PACKAGE_STRING XASTIR_PACKAGE_STRING
-  #undef XASTIR_PACKAGE_STRING
+  #define PACKAGE_STRING ASTIR_PACKAGE_STRING
+  #undef ASTIR_PACKAGE_STRING
   #undef PACKAGE_TARNAME
-  #define PACKAGE_TARNAME XASTIR_PACKAGE_TARNAME
-  #undef XASTIR_PACKAGE_TARNAME
+  #define PACKAGE_TARNAME ASTIR_PACKAGE_TARNAME
+  #undef ASTIR_PACKAGE_TARNAME
   #undef PACKAGE_VERSION
-  #define PACKAGE_VERSION XASTIR_PACKAGE_VERSION
-  #undef XASTIR_PACKAGE_VERSION
+  #define PACKAGE_VERSION ASTIR_PACKAGE_VERSION
+  #undef ASTIR_PACKAGE_VERSION
 #endif // HAVE_MAGICK
 
 #include "draw/xa_draw.h"
@@ -154,8 +154,8 @@ void draw_WMS_map (char *filenm,
   long tp_c_dx, tp_c_dy;          // tiepoint coordinate differences
   unsigned long c_x_min,  c_y_min;// top left coordinates of map inside screen
 //  unsigned long c_y_max;          // bottom right coordinates of map inside screen
-  double c_x;                     // Xastir coordinates 1/100 sec, 0 = 180°W
-  double c_y;                     // Xastir coordinates 1/100 sec, 0 =  90°N
+  double c_x;                     // Astir coordinates 1/100 sec, 0 = 180°W
+  double c_y;                     // Astir coordinates 1/100 sec, 0 =  90°N
 
   long map_y_0;                   // map pixel pointer prior to TM adjustment
   long map_x, map_y;              // map pixel pointers, DNN: this was a float, chg to long
@@ -180,7 +180,7 @@ void draw_WMS_map (char *filenm,
 //  long scr_c_xr;
 
 //  long scale_xa;                  // adjusted for topo maps
-//  double scale_x_nm;              // nm per Xastir coordinate unit
+//  double scale_x_nm;              // nm per Astir coordinate unit
 //  long scale_x0;                  // at widest map area
 
   char local_filename[MAX_FILENAME];
@@ -226,7 +226,7 @@ void draw_WMS_map (char *filenm,
   // Create a shorter filename for display
   short_filename_for_status(filenm, short_filenm, sizeof(short_filenm));
 
-  xastir_snprintf(map_it,
+  astir_snprintf(map_it,
                   sizeof(map_it),
                   langcode ("BBARSTA028"),
                   short_filenm);
@@ -242,7 +242,7 @@ void draw_WMS_map (char *filenm,
     // We're indexing only.  Save the extents in the index.
     // Force the extents to the edges of the earth for the
     // index file.
-    index_update_xastir(filenm, // Filename only
+    index_update_astir(filenm, // Filename only
                         64800000l,      // Bottom
                         0l,             // Top
                         0l,             // Left
@@ -250,7 +250,7 @@ void draw_WMS_map (char *filenm,
                         0);             // Default Map Level
 
     // Update statusline
-    xastir_snprintf(map_it,
+    astir_snprintf(map_it,
                     sizeof(map_it),
                     langcode ("BBARSTA039"),
                     short_filenm);
@@ -264,8 +264,8 @@ void draw_WMS_map (char *filenm,
   //
   tp[0].img_x = 0;                // Pixel Coordinates
   tp[0].img_y = 0;                // Pixel Coordinates
-  tp[0].x_long = NW_corner_longitude;   // Xastir Coordinates
-  tp[0].y_lat  = NW_corner_latitude;    // Xastir Coordinates
+  tp[0].x_long = NW_corner_longitude;   // Astir Coordinates
+  tp[0].y_lat  = NW_corner_latitude;    // Astir Coordinates
 
 
   // Tiepoint for lower right screen corner
@@ -294,12 +294,12 @@ void draw_WMS_map (char *filenm,
   //
   tp[1].img_x =  screen_width - 1; // Pixel Coordinates
   tp[1].img_y = screen_height - 1; // Pixel Coordinates
-  tp[1].x_long = SE_corner_longitude; // Xastir Coordinates
+  tp[1].x_long = SE_corner_longitude; // Astir Coordinates
 
 // Modified to use same scale (scale_x) for both dimensions, square
 // pixels.  Don't use SE_corner_latitude here as it uses scale_y!
-//    tp[1].y_lat  =  NW_corner_latitude + ((screen_height) * scale_y); // Xastir Coordinates
-  tp[1].y_lat  =  NW_corner_latitude + ((screen_height) * scale_x); // Xastir Coordinates
+//    tp[1].y_lat  =  NW_corner_latitude + ((screen_height) * scale_y); // Astir Coordinates
+  tp[1].y_lat  =  NW_corner_latitude + ((screen_height) * scale_x); // Astir Coordinates
 
 
   // Again, use scale_x for both directions due to the square
@@ -326,20 +326,20 @@ void draw_WMS_map (char *filenm,
 
 
 //  Example query for a WMS map server....
-//  xastir_snprintf(fileimg, sizeof(fileimg),
+//  astir_snprintf(fileimg, sizeof(fileimg),
 //  "\'http://mesonet.tamu.edu/cgi-bin/p-warn?SERVICE=WMS&VERSION=1.1.1&REQUEST=getmap&layers=radar&BBOX=-129.000,52.500,-111.000,42.500&HEIGHT=1000&WIDTH=1800&FORMAT=image/png\'");
 
 
-//    xastir_snprintf(WMStmp, sizeof(WMStmp),
+//    astir_snprintf(WMStmp, sizeof(WMStmp),
 //        "http://mesonet.tamu.edu/cgi-bin/p-warn?SERVICE=WMS&VERSION=1.1.1&REQUEST=getmap");
 
 
-  xastir_snprintf(WMStmp, sizeof(WMStmp), "%s", URL);
+  astir_snprintf(WMStmp, sizeof(WMStmp), "%s", URL);
   strncat(WMStmp, "&REQUEST=getmap", sizeof(WMStmp) - 1 - strlen(WMStmp));
   strncat(WMStmp, "&EXCEPTIONS=INIMAGE", sizeof(WMStmp) - 1 - strlen(WMStmp));
 
 // This specifies a bounding box based on square pixels.
-  xastir_snprintf(tmpstr, sizeof(tmpstr),
+  astir_snprintf(tmpstr, sizeof(tmpstr),
                   "&BBOX=%08.5f,%07.5f,%08.5f,%07.5f",
                   left,   // Lower left
                   bottom, // Lower left
@@ -347,10 +347,10 @@ void draw_WMS_map (char *filenm,
                   top);   // Upper right
   strncat (WMStmp, tmpstr, sizeof(WMStmp) - 1 - strlen(WMStmp));
 
-  xastir_snprintf(tmpstr, sizeof(tmpstr), "&HEIGHT=%d", geo_image_height);
+  astir_snprintf(tmpstr, sizeof(tmpstr), "&HEIGHT=%d", geo_image_height);
   strncat (WMStmp, tmpstr, sizeof(WMStmp) - 1 - strlen(WMStmp));
 
-  xastir_snprintf(tmpstr, sizeof(tmpstr), "&WIDTH=%d", geo_image_width);
+  astir_snprintf(tmpstr, sizeof(tmpstr), "&WIDTH=%d", geo_image_width);
   strncat (WMStmp, tmpstr, sizeof(WMStmp) - 1 - strlen(WMStmp));
 
 
@@ -429,7 +429,7 @@ void draw_WMS_map (char *filenm,
 
     if (nocache)
     {
-      xastir_snprintf(local_filename,
+      astir_snprintf(local_filename,
                       sizeof(local_filename),
                       "%s/map.%s",
                       get_user_base_dir("tmp", temp_file_path, sizeof(temp_file_path)),
@@ -438,7 +438,7 @@ void draw_WMS_map (char *filenm,
     else
     {
       cache_file_id = map_cache_fileid();
-      xastir_snprintf(local_filename,
+      astir_snprintf(local_filename,
                       sizeof(local_filename),
                       "%s/map_%s.%s",
                       get_user_base_dir("map_cache", temp_file_path, sizeof(temp_file_path)),
@@ -449,7 +449,7 @@ void draw_WMS_map (char *filenm,
 
 #else   // USE_MAP_CACHE
 
-  xastir_snprintf(local_filename,
+  astir_snprintf(local_filename,
                   sizeof(local_filename),
                   "%s/map.%s",
                   get_user_base_dir("tmp", temp_file_path, sizeof(temp_file_path)),
@@ -479,7 +479,7 @@ void draw_WMS_map (char *filenm,
     }
 
     // For debugging the MagickError/MagickWarning segfaults.
-    //system("cat /dev/null >/var/tmp/xastir_hacker_map.png");
+    //system("cat /dev/null >/var/tmp/astir_hacker_map.png");
 
 
 #ifdef USE_MAP_CACHE
@@ -504,7 +504,7 @@ void draw_WMS_map (char *filenm,
   chmod(local_filename, 0666);
 
   // Tell ImageMagick where to find it
-  xastir_snprintf(file,
+  astir_snprintf(file,
                   sizeof(file),
                   "%s",
                   local_filename);
@@ -513,7 +513,7 @@ void draw_WMS_map (char *filenm,
 
   image_info=CloneImageInfo((ImageInfo *) NULL);
 
-  xastir_snprintf(image_info->filename,
+  astir_snprintf(image_info->filename,
                   sizeof(image_info->filename),
                   "%s",
                   file);
@@ -527,7 +527,7 @@ void draw_WMS_map (char *filenm,
   }
 
   // We do a test read first to see if the file exists, so we
-  // don't kill Xastir in the ReadImage routine.
+  // don't kill Astir in the ReadImage routine.
   f = fopen (image_info->filename, "r");
   if (f == NULL)
   {
@@ -611,7 +611,7 @@ void draw_WMS_map (char *filenm,
           if (debug_level & 512)
               fprintf(stderr,"level=%s\n", tempstr);
 
-          xastir_snprintf(tempstr,
+          astir_snprintf(tempstr,
               sizeof(tempstr),
               "%d, 100, 100",
               (int)(raster_map_intensity * 100.0));
@@ -733,7 +733,7 @@ void draw_WMS_map (char *filenm,
 
 
   /*
-  * Here are the corners of our viewport, using the Xastir
+  * Here are the corners of our viewport, using the Astir
   * coordinate system.  Notice that Y is upside down:
   *
   *   left edge of view = NW_corner_longitude
@@ -744,7 +744,7 @@ void draw_WMS_map (char *filenm,
   * The corners of our map will soon be (after translating the
   * tiepoints to the corners if they're not already there):
   *
-  *   left edge of map = tp[0].x_long   in Xastir format
+  *   left edge of map = tp[0].x_long   in Astir format
   *  right edge of map = tp[1].x_long
   *    top edge of map = tp[0].y_lat
   * bottom edge of map = tp[1].y_lat
@@ -932,7 +932,7 @@ void draw_WMS_map (char *filenm,
       scr_xp = -1;
       // loop over map pixel columns
       map_act = 0;
-//          scale_x_nm = calc_dscale_x(0,(long)c_y) / 1852.0;  // nm per Xastir coordinate
+//          scale_x_nm = calc_dscale_x(0,(long)c_y) / 1852.0;  // nm per Astir coordinate
       for (map_x = map_x_min, c_x = (double)c_x_min; map_x <= map_x_max; map_x++, c_x += c_dx)
       {
         scr_x = (c_x - NW_corner_longitude) / scale_x;

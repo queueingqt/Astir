@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -25,7 +25,7 @@
   #include "config.h"
 #endif  // HAVE_CONFIG_H
 
-// Came in via <X11/Xos.h> until xastir.h/main.h gave up their X includes.
+// Came in via <X11/Xos.h> until astir.h/main.h gave up their X includes.
 #include <string.h>
 #include <strings.h>
 #include "core/util/hashtable.h"
@@ -38,7 +38,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "core/xastir.h"
+#include "core/astir.h"
 #include "core/globals.h"
 #include "core/util/snprintf.h"
 #include "core/main.h"
@@ -206,12 +206,12 @@ void add_tactical_to_hash(char *callsign, char *tactical_call)
 
 //fprintf(stderr, "\t\t\tAdding %s = %s...\n", callsign, tactical_call);
 
-  xastir_snprintf(temp2,
+  astir_snprintf(temp2,
                   MAX_CALLSIGN+1,
                   "%s",
                   callsign);
 
-  xastir_snprintf(temp1,
+  astir_snprintf(temp1,
                   MAX_TACTICAL_CALL+1,
                   "%s",
                   tactical_call);
@@ -353,9 +353,9 @@ void log_tactical_call(char *call_sign, char *tactical_call_sign)
 
 
 //
-// Function to load saved tactical calls back into xastir.  This
+// Function to load saved tactical calls back into astir.  This
 // is called on startup.  This implements persistent tactical calls
-// across xastir restarts.
+// across astir restarts.
 //
 // Here we create a hash lookup and store one record for each valid
 // line read from the tactical calls log file.  The key for each

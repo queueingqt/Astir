@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -33,7 +33,7 @@
 
 #include <Xm/XmAll.h>
 
-#include "core/xastir.h"
+#include "core/astir.h"
 #include "core/aprs/database.h"
 #include "core/aprs/db_funcs.h"
 
@@ -335,19 +335,19 @@ void draw_WP_line(DataRow *p_station,
   // need to do.
 //    lat_m = (double)( (y_lat + y_lat2) / 2.0 );
 
-  // Convert from Xastir coordinate system
+  // Convert from Astir coordinate system
 //    lat_m = (double)( -((lat_m - 32400000l) / 360000.0) );
 
   lat_m = -((y_lat - 32400000l) / 360000.0)
           + -((y_lat2 - 32400000l) / 360000.0);
   lat_m = lat_m / 2.0;
 
-  convert_from_xastir_coordinates(&temp_longitude2,
+  convert_from_astir_coordinates(&temp_longitude2,
                                   &temp_latitude2,
                                   x_long2,
                                   y_lat2);
 
-  convert_from_xastir_coordinates(&temp_longitude,
+  convert_from_astir_coordinates(&temp_longitude,
                                   &temp_latitude,
                                   x_long,
                                   y_lat);
@@ -422,7 +422,7 @@ void draw_WP_line(DataRow *p_station,
 // that point to the edge of the circle?
 //
 // range is in miles
-// x_long/y_lat are in Xastir lat/lon units
+// x_long/y_lat are in Astir lat/lon units
 //
 void draw_pod_circle(long x_long, long y_lat, double range, int color, xa_surface_id where, int sec_heard)
 {
@@ -486,7 +486,7 @@ void draw_pod_circle(long x_long, long y_lat, double range, int color, xa_surfac
 
 
 // range is in centimeters (0 to 65535 representing 0 to 655.35 meters)
-// x_long/y_lat are in Xastir lat/lon units
+// x_long/y_lat are in Astir lat/lon units
 // lat_precision/lon-precision are in 100ths of seconds of lat/lon
 //
 void draw_precision_rectangle(long x_long,
@@ -2290,7 +2290,7 @@ void load_pixmap_symbol_file(char *filename, int reloading)
   table_char = '\0';
   symbol_char = '\0';
   done = 0;
-  xastir_snprintf(filen, sizeof(filen), "%s/%s", SYMBOLS_DIR, filename);
+  astir_snprintf(filen, sizeof(filen), "%s/%s", SYMBOLS_DIR, filename);
   f = fopen(filen,"r");
   if (f!=NULL)
   {
@@ -2583,7 +2583,7 @@ void symbol(int ghost, char symbol_table, char symbol_id, char symbol_overlay, x
 
 
   // Find the nosymbol index if we haven't filled it in by now.
-  // This "for" loop should get run only once during Xastir's
+  // This "for" loop should get run only once during Astir's
   // entire runtime, so it shouldn't contribute much to CPU
   // loading.
   if (nosym_index == -1)
@@ -2954,7 +2954,7 @@ void draw_symbol(char symbol_table, char symbol_id, char symbol_overlay,
         // last 30 minutes?
         if (minutes < 30.0)
         {
-          xastir_snprintf(age,
+          astir_snprintf(age,
                           sizeof(age),
                           "%d%s",
                           (int)minutes,
@@ -2964,7 +2964,7 @@ void draw_symbol(char symbol_table, char symbol_id, char symbol_overlay,
         // 30 to 59 minutes?
         else if (minutes < 60.0)
         {
-          xastir_snprintf(age,
+          astir_snprintf(age,
                           sizeof(age),
                           "%d%s",
                           (int)minutes,
@@ -2974,7 +2974,7 @@ void draw_symbol(char symbol_table, char symbol_id, char symbol_overlay,
         // 1 hour to 1 day old?
         else if (hours <= 24.0)
         {
-          xastir_snprintf(age,
+          astir_snprintf(age,
                           sizeof(age),
                           "%.1f%s",
                           hours,
@@ -2984,7 +2984,7 @@ void draw_symbol(char symbol_table, char symbol_id, char symbol_overlay,
         // More than a day old
         else
         {
-          xastir_snprintf(age,
+          astir_snprintf(age,
                           sizeof(age),
                           "%.1f%s",
                           hours / 24.0,
@@ -3188,7 +3188,7 @@ void draw_multipoints(long UNUSED(x_long), long UNUSED(y_lat), int numpoints, lo
     // Look for the coordinates that are farthest north, farthest south,
     // farthest west, and farthest east. Then check to see if any of that
     // box is onscreen. If so, proceed with drawing. This is all done in
-    // Xastir coordinates.
+    // Astir coordinates.
 
     mostNorth = mostSouth = y_lat;
     mostWest = mostEast = x_long;
@@ -3228,7 +3228,7 @@ void draw_multipoints(long UNUSED(x_long), long UNUSED(y_lat), int numpoints, lo
       //x_offset = (x_long - NW_corner_longitude) / scale_x;
       //y_offset = (y_lat - NW_corner_latitude) / scale_y;
 
-      // Convert each of the points from Xastir coordinates to
+      // Convert each of the points from Astir coordinates to
       // screen coordinates and fill in the xpoints array.
 
 //            for (i = 0; i < numpoints; ++i) {

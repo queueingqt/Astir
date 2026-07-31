@@ -7,8 +7,8 @@
  * X-free and these had to go somewhere.
  */
 
-#ifndef XASTIR_DRAW_SYMBOLS_GUI_H
-#define XASTIR_DRAW_SYMBOLS_GUI_H
+#ifndef ASTIR_DRAW_SYMBOLS_GUI_H
+#define ASTIR_DRAW_SYMBOLS_GUI_H
 
 #include <X11/Intrinsic.h>
 
@@ -16,4 +16,4 @@ extern void Select_symbol( Widget w, XtPointer clientData, XtPointer callData);
 extern Widget select_symbol_dialog;
 extern void Select_symbol_destroy_shell( Widget widget, XtPointer clientData, XtPointer callData);
 
-#endif  /* XASTIR_DRAW_SYMBOLS_GUI_H */
+#endif  /* ASTIR_DRAW_SYMBOLS_GUI_H */

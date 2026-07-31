@@ -21,11 +21,11 @@
   #include <X11/xpm.h>   // XpmReadFileToImage, for xa_image_load()
 #endif
 
-#include "core/xastir.h"
+#include "core/astir.h"
 #include "core/main.h"
 #include "draw/x11/color.h"    // Pixel_Format, NOT_TRUE_NOR_DIRECT
 #include "draw/x11/rotated.h"  // XRotDrawAlignedString and the alignment constants
-#include "core/util/snprintf.h" // xastir_snprintf, for the font-name cache
+#include "core/util/snprintf.h" // astir_snprintf, for the font-name cache
 #include "draw/xa_draw.h"
 #include "draw/x11/xa_draw_x11.h"
 #include "core/util/xa_trace.h"
@@ -34,7 +34,7 @@
   #include "draw/x11/cairo_text.h"
 #endif
 
-// gc, screen_width and screen_height come from xastir.h.  The canvas widget does
+// gc, screen_width and screen_height come from astir.h.  The canvas widget does
 // not: the front end hands it over through xa_x11_set_canvas(), so that this
 // file defines the whole of its dependency on the toolkit rather than sharing a
 // global with main.c.  See xa_draw_x11.h.
@@ -370,7 +370,7 @@ static xa_font font_for(const char *spec)
     // fonts and twelve slots this does not happen in practice.
     if (free_slot >= 0)
     {
-      xastir_snprintf(xa_font_cache[free_slot].name,
+      astir_snprintf(xa_font_cache[free_slot].name,
                       sizeof(xa_font_cache[free_slot].name), "%s", spec);
       xa_font_cache[free_slot].font = f;
     }
@@ -394,7 +394,7 @@ void xa_draw_text_styled(xa_surface_id dst, int x, int y, float degrees,
   }
 
 #ifdef HAVE_CAIRO
-  xastir_cairo_draw_text(dpy, (Pixmap)dst, x, y, degrees, text, fontspec,
+  astir_cairo_draw_text(dpy, (Pixmap)dst, x, y, degrees, text, fontspec,
                          (unsigned long)fg, outline,
                          (unsigned long)outline_color, align);
 #else
@@ -434,7 +434,7 @@ int xa_text_width(const char *text, const char *fontspec)
     return 0;
   }
 #ifdef HAVE_CAIRO
-  return xastir_cairo_text_width(text, fontspec);
+  return astir_cairo_text_width(text, fontspec);
 #else
   return xa_font_text_width(font_for(fontspec), text, (int)strlen(text));
 #endif
@@ -448,7 +448,7 @@ int xa_text_height(const char *fontspec)
     return 0;
   }
 #ifdef HAVE_CAIRO
-  return xastir_cairo_text_height(fontspec);
+  return astir_cairo_text_height(fontspec);
 #else
   {
     xa_font_metrics m;
@@ -1131,7 +1131,7 @@ void xa_pen_destroy(xa_pen pen)
  * to link the Motif GUI to get them.  They are the renderer's resources, so
  * they live with the renderer; a different backend defines its own.
  * Declared in xa_draw.h now, in the neutral types -- they used to be declared
- * in xastir.h and main.h as Pixmap/GC/Pixel, which is what put <X11/Intrinsic.h>
+ * in astir.h and main.h as Pixmap/GC/Pixel, which is what put <X11/Intrinsic.h>
  * in front of every core file in the tree.  Defined here in those same neutral
  * types so the declaration and the definition agree exactly rather than merely
  * being layout-compatible.

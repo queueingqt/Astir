@@ -1,5 +1,5 @@
-#ifndef XASTIR_SOUND_H
-#define XASTIR_SOUND_H
+#ifndef ASTIR_SOUND_H
+#define ASTIR_SOUND_H
 
 #include <sys/types.h>
 
@@ -8,4 +8,4 @@
 extern pid_t play_sound(char *sound_cmd, char *soundfile);
 extern int sound_done(void);
 
-#endif // XASTIR_SOUND_H
+#endif // ASTIR_SOUND_H

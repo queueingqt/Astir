@@ -27,14 +27,14 @@ use warnings;
 # map files for the whole of Canada!
 #
 #
-# - "cd /usr/local/share/xastir/maps"
+# - "cd /usr/local/share/astir/maps"
 #
 # - Assure you have write privileges in the directory above either
 #   by becoming root using the "su" command, using "sudo", or
 #   temporarily changing ownership and/or privileges on the
 #   "maps" directory.
 #
-# - "/usr/local/lib/xastir/toporama250k.pl"
+# - "/usr/local/lib/astir/toporama250k.pl"
 #
 # - The script will create/populate this directory hierarchy:
 #   .../maps/toporama/images/
@@ -42,7 +42,7 @@ use warnings;
 #
 # - Move/rename directories/contents as you wish.
 #
-# - In Xastir:  "Map->Configure->Index: Reindex ALL Maps!"
+# - In Astir:  "Map->Configure->Index: Reindex ALL Maps!"
 #
 #
 # Note that the same map files are also available from Steve Dimse's

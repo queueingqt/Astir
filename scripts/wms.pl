@@ -29,7 +29,7 @@ use warnings;
 
 #
 # Once you have the map layer names it is relatively easy to construct a
-# .geo file for Xastir that uses one of those map layers. Here's an example
+# .geo file for Astir that uses one of those map layers. Here's an example
 # from README.MAPS. Both lines are required in the .geo file:
 # -----------------------
 # WMSSERVER

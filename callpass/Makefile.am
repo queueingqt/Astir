@@ -4,9 +4,12 @@
 
 MAINTAINERCLEANFILES=Makefile.in
 
-bin_PROGRAMS = callpass
+# astir_callpass, not callpass.  Xastir installs /usr/bin/callpass too, and a
+# user may have both programs installed at once -- whichever package was
+# unpacked second would silently own the name.
+bin_PROGRAMS = astir_callpass
 
-callpass_SOURCES = callpass.c
+astir_callpass_SOURCES = callpass.c
 
-callpass_LINK=$(CC) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
+astir_callpass_LINK=$(CC) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
 

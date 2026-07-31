@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 2000-2026 The Xastir Group
  *
  * This program is free software; you can redistribute it and/or
@@ -38,12 +38,12 @@
 //
 // This will cause stats to be printed every 60 seconds, 'cuz we
 // call GC_collect via a macro from UpdateTime() once per minute:
-// export GC_PRINT_STATS=1; xastir &
+// export GC_PRINT_STATS=1; astir &
 //
 // Compile libgc with this option for more debugging output.  I
 // didn't do so:  --enable-full_debug
 //
-// If we enable these thread options, Xastir won't link with the
+// If we enable these thread options, Astir won't link with the
 // library.  Since we don't allocate dynamic memory in the child
 // threads anyway, skip them.
 // --enable-threads=posix --enable-thread-local-alloc --enable-parallel-mark

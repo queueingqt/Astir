@@ -1,6 +1,6 @@
 /*
 *
-* XASTIR, Amateur Station Tracking and Information Reporting
+* ASTIR, Amateur Station Tracking and Information Reporting
 * Copyright (C) 1999,2000  Frank Giannandrea
 * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -27,7 +27,7 @@
 //    GNU COPYLEFT applies
 //    1999-11-08
 //
-//    For use with XASTIR by Frank Giannandrea
+//    For use with ASTIR by Frank Giannandrea
 //********************************************************************
 
 #ifdef HAVE_CONFIG_H
@@ -51,7 +51,7 @@
 
 // removed: #include <Xm/XmAll.h>   (no longer needed here)
 
-#include "core/xastir.h"
+#include "core/astir.h"
 #include "core/aprs/rac_data.h"
 #include "core/state/xa_config.h"
 #include "core/main.h"
@@ -234,8 +234,8 @@ int search_rac_data(char *callsign, rac_record *data)
   get_user_base_dir("data/AMACALL.ndx", amacall_path, sizeof(amacall_path));
 
 
-  xastir_snprintf(index, sizeof(index)," ");
-  xastir_snprintf(racdata.callsign, sizeof(racdata.callsign)," ");
+  astir_snprintf(index, sizeof(index)," ");
+  astir_snprintf(racdata.callsign, sizeof(racdata.callsign)," ");
 
   /* ====================================================================    */
   /*    Search thru the index, get the RBA                */
@@ -338,82 +338,82 @@ int search_rac_data(char *callsign, rac_record *data)
 //        (void)chomp(racdata.club_province, 2);
 //        (void)chomp(racdata.club_postal_code, 9);
 
-    xastir_snprintf(data->callsign,
+    astir_snprintf(data->callsign,
                     sizeof(data->callsign),
                     "%s",
                     racdata.callsign);
 
-    xastir_snprintf(data->first_name,
+    astir_snprintf(data->first_name,
                     sizeof(data->first_name),
                     "%s",
                     racdata.first_name);
 
-    xastir_snprintf(data->last_name,
+    astir_snprintf(data->last_name,
                     sizeof(data->last_name),
                     "%s",
                     racdata.last_name);
 
-    xastir_snprintf(data->address,
+    astir_snprintf(data->address,
                     sizeof(data->address),
                     "%s",
                     racdata.address);
 
-    xastir_snprintf(data->city,
+    astir_snprintf(data->city,
                     sizeof(data->city),
                     "%s",
                     racdata.city);
 
-    xastir_snprintf(data->province,
+    astir_snprintf(data->province,
                     sizeof(data->province),
                     "%s",
                     racdata.province);
 
-    xastir_snprintf(data->postal_code,
+    astir_snprintf(data->postal_code,
                     sizeof(data->postal_code),
                     "%s",
                     racdata.postal_code);
 
-    xastir_snprintf(data->qual_a,
+    astir_snprintf(data->qual_a,
                     sizeof(data->qual_a),
                     "%s",
                     racdata.qual_a);
 
-    xastir_snprintf(data->qual_b,
+    astir_snprintf(data->qual_b,
                     sizeof(data->qual_b),
                     "%s",
                     racdata.qual_b);
 
-    xastir_snprintf(data->qual_c,
+    astir_snprintf(data->qual_c,
                     sizeof(data->qual_c),
                     "%s",
                     racdata.qual_c);
 
-    xastir_snprintf(data->qual_d,
+    astir_snprintf(data->qual_d,
                     sizeof(data->qual_d),
                     "%s",
                     racdata.qual_d);
 
-    xastir_snprintf(data->club_name,
+    astir_snprintf(data->club_name,
                     sizeof(data->club_name),
                     "%s",
                     racdata.club_name);
 
-    xastir_snprintf(data->club_address,
+    astir_snprintf(data->club_address,
                     sizeof(data->club_address),
                     "%s",
                     racdata.club_address);
 
-    xastir_snprintf(data->club_city,
+    astir_snprintf(data->club_city,
                     sizeof(data->club_city),
                     "%s",
                     racdata.club_city);
 
-    xastir_snprintf(data->club_province,
+    astir_snprintf(data->club_province,
                     sizeof(data->club_province),
                     "%s",
                     racdata.club_province);
 
-    xastir_snprintf(data->club_postal_code,
+    astir_snprintf(data->club_postal_code,
                     sizeof(data->club_postal_code),
                     "%s",
                     racdata.club_postal_code);

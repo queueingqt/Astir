@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 2025-2026 The Xastir Group
  *
  * This program is free software; you can redistribute it and/or
@@ -24,7 +24,7 @@
  * Test program for output_my_aprs_data() function
  * 
  * This test program tests the APRS position data output function from interface.c.
- * It requires mocking most of the Xastir infrastructure.
+ * It requires mocking most of the Astir infrastructure.
  */
 
 #include <stdio.h>

@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -22,18 +22,18 @@
  */
 
 
-#ifndef __XASTIR_FETCH_REMOTE_H
-#define __XASTIR_FETCH_REMOTE_H
+#ifndef __ASTIR_FETCH_REMOTE_H
+#define __ASTIR_FETCH_REMOTE_H
 
 #ifdef HAVE_LIBCURL
   #include <curl/curl.h>
-  CURL *xastir_curl_init(char *errBuf);
+  CURL *astir_curl_init(char *errBuf);
   int fetch_remote_tile(CURL *session, char *tileURL, char *tileFileName);
 #endif  // HAVE_LIBCURL
 
 int fetch_remote_file(char *fileimg, char *local_filename);
 
 
-#endif // __XASTIR_FETCH_REMOTE_H
+#endif // __ASTIR_FETCH_REMOTE_H
 
 

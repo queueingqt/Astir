@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -34,8 +34,8 @@
   #include <Xbae/Matrix.h>
 #endif  // HAVE_XBAE_MATRIX_H
 
-#include "core/xastir.h"
-#include "ui/motif/xastir_gui.h"
+#include "core/astir.h"
+#include "ui/motif/astir_gui.h"
 #include "ui/motif/wx_gui.h"
 #include "ui/motif/maps_gui.h"
 #include "ui/motif/main_gui.h"
@@ -62,7 +62,7 @@ extern XmFontList fontlist1;    // Menu/System fontlist
 Widget locate_station_dialog = (Widget)NULL;
 Widget locate_station_data = (Widget)NULL;
 
-static xastir_mutex locate_station_dialog_lock;
+static astir_mutex locate_station_dialog_lock;
 
 Widget locate_place_dialog = (Widget)NULL;
 Widget locate_place_data = (Widget)NULL;
@@ -76,7 +76,7 @@ char locate_state_name[50];
 char locate_county_name[50];
 char locate_quad_name[50];
 char locate_type_name[50];
-static xastir_mutex locate_place_dialog_lock;
+static astir_mutex locate_place_dialog_lock;
 
 
 /* locate station values */
@@ -86,7 +86,7 @@ Widget locate_case_data, locate_match_data;
 Widget locate_place_case_data, locate_place_match_data;
 Widget locate_place_list;
 Widget  locate_place_chooser = (Widget)NULL;
-static xastir_mutex locate_place_chooser_lock;
+static astir_mutex locate_place_chooser_lock;
 char match_array_name[50][200];
 long match_array_lat[50];
 long match_array_long[50];
@@ -152,7 +152,7 @@ void fcc_rac_lookup(Widget UNUSED(w), XtPointer UNUSED(clientData), XtPointer UN
 
   // Snag station call
   temp_ptr = XmTextFieldGetString(locate_station_data);
-  xastir_snprintf(station_call,
+  astir_snprintf(station_call,
                   sizeof(station_call),
                   "%s",
                   temp_ptr);
@@ -172,7 +172,7 @@ void fcc_rac_lookup(Widget UNUSED(w), XtPointer UNUSED(clientData), XtPointer UN
       if (search_fcc_data_appl(station_call, &my_fcc_data) == 1)
       {
 
-        xastir_snprintf(temp,
+        astir_snprintf(temp,
                         sizeof(temp),
                         "%s\n%s %s\n%s %s %s\n%s %s, %s %s, %s %s\n\n",
                         langcode("STIFCC0001"),
@@ -192,7 +192,7 @@ void fcc_rac_lookup(Widget UNUSED(w), XtPointer UNUSED(clientData), XtPointer UN
       }
       else
       {
-        xastir_snprintf(temp2,
+        astir_snprintf(temp2,
                         sizeof(temp2),
                         "Callsign Not Found!\n");
         popup_message_always(langcode("POPEM00001"),temp2);
@@ -202,7 +202,7 @@ void fcc_rac_lookup(Widget UNUSED(w), XtPointer UNUSED(clientData), XtPointer UN
       if (search_rac_data(station_call, &my_rac_data) == 1)
       {
 
-        xastir_snprintf(temp,
+        astir_snprintf(temp,
                         sizeof(temp),
                         "%s\n%s %s\n%s\n%s, %s\n%s\n",
                         langcode("STIFCC0002"),
@@ -239,7 +239,7 @@ void fcc_rac_lookup(Widget UNUSED(w), XtPointer UNUSED(clientData), XtPointer UN
 
         if (strlen(my_rac_data.club_name) > 1)
         {
-          xastir_snprintf(temp2,
+          astir_snprintf(temp2,
                           sizeof(temp2),
                           "%s\n%s\n%s, %s\n%s\n",
                           my_rac_data.club_name,
@@ -262,7 +262,7 @@ void fcc_rac_lookup(Widget UNUSED(w), XtPointer UNUSED(clientData), XtPointer UN
       }
       break;
     default:
-      xastir_snprintf(temp2,
+      astir_snprintf(temp2,
                       sizeof(temp2),
                       "Not an FCC or RAC callsign!\n");
       popup_message_always(langcode("POPEM00001"),temp2);
@@ -289,7 +289,7 @@ void Locate_station_now(Widget UNUSED(w), XtPointer UNUSED(clientData), XtPointe
 
   /* find station and go there */
   temp_ptr = XmTextFieldGetString(locate_station_data);
-  xastir_snprintf(locate_station_call,
+  astir_snprintf(locate_station_call,
                   sizeof(locate_station_call),
                   "%s",
                   temp_ptr);
@@ -302,7 +302,7 @@ void Locate_station_now(Widget UNUSED(w), XtPointer UNUSED(clientData), XtPointe
   if (locate_station(da, locate_station_call, (int)XmToggleButtonGetState(locate_case_data),
                      (int)XmToggleButtonGetState(locate_match_data),1) ==0)
   {
-    xastir_snprintf(temp2, sizeof(temp2), langcode("POPEM00002"), locate_station_call);
+    astir_snprintf(temp2, sizeof(temp2), langcode("POPEM00002"), locate_station_call);
     popup_message_always(langcode("POPEM00001"),temp2);
   }
 
@@ -818,42 +818,42 @@ void Locate_place_now(Widget w, XtPointer clientData, XtPointer callData)
 
   /* find place and go there */
   temp_ptr = XmTextFieldGetString(locate_place_data);
-  xastir_snprintf(locate_place_name,
+  astir_snprintf(locate_place_name,
                   sizeof(locate_place_name),
                   "%s",
                   temp_ptr);
   XtFree(temp_ptr);
 
   temp_ptr = XmTextFieldGetString(locate_state_data);
-  xastir_snprintf(locate_state_name,
+  astir_snprintf(locate_state_name,
                   sizeof(locate_state_name),
                   "%s",
                   temp_ptr);
   XtFree(temp_ptr);
 
   temp_ptr = XmTextFieldGetString(locate_county_data);
-  xastir_snprintf(locate_county_name,
+  astir_snprintf(locate_county_name,
                   sizeof(locate_county_name),
                   "%s",
                   temp_ptr);
   XtFree(temp_ptr);
 
   temp_ptr = XmTextFieldGetString(locate_quad_data);
-  xastir_snprintf(locate_quad_name,
+  astir_snprintf(locate_quad_name,
                   sizeof(locate_quad_name),
                   "%s",
                   temp_ptr);
   XtFree(temp_ptr);
 
   temp_ptr = XmTextFieldGetString(locate_type_data);
-  xastir_snprintf(locate_type_name,
+  astir_snprintf(locate_type_name,
                   sizeof(locate_type_name),
                   "%s",
                   temp_ptr);
   XtFree(temp_ptr);
 
   temp_ptr = XmTextFieldGetString(locate_gnis_file_data);
-  xastir_snprintf(locate_gnis_filename,
+  astir_snprintf(locate_gnis_filename,
                   sizeof(locate_gnis_filename),
                   "%s",
                   temp_ptr);

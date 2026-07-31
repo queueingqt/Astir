@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 2000-2026 The Xastir Group
  *
  * This program is free software; you can redistribute it and/or
@@ -232,7 +232,7 @@ dbfawk_sig_info *dbfawk_load_sigs(const char *dir, /* directory path */
 
     // Check for regular files
 
-    xastir_snprintf(fullpath,
+    astir_snprintf(fullpath,
                     sizeof(fullpath),
                     "%s/%s",
                     dir,
@@ -307,7 +307,7 @@ dbfawk_sig_info *dbfawk_load_sigs(const char *dir, /* directory path */
         i = i->next;
       }
 
-      xastir_snprintf(path,
+      astir_snprintf(path,
                       len+strlen(dir)+2,
                       "%s/%s",
                       dir,
@@ -410,7 +410,7 @@ dbfawk_sig_info *dbfawk_find_sig(dbfawk_sig_info *Dbf_sigs,
       return NULL;
     }
 
-    xastir_snprintf(perfile,
+    astir_snprintf(perfile,
                     perfilesize-1,
                     "%s",
                     file);

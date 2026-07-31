@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -45,7 +45,7 @@
 #include <sys/wait.h>
 #include <errno.h>
 
-#include "core/xastir.h"
+#include "core/astir.h"
 #include "core/main.h"
 #include "core/util/lang.h"
 
@@ -172,7 +172,7 @@ int forked_getaddrinfo(const char *hostname, const char *servname, const struct 
       // setproctitle(3), NetBSD can use setprogname(2).
 #ifdef __linux__
       init_set_proc_title(my_argc, my_argv, my_envp);
-      set_proc_title("%s", "hostname lookup (xastir)");
+      set_proc_title("%s", "hostname lookup (astir)");
       //fprintf(stderr,"DEBUG: %s\n", Argv[0]);
 #endif  // __linux__
 
@@ -302,7 +302,7 @@ int forked_getaddrinfo(const char *hostname, const char *servname, const struct 
       wait_host=1;
       while (wait_host!=-1)
       {
-        xastir_snprintf(ttemp, sizeof(ttemp), langcode("BBARSTA031"), tm++);
+        astir_snprintf(ttemp, sizeof(ttemp), langcode("BBARSTA031"), tm++);
         xa_ui_status(ttemp);        // Looking up hostname...
 
         for (i=0; i < 60 && wait_host!=-1; i++)

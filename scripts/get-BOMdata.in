@@ -42,7 +42,7 @@ FILE7="LGA08aAust"                   # Local Government Area Boundaries
 
 prefix=@prefix@
 
-cd ${prefix}/share/xastir/Counties
+cd ${prefix}/share/astir/Counties
 
 
 # Remove any old zip files hanging around in this directory

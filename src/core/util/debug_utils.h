@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -22,9 +22,9 @@
  */
 
 
-#ifndef __XASTIR_DEBUG_UTILS_H
-#define __XASTIR_DEBUG_UTILS_H
+#ifndef __ASTIR_DEBUG_UTILS_H
+#define __ASTIR_DEBUG_UTILS_H
 
-extern void xastir_debug(int my_debug_level, char *debug_string);
+extern void astir_debug(int my_debug_level, char *debug_string);
 
 #endif

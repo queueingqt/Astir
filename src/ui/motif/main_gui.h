@@ -3,7 +3,7 @@
  *
  * main.h is the front end's own header, but core files include it for the
  * settings, counters and helpers that also live there -- and it opened with
- * #include <X11/Intrinsic.h>, so it was the second root (after xastir.h) that
+ * #include <X11/Intrinsic.h>, so it was the second root (after astir.h) that
  * put Xt in front of every core file in the tree.
  *
  * Everything moved here is a toplevel widget, a Widget-taking callback, or the
@@ -13,8 +13,8 @@
  * has been put on the wrong side.
  */
 
-#ifndef XASTIR_MAIN_GUI_H
-#define XASTIR_MAIN_GUI_H
+#ifndef ASTIR_MAIN_GUI_H
+#define ASTIR_MAIN_GUI_H
 
 #include <X11/Intrinsic.h>
 
@@ -85,4 +85,4 @@ extern Widget object_symbol_data;
 
 extern void updateObjectPictureCallback(Widget w,XtPointer clientData,XtPointer callData);
 
-#endif  /* XASTIR_MAIN_GUI_H */
+#endif  /* ASTIR_MAIN_GUI_H */

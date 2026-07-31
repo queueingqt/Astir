@@ -18,9 +18,9 @@
 #
 
 # This script is used to feed weather data from a "Wxnow.txt" file
-# into Xastir as if it were a networked weather station.  Wxnow.txt is
+# into Astir as if it were a networked weather station.  Wxnow.txt is
 # a standard file format that is created by a number different types
-# of weather station control software, and Xastir is unable to read
+# of weather station control software, and Astir is unable to read
 # this file directly.
 #
 # The command line arguments are the path to the Wxnow.txt file, and
@@ -37,16 +37,16 @@
 # flags that data has changed, a string of weather data is sent to all connected
 # clients.
 
-# This script leverages the "Davis METEO" code in Xastir that implements
+# This script leverages the "Davis METEO" code in Astir that implements
 # the networked weather station interface.  As such, all weather stations
-# connected in this way to Xastir are assumed to be Davis weather stations,
+# connected in this way to Astir are assumed to be Davis weather stations,
 # no matter what type of weather station is connected.
 
-# Once this script is running, add a "Networked WX" interface to your Xastir
+# Once this script is running, add a "Networked WX" interface to your Astir
 # config, and provide the IP address on which the script is running and the
 # port number (default 5500) in the interface properties.
 
-# Once Xastir connects to the script, "View->Own Weather Data" should show
+# Once Astir connects to the script, "View->Own Weather Data" should show
 # the current weather data in Wxnow.txt, and be updated every time Wxnow.txt
 # changes.
 

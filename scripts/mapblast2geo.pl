@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 
-# XASTIR .geo file generator for mapblast pixel maps    16.10.2001
+# ASTIR .geo file generator for mapblast pixel maps    16.10.2001
 #  Copyright (C) 2001 Rolf Bleher              http://www.dk7in.de
 
 #  This program is free software; you can redistribute it and/or modify
@@ -120,7 +120,7 @@ $scale_x *= (1000000 / $scale);
 
 #--------------------------------------------------------------------------
 
-# DK7IN: I'm not sure, if this formula is exact for what Xastir
+# DK7IN: I'm not sure, if this formula is exact for what Astir
 #        is decoding, but in my region it works quite well
 #        I need to do some further investigation for the best accuracy
 $latmin = $lat - ($height / 2.0 - 2.5) / $scale_y;
@@ -148,7 +148,7 @@ sub usage {
     if ($name =~ /^.*\/(.+)$/) { $name = $1 }
     print("\n");
     print("$name (c) 2001 Rolf Bleher <Rolf\@dk7in.de>\n");
-    print("create Xastir .geo files for mapblast pixel maps\n");
+    print("create Astir .geo files for mapblast pixel maps\n");
     print("usage: $name [options] mapfile\n");
     print("       -N52.5 -S10    define latitude\n");
     print("       -E13.3 -W0.5   define longitude\n");

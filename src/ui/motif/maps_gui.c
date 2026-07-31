@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -74,8 +74,8 @@
   #include <Xm/XpmI.h>
 #endif // HAVE_XM_XPMI_H
 
-#include "core/xastir.h"
-#include "ui/motif/xastir_gui.h"
+#include "core/astir.h"
+#include "ui/motif/astir_gui.h"
 #include "ui/motif/wx_gui.h"
 #include "ui/motif/main_gui.h"
 #include "ui/motif/draw_symbols_gui.h"
@@ -125,8 +125,8 @@ int doing_snapshot = 0;
 // The locks stay defined in maps.c because maps_init() initialises them and does
 // several other things besides, so it did not come across.  They are plain
 // mutexes, not a toolkit type, so maps.c holding them costs nothing.
-extern xastir_mutex print_properties_dialog_lock;
-extern xastir_mutex print_postscript_dialog_lock;
+extern astir_mutex print_properties_dialog_lock;
+extern astir_mutex print_postscript_dialog_lock;
 
 
 
@@ -148,7 +148,7 @@ static void Print_postscript_destroy_shell(Widget UNUSED(widget), XtPointer clie
   {
     // Snag the path to the printer program from the print dialog
     temp_ptr = XmTextFieldGetString(printer_data);
-    xastir_snprintf(printer_program,
+    astir_snprintf(printer_program,
                     sizeof(printer_program),
                     "%s",
                     temp_ptr);
@@ -161,7 +161,7 @@ static void Print_postscript_destroy_shell(Widget UNUSED(widget), XtPointer clie
 
 #ifdef LPR_PATH
       // Path to LPR if defined
-      xastir_snprintf(printer_program,
+      astir_snprintf(printer_program,
                       sizeof(printer_program),
                       "%s",
                       LPR_PATH);
@@ -175,7 +175,7 @@ static void Print_postscript_destroy_shell(Widget UNUSED(widget), XtPointer clie
 
     // Snag the path to the previewer program from the print dialog
     temp_ptr = XmTextFieldGetString(previewer_data);
-    xastir_snprintf(previewer_program,
+    astir_snprintf(previewer_program,
                     sizeof(previewer_program),
                     "%s",
                     temp_ptr);
@@ -188,7 +188,7 @@ static void Print_postscript_destroy_shell(Widget UNUSED(widget), XtPointer clie
 
 #ifdef GV_PATH
       // Path to GV if defined
-      xastir_snprintf(previewer_program,
+      astir_snprintf(previewer_program,
                       sizeof(previewer_program),
                       "%s",
                       GV_PATH);
@@ -242,9 +242,9 @@ static void Print_window( Widget widget, XtPointer UNUSED(clientData), XtPointer
 {
 
 #ifdef NO_XPM
-//    fprintf(stderr,"XPM or ImageMagick support not compiled into Xastir!\n");
+//    fprintf(stderr,"XPM or ImageMagick support not compiled into Astir!\n");
   xa_ui_popup_always(langcode("POPEM00035"),
-                       "XPM or ImageMagick support not compiled into Xastir! Cannot Print!");
+                       "XPM or ImageMagick support not compiled into Astir! Cannot Print!");
 #else   // NO_XPM
 
   char xpm_filename[MAX_FILENAME];
@@ -256,12 +256,12 @@ static void Print_window( Widget widget, XtPointer UNUSED(clientData), XtPointer
 
   get_user_base_dir("tmp", temp_base_dir, sizeof(temp_base_dir));
 
-  xastir_snprintf(xpm_filename,
+  astir_snprintf(xpm_filename,
                   sizeof(xpm_filename),
                   "%s/print.xpm",
                   temp_base_dir);
 
-  xastir_snprintf(ps_filename,
+  astir_snprintf(ps_filename,
                   sizeof(ps_filename),
                   "%s/print.ps",
                   temp_base_dir);
@@ -276,7 +276,7 @@ static void Print_window( Widget widget, XtPointer UNUSED(clientData), XtPointer
     fprintf(stderr,"Creating %s\n", xpm_filename );
   }
 
-  xastir_snprintf(temp, sizeof(temp), "%s", langcode("PRINT0012") );
+  astir_snprintf(temp, sizeof(temp), "%s", langcode("PRINT0012") );
   xa_ui_status(temp);       // Dumping image to file...
 
   if (chdir(temp_base_dir) != 0)
@@ -319,7 +319,7 @@ static void Print_window( Widget widget, XtPointer UNUSED(clientData), XtPointer
       fprintf(stderr,"Width: %ld\tHeight: %ld\n", screen_width, screen_height);
     }
 
-    xastir_snprintf(temp, sizeof(temp), "%s", langcode("PRINT0013") );
+    astir_snprintf(temp, sizeof(temp), "%s", langcode("PRINT0013") );
     xa_ui_status(temp);       // Converting to Postscript...
 
 
@@ -408,7 +408,7 @@ static void Print_window( Widget widget, XtPointer UNUSED(clientData), XtPointer
     }
   }
 
-  xastir_snprintf(temp, sizeof(temp), "%s", langcode("PRINT0014") );
+  astir_snprintf(temp, sizeof(temp), "%s", langcode("PRINT0014") );
   xa_ui_status(temp);       // Finished creating print file.
 
   //popup_message( langcode("PRINT0015"), langcode("PRINT0014") );
@@ -429,9 +429,9 @@ static void Print_preview( Widget widget, XtPointer UNUSED(clientData), XtPointe
 {
 
 #ifdef NO_XPM
-//    fprintf(stderr,"XPM or ImageMagick support not compiled into Xastir!\n");
+//    fprintf(stderr,"XPM or ImageMagick support not compiled into Astir!\n");
   xa_ui_popup_always(langcode("POPEM00035"),
-                       "XPM or ImageMagick support not compiled into Xastir! Cannot Print!");
+                       "XPM or ImageMagick support not compiled into Astir! Cannot Print!");
 #else   // NO_GRAPHICS
 
   char xpm_filename[MAX_FILENAME];
@@ -450,12 +450,12 @@ static void Print_preview( Widget widget, XtPointer UNUSED(clientData), XtPointe
   get_user_base_dir("tmp", temp_base_dir, sizeof(temp_base_dir));
 
 
-  xastir_snprintf(xpm_filename,
+  astir_snprintf(xpm_filename,
                   sizeof(xpm_filename),
                   "%s/print.xpm",
                   temp_base_dir);
 
-  xastir_snprintf(ps_filename,
+  astir_snprintf(ps_filename,
                   sizeof(ps_filename),
                   "%s/print.ps",
                   temp_base_dir);
@@ -470,7 +470,7 @@ static void Print_preview( Widget widget, XtPointer UNUSED(clientData), XtPointe
     fprintf(stderr,"Creating %s\n", xpm_filename );
   }
 
-  xastir_snprintf(temp, sizeof(temp), "%s", langcode("PRINT0012") );
+  astir_snprintf(temp, sizeof(temp), "%s", langcode("PRINT0012") );
   xa_ui_status(temp);       // Dumping image to file...
 
   if (chdir(temp_base_dir) != 0)
@@ -520,7 +520,7 @@ static void Print_preview( Widget widget, XtPointer UNUSED(clientData), XtPointe
       {
 //                sprintf(scale, "-geometry 612x792 -page 612x792 ");   // "Letter" size at 72 dpi
 //                sprintf(scale, "-sample 612x792 -page 612x792 ");     // "Letter" size at 72 dpi
-        xastir_snprintf(scale, sizeof(scale), "-page 1275x1650+0+0 "); // "Letter" size at 150 dpi
+        astir_snprintf(scale, sizeof(scale), "-page 1275x1650+0+0 "); // "Letter" size at 150 dpi
       }
       else
       {
@@ -530,17 +530,17 @@ static void Print_preview( Widget widget, XtPointer UNUSED(clientData), XtPointe
 
       if ( print_in_monochrome )
       {
-        xastir_snprintf(mono, sizeof(mono), "-monochrome +dither " );  // Monochrome
+        astir_snprintf(mono, sizeof(mono), "-monochrome +dither " );  // Monochrome
       }
       else
       {
-        xastir_snprintf(mono, sizeof(mono), "+dither ");  // Color
+        astir_snprintf(mono, sizeof(mono), "+dither ");  // Color
       }
 
 
       if ( print_invert )
       {
-        xastir_snprintf(invert, sizeof(invert), "-negate " );  // Reverse Colors
+        astir_snprintf(invert, sizeof(invert), "-negate " );  // Reverse Colors
       }
       else
       {
@@ -556,12 +556,12 @@ static void Print_preview( Widget widget, XtPointer UNUSED(clientData), XtPointe
 
       if ( print_rotated )
       {
-        xastir_snprintf(rotate, sizeof(rotate), "-rotate -90 " );
+        astir_snprintf(rotate, sizeof(rotate), "-rotate -90 " );
 
 #ifdef HAVE_OLD_GV
-        xastir_snprintf(format, sizeof(format), "-landscape " );
+        astir_snprintf(format, sizeof(format), "-landscape " );
 #else   // HAVE_OLD_GV
-        xastir_snprintf(format, sizeof(format), "--orientation=landscape " );
+        astir_snprintf(format, sizeof(format), "--orientation=landscape " );
 #endif  // HAVE_OLD_GV
 
       }
@@ -572,12 +572,12 @@ static void Print_preview( Widget widget, XtPointer UNUSED(clientData), XtPointe
         // height, rotate the image by 270 degrees.
         if (screen_width > screen_height)
         {
-          xastir_snprintf(rotate, sizeof(rotate), "-rotate -90 " );
+          astir_snprintf(rotate, sizeof(rotate), "-rotate -90 " );
 
 #ifdef HAVE_OLD_GV
-          xastir_snprintf(format, sizeof(format), "-landscape " );
+          astir_snprintf(format, sizeof(format), "-landscape " );
 #else   // HAVE_OLD_GV
-          xastir_snprintf(format, sizeof(format), "--orientation=landscape " );
+          astir_snprintf(format, sizeof(format), "--orientation=landscape " );
 #endif  // HAVE_OLD_GV
 
           if (debug_level & 512)
@@ -606,10 +606,10 @@ static void Print_preview( Widget widget, XtPointer UNUSED(clientData), XtPointe
 
       // Higher print densities require more memory and time
       // to process
-      xastir_snprintf(density, sizeof(density), "-density %dx%d", print_resolution,
+      astir_snprintf(density, sizeof(density), "-density %dx%d", print_resolution,
                       print_resolution );
 
-      xastir_snprintf(temp, sizeof(temp), "%s", langcode("PRINT0013") );
+      astir_snprintf(temp, sizeof(temp), "%s", langcode("PRINT0013") );
       xa_ui_status(temp);       // Converting to Postscript...
 
 
@@ -732,7 +732,7 @@ static void Print_preview( Widget widget, XtPointer UNUSED(clientData), XtPointe
     }
   }
 
-  xastir_snprintf(temp, sizeof(temp), "%s", langcode("PRINT0014") );
+  astir_snprintf(temp, sizeof(temp), "%s", langcode("PRINT0014") );
   xa_ui_status(temp);       // Finished creating print file.
 
   //popup_message( langcode("PRINT0015"), langcode("PRINT0014") );
@@ -1572,24 +1572,24 @@ static void* snapshot_thread(void * UNUSED(arg) )
   // threading more efficient.
   (void)pthread_detach(pthread_self());
 
-  xastir_snprintf(xpm_filename,
+  astir_snprintf(xpm_filename,
                   sizeof(xpm_filename),
                   "%s/snapshot.xpm",
                   temp_base_dir);
 
-  xastir_snprintf(png_filename,
+  astir_snprintf(png_filename,
                   sizeof(png_filename),
                   "%s/snapshot.png",
                   temp_base_dir);
 
   // Same for the .geo filename
-  xastir_snprintf(geo_filename,
+  astir_snprintf(geo_filename,
                   sizeof(geo_filename),
                   "%s/snapshot.geo",
                   temp_base_dir);
 
   // Same for the .kml filename
-  xastir_snprintf(kml_filename,
+  astir_snprintf(kml_filename,
                   sizeof(kml_filename),
                   "%s/snapshot.kml",
                   temp_base_dir);
@@ -1680,10 +1680,10 @@ static void* snapshot_thread(void * UNUSED(arg) )
       }
     }
     fprintf(fk,"  <Document>\n");
-    fprintf(fk,"    <name>XASTIR Snapshot from %s</name>\n",my_callsign);
+    fprintf(fk,"    <name>ASTIR Snapshot from %s</name>\n",my_callsign);
     fprintf(fk,"    <open>1</open>\n");
     fprintf(fk,"    <GroundOverlay>\n");
-    fprintf(fk,"      <name>Xastir snapshot</name>\n");
+    fprintf(fk,"      <name>Astir snapshot</name>\n");
     fprintf(fk,"      <visibility>1</visibility>\n");
     // timestamp the overlay with the current time
     if (get_w3cdtf_datetime(sec_now(), timestring, True, True))
@@ -1691,12 +1691,12 @@ static void* snapshot_thread(void * UNUSED(arg) )
       if (strlen(timestring) > 0)
       {
         fprintf(fk,"      <TimeStamp><when>%s</when></TimeStamp>\n",timestring);
-        fprintf(fk,"      <description>Overlay shows screen visible for %s in Xastir at %s.</description>\n",my_callsign,timestring);
+        fprintf(fk,"      <description>Overlay shows screen visible for %s in Astir at %s.</description>\n",my_callsign,timestring);
       }
     }
     else
     {
-      fprintf(fk,"      <description>Overlay shows screen visible for %s in Xastir.</description>\n",my_callsign);
+      fprintf(fk,"      <description>Overlay shows screen visible for %s in Astir.</description>\n",my_callsign);
     }
     fprintf(fk,"      <LookAt>\n");
     fprintf(fk,"        <longitude>%8.5f</longitude>\n",f_center_longitude);
@@ -1837,7 +1837,7 @@ void Snapshot(void)
   doing_snapshot++;
 
   // Set up the XPM filename that we'll use
-  xastir_snprintf(xpm_filename,
+  astir_snprintf(xpm_filename,
                   sizeof(xpm_filename),
                   "%s/snapshot.xpm",
                   temp_base_dir);

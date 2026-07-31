@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -22,8 +22,8 @@
  */
 
 
-#ifndef __XASTIR_RPL_MALLOC_H
-#define __XASTIR_RPL_MALLOC_H
+#ifndef __ASTIR_RPL_MALLOC_H
+#define __ASTIR_RPL_MALLOC_H
 
 
 
@@ -31,6 +31,6 @@
 extern void *rpl_malloc (size_t size);
 
 
-#endif // __XASTIR_RPL_MALLOC_H
+#endif // __ASTIR_RPL_MALLOC_H
 
 

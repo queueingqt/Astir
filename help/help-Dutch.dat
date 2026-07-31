@@ -2,7 +2,7 @@ HELP-INDEX>READ ME FIRST - License
 
                           READ ME FIRST - License
 
-For the most current information please read the README file in the Xastir
+For the most current information please read the README file in the Astir
 directory.  Also see the LICENSE and COPYING files for additional information.
 
 Remember this program is intended to be used by the HAM community, in the USA
@@ -12,7 +12,7 @@ restrictions.
 
 LICENSE:
 
-XASTIR, Amateur Station Tracking and Information Reporting
+ASTIR, Amateur Station Tracking and Information Reporting
 Copyright (C) 1999,2000 Frank Giannandrea
 Copyright (C) 2000-2026 The Xastir Group
 
@@ -32,10 +32,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 More information on the program can be found at:
 
  http://www.xastir.org
- http://github.com/Xastir/Xastir
+ http://github.com/Astir/Astir
 
-There are some mailing lists available that are Xastir-specific.
-Please subscribe to one or both of them for the latest Xastir
+There are some mailing lists available that are Astir-specific.
+Please subscribe to one or both of them for the latest Astir
 information.  See http://www.xastir.org to subscribe.
 
 For more information on the GNU License look at:
@@ -46,9 +46,9 @@ HELP-INDEX>Welcome! and Notes from the Authors
 
                       Welcome! and Notes from the Authors
 
-XASTIR, or X-windows Amateur Station Tracking and Information Reporting.
+ASTIR, or X-windows Amateur Station Tracking and Information Reporting.
 
-Xastir is an APRS(tm) program that is Open Source and free to use and 
+Astir is an APRS(tm) program that is Open Source and free to use and 
 pass out to others. Currently this program is in development and should 
 not be seen as a finished product! Your help will be needed to make this
 a better program.  If you have programming skills and/or can write 
@@ -64,39 +64,39 @@ on APRS(tm) can be found in the APRSdos documentation written by
 Bob Bruninga. An additional source of information is the APRS(tm)
 specification, available from http://www.tapr.org .
 
-HELP-INDEX>What's new in Xastir 2.0.9
+HELP-INDEX>What's new in Astir 2.0.9
 
 The "What's New" section of this help file has been long neglected,
 and has not been updated in every release.
 
-In general, the best way to see what has changed in Xastir is to view
+In general, the best way to see what has changed in Astir is to view
 the git log.  What follows is an abbreviated summary, long after the
 fact, of what has changed since the last time this "What's New" was
 updated for release 2.0.1 (which was in 2012!).
 
-The Xastir project has migrated from SourceForge and CVS to Github and
-git.  This changes how Xastir releases are distributed, and also how
-one accesses the latest development code.  The Xastir project is now hosted at
-https://github.com/Xastir/Xastir, and the wiki is still at http://xastir.org.
+The Astir project has migrated from SourceForge and CVS to Github and
+git.  This changes how Astir releases are distributed, and also how
+one accesses the latest development code.  The Astir project is now hosted at
+https://github.com/Astir/Astir, and the wiki is still at http://xastir.org.
 
--Added support for IPv6 in both Xastir server code and APRS-IS connection code.
--Added "wxnowsrv.pl" script to support feeding Xastir weather data via the
+-Added support for IPv6 in both Astir server code and APRS-IS connection code.
+-Added "wxnowsrv.pl" script to support feeding Astir weather data via the
  WXNOW.TXT mechanism.
 -Fixed compressed weather alert handling.
 -Added correct dbfawk files for most recent NWS shapefiles.
 -Added a few on line maps from geograits.gc.ca.
 -Fixed area computation of CAD objects.
 -Added support for proportional fonts in map labels.
--New scripts added to support feeding ADS-B and AIS data into Xastir.
+-New scripts added to support feeding ADS-B and AIS data into Astir.
 -Many old GEO files for online maps stopped working when servers they
  referenced were taken down.  Most of these have been removed.  If you
- find other .geos that don't work, please report this on the xastir
+ find other .geos that don't work, please report this on the astir
  mailing list.
 -Added new fosm OpenStreetmaps tile server GEO.
 -Map cache code updated to work with any version of Berkeley db after 4.1
  (including the 5.x series).
 
-HELP-INDEX>What's new in Xastir 2.0.1
+HELP-INDEX>What's new in Astir 2.0.1
 (Changes between 1.7 and 2.0.0 were never recorded here,this block
 describes a few of the changes from 1.9.8 to 2.0.0 that occured right
 before release of 2.0.0, but otherwise documents only changes from 2.0.0 
@@ -107,7 +107,7 @@ Added "setlocale()" calls to assure we aren't confused by user
 LANG variable settings.
 Improved speed of config file processing.
 Fixes for new One-Wire-Daemon protocol, allowing both old and 
-new to work with Xastir.
+new to work with Astir.
 Fixed segfaults that could happen when closing list dialogs.
 Fix OSM code to support 16-bit quanta in Graphics/ImageMagick.
 Fixed broken makefile that was ignoring DESTDIR.
@@ -124,9 +124,9 @@ Fixes for Davis APRS Data Logger, Davis Meteo and LaCrosse
 support so it gets rain totals correct.
 Allow "posit interval" in File->Configure->Timing to go all the
 way to zero, meaning "never send posits on a schedule."
-Add signal support so that Xastir will emit a posit when it 
+Add signal support so that Astir will emit a posit when it 
 receives SIGUSR2.  Combined with zero "posit interval," this
-allows Xastir to emit a posit only when told to by an external
+allows Astir to emit a posit only when told to by an external
 script.
 Fixed error in logic for band-opening alerts (speech and audio
 alarms) so it does not incorrectly report third party traffic
@@ -143,7 +143,7 @@ and sending data for transmission, because KAM TNCs don't
 work if you send the data immediately.
 Fix a bug in the OSM tile download loop that could prevent
 further downloading of tiles if any one tile download fails.
-Fixed a thread-unsafeness bug that could cause Xastir to start
+Fixed a thread-unsafeness bug that could cause Astir to start
 using corrupted file names when multiple logging options
 (TNC, NET, WX, IGATE, etc.) selected simultaneously.
 Fixed get-fcc-rac.pl script to reflect changes in RAC download
@@ -152,7 +152,7 @@ site.
 
 
 
-HELP-INDEX>What's new in Xastir 1.7
+HELP-INDEX>What's new in Astir 1.7
 Added REGRESSION_TESTS in order to test interoperability of the
 configure-time flags.
 Added a replacement for malloc() for those cases where the OS
@@ -185,7 +185,7 @@ RINO Download timing slider is now visible but grey'ed out if gpsman
 isn't installed.
 Added a custom zoom option to the right-click zoom levels menu.
 Moved the center & zoom dialog to the map menu.
-Changed a memcpy() to an xastir_snprintf() function in alert.c to
+Changed a memcpy() to an astir_snprintf() function in alert.c to
 assure that a string is terminated.
 Free'ing some malloc'ed space for cases where hash inserts fail.
 Added probe for sighandler_t definition.
@@ -235,13 +235,13 @@ conflict with pre-existing objects.
 
 
 
-HELP-INDEX>What's new in Xastir 1.6
+HELP-INDEX>What's new in Astir 1.6
 Fix for DF lines having incorrect angles at times.
 Configurable display of layers for USGS topo maps.
 Better Map Feature Search:  Shows up to 50 matches, user selects
 which one to center map on.
 Configurable "relay" digipeater calls:  Up to 50 callsigns can be
-specified in the Xastir config file to use for relay digipeating.
+specified in the Astir config file to use for relay digipeating.
 "WIDE1-1" is now the default.
 Added support for Web Map Service (WMS).
 Tweaked the GPGGA and GPRMC GPS sentence decoding.
@@ -273,7 +273,7 @@ Another fix so that linking works without map caching.
 
 
 
-HELP-INDEX>What's new in Xastir 1.5
+HELP-INDEX>What's new in Astir 1.5
 Optional Rtree shapefile extent caching
 Optional berkelydb-based internet map caching
 Modifier keys fix
@@ -290,14 +290,14 @@ More thorough checking for scanf/sscanf/fscanf function calls
 Fixing 100% humidity for some weather stations, plus added more data for Davis stations
 Changed active internet connection check from 1 min to 5 minutes
 Fixed decoding of compressed DF objects
-Fixes to allow new WHO-IS server to be used from Xastir
+Fixes to allow new WHO-IS server to be used from Astir
 Got rid of extra 0x00 byts between transmitted KISS frames
 Tweak to not start an interface upon changing its properties
 Tweaks to allow use of http proxy servers for online map accesses (.netrc file)
 
 
 
-HELP-INDEX>What's new in Xastir 1.4
+HELP-INDEX>What's new in Astir 1.4
 Comment fields for interfaces
 split_gnis and ozi2geo scripts, need to add to section on scripts
 serial mkiss interface
@@ -316,45 +316,45 @@ comment/status timestamps
 listener socket/ability to act like a limited internet server
 
 
-HELP-INDEX>Starting Xastir for the first time
+HELP-INDEX>Starting Astir for the first time
 
-                    Starting Xastir for the first time
+                    Starting Astir for the first time
 
-When first running Xastir, you should start it from a terminal window so
+When first running Astir, you should start it from a terminal window so
 that any warning or error messages can be seen. On most systems a path is
 set up to run programs in /usr/local/bin and all you need to do is type
-"xastir &" at the prompt. On systems that do not have this path installed
-type "/usr/local/bin/xastir &" to start the program.  The '&' character
-will cause Xastir to start in the background, leaving the terminal window
+"astir &" at the prompt. On systems that do not have this path installed
+type "/usr/local/bin/astir &" to start the program.  The '&' character
+will cause Astir to start in the background, leaving the terminal window
 available for other uses.
 
 You may also set the language choice at this time. To set the language or
-change the current language choice, call Xastir with the option '-l':
+change the current language choice, call Astir with the option '-l':
 
-    xastir -lEnglish
+    astir -lEnglish
 
 Language options are:
-    xastir -l Dutch
-    xastir -l English
-    xastir -l French
-    xastir -l German
-    xastir -l Italian
-    xastir -l Portuguese
-    xastir -l Spanish
-    xastir -l ElmerFudd
-    xastir -l MuppetsSwedishChef
-    xastir -l OldeEnglish
-    xastir -l PigLatin
-    xastir -l PirateEnglish
+    astir -l Dutch
+    astir -l English
+    astir -l French
+    astir -l German
+    astir -l Italian
+    astir -l Portuguese
+    astir -l Spanish
+    astir -l ElmerFudd
+    astir -l MuppetsSwedishChef
+    astir -l OldeEnglish
+    astir -l PigLatin
+    astir -l PirateEnglish
 
 The chosen language will be stored in your config file, so it is preserved
-for the next time you call Xastir.  For new installs Xastir will default to
+for the next time you call Astir.  For new installs Astir will default to
 English until you change the language with this command line option.
 
 The menus on the top may be accessed with the mouse or with keyboard
 shortcuts. The keyboard shortcuts may not work correctly with num-lock on.
 
-You will need to configure interfaces in order to actually use Xastir.
+You will need to configure interfaces in order to actually use Astir.
 Interface configuration is detailed under the "Configuring Interfaces" help
 topic and its subtopics.
 
@@ -371,10 +371,10 @@ Click on File, then Configure, then Station.
 
 Fill in your Amateur Station call sign.
 
-Fill in your station position if you are not using Xastir with a GPS 
-unit. You can locate your general position on the map with Xastir and
+Fill in your station position if you are not using Astir with a GPS 
+unit. You can locate your general position on the map with Astir and
 use the position given by the cursor placement over the map. This
-position will be viewable in the box at the bottom of the Xastir screen
+position will be viewable in the box at the bottom of the Astir screen
 2nd from the left, whenever the mouse is over the drawing area. You can also
 choose "Move My Station Here" from the right-click menu while your mouse is
 over your location. If you have a GPS you can skip this and set up the GPS
@@ -404,7 +404,7 @@ For using overlays you need to select a symbol from the secondary symbol
 table and enter the overlay character to be shown in the group/overlay
 field. Only numbers and uppercase characters are allowed as overlay
 characters. According to the APRS(tm) specification not every symbol can
-be overlay-ed, Xastir doesn't enforce this, but some other programs may.
+be overlay-ed, Astir doesn't enforce this, but some other programs may.
 Note that not all of the symbols have been implemented in the graphics
 chooser yet, and some of them are not per the APRS(tm) spec yet.
 
@@ -463,7 +463,7 @@ should be used with caution; As a ham you are responsible for the data that
 comes in via the Internet and is transmitted via RF. You also will need to
 choose an IGate option on each interface in order for the IGate to function.
 If you want to have your IGate forward NWS weather alerts to RF, you must
-create a ~/.xastir/data/nws-stations.txt file listing each call or NWS station
+create a ~/.astir/data/nws-stations.txt file listing each call or NWS station
 (like "PHISVR") that you would like to transmit via RF.  This feature also
 works for gating specific callsigns to RF.  Bob Bruninga, WB4APR, recommends
 gating these calls to RF: SCOUTS, SATERN, KIDS, REDCROSS, FOUR-H, YOUTH, GUARD,
@@ -480,15 +480,15 @@ objects/items with an optional speed/course.  It won't compress area, signpost,
 or DF objects/items, and won't currently represent altitude in "standard"
 objects/items.
 
-"Pop up new Bulletins", if selected, will cause Xastir to bring up the bulletin
+"Pop up new Bulletins", if selected, will cause Astir to bring up the bulletin
 dialog when bulletins within the configured range are received. "View 
 zero-distance bulletins" will cause bulletins with no known location not to
 be displayed or cause pop-ups.
 
-"Warn if Modifier keys" will cause Xastir to print a warning if you attempt to
-use Xastir while num-lock, scroll-lock, or caps-lock is engaged. Some users
+"Warn if Modifier keys" will cause Astir to print a warning if you attempt to
+use Astir while num-lock, scroll-lock, or caps-lock is engaged. Some users
 report the screen blanking on them and similar problems when they attempt to
-use Xastir with one of these modifier keys on.
+use Astir with one of these modifier keys on.
 
 You can also select "Activate alternate net?" and choose an altnet call from
 this dialog. Altnet allows you to have a private APRS(tm) network among the
@@ -516,7 +516,7 @@ also use these files as a template to create a predefined_USER.sys file.
 See the instructions in the predefined_SAR.sys and predefined_EVENT.sys file
 for details on how to define objects for a custom predefined objects menu.
 If both "Load predefined objects from file" is selected and a file that 
-exists in the xastir/config/ directory is selected, then the objects defined
+exists in the astir/config/ directory is selected, then the objects defined
 in that file will be shown on the Predefined objects menu.  The unaltered
 predefined_SAR.sys file defines the same objects as the default menu.   
 
@@ -562,7 +562,7 @@ been heard in the given period will appear ghosted on screen.
 Station Clear Time specifies when a station will be removed from the screen.
 
 Station Delete Time specifies the number of full days before data from a
-station will be entirely removed from the Xastir database.
+station will be entirely removed from the Astir database.
 
 Serial Inter-Char Delay specifies a wait time in milliseconds between each
 character sent to an attached TNC.
@@ -599,7 +599,7 @@ Play message on receiving data from a station (via TNC) within the min/max
      distance of your band opening settings.
 Play message on receiving and displaying a new weather alert.
 
-There is a standard set of sounds available most places where Xastir can be
+There is a standard set of sounds available most places where Astir can be
 obtained, please see the file INSTALL for more information.
 
 HELP-INDEX>Configure Speech
@@ -608,12 +608,12 @@ HELP-INDEX>Configure Speech
 
 To use this option you must have a sound card and the 'festival' speech
 synthesis software installed.  Install Festival and start it in 'server' 
-mode prior to starting up XASTIR.  The normal command for this is 
+mode prior to starting up ASTIR.  The normal command for this is 
 "festival_server &".  If you use the "festival --server" option instead (old
 method), you may run into problems with connections getting rejected by the
 server.
 
-Once you have festival installed, Xastir will have the ability to speak using
+Once you have festival installed, Astir will have the ability to speak using
 the following choices:
 
 New Station       - Announce the call of a new station.
@@ -636,7 +636,7 @@ HELP-INDEX>Configure Smart Beaconing
 
 Click File, then Configure, then Smart Beaconing.
 
-The main "Enable SmartBeaconing(tm)" Will cause Xastir to transmit positions at
+The main "Enable SmartBeaconing(tm)" Will cause Astir to transmit positions at
 various rates and locations based on the movement of the station. It creates
 more realistic trails and makes dead-reckoning much more accurate. This option
 is only useful in a mobile station with a GPS attached.
@@ -688,7 +688,7 @@ HELP-INDEX>Save Config Now!
                         Save Config Now!
 
 This button will save all of the current configuration to the config file.
-Note that when Xastir is closed, it also saves configuration to the config
+Note that when Astir is closed, it also saves configuration to the config
 file.
 
 HELP-INDEX>Bottom Status Bar
@@ -783,7 +783,7 @@ choose what station's data you want to look at. If only one station is close
 to the mouse pointer then that station's data will display immediately. For
 mobile stations with a lot of track data this could need some time on slow
 computers. Note that expired stations still have their data stored in the
-Xastir database, and if one knows a station's former location, one can still
+Astir database, and if one knows a station's former location, one can still
 view its info in this manner. Use the "Display Expired Data" option
 to display some data that disappears for ghosted stations, like
 speed/altitude, etc.
@@ -825,8 +825,8 @@ For the other three, probability circles, signposts and DF objects, see below.
 Objects/Items are retransmitted at a decaying rate up to the max interval
 specified in File|Configure|Timings.  "killed" objects/items are also
 retransmitted in this manner until they expire from the queue (currently 20
-transmits).  Objects/Items are persistent across Xastir sessions, and are
-stored in ~/.xastir/config/object.log. This file may be cleared by selecting
+transmits).  Objects/Items are persistent across Astir sessions, and are
+stored in ~/.astir/config/object.log. This file may be cleared by selecting
 "Clear Object/Item history" from the Stations menu.
 
 The Object/Item creation option in the right click menu will bring up a dialog
@@ -867,7 +867,7 @@ Description of the entries in the object dialogue:
 
 = Signpost =
 This makes the object a signpost object. These signs can contain one
-to three characters, and currently appear in Xastir as a blank sign.
+to three characters, and currently appear in Astir as a blank sign.
 Station Info shows the value contained on the sign.
 
 = Area Object =
@@ -919,7 +919,7 @@ out.
 
 = Signpost Text =
 If the object is a signpost object, you may specify the 1 to 3 digit
-number that appears on the sign here.  Note that Xastir doesn't display
+number that appears on the sign here.  Note that Astir doesn't display
 signpost objects properly yet.
 
 = Area Object =
@@ -973,7 +973,7 @@ Map/Draw CAD Objects].
 CAD object support is preliminary at this time.  Features and the user 
 interface are subject to change.  
  
-CAD objects are arbitrary shapes that you can draw on maps in xastir, but 
+CAD objects are arbitrary shapes that you can draw on maps in astir, but 
 can't transmit by APRS.  
 
 Currently supported CAD objects are:
@@ -1003,14 +1003,14 @@ HELP-INDEX>View Menu
 
                      View Menu Options
 
-The View menu presents various ways to look at data in Xastir.
+The View menu presents various ways to look at data in Astir.
 
 Bulletins
 This is the APRS(tm) bulletin board, where important announcements are posted.
 If you are connected with the internet interface, it is a good idea to set the
 range field to a few hundred miles, to ignore posts from other portions of the
 world. "0" in the range field means the entire world. Click the "Change range"
-button to make changes to this field effective. Xastir currently does not
+button to make changes to this field effective. Astir currently does not
 support sending bulletins. Incoming bulletins will open this dialog
 automatically if you select "pop up new bulletins" in the Configure|Defaults
 dialog.  The "View zero-distance bulletins" button enables viewing bulletins
@@ -1067,7 +1067,7 @@ and rain in the last 24 hours.
 
 Own weather data
 Displays your weather data if you have a weather station and have configured
-Xastir to access it.
+Astir to access it.
 
 Weather Alerts
 Displays weather alerts received, including the alert flags, alert source/type,
@@ -1088,7 +1088,7 @@ Shows the status of your GPS unit, including the type of fix and number of
 satellites acquired.
 
 Uptime
-Shows the amount of time elapsed since Xastir was started.
+Shows the amount of time elapsed since Astir was started.
 
 HELP-INDEX>Map Menu and the Map Chooser
 
@@ -1133,8 +1133,8 @@ Locate Map Feature
 This option brings up a search dialog where you can search through the labels
 in a GNIS file to find a specific location.  It will center the map on the
 new location if it is found. The "GNIS File:" entry is saved between calls
-and between invocations of Xastir.  You must put GNIS files into the
-xastir/GNIS directory in order to use this feature.
+and between invocations of Astir.  You must put GNIS files into the
+astir/GNIS directory in order to use this feature.
 
 Find Address 
 This option brings up a search dialog where you can enter an address. It will 
@@ -1176,7 +1176,7 @@ Configure menu:
   helps improve visibility on various backgrounds.
 
   Configure Tigermap
-  Turning this option on causes Xastir to download the map from the US census
+  Turning this option on causes Astir to download the map from the US census
   bureau's online tiger mapping server. The dialog that comes up allows one to
   select which layers are displayed, as well as the brightness of the resulting
   map. This is only available if you have compiled with ImageMagick support.
@@ -1241,8 +1241,8 @@ These maps can be obtained and installed according to the directions in the
 README.MAPS file. They are displayed on screen when special weather alert
 messages are received, and expire after a time or can be remotely canceled.
 The weather alert text can be seen under View|Weather Alerts. The
-xastir/Counties directory must be populated with the correct files from NOAA
-and Shapelib support must be compiled into Xastir in order to enable this
+astir/Counties directory must be populated with the correct files from NOAA
+and Shapelib support must be compiled into Astir in order to enable this
 functionality.
 
 Index New Maps on Startup
@@ -1264,10 +1264,10 @@ Mouse pointer menu
 This option brings up the options menu normally available by right clicking.
 
 One note on maps:  Many of the currently available vector maps for the
-U.S. were created in NAD 1927 datum, while Xastir and other APRS(tm) programs
+U.S. were created in NAD 1927 datum, while Astir and other APRS(tm) programs
 use WGS 1984 datum.  If zoomed in to a small area on the map the datum
 shift may be very noticeable.  The USGS topographic maps have their datum
-corrected by Xastir as they are displayed, so positions will generally
+corrected by Astir as they are displayed, so positions will generally
 be more accurate with those topographic maps.
 
 HELP-INDEX>Map files and WX Counties
@@ -1275,23 +1275,23 @@ HELP-INDEX>Map files and WX Counties
                          Map files and WX Counties
 
 Map Types
-Xastir will work with various types of map files. All DosAPRS, Windows/Mac
+Astir will work with various types of map files. All DosAPRS, Windows/Mac
 APRS(tm) map files are supported, as well as PocketAPRS format maps and GNIS
-(Geographic Names Information System) label files.  Xastir also can be
+(Geographic Names Information System) label files.  Astir also can be
 compiled to use external libraries to support XPixmap (XPM) images, GeoTIFF
 topographic maps, and ESRI Shapefile maps.  The graphics handling capability
-of Xastir can be greatly extended by compiling with ImageMagick support,
+of Astir can be greatly extended by compiling with ImageMagick support,
 enabling support for many graphic formats as maps (see
-"http://www.imagemagick.org/www/formats.html").  Xastir supports weather
+"http://www.imagemagick.org/www/formats.html").  Astir supports weather
 alert maps in ESRI Shapefile format, available from NOAA.
 
 Details of locations to obtain many of the above types of maps are found in
 the file README.MAPS
 
 Map Locations
-Any map file should be stored in the /usr/local/share/xastir/maps directory
+Any map file should be stored in the /usr/local/share/astir/maps directory
 on your computer. This location may be different on some systems, depending on
-how Xastir was compiled/installed. You can create any number of directories
+how Astir was compiled/installed. You can create any number of directories
 under this directory to help organize and separate your data. The maps will be
 loaded in alphanumerical order unless layering is specified.
 
@@ -1301,7 +1301,7 @@ a data file with a graphic pixmap (.xpm) (or other format if you compiled
 with ImageMagick), and a calibration file (.geo). The .xpm file is the
 standard graphic format, available without additional libraries. If you
 want to save storage space you can use gzip to compress those files 
-("gzip map.xpm" will result in "map.xpm.gz"). Xastir detects this
+("gzip map.xpm" will result in "map.xpm.gz"). Astir detects this
 automatically during map loading. You can use XView/Gimp/ImageMagick and
 other programs to convert gif, jpg, and tif images into this format if
 you don't have support for many image types compiled in (ImageMagick). If
@@ -1385,9 +1385,9 @@ These are percents, 100,100,100 is the default.
 REFRESH <seconds>
 eg: REFRESH 900
 This tag is used for dynamic URLs such as weather radar, where you
-wish Xastir to auto-redraw the map at a specified interval.  By
+wish Astir to auto-redraw the map at a specified interval.  By
 adding this tag to weather radar .geos, you can watch the weather
-move across your screen.  Xastir contains only one interval counter,
+move across your screen.  Astir contains only one interval counter,
 so the smallest REFRESH interval loaded takes effect for all selected
 maps.
 
@@ -1407,28 +1407,28 @@ images is "CROP 35 20 616 600"
 Special/nonstandard .geo files:
 
 TIGERMAP
-A file with just the word "TIGERMAP" will cause Xastir to retrieve an
+A file with just the word "TIGERMAP" will cause Astir to retrieve an
 online Tiger map of the area on screen. These are not available for every
 place in the world. "tigermap.geo" is automatically installed in the maps
 directory.
 
 TERRASERVER-SATELLITE
-A file with just the word "TERRASERVER-SATELLITE" will cause Xastir to
+A file with just the word "TERRASERVER-SATELLITE" will cause Astir to
 retrieve a Terraserver satellite photo of the area on screen. Those
 services are not available for every place in the world. Note that using
 the Terraserver maps at any zoom above 256 will probably take a long time
 to load, won't show much detail, and probably won't display correctly. This
-is a limit of Microsoft's Terraserver, not Xastir.  Also note that
+is a limit of Microsoft's Terraserver, not Astir.  Also note that
 crossing UTM zone boundaries is not supported by Terraserver.
 "terraserver.geo" is automatically installed in the maps directory.
 
 TERRASERVER-TOPO
-A file with just the word "TERRASERVER-TOPO" will cause Xastir to retrieve a
+A file with just the word "TERRASERVER-TOPO" will cause Astir to retrieve a
 topographic map of the area on screen. Those services are not available for
 every place in the world. Note that using the maps at any zoom above 256
 will probably take a long time to load, won't show much detail, and
 probably won't display correctly. This is a limit of Microsoft's
-Terraserver, not Xastir.  Also note that crossing UTM zone boundaries is not
+Terraserver, not Astir.  Also note that crossing UTM zone boundaries is not
 supported by Terraserver. "terraserver-topo.geo" is automatically
 installed in the maps directory.
 
@@ -1467,17 +1467,17 @@ lines like this (but may contain many other lines):
 1.5.1.3   NORTH BOUNDING COORDINATE:  48.000000
 1.5.1.4   SOUTH BOUNDING COORDINATE:  47.000000
 
-Xastir uses only those four lines in its calculations to determine the corner
+Astir uses only those four lines in its calculations to determine the corner
 points of a map, to see whether the map fits in the current viewport (so it
 can decide whether to skip it).  If your map data are USGS topographic maps,
 the .fgd file should be readily available to you. If it is not, the mapfgd.pl
 script can create it for you. If you don't have a .fgd file, the map will load
 fine, but the white borders won't be cropped and the size and rotation may be
-off a tad bit. An added feature in Xastir is the ability to do datum
+off a tad bit. An added feature in Astir is the ability to do datum
 translations from NAD 1927 to WGS 84 datum, which makes the USGS topographic
-maps much more  accurate on the Xastir screen.
+maps much more  accurate on the Astir screen.
 
-Xastir can use USGS geoTIFF topographic maps directly from the CD drive.
+Astir can use USGS geoTIFF topographic maps directly from the CD drive.
 Manually mount the disk or use auto-mounter to do it for you, and make sure
 you have a sym-link created in your maps directory that points to where you
 mounted your CD-ROM drive.  That's it!
@@ -1492,13 +1492,13 @@ GNIS (Geographic Names Information System) data is a collection of names of
 locations, or geographic features. These labels behave like map labels in
 Dos/WinAPRS maps.  As you zoom in, more labels will appear, assuming you've
 selected the GNIS file as a map and have enabled Map Labels in the Maps menu.
-If you have some of them in the xastir/GNIS directory, you can also search
-for map labels within Xastir.
+If you have some of them in the astir/GNIS directory, you can also search
+for map labels within Astir.
 
 
 WX County Maps
-All WX County maps should be stored in the /usr/local/share/xastir/Counties
-and Xastir only supports the ESRI Shapefile standard for these. Installation
+All WX County maps should be stored in the /usr/local/share/astir/Counties
+and Astir only supports the ESRI Shapefile standard for these. Installation
 is explained in README.MAPS.  You must have Shapelib compiled in.
 
 As NWS messages are received, different areas will get tinted to designate
@@ -1540,7 +1540,7 @@ This sub-menu allows saving data for all stations to files [or databases]
 
     Export to KML file
       Saves all stations and their trails to a Keyhole Markup Language
-      file in ~/.xastir/tracklogs.  The filename will be the current
+      file in ~/.astir/tracklogs.  The filename will be the current
       date and time with a .kml extension, e.g. 20080125-033045.kml
       KML files can also be written on a regular basis using KML
       Snapshots on the file menu.
@@ -1574,7 +1574,7 @@ This sub-menu allows filtering of the displayed symbols:
     This option displays stations with data received via the Internet.
 
   Include Expired Data
-    Causes Xastir to continue to display the station data that normally goes
+    Causes Astir to continue to display the station data that normally goes
     away when the symbol is ghosted.  The expiration time can be adjusted in
     the File|Configure|Defaults menu.
 
@@ -1716,11 +1716,11 @@ This sub-menu allows filtering of the displayed data:
   Display the time since the station was last heard.
 
 Reload Object/Item History
-This will reload the ~/.xastir/config/objects.log file used for Object and Item
-persistence. This is needed if you edit the file while Xastir is running.
+This will reload the ~/.astir/config/objects.log file used for Object and Item
+persistence. This is needed if you edit the file while Astir is running.
 
 Clear Object/Item History
-This will clear the ~/.xastir/config/objects.log file used for Object and Item
+This will clear the ~/.astir/config/objects.log file used for Object and Item
 persistence. It is recommended that you manually select and delete all Objects
 and Items that you own before doing this, otherwise they may remain on the
 screens of other APRS(tm) users.
@@ -1733,7 +1733,7 @@ peoples' screens if you've published them via a message to
 
 Clear Tactical Call History
 This removes the tactical call history file, meaning that tactical calls
-assigned will not remain permanent between Xastir restarts.  Note
+assigned will not remain permanent between Astir restarts.  Note
 that this will NOT clear tactical calls on other peoples' screens if
 you've published them via a message to "TACTICAL" (see the help text
 for "Send Message".
@@ -1760,7 +1760,7 @@ station and will only receive data from that station. Group messages are more
 general: you can receive any message for the group and you will send out your
 messages to that group name. Group messages code is not fully implemented yet
 and various problems still need to be worked out.  The "groups" file is looked
-for in ~/.xastir/config.  This is where the groups you are a member of are
+for in ~/.astir/config.  This is where the groups you are a member of are
 stored.  As was said before the "groups" functionality may not be complete yet.
 
 At some point in the near future sending of bulletins should be added to this
@@ -1789,7 +1789,7 @@ will clear any message displayed in the message window.  "Cancel Pending Msgs"
 will cancel any messages in the transmit queue that haven't been acknowledged
 by the remote station yet.  After canceling the pending messages or receiving
 and acknowledgment packet from the remote station, you may send new messages to
-the remote station.  Xastir will allow you to type ahead, so you can just keep
+the remote station.  Astir will allow you to type ahead, so you can just keep
 typing if you don't want to wait for the acknowledgments.
 
 Messages in reply to previous ones will attempt to use the path of the
@@ -1803,7 +1803,7 @@ Each outgoing message remains highlighted until it is ack'ed by the remote
 station.  If it times out or if you cancel the pending messages, those
 messages will remain highlighted unless you clear the message history.
 
-To publish TACTICAL calls to other Xastir and APRS+SA stations as
+To publish TACTICAL calls to other Astir and APRS+SA stations as
 well as assign those tactical calls locally: Send a message to
 "TACTICAL" with the body of the message containing lines something
 like:
@@ -1867,36 +1867,36 @@ configuration menus as well.
 Enable Server Port
 This enables/disables TCP and UDP listening sockets at port 2023.  You may
 connect other APRS(tm) clients to the TCP port in order to send/receive
-APRS(tm) data.  Once they authenticate, they'll be able to send data to Xastir.
+APRS(tm) data.  Once they authenticate, they'll be able to send data to Astir.
 Without authentication, they'll be able to receive every bit of TNC and INET
-data that Xastir receives.  Note that ANY user with the proper credentials can
+data that Astir receives.  Note that ANY user with the proper credentials can
 come in on the TCP or UDP ports if they are enabled.  The only one of these two
 ports currently that can send to RF is the UDP Server port.  The TCP
 port cannot.
 
-    "user WE7U-13 pass XXXX vers XASTIR 1.3.3"
+    "user WE7U-13 pass XXXX vers ASTIR 1.3.3"
 
 Connect another APRS(tm) client to that port and it should authenticate and be
-able to send to any server that Xastir is connected to, as well as receive
-packets from all ports/servers Xastir is hooked to.
+able to send to any server that Astir is connected to, as well as receive
+packets from all ports/servers Astir is hooked to.
 
-You should also have a binary called "xastir_udp_client" which can send packets
+You should also have a binary called "astir_udp_client" which can send packets
 into the UDP listening port.  Invoke it like this:
 
- xastir_udp_client localhost 2023 <callsign> <passcode> "APRS Packet Goes Here"
+ astir_udp_client localhost 2023 <callsign> <passcode> "APRS Packet Goes Here"
 
-Currently that will inject the packet into Xastir's decoding routines and send
+Currently that will inject the packet into Astir's decoding routines and send
 it to any TCP-connected clients. It will also igate it to the INET if you have
 igating enabled.  It will send the packet out the RF ports as third-party
 packets only if you add the "-to_rf" flag after the passcode like this:
 
- xastir_udp_client localhost 2023 <callsign> <passcode> -to_rf "APRS Packet"
+ astir_udp_client localhost 2023 <callsign> <passcode> -to_rf "APRS Packet"
 
 The UDP client is useful for generating and injecting APRS packets from
 external scripts.  It can also be used to fetch the callsign of the remote
-xastir server by using the -identify flag:
+astir server by using the -identify flag:
 
- xastir_udp_client localhost 2023 <callsign> <passcode> -identify
+ astir_udp_client localhost 2023 <callsign> <passcode> -identify
 
 Transmit now
 Causes all interfaces that have transmit enabled (see configure|interfaces) to
@@ -1923,17 +1923,17 @@ HELP-INDEX>Station info box - FCC and RAC lookup
 
                   Station info box - FCC and RAC lookup
 
-Station Info will display any data decoded by Xastir.
+Station Info will display any data decoded by Astir.
 
 You can assign (local only) tactical calls to stations from here, by
 clicking the "Assign Tactical Call" button. This will cause the
 station on screen to display as the tactical call instead of its
 callsign. Assigning a blank tactical call clears this feature, and
 it can also be cleared for all stations in the Stations menu.  This
-feature assigns tactical calls to the local Xastir station only, but
+feature assigns tactical calls to the local Astir station only, but
 see below to publish them to others.
 
-To publish tactical calls across the air to other Xastir and APRS+SA
+To publish tactical calls across the air to other Astir and APRS+SA
 stations (as well as assign them locally), see the "Send Message" help
 section.
 
@@ -1989,7 +1989,7 @@ format is similar to that used by GPS receivers but its specification
 might be changed (enhanced) in future versions. There is currently no
 way to read that track data back in, but it is planned for the future.
 The goal is to also read and display GPS track-logs in a similar manner.
-These track-log files will be placed in the directory ~/.xastir/tracklogs
+These track-log files will be placed in the directory ~/.astir/tracklogs
 with a name equal to the stations call with ".trk" as extension.  "Store 
 Track" will simultaneously save the station's track as a Keyhole Markup
 Language (.kml) file with a filename equal to the station's call, the
@@ -2009,19 +2009,19 @@ If the FCC (U.S. Federal Communications Commission) or RAC (Radio Amateurs of
 Canada) database is installed and the callsign appears to be a Canadian or
 U.S. callsign, the "Search FCC/RAC Database" button will become active,
 otherwise this button will be inactive.  The FCC and RAC files should be
-placed in the /usr/local/share/xastir/fcc directory, and case is important!
+placed in the /usr/local/share/astir/fcc directory, and case is important!
 Pressing this button adds the station's name and address into the Station
 Info box.  Instructions for installing these databases are in the README.MAPS
 file.
 
-Xastir will create index files for each database file upon startup. If a newer
-callsign file is placed there while Xastir is running, it will create or
+Astir will create index files for each database file upon startup. If a newer
+callsign file is placed there while Astir is running, it will create or
 rebuild the index on the next lookup.  Special prefixes are NOT handled.
 
 HELP-INDEX>Creating a log
                               Creating a log
 
-Xastir can log data from the internet or TNC for later playback, or for
+Astir can log data from the internet or TNC for later playback, or for
 debugging purposes.  WARNING: Logging can fill up your hard drive, so be
 careful using it, or make preparations for rolling over the log files
 automatically via cron. An indication will be shown on the status bar when
@@ -2056,7 +2056,7 @@ You can use it to browse your hard drive and select any file containing raw
 TNC data like those created by the TNC and Net logging options. Your station
 will still function the same way, receiving and transmitting. If you were
 logging data, the typical place to look for those files would be 
-~/.xastir/logs/
+~/.astir/logs/
 
 NOTE: This function doesn't read the saved station tracklogs.
 
@@ -2122,7 +2122,7 @@ HELP-INDEX>Printing
 Note: Printing has not been set up on Windows/Cygwin.  These instructions
 are for Unix and Unix-like operating systems.
 
-Xastir can print the drawing area in either black & white or color.  It does
+Astir can print the drawing area in either black & white or color.  It does
 this by first dumping the image to an XPixmap file on disk, then using external
 tools to convert it to postscript, scale it, rotate it, preview it, then print
 it.  You must have your system printing set up to handle postscript (usually
@@ -2131,7 +2131,7 @@ print spoolers).  You must also have the following tools installed for this
 capability:  ImageMagick tools (specifically "convert"), "Ghostscript",
 Ghostscript fonts, and "gv".  Once all of these packages are installed and
 functional, you should get a "gv" window popping up shortly after you tell
-Xastir to create a print file.  From there  you can view the printed image, and
+Astir to create a print file.  From there  you can view the printed image, and
 if acceptable, tell "gv" to print it.  Note that sometimes changing to a white
 default background for the maps is recommended, depending on what maps you have
 viewable.  This can save greatly on ink.
@@ -2140,12 +2140,12 @@ HELP-INDEX>Creating Snapshots
 
                      Creating Automatic Snapshots
 
-Xastir has the capability to create automatic snapshots of the map screen
+Astir has the capability to create automatic snapshots of the map screen
 on a recurring basis.  The default time period is set at once per five
 minutes.  Assuming that you have "convert" from the ImageMagick tools
-installed, Xastir will create an XPM format file in ~/.xastir/tmp/, then
-convert it to the PNG file ~/.xastir/tmp/snapshot.png. This file is useful for
-embedding in web pages to show a "live" image of what is on your Xastir
+installed, Astir will create an XPM format file in ~/.astir/tmp/, then
+convert it to the PNG file ~/.astir/tmp/snapshot.png. This file is useful for
+embedding in web pages to show a "live" image of what is on your Astir
 screen.  Enable this feature via the "File->PNG Snapshots" toggle-button. 
 The rate is once every five minutes (configurable from the Configure 
 Timing dialog from "File->Configure->Timing"), or every time the button is 
@@ -2158,12 +2158,12 @@ produce a kml feed using the snapshots.
 
                     Creating Automatic KML Snapshots
 
-Xastir is capable of writing all current stations and tracks to a kml file
+Astir is capable of writing all current stations and tracks to a kml file
 on a recurring basis.  Enable this feature via the "File->KML Snapshots" 
 toggle button.  The rate at which these snapshots are generated is the same
 as that of PNG snapshots, configured from "File->Configure->Timing" by 
 setting the snapshot time interval.  Each snapshot is written to a .kml
-file in ~/.xastir/tracklogs, with a filename based on the date and time
+file in ~/.astir/tracklogs, with a filename based on the date and time
 of the snapshot, e.g. 20080206-000720.kml  This behavior may change to 
 make KML snapshots write to a single file like PNG snapshots.
                     
@@ -2172,14 +2172,14 @@ HELP-INDEX>Included Scripts
 
                         Included Scripts
 
-Xastir includes several Perl scripts and a shell script that may be useful:
+Astir includes several Perl scripts and a shell script that may be useful:
 
 get-fcc-rac.pl
 This shell script automates retrieving and installing the FCC and the RAC
 callsign databases. Note that these databases are very large!
 
 icontable.pl
-This script generates an xpm bitmap of all Xastir's primary and secondary
+This script generates an xpm bitmap of all Astir's primary and secondary
 symbols from the symbols.dat file. The overlays and specials are ignored.
 Output is to STDOUT, so a typical call would be "icontable.pl > symbols.xpm".
 
@@ -2196,7 +2196,7 @@ information.
 
 mapfgd.pl
 This script creates minimal .fgd files for GeoTIFF images lacking them, based
-on information found in the GeoTIFF file. The created files allow Xastir to
+on information found in the GeoTIFF file. The created files allow Astir to
 crop the white borders and rotate/scale the map properly. Typical usage would
 be "mapfgd.pl mapdir" where mapdir is the directory containing the GeoTIFF
 images.
@@ -2226,7 +2226,7 @@ Tests for the Coordinate.pm Perl module.
 track-get.pl
 This script downloads the track-log of a specified object from a Garmin GPS.
 It requires the GPS::Garmin module. It prompts for an object name, and writes
-the track-log to the ~/.xastir/logs directory.
+the track-log to the ~/.astir/logs directory.
 
 update_langfile.pl
 This script is targeted toward developers. It rebuilds a specified language
@@ -2239,7 +2239,7 @@ hard-coded but easily editable.
 
 waypoint-get.pl
 This similar script downloads the waypoints from a Garmin GPS, and creates a
-log in the ~/.xastir/logs directory containing the waypoints as objects. It
+log in the ~/.astir/logs directory containing the waypoints as objects. It
 also requires the GPS::Garmin module.
 
 db_gis_mysql.sql  db_gis_postgis.sql
@@ -2255,7 +2255,7 @@ Click on Interfaces, then Interface Control.
 
 An "Installed Interfaces" box should appear. This box will allow you to add,
 delete, and modify the properties of various devices you may want to use with
-Xastir.
+Astir.
 
 Supported interface types are:
 Serial TNC
@@ -2304,13 +2304,13 @@ and the GPS should be set to the same communications parameters. Generally
 4800 bps, 8 data bits, no parity, and 1 stop bit.
 
 TNC Port Options:
-Selecting "Activate on start up" will tell Xastir to look for this device and
+Selecting "Activate on start up" will tell Astir to look for this device and
 set up communications with it when the program first starts.
 
-Selecting "Allow Transmitting" will tell Xastir that any outgoing RF data can
+Selecting "Allow Transmitting" will tell Astir that any outgoing RF data can
 be sent to this device for broadcast.
 
-Selecting "Add Delay" will tell xastir to insert a one second delay
+Selecting "Add Delay" will tell astir to insert a one second delay
 between issuing the command to enter "Converse" mode and the actual
 data to be sent.  This options exists solely to deal with the
 Kantronics KAM TNC, which will often fail to enter converse mode if it
@@ -2332,9 +2332,9 @@ Choose the correct IGate operation for this device. You may have several TNC
 devices, and this option can be different for each device. If you are not
 running an IGate leave it at the default option of "Disable".
 
-Enter up to three UNPROTO paths. Xastir will assume the XX VIA part of the
+Enter up to three UNPROTO paths. Astir will assume the XX VIA part of the
 UNPROTO path. There are three paths allowed so that your signal will be heard
-if conditions are bad. XASTIR will cycle through each one that is filled in,
+if conditions are bad. ASTIR will cycle through each one that is filled in,
 one per transmission time.  If you are local to a digi, just WIDE2-2 may be a
 good choice. If you are using low power and/or are distant from a digi then
 WIDE1-1, WIDE2-2 may work better. Or if you know the call of your closest digi you
@@ -2348,7 +2348,7 @@ you send to RF. If you leave this blank, the UNPROTO paths above will be used.
 If the UNPROTO paths are blank, WIDE2-2 will be used.
 
 TNC Startup and Shutdown files. These fields specify a filename that is
-located in the /usr/local/share/xastir/config directory. Each file is a
+located in the /usr/local/share/astir/config directory. Each file is a
 standard text file containing any commands you would like to send your TNC at
 the time the device is activated (startup file) or shut down.
 
@@ -2362,10 +2362,10 @@ Gpsd for further information on the configuration of these devices.
 
 "Send Control-E to get GPS Data?"
 
-This checkbox controls whether Xastir sends a Control-E to the TNC every time
+This checkbox controls whether Astir sends a Control-E to the TNC every time
 it needs GPS data.
 
-Some TNCs that support a GPS on an auxilliary port require that Xastir
+Some TNCs that support a GPS on an auxilliary port require that Astir
 send a Control-E to the TNC in order to get the GPS data each time it
 is needed.  Devices in this class include the Kantronics KPC-3+.
 
@@ -2375,7 +2375,7 @@ these devices.
 
 Because Control-E was required by the most common TNCs that had an aux
 port for GPS at the time that this interface type was written, this is
-the default behavior of Xastir.  If you have a Kenwood radio that you are 
+the default behavior of Astir.  If you have a Kenwood radio that you are 
 using in this mode, you must DESELECT the "Send Control-E to get GPS data?"
 checkbox in the configuration dialog for this interface type.  
 
@@ -2391,19 +2391,19 @@ described in the November 2000 issue of QST, without a separate program or
 kernel module.
 
 Options
-Selecting "Activate on start up" will tell Xastir to look for this device and
+Selecting "Activate on start up" will tell Astir to look for this device and
 set up communications with it when the program first starts.
 
-Selecting "Allow Transmitting" will tell Xastir that any outgoing RF data can
+Selecting "Allow Transmitting" will tell Astir that any outgoing RF data can
 be sent to this device for broadcast.
 
-Selecting "RELAY Digipeat?" will tell Xastir to digipeat traffic.  It will do
+Selecting "RELAY Digipeat?" will tell Astir to digipeat traffic.  It will do
 this if the first unused digipeater call in the path matches your callsign or a
-callsign listed in your Xastir config file ("RELAY_DIGIPEAT_CALLS" line,
+callsign listed in your Astir config file ("RELAY_DIGIPEAT_CALLS" line,
 default is "WIDE1-1"). This option is only recommended for base stations in
 regions where there are few other fill-in digipeaters in the area. Consult with
 a local group about the best setting for your region. You may hand-edit the
-Xastir config file when Xastir is not running in order to change this string to
+Astir config file when Astir is not running in order to change this string to
 match your local recommendations. In the U.S., "WIDE1-1" is the recommended
 setting.
 
@@ -2418,9 +2418,9 @@ Choose the correct IGate operation for this device. You may have several TNC
 devices, and this option can be different for each device. If you are not
 running an IGate leave it at the default option of "Disable".
 
-Enter up to three UNPROTO paths. Xastir will assume the XX VIA part of the
+Enter up to three UNPROTO paths. Astir will assume the XX VIA part of the
 UNPROTO path. There are three paths allowed so that your signal will be heard
-if conditions are bad. Xastir will cycle through each one that is filled in,
+if conditions are bad. Astir will cycle through each one that is filled in,
 one per transmission time.  If you are local to a digi, just a WIDE2-2 may be a
 good choice. If you are using low power and/or are distant from a digi then
 WIDE1-1,WIDE2-2 may work better. Or if you know the call of your closest digi
@@ -2450,23 +2450,23 @@ HELP-INDEX>Configure AX.25 TNC Devices
 This section covers adding or modifying AX.25 TNC devices. AX.25 devices can
 be any device that uses the Linux AX.25 drivers. This is a kernel level
 driver, and device such as a Baycom or a sound modem can be used as a TNC.
-These devices must be set up and running before Xastir can use them.
+These devices must be set up and running before Astir can use them.
 
-Selecting "Activate on start up" will tell Xastir to look for this device and
+Selecting "Activate on start up" will tell Astir to look for this device and
 set up communications with it when the program first starts.
 
-Selecting "Allow Transmitting" will tell Xastir that any outgoing RF data can
+Selecting "Allow Transmitting" will tell Astir that any outgoing RF data can
 be sent to this device for broadcast.
 
-Selecting "RELAY Digipeat?" will tell Xastir to digipeat traffic. It will do
+Selecting "RELAY Digipeat?" will tell Astir to digipeat traffic. It will do
 this if the first unused digipeater call in the path matches your callsign or a
-callsign listed in your Xastir config file ("RELAY_DIGIPEAT_CALLS" line,
+callsign listed in your Astir config file ("RELAY_DIGIPEAT_CALLS" line,
 default is "WIDE1-1"). This option is only recommended for base stations in
 regions where there are few other fill-in digipeater stations in the area.
 Consult with a local group about the best setting for your region.  This is
 only needed if you are not using any other software that performs this
-function, such as aprsdigi or DIGI_NED. You may hand-edit the Xastir config
-file when Xastir is not running in order to change this string to match your
+function, such as aprsdigi or DIGI_NED. You may hand-edit the Astir config
+file when Astir is not running in order to change this string to match your
 local recommendations. In the U.S., "WIDE1-1" is the recommended setting.
 
 Enter the AX.25 Device name you specified in the axports file for this device.
@@ -2477,9 +2477,9 @@ Choose the correct IGate operation for this device. You may have several TNC
 devices and this option can be different for each device. If you are not
 running an IGate leave it at the default option of "Disable".
 
-Enter in up to three UNPROTO paths. Xastir will assume the XX VIA part of the
+Enter in up to three UNPROTO paths. Astir will assume the XX VIA part of the
 UNPROTO path. There are three paths allowed so that your signal will be heard
-if conditions are bad. Xastir will cycle through each one that is filled in,
+if conditions are bad. Astir will cycle through each one that is filled in,
 one per transmission time.  If you are local to a digi, just a WIDE2-2 may be a
 good choice. If you are using low power and/or are distant from a digi then
 WIDE1-1,WIDE2-2 may work better. Or if you know the call of your closest digi
@@ -2492,10 +2492,10 @@ If you are IGating to RF, you may enter a specific path to use for the packets
 you send to RF. If you leave this blank, the UNPROTO paths above will be used.
 If the UNPROTO paths are blank, WIDE2-2 will be used.
 
-NOTE: To use AX.25 devices with Xastir you will need to run the program as
-"root". If you want to run Xastir as another user you may want to set the
-suid bit on the Xastir program file. Please see INSTALL file for more
-information; current Xastir drops the extra privileges but has not been audited
+NOTE: To use AX.25 devices with Astir you will need to run the program as
+"root". If you want to run Astir as another user you may want to set the
+suid bit on the Astir program file. Please see INSTALL file for more
+information; current Astir drops the extra privileges but has not been audited
 for exploits. Use in this fashion in a multi-user environment at your own risk!
 
 HELP-INDEX>Configure Serial GPS Devices
@@ -2507,10 +2507,10 @@ Set the serial port device for your GPS unit. Common values of /dev/ttyS0
 
 Comment will allow you to set a friendly name or comment for the port.
 
-Selecting "Activate on start up" will tell Xastir to look for this device and
+Selecting "Activate on start up" will tell Astir to look for this device and
 set up communications with it when the program first starts.
 
-Selecting "Set system clock from GPS data" will tell Xastir to try setting the
+Selecting "Set system clock from GPS data" will tell Astir to try setting the
 system's clock to the highly accurate time signal from the GPS receiver. This
 requires root privileges on most systems.
 
@@ -2525,7 +2525,7 @@ HELP-INDEX>Configure Networked GPS Devices
                     Configure Networked GPS Devices
 
 If you need to share the GPS data with different programs or machines, this
-option is best. Xastir will work with gpsd which will allow several
+option is best. Astir will work with gpsd which will allow several
 connections to share your GPS data.
 
 Set the host name (or IP address) and the port number for the gpsd host on
@@ -2533,13 +2533,13 @@ your network.
 
 Comment will allow you to set a friendly name or comment for the port.
 
-Selecting "Activate on start up" will tell Xastir to look for this device and
+Selecting "Activate on start up" will tell Astir to look for this device and
 set up communications with it when the program first starts.
 
-Selecting "Reconnect on failure" will tell Xastir to try to reconnect when the
+Selecting "Reconnect on failure" will tell Astir to try to reconnect when the
 data stream has failed.
 
-Selecting "Set system clock from GPS data" will tell Xastir to try setting the
+Selecting "Set system clock from GPS data" will tell Astir to try setting the
 system's clock to the highly accurate time signal from the GPS receiver. This
 requires root privileges on most systems.
 
@@ -2549,10 +2549,10 @@ HELP-INDEX>Configure the Internet Server
 
 Internet Servers allow you to send and receive data for all over the world.
 
-Selecting "Activate on start up" will tell Xastir to look for this device and
+Selecting "Activate on start up" will tell Astir to look for this device and
 setup communications with it when the program first starts.
 
-Selecting "Allow Transmitting" will tell Xastir that any outgoing Internet
+Selecting "Allow Transmitting" will tell Astir that any outgoing Internet
 data can be sent to this device.
 
 Enter the host name (or IP address) and the port number of the Internet
@@ -2570,7 +2570,7 @@ of this field is fully specified, please consult APRSSIG for more information.
 
 Comment will allow you to set a friendly name or comment for the port.
 
-Selecting "Reconnect on failure" will tell Xastir to try to reconnect when the
+Selecting "Reconnect on failure" will tell Astir to try to reconnect when the
 data stream has failed.
 
 HELP-INDEX>Configure a Serial WX Station
@@ -2582,7 +2582,7 @@ Set the serial port device for your WX unit. Common values of /dev/ttyS0
 
 Comment will allow you to set a friendly name or comment for the port.
 
-Selecting "Activate on start up" will tell Xastir to look for this device and
+Selecting "Activate on start up" will tell Astir to look for this device and
 set up communications with it when the program first starts.
 
 Now set the bps rate under port settings, and the parameters under port
@@ -2592,10 +2592,10 @@ bit. 7E1 is used for 7 data bits, even parity and 1 stop bit. 7O1 is used for
 unit. The Data Type option will allow you to override what type of serial data
 the program will look for. The auto-detect feature will first look for Weather
 data in a binary type as the Radio Shack WX-200 uses. If no binary data is
-found in the stream, Xastir will look for an ASCII type of WX station (like
+found in the stream, Astir will look for an ASCII type of WX station (like
 Peet Bros.).
 
-Now set the Rain Gauge correction factor. Xastir requires that the rain gauge
+Now set the Rain Gauge correction factor. Astir requires that the rain gauge
 report in .01 inch increments. If the unit reports in .1 inch or .1 millimeter
 increments, a correction must be specified to obtain accurate measurements.
 
@@ -2603,7 +2603,7 @@ HELP-INDEX>Configure a Networked WX Station
 
                    Configure a Networked WX Station
 
-Xastir can use WX data servers such as wx200d. wx200d will allow several
+Astir can use WX data servers such as wx200d. wx200d will allow several
 network connections, thus sharing the Weather data with several programs or
 computers.
 
@@ -2612,15 +2612,15 @@ you want to contact.
 
 Comment will allow you to set a friendly name or comment for the port.
 
-Selecting "Activate on start up" will tell Xastir to look for this device and
+Selecting "Activate on start up" will tell Astir to look for this device and
 set up communications with it when the program first starts.
 
-Selecting "Reconnect on failure" will tell Xastir to try to reconnect when the
+Selecting "Reconnect on failure" will tell Astir to try to reconnect when the
 data stream has failed.
 
 As before the Data Type will override the auto detection.
 
-Now set the Rain Gauge correction factor. Xastir requires that the rain gauge
+Now set the Rain Gauge correction factor. Astir requires that the rain gauge
 report in .01 inch increments. If the unit reports in .1 inch or .1 millimeter
 increments, a correction must be specified to obtain accurate measurements.
 
@@ -2628,7 +2628,7 @@ HELP-INDEX>Configure an AGWPE Connection
 
                    Configure an AGWPE Connection
 
-Xastir can use an AGWPE network interface running on a Windows box
+Astir can use an AGWPE network interface running on a Windows box
 as a TNC interface. It can also use the login/password security that
 AGWPE has built-in, but you must set up the account in the AGWPE
 application with your callsign for the username, in all capital
@@ -2642,19 +2642,19 @@ HELP-INDEX>Configure a SQL Database Connection
                 Configure a SQL Database Connection
                          [Experimental]
 
-Xastir can experimentally store and retrieve station data from either
+Astir can experimentally store and retrieve station data from either
 a MySQL database or a Postgresql + Postgis database.  See the 
 "OPTIONAL: Experimental.  Add GIS database support." section in the
 INSTALL file for more information.  Station and object data are stored
 as spatial data, and can be retrieved from other GIS applications, for example
-Xastir can write station locations into a Postgis database from which they
+Astir can write station locations into a Postgis database from which they
 can also be viewed using QGIS.  SQL database connections also allow for the
-persistence of data between Xastir sessions.  All aspects of spatial database
+persistence of data between Astir sessions.  All aspects of spatial database
 support, including database structures, are currently experimental and may 
 change at any time.  You may configure multiple SQL database connections, 
 but you should only have one active at a time.  
 
-Before creating a database connection in Xastir, you will need to create a 
+Before creating a database connection in Astir, you will need to create a 
 database to connect to, create an appropriate set of tables 
 (see the db_gis_xxxxx.sql scripts in the scripts directory), and add a user 
 with a password and rights to access the database.  For postgis databases
@@ -2664,15 +2664,15 @@ Configuration options on the SQL database dialog include:
 Database: MySQL (lat/long) for very old MySQL databases, 
           Postgis for postgresql + postgis, and 
           MySQL (Spatial) for current MySQL databases.
-With tables for: Currently only the Xastir simple schema - a very basic
+With tables for: Currently only the Astir simple schema - a very basic
           flat table holding minimal information about stations.
 Host: IP address or hostname for the database server, default is localhost.
 Port: Default is 3306 for MySQL and 5432 for Postgresql.  The database can
           be on a remote server, but the appropriate port will need to be
           open in any firewalls.  
-Username: Can be unique to your database, e.g. xastir_user
+Username: Can be unique to your database, e.g. astir_user
 Password: Unique to your database.  
-Schema name: Your database name. e.g. xastir
+Schema name: Your database name. e.g. astir
 MySQL Socket: check my.cnf, or mysql --help | grep socket
           Leave blank for postgis databases.
 Reconnect on Net Failure: [Not yet implemented]
@@ -2681,30 +2681,30 @@ or may not be correct for your database.
 
 Three options control the behavior of the SQL Database interface:
 Activate on Startup:  Try to connect to this database and begin storing heard 
-station data as soon as Xastir starts (if store incoming data is also selected).
+station data as soon as Astir starts (if store incoming data is also selected).
 
 Store incoming data: Stores each station (including objects and items) report
 as a record in the database.  All stations heard on all interfaces will be 
 stored to the database - if you are connected to internet feeds and leave 
-xastir running this can easily be a million records per day.
+astir running this can easily be a million records per day.
 
 Load data on startup: Retrieve all station data from the database
-when restaring Xastir.  Currently the only way to retrieve persistent 
+when restaring Astir.  Currently the only way to retrieve persistent 
 data from a database.  Will attempt to connect to database and retrieve data 
 independent of the settings of either activate on startup or store incoming
 data.  Due to rounding and conversion errors, non-mobile stations may move 
 slightly.  
 
 The "Most Recent Error" box may or may not contain an error message to help
-identify connection problems.  When Xastir fails to connect to a database, 
+identify connection problems.  When Astir fails to connect to a database, 
 the interface will show ERROR on the interface list, and the most recent error 
-may be shown here.   Running xastir from the console and observing error 
-messages there, or running xastir from the console with xastir -v1 may help
+may be shown here.   Running astir from the console and observing error 
+messages there, or running astir from the console with astir -v1 may help
 identify the cause of connection problems, as may examination of the 
 database's error logs.  
 
 You will only be able to configure a SQL Database interface if you have 
-compiled Xastir with support for that DBMS (--with-mysql or --with-postgis).
+compiled Astir with support for that DBMS (--with-mysql or --with-postgis).
 
 HELP-INDEX>Symbol Table
 
@@ -2811,20 +2811,20 @@ z                                        X Windows
 }          TCP                           TCP
 ~          Sail Boat                     Sail Boat
 
-HELP-INDEX>What was new in Xastir 1.0
+HELP-INDEX>What was new in Astir 1.0
 
-Over the past year, Xastir has been under active development, and this new
+Over the past year, Astir has been under active development, and this new
 release is the culmination of those efforts. Development has been run by
 Chuck Byam, who agreed to take over for Frank Giannandrea. Many other
 individuals have contributed to this project, and are listed in the AUTHORS
 file.
 
-The Xastir package now uses GNU autoconf to build makefiles and select
+The Astir package now uses GNU autoconf to build makefiles and select
 features based on the libraries and software one has installed. No more
 editing makefiles as in previous releases!
 
-Starting Xastir 1.0, one probably won't immediately notice any major
-changes. The familiar interface of previous Xastir versions has been retained
+Starting Astir 1.0, one probably won't immediately notice any major
+changes. The familiar interface of previous Astir versions has been retained
 for the most part. The great majority of the changes are improvements in
 efficiency under the hood:
 * Startup time for the program has been improved.
@@ -2832,7 +2832,7 @@ efficiency under the hood:
   station, trail, and weather data on an as-needed basis. No longer will
   memory be wasted on stationary stations for trail data, nor will non-weather
   stations waste memory for weather information. With these modifications,
-  Xastir can even be connected to the internet link comfortably on a 16MB
+  Astir can even be connected to the internet link comfortably on a 16MB
   machine.
 * Improvements have been made to avoid having to reload maps from disk at every
   minor change; Weather alerts and changes to the display and tracking options
@@ -2842,14 +2842,14 @@ efficiency under the hood:
   redraw less often, to allow them to be usable on slower systems. This is
   also true of tracking a station, with the map redrawing only if the station
   approaches the edge of the screen.
-Thanks to these changes, Xastir is perfectly usable on slower Pentium(tm)
+Thanks to these changes, Astir is perfectly usable on slower Pentium(tm)
 machines.
 
 Native GeoTIFF support is now included, and will be compiled into one's copy
-of Xastir if they have the GeoTIFF libraries installed on their system. These
+of Astir if they have the GeoTIFF libraries installed on their system. These
 map files are of very high quality, and are especially useful in search and
 rescue operations. Maps on this format are available from the USGS, and
-commercially on CD-ROM. Xastir understands how to convert from the NAD-27
+commercially on CD-ROM. Astir understands how to convert from the NAD-27
 datum to the new WGS-84 datum, so maps of both format can be read accurately.
 New shortcut buttons have been added to the map selection dialog to enable
 one to pick all maps of a specific type.
@@ -2858,7 +2858,7 @@ Support for the Festival Speech Synthesis System is now available to announce
 new stations and band openings. The old system of alert sounds has been
 retained as well.
 
-Xastir now supports adding and deleting objects. Finally, Xastir users are able
+Astir now supports adding and deleting objects. Finally, Astir users are able
 to manage resources with this useful feature. Objects are helpful for
 coordinating events, directing travelers, and doing search and rescue work.
 
@@ -2894,14 +2894,14 @@ behavior and/or crashes have been fixed. And many minor improvements have been
 made to the source code to ensure that it compiles correctly on various
 systems.
 
-Enjoy the new Xastir!
+Enjoy the new Astir!
 
 
-HELP-INDEX>What was new in Xastir 1.1
+HELP-INDEX>What was new in Astir 1.1
 
-                    What was new in Xastir 1.1
+                    What was new in Astir 1.1
 
-This new release, Xastir 1.1, adds significant new features and enhancements
+This new release, Astir 1.1, adds significant new features and enhancements
 to the user interface. Unlike 1.0, the interface changes will take some getting
 used to, but the flexibility and versatility of the enhanced interface will
 more than make up for the troubles.
@@ -2920,10 +2920,10 @@ Among the improvements to the user interface:
 
 Map support has been greatly enhanced, with PocketAPRS, ESRI Shapefiles, GNIS
 labels and many graphics formats with ImageMagick. Additionally, support for
-downloading graphical maps from web-servers has been added, allowing Xastir to
+downloading graphical maps from web-servers has been added, allowing Astir to
 use online radar, Tiger, and Terraserver maps. 
 
-Xastir 1.1 supports much more of the APRS(tm) protocol than its predecessor:
+Astir 1.1 supports much more of the APRS(tm) protocol than its predecessor:
 * It can add, modify, move and view area objects, signpost objects, and items.
   These features are invaluable for event coordination and search and rescue
   use. Objects and items are also periodically retransmitted.
@@ -2931,31 +2931,31 @@ Xastir 1.1 supports much more of the APRS(tm) protocol than its predecessor:
   ranges, Maidenhead grid squares, and weather objects. These features aren't
   extremely common, but do come up occasionally.
 * Support for the APRS(tm) radio direction finding features. These features
-  are useful for anything from tracking jammers to locating lost hikers. Xastir
+  are useful for anything from tracking jammers to locating lost hikers. Astir
   supports both Omni and Beam reports.
   
 Other notable improvements:
-* Xastir can now search for a specified location or landmark using GNIS data.
+* Astir can now search for a specified location or landmark using GNIS data.
 * Track logs can now be exported to file.
 * Maps can be printed if certain tools and libraries are present.
 * Support for retrieving historical track data from findu.com.
-* Xastir now compiles and runs on Mac OS X, Solaris and FreeBSD with only
+* Astir now compiles and runs on Mac OS X, Solaris and FreeBSD with only
   minimal changes; see README for details. 
 * Several major bugs found in 1.0 have been corrected, including the problems
   loading DOS maps and the problems with the weather reporting. Other minor
   bugs and memory leaks have been fixed. And several more errors have been
-  corrected in the parsing routines, so Xastir should remain stable no matter
+  corrected in the parsing routines, so Astir should remain stable no matter
   what is thrown at it! 
 
 
-HELP-INDEX>What was new in Xastir 1.2
+HELP-INDEX>What was new in Astir 1.2
 
-                    What was new in Xastir 1.2
+                    What was new in Astir 1.2
 
-The latest Xastir release adds numerous new capabilities, keeping Xastir a
+The latest Astir release adds numerous new capabilities, keeping Astir a
 benchmark for APRS(tm) programs on any operating system.
 
-Xastir's hardware support has been enhanced, with
+Astir's hardware support has been enhanced, with
 * Support for Serial KISS TNCs
 * Support for Serial TNCs with GPS on the AUX port
 * Support for using AGWPE as a TNC
@@ -2969,7 +2969,7 @@ Xastir's hardware support has been enhanced, with
 Additionally, several bugs in the weather reporting code were corrected, and
 support for setting the system clock based on the GPS was added.
 
-There have been many additions and improvements to the Xastir user interface:
+There have been many additions and improvements to the Astir user interface:
 The most notable is the addition of dead-reckoning. This means that stations
 that are moving will continue to move on your screen in the direction and at
 the speed speed that they last reported. The estimated location can be shown
@@ -2986,7 +2986,7 @@ Bulletins pop up on screen, and emergency beacons cause an alert with the
 locate station dialog on hand. These changes are helpful in emergencies and
 event coordination.
 
-Xastir can now be set to use one of several coordinate systems, including UTM,
+Astir can now be set to use one of several coordinate systems, including UTM,
 dd.ddddd, dd mm.mmm, and dd mm ss.s. This is helpful for coordinating with
 other groups using a different system.
 
@@ -3003,8 +3003,8 @@ Other smaller interface changes include:
   coordinate calculator.
 * There is a check-box "Track me" to enable easily tracking your own station
 * The length of trails downloaded from findu.com can now be specified.
-* Xastir can now ID via voice IDs or Screen IDs, by editing the configuration
-  file. This is intended for configurations when the Xastir screen is seen
+* Astir can now ID via voice IDs or Screen IDs, by editing the configuration
+  file. This is intended for configurations when the Astir screen is seen
   remotely via fast-scan TV. 
 * Timestamps are written to log files every 30 seconds of operation, to keep a
   record of when data was heard.
@@ -3029,29 +3029,29 @@ alert. Further information on an alert is available over the internet from
 the WXSVR by simply double-clicking the alert in the weather alerts list.
 Weather alerts now use the newer ESRI Shapefile-format maps.
 
-Xastir's map support has been improved with enhancements to the ESRI Shapefile
+Astir's map support has been improved with enhancements to the ESRI Shapefile
 code to handle point-type ESRI Shapefiles. Additionally, speed improvements
 have been made in the ImageMagick graphical map loading, and many
 color-correction features have been added. As mentioned above, the Map Chooser
 has been greatly improved, and weather alerts use ESRI Shapefile-format maps.
 
-Under the hood, Xastir has had several major improvements:
+Under the hood, Astir has had several major improvements:
 
 The messaging system has been largely rewritten, and the annoying timed updates
 to dialogs no longer occur. The new messaging system allows multiple messages
-to be queued, and implements reply-ack's for speed. Xastir also attempts to
+to be queued, and implements reply-ack's for speed. Astir also attempts to
 specify a reasonable path for the message based on received messages. This
 improves speed and congestion control. The messaging GUI has been largely
 untouched, and remains high on the list of future improvements.
 
-The build process has been significantly improved; Xastir is now able to be
+The build process has been significantly improved; Astir is now able to be
 built on numerous operating systems with few manual interventions.
 
-Xastir now supports GPSMan/gpsmanshp, allowing the importing of waypoints,
+Astir now supports GPSMan/gpsmanshp, allowing the importing of waypoints,
 tracks, and routes from several types of GPS receivers.  This allows you to
 create ESRI Shapefile-format maps out of GPS data.
 
-Xastir now implements SmartBeaconing(tm), which greatly improves trail quality
+Astir now implements SmartBeaconing(tm), which greatly improves trail quality
 and reduces unneeded channel usage. See the "Configure SmartBeaconing" help
 topic.
 
@@ -3064,30 +3064,30 @@ unless they are on screen. This is a major improvement for map types that did
 not specify this information. Additionally, auto-maps uses this information,
 making it usable even with many maps installed.
 
-Objects controlled by Xastir are now stored in a file, so a restart of Xastir
-will not cause them to be lost. Additionally, Xastir now supports the
+Objects controlled by Astir are now stored in a file, so a restart of Astir
+will not cause them to be lost. Additionally, Astir now supports the
 compressed format for objects and items, which can help reduce RF channel
 congestion. It also gives you better location accuracy of the placed objects.
 See the help topic "Configure Default Operation".
 
-Xastir now drops root privileges when not needed if run setuid root. Please
+Astir now drops root privileges when not needed if run setuid root. Please
 read the information about this in INSTALL; this change provides only
 limited protection.
 
-Xastir now supports using a private colormap with the command-line argument
+Astir now supports using a private colormap with the command-line argument
 "-i". This is recommended for systems running in 8-bit color mode. 
 
 Additionally, several more buffer overruns and other errors were corrected in
-Xastir's data parser, and numerous other bugs have been fixed.
+Astir's data parser, and numerous other bugs have been fixed.
 
-Enjoy the new Xastir!
+Enjoy the new Astir!
 
-HELP-INDEX>What's new in Xastir 1.3
+HELP-INDEX>What's new in Astir 1.3
 
-                    What's new in Xastir 1.3
+                    What's new in Astir 1.3
 
-This latest Xastir release greatly improves on the efficiency and usability of
-Xastir, and adds many helpful and often-requested new features.
+This latest Astir release greatly improves on the efficiency and usability of
+Astir, and adds many helpful and often-requested new features.
 
 .geo files can now have REFRESH tags, to specify how often the file is
 reloaded. This is useful for weather radars and other dynamic images. .geo
@@ -3097,14 +3097,14 @@ a CROP tag to specify a specific region to display.
 Some Opentrac packets are now decoded and displayed. See
 http://opentrac.org/ for more details.
 
-The default main Xastir directory is now /usr/local/share/xastir; please see
+The default main Astir directory is now /usr/local/share/astir; please see
 the upgrade notes in README for migration information. This more closely
 mirrors the behavior of other applications.  If you're installing
 from a binary package (rpm/deb/etc), the default install location
-may be /usr/share/xastir.
+may be /usr/share/astir.
 
-Xastir efficiency has been greatly improved. Changes in data structures and
-timing values have made this Xastir release the most efficient yet.
+Astir efficiency has been greatly improved. Changes in data structures and
+timing values have made this Astir release the most efficient yet.
 Additionally, map redraw sequences are interruptible, so map panning speed
 has been improved.
 

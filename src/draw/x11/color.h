@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -21,8 +21,8 @@
  * Look at the README for more information on the program.
  */
 
-#ifndef XASTIR_COLOR_H
-#define XASTIR_COLOR_H
+#ifndef ASTIR_COLOR_H
+#define ASTIR_COLOR_H
 
 #define MAX_COLORS 256
 
@@ -50,5 +50,5 @@ extern Pixel GetPixelByName(Widget w, char *colorname);
 extern void setup_visual_info(Display* dpy, int scr);
 extern void pack_pixel_bits(unsigned short r, unsigned short g, unsigned short b, unsigned long* pixel);
 
-#endif /* XASTIR_COLOR_H */
+#endif /* ASTIR_COLOR_H */
 

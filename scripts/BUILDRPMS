@@ -3,12 +3,12 @@
 
 # This is an example script used by one of the developers to ease
 # the workload.  It's not intended to be used by the general
-# userbase.  It's included with the Xastir sources so that it
+# userbase.  It's included with the Astir sources so that it
 # doesn't get lost if the developer should suddenly drop out of
 # sight.
 
 
-# Run this as root from the xastir source directory (top-level).
+# Run this as root from the astir source directory (top-level).
 # It runs some # of the below commands as "archer", others as "root".
 # When the build is complete it copies the RPM files to the Wetnet server.
 
@@ -21,9 +21,9 @@ echo
 echo "***********************************"
 echo "***** Cleaning up Directories *****"
 echo "***********************************"
-rm -rf /usr/src/packages/SOURCES/xastir*
-rm -rf /usr/src/packages/RPMS/x86_64/xastir*
-rm -rf /usr/src/packages/SRPMS/xastir*
+rm -rf /usr/src/packages/SOURCES/astir*
+rm -rf /usr/src/packages/RPMS/x86_64/astir*
+rm -rf /usr/src/packages/SRPMS/astir*
 
 
 
@@ -50,7 +50,7 @@ su -c " ./bootstrap.sh; ./configure CPPFLAGS='-I/usr/include/libgeotiff'; make c
 
 # Run these commands as "root":
 #
-cp xastir-*.tar.gz /usr/src/packages/SOURCES/.
+cp astir-*.tar.gz /usr/src/packages/SOURCES/.
 
 
 
@@ -64,8 +64,8 @@ echo
 echo "*******************************************"
 echo "***** Creating MINIMUM binary package *****"
 echo "*******************************************"
-(cd /usr/src/packages/SOURCES; tar xzf xastir-*.tar.gz; rpmbuild -bb --clean xastir-2.0.8/xastir-min.spec)
-mv /usr/src/packages/RPMS/x86_64/xastir-2.0.8-1.x86_64.rpm /usr/src/packages/RPMS/x86_64/xastir-2.0.8-min.x86_64.rpm
+(cd /usr/src/packages/SOURCES; tar xzf astir-*.tar.gz; rpmbuild -bb --clean astir-2.0.8/astir-min.spec)
+mv /usr/src/packages/RPMS/x86_64/astir-2.0.8-1.x86_64.rpm /usr/src/packages/RPMS/x86_64/astir-2.0.8-min.x86_64.rpm
 #
 #
 # Build maximum system (all optional libraries included), binary and
@@ -75,8 +75,8 @@ echo
 echo "***************************************************************"
 echo "***** Creating MAXIMUM binary package plus source package *****"
 echo "***************************************************************"
-(cd /usr/src/packages/SOURCES; tar xzf xastir-*.tar.gz; rpmbuild -ba --clean xastir-2.0.8/xastir.spec)
-mv /usr/src/packages/RPMS/x86_64/xastir-2.0.8-1.x86_64.rpm /usr/src/packages/RPMS/x86_64/xastir-2.0.8-max.x86_64.rpm
+(cd /usr/src/packages/SOURCES; tar xzf astir-*.tar.gz; rpmbuild -ba --clean astir-2.0.8/astir.spec)
+mv /usr/src/packages/RPMS/x86_64/astir-2.0.8-1.x86_64.rpm /usr/src/packages/RPMS/x86_64/astir-2.0.8-max.x86_64.rpm
 
 
 
@@ -92,7 +92,7 @@ cp /usr/src/packages/SRPMS/* /usr/tmp/repo/src
 (cd /usr/tmp/repo/src; createrepo .)
 #
 # Create a .tgz of the repo
-(cd /usr/tmp/repo; tar czvf xastir-repo.tgz *)
+(cd /usr/tmp/repo; tar czvf astir-repo.tgz *)
 
 
 
@@ -103,23 +103,23 @@ echo
 echo "**************************************************************"
 echo "***** Copying packages to Wetnet and setting permissions *****"
 echo "**************************************************************"
-#su -c " cd /usr/bin; scp /usr/src/packages/RPMS/x86_64/xastir-2.0.5-max.x86_64.rpm we7u@wetnet.net:/home/we7u/public_html/Downloads/aprs/xastir/SUSE-RPM/SuSE-12.1/x86_64/." archer
-#su -c " cd /usr/bin; scp /usr/src/packages/RPMS/x86_64/xastir-2.0.5-min.x86_64.rpm we7u@wetnet.net:/home/we7u/public_html/Downloads/aprs/xastir/SUSE-RPM/SuSE-12.1/x86_64/." archer
-#su -c " cd /usr/bin; scp /usr/src/packages/SRPMS/xastir-2.0.5-1.src.rpm we7u@wetnet.net:/home/we7u/public_html/Downloads/aprs/xastir/SUSE-RPM/SuSE-12.1/src/." archer
-#su -c " cd /usr/bin; ssh -l we7u wetnet.net 'chmod 644 /home/we7u/public_html/Downloads/aprs/xastir/SUSE-RPM/SuSE-12.1/x86_64/*.rpm'" archer
-#su -c " cd /usr/bin; ssh -l we7u wetnet.net 'chmod 644 /home/we7u/public_html/Downloads/aprs/xastir/SUSE-RPM/SuSE-12.1/src/*.rpm'" archer
+#su -c " cd /usr/bin; scp /usr/src/packages/RPMS/x86_64/astir-2.0.5-max.x86_64.rpm we7u@wetnet.net:/home/we7u/public_html/Downloads/aprs/astir/SUSE-RPM/SuSE-12.1/x86_64/." archer
+#su -c " cd /usr/bin; scp /usr/src/packages/RPMS/x86_64/astir-2.0.5-min.x86_64.rpm we7u@wetnet.net:/home/we7u/public_html/Downloads/aprs/astir/SUSE-RPM/SuSE-12.1/x86_64/." archer
+#su -c " cd /usr/bin; scp /usr/src/packages/SRPMS/astir-2.0.5-1.src.rpm we7u@wetnet.net:/home/we7u/public_html/Downloads/aprs/astir/SUSE-RPM/SuSE-12.1/src/." archer
+#su -c " cd /usr/bin; ssh -l we7u wetnet.net 'chmod 644 /home/we7u/public_html/Downloads/aprs/astir/SUSE-RPM/SuSE-12.1/x86_64/*.rpm'" archer
+#su -c " cd /usr/bin; ssh -l we7u wetnet.net 'chmod 644 /home/we7u/public_html/Downloads/aprs/astir/SUSE-RPM/SuSE-12.1/src/*.rpm'" archer
 #
 # Copy the tgz of the repo up to Wetnet:
-su -c " cd /usr/bin; scp /usr/tmp/repo/xastir-repo.tgz we7u@wetnet.net:/home/we7u/public_html/Downloads/aprs/xastir/SUSE-RPM/." archer
+su -c " cd /usr/bin; scp /usr/tmp/repo/astir-repo.tgz we7u@wetnet.net:/home/we7u/public_html/Downloads/aprs/astir/SUSE-RPM/." archer
 #
 # Remove the repodata files so we don't get multiples:
-su -c " cd /usr/bin; ssh -l we7u wetnet.net 'rm -rf /home/we7u/public_html/Downloads/aprs/xastir/SUSE-RPM/SuSE-12.1/x86_64/repodata /home/we7u/public_html/Downloads/aprs/xastir/SUSE-RPM/SuSE-12.1/src/repodata'" archer
+su -c " cd /usr/bin; ssh -l we7u wetnet.net 'rm -rf /home/we7u/public_html/Downloads/aprs/astir/SUSE-RPM/SuSE-12.1/x86_64/repodata /home/we7u/public_html/Downloads/aprs/astir/SUSE-RPM/SuSE-12.1/src/repodata'" archer
 #
 # Untar the repo.  Will merge the files in with our other repo files:
-su -c " cd /usr/bin; ssh -l we7u wetnet.net 'cd /home/we7u/public_html/Downloads/aprs/xastir/SUSE-RPM; tar xzvf xastir-repo.tgz'" archer
+su -c " cd /usr/bin; ssh -l we7u wetnet.net 'cd /home/we7u/public_html/Downloads/aprs/astir/SUSE-RPM; tar xzvf astir-repo.tgz'" archer
 #
 # Remove tgz file:
-su -c " cd /usr/bin; ssh -l we7u wetnet.net 'rm /home/we7u/public_html/Downloads/aprs/xastir/SUSE-RPM/xastir-repo.tgz'" archer
+su -c " cd /usr/bin; ssh -l we7u wetnet.net 'rm /home/we7u/public_html/Downloads/aprs/astir/SUSE-RPM/astir-repo.tgz'" archer
 
 
 
@@ -128,13 +128,13 @@ echo
 echo "***********************************"
 echo "***** Cleaning up build files *****"
 echo "***********************************"
-rm -rf /usr/src/packages/SOURCES/xastir*
-#rm -rf /usr/src/packages/RPMS/x86_64/xastir*
-#rm -rf /usr/src/packages/SRPMS/xastir*
+rm -rf /usr/src/packages/SOURCES/astir*
+#rm -rf /usr/src/packages/RPMS/x86_64/astir*
+#rm -rf /usr/src/packages/SRPMS/astir*
 #rm -rf /usr/tmp/repo
 
 
 
-# NOTE:  Will have to set priority of the new repository to 100 (default is 99) in order to override the OpenSuSE-distributed version of Xastir tends to be older.
+# NOTE:  Will have to set priority of the new repository to 100 (default is 99) in order to override the OpenSuSE-distributed version of Astir tends to be older.
 
 

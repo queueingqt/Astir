@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 2025-2026 The Xastir Group
  *
  * This program is free software; you can redistribute it and/or
@@ -20,8 +20,8 @@
  * Look at the README for more information on the program.
  */
 
-#ifndef XASTIR_GEOCODER_H
-#define XASTIR_GEOCODER_H
+#ifndef ASTIR_GEOCODER_H
+#define ASTIR_GEOCODER_H
 
 
 // Destination marking
@@ -163,4 +163,4 @@ void geocode_format_subtitle(const struct geocode_result *result,
                              char *subtitle,
                              size_t size);
 
-#endif  // XASTIR_GEOCODER_H
+#endif  // ASTIR_GEOCODER_H

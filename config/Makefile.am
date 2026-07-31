@@ -17,7 +17,7 @@ EXTRA_DIST = \
     language-OldeEnglish.sys \
     language-PigLatin.sys \
     language-PirateEnglish.sys \
-    xastir.rgb \
+    astir.rgb \
     gps_wpt.dbfawk \
     24kgrid.dbfawk \
     stored_track.dbfawk \

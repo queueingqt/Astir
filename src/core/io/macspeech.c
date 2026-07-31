@@ -23,7 +23,7 @@
 #include <errno.h>
 #include <Speech.h>
 /* can't include this or X11's Cursor conflicts */
-/* #include "core/xastir.h"*/
+/* #include "core/astir.h"*/
 #include "core/util/snprintf.h"
 
 // Must be last include file
@@ -64,7 +64,7 @@ int SayText(char *text)
 
   //fprintf(stderr,"Speaking: %s\n",text);
 
-  xastir_snprintf(last_speech_text,
+  astir_snprintf(last_speech_text,
                   sizeof(last_speech_text),
                   "%s",
                   text);

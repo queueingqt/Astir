@@ -37,7 +37,7 @@
 // symbol in the tree.
 extern int debug_level;
 
-// The current view, in Xastir coordinates (1/100 second units).  Updated by
+// The current view, in Astir coordinates (1/100 second units).  Updated by
 // create_image() and refresh_image() as the map is panned and zoomed.
 extern long center_longitude;       // Longitude at center of map
 extern long center_latitude;        // Latitude  at center of map

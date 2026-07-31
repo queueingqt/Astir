@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -87,9 +87,9 @@ size_t curl_fwrite(void *buffer, size_t size, size_t nmemb, void *stream)
 }
 
 /*
- * xastir_curl_init - create curl session with common options
+ * astir_curl_init - create curl session with common options
  */
-CURL *xastir_curl_init(char *errBuf)
+CURL *astir_curl_init(char *errBuf)
 {
   CURL *mySession;
   char agent_string[15];
@@ -109,7 +109,7 @@ CURL *xastir_curl_init(char *errBuf)
 
     curl_easy_setopt(mySession, CURLOPT_ERRORBUFFER, errBuf);
 
-    xastir_snprintf(agent_string, sizeof(agent_string),"Xastir");
+    astir_snprintf(agent_string, sizeof(agent_string),"Astir");
     curl_easy_setopt(mySession, CURLOPT_USERAGENT, agent_string);
 
     // write function
@@ -151,7 +151,7 @@ CURL *xastir_curl_init(char *errBuf)
   }
 
   return(mySession);
-} // xastir_curl_init()
+} // astir_curl_init()
 
 /*
  * fetch_remote_tile - downloads file using an open curl session
@@ -196,7 +196,7 @@ int fetch_remote_file(char *fileimg, char *local_filename)
 
 //fprintf(stderr, "Fetching remote file: %s\n", fileimg);
 
-  curl = xastir_curl_init(curlerr);
+  curl = astir_curl_init(curlerr);
 
   if (curl)
   {
@@ -248,9 +248,9 @@ int fetch_remote_file(char *fileimg, char *local_filename)
 
   char tempfile[500];
 
-  //"%s --server-response --timestamping --user-agent=Xastir --tries=1 --timeout=%d --output-document=%s \'%s\' 2> /dev/null\n",
-  xastir_snprintf(tempfile, sizeof(tempfile),
-                  "%s --server-response --user-agent=Xastir --tries=1 --timeout=%d --output-document=%s \'%s\' 2> /dev/null\n",
+  //"%s --server-response --timestamping --user-agent=Astir --tries=1 --timeout=%d --output-document=%s \'%s\' 2> /dev/null\n",
+  astir_snprintf(tempfile, sizeof(tempfile),
+                  "%s --server-response --user-agent=Astir --tries=1 --timeout=%d --output-document=%s \'%s\' 2> /dev/null\n",
                   WGET_PATH,
                   net_map_timeout,
                   local_filename,

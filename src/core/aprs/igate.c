@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -39,7 +39,7 @@
 // removed: #include <X11/Xatom.h>   (no longer needed here)
 // removed: #include <X11/Shell.h>   (no longer needed here)
 
-#include "core/xastir.h"
+#include "core/astir.h"
 #include "core/aprs/igate.h"
 #include "core/main.h"
 #include "core/aprs/db_funcs.h"
@@ -109,7 +109,7 @@ DupeRecord  *sent_queue[MAX_IFACE_DEVICES];
 
 
 // Initialization routine for this module which sets up the queue
-// pointers when Xastir first starts.  Called from main.c:main()
+// pointers when Astir first starts.  Called from main.c:main()
 //
 void igate_init(void)
 {
@@ -231,7 +231,7 @@ int not_a_dupe(int queue_type, int port, char *line, int insert_mode)
         fprintf(stderr,"3rd party HeardQ: %s\n",line);
       }
 
-      xastir_snprintf(line2,
+      astir_snprintf(line2,
                       sizeof(line2),
                       "%s",
                       c0+1);
@@ -246,7 +246,7 @@ int not_a_dupe(int queue_type, int port, char *line, int insert_mode)
 
       // No extra changes needed before parsing code, Example:
       // }VE7VFM-11>APW251,TCPIP,WE7U-14*::VE7VFM-9 :OK GOT EMAIL OK{058
-      xastir_snprintf(line2,
+      astir_snprintf(line2,
                       sizeof(line2),
                       "%s",
                       line);
@@ -277,7 +277,7 @@ int not_a_dupe(int queue_type, int port, char *line, int insert_mode)
   {
 
     // Copy source/destination portion
-    xastir_snprintf(match_line,
+    astir_snprintf(match_line,
                     sizeof(match_line),
                     "%s",
                     line2);
@@ -289,7 +289,7 @@ int not_a_dupe(int queue_type, int port, char *line, int insert_mode)
   }
   else    // At least one separator was not found, copy entire string
   {
-    xastir_snprintf(match_line,
+    astir_snprintf(match_line,
                     sizeof(match_line),
                     "%s",
                     line2);
@@ -568,7 +568,7 @@ void output_igate_net(char *line, int port, int third_party)
     return;
   }
 
-  xastir_snprintf(temp,
+  astir_snprintf(temp,
                   sizeof(temp),
                   "%s",
                   line);
@@ -610,14 +610,14 @@ void output_igate_net(char *line, int port, int third_party)
     if (xa_log[XA_LOG_IGATE].enabled && (debug_level & 1024) )
     {
 
-      xastir_snprintf(temp,
+      astir_snprintf(temp,
                       sizeof(temp),
                       "IGATE RF->NET(%c):%s\n",
                       third_party ? 'T':'N',
                       line);
       log_data( log_file_path, temp );
 
-      xastir_snprintf(temp,
+      astir_snprintf(temp,
                       sizeof(temp),
                       "REJECT: Packet was gated before or shouldn't be gated!\n");
       log_data( log_file_path, temp );
@@ -643,14 +643,14 @@ void output_igate_net(char *line, int port, int third_party)
     if (xa_log[XA_LOG_IGATE].enabled && (debug_level & 1024) )
     {
 
-      xastir_snprintf(temp,
+      astir_snprintf(temp,
                       sizeof(temp),
                       "IGATE RF->NET(%c):%s\n",
                       third_party ? 'T':'N',
                       line);
       log_data( log_file_path, temp );
 
-      xastir_snprintf(temp,
+      astir_snprintf(temp,
                       sizeof(temp),
                       "REJECT: Third party traffic!\n");
       log_data( log_file_path, temp );
@@ -674,14 +674,14 @@ void output_igate_net(char *line, int port, int third_party)
     if (xa_log[XA_LOG_IGATE].enabled && (debug_level & 1024) )
     {
 
-      xastir_snprintf(temp,
+      astir_snprintf(temp,
                       sizeof(temp),
                       "IGATE RF->NET(%c):%s\n",
                       third_party ? 'T':'N',
                       line);
       log_data( log_file_path, temp );
 
-      xastir_snprintf(temp,
+      astir_snprintf(temp,
                       sizeof(temp),
                       "REJECT: General Query!\n");
       log_data( log_file_path, temp );
@@ -710,14 +710,14 @@ void output_igate_net(char *line, int port, int third_party)
     if (xa_log[XA_LOG_IGATE].enabled && (debug_level & 1024) )
     {
 
-      xastir_snprintf(temp,
+      astir_snprintf(temp,
                       sizeof(temp),
                       "IGATE RF->NET(%c):%s\n",
                       third_party ? 'T':'N',
                       line);
       log_data( log_file_path, temp );
 
-      xastir_snprintf(temp,
+      astir_snprintf(temp,
                       sizeof(temp),
                       "REJECT: From my call!\n");
       log_data( log_file_path, temp );
@@ -775,14 +775,14 @@ void output_igate_net(char *line, int port, int third_party)
     if (xa_log[XA_LOG_IGATE].enabled && (debug_level & 1024) )
     {
 
-      xastir_snprintf(temp,
+      astir_snprintf(temp,
                       sizeof(temp),
                       "IGATE RF->NET(%c):%s\n",
                       third_party ? 'T':'N',
                       line);
       log_data( log_file_path, temp );
 
-      xastir_snprintf(temp,
+      astir_snprintf(temp,
                       sizeof(temp),
                       "REJECT: No RF->NET from input port [%d]!\n",
                       port);
@@ -793,7 +793,7 @@ void output_igate_net(char *line, int port, int third_party)
     return;
   }
 
-  xastir_snprintf(data_txt,
+  astir_snprintf(data_txt,
                   sizeof(data_txt),
                   "%s%c%c",
                   line,
@@ -822,7 +822,7 @@ void output_igate_net(char *line, int port, int third_party)
         // log traffic for the first "up" interface only
         if (xa_log[XA_LOG_IGATE].enabled && first)
         {
-          xastir_snprintf(temp,
+          astir_snprintf(temp,
                           sizeof(temp),
                           "IGATE RF->NET(%c):%s\n",
                           third_party ? 'T':'N',
@@ -834,7 +834,7 @@ void output_igate_net(char *line, int port, int third_party)
 
         // Now log the interface that each bit of traffic
         // goes out on.
-        xastir_snprintf(temp,
+        astir_snprintf(temp,
                         sizeof(temp),
                         "TRANSMIT: IGate RF->NET packet on device:%d\n",
                         x);
@@ -911,14 +911,14 @@ void output_igate_rf(char *from, char *call, char *path, char *line,
     // "NOGATE" was found in the header.  Don't gate it.
     if (xa_log[XA_LOG_IGATE].enabled && (debug_level & 1024) )
     {
-      xastir_snprintf(temp,
+      astir_snprintf(temp,
                       sizeof(temp),
                       "IGATE NET->RF(%c):%s\n",
                       third_party ? 'T':'N',
                       line);
       log_data( log_file_path, temp );
 
-      xastir_snprintf(temp,
+      astir_snprintf(temp,
                       sizeof(temp),
                       "REJECT: NOGATE found in path or shouldn't be gated!\n");
       log_data( log_file_path, temp );
@@ -939,14 +939,14 @@ void output_igate_rf(char *from, char *call, char *path, char *line,
 
     if (xa_log[XA_LOG_IGATE].enabled && (debug_level & 1024) )
     {
-      xastir_snprintf(temp,
+      astir_snprintf(temp,
                       sizeof(temp),
                       "IGATE NET->RF(%c):%s\n",
                       third_party ? 'T':'N',
                       line);
       log_data( log_file_path, temp );
 
-      xastir_snprintf(temp,
+      astir_snprintf(temp,
                       sizeof(temp),
                       "REJECT: General Query!\n");
       log_data( log_file_path, temp );
@@ -1018,14 +1018,14 @@ void output_igate_rf(char *from, char *call, char *path, char *line,
 
       if (xa_log[XA_LOG_IGATE].enabled && (debug_level & 1024) )
       {
-        xastir_snprintf(temp,
+        astir_snprintf(temp,
                         sizeof(temp),
                         "IGATE NET->RF(%c):%s\n",
                         third_party ? 'T':'N',
                         line);
         log_data( log_file_path, temp );
 
-        xastir_snprintf(temp,
+        astir_snprintf(temp,
                         sizeof(temp),
                         "REJECT: Unregistered net user!\n");
         log_data( log_file_path, temp );
@@ -1059,7 +1059,7 @@ void output_igate_rf(char *from, char *call, char *path, char *line,
 
     if (xa_log[XA_LOG_IGATE].enabled && (debug_level & 1024) )
     {
-      xastir_snprintf(temp,
+      astir_snprintf(temp,
                       sizeof(temp),
                       "IGATE NET->RF(%c):%s\n",
                       third_party ? 'T':'N',
@@ -1071,12 +1071,12 @@ void output_igate_rf(char *from, char *call, char *path, char *line,
       // !heard(call), !heard(from) : Destination/source not heard on TNC
 
       if (!heard_via_tnc_in_past_hour(call))
-        xastir_snprintf(temp,
+        astir_snprintf(temp,
                         sizeof(temp),
                         "REJECT: Destination not heard on TNC within an hour %s!\n",
                         call );
       else
-        xastir_snprintf(temp,
+        astir_snprintf(temp,
                         sizeof(temp),
                         "REJECT: RF->RF talk!\n");
       log_data( log_file_path, temp );
@@ -1132,7 +1132,7 @@ void output_igate_rf(char *from, char *call, char *path, char *line,
             // log traffic for first "up" interface only
             if (xa_log[XA_LOG_IGATE].enabled && first)
             {
-              xastir_snprintf(temp,
+              astir_snprintf(temp,
                               sizeof(temp),
                               "IGATE NET->RF(%c):%s\n",
                               third_party ? 'T':'N',
@@ -1141,7 +1141,7 @@ void output_igate_rf(char *from, char *call, char *path, char *line,
               first = 0;
             }
 
-            xastir_snprintf(temp,
+            astir_snprintf(temp,
                             sizeof(temp),
                             "TRANSMIT: IGate NET->RF packet on device:%d\n",
                             x);
@@ -1175,14 +1175,14 @@ void output_igate_rf(char *from, char *call, char *path, char *line,
           {
             if (xa_log[XA_LOG_IGATE].enabled && (debug_level & 1024) )
             {
-              xastir_snprintf(temp,
+              astir_snprintf(temp,
                               sizeof(temp),
                               "IGATE NET->RF(%c):%s\n",
                               third_party ? 'T':'N',
                               line);
               log_data( log_file_path, temp );
 
-              xastir_snprintf(temp,
+              astir_snprintf(temp,
                               sizeof(temp),
                               "REJECT: NET->RF on port [%d]!\n",
                               x);
@@ -1425,14 +1425,14 @@ void output_nws_igate_rf(char *from, char *path, char *line, int port, int third
     // unregistered user.
     if (xa_log[XA_LOG_IGATE].enabled && (debug_level & 1024) )
     {
-      xastir_snprintf(temp,
+      astir_snprintf(temp,
                       sizeof(temp),
                       "NWS IGATE NET->RF(%c):%s\n",
                       third_party ? 'T':'N',
                       line);
       log_data( log_file_path, temp );
 
-      xastir_snprintf(temp,
+      astir_snprintf(temp,
                       sizeof(temp),
                       "REJECT: Unregistered net user!\n");
       log_data( log_file_path, temp );
@@ -1449,14 +1449,14 @@ void output_nws_igate_rf(char *from, char *path, char *line, int port, int third
     // "NOGATE" was found in the header.  Don't gate it.
     if (xa_log[XA_LOG_IGATE].enabled && (debug_level & 1024) )
     {
-      xastir_snprintf(temp,
+      astir_snprintf(temp,
                       sizeof(temp),
                       "NWS IGATE NET->RF(%c):%s\n",
                       third_party ? 'T':'N',
                       line);
       log_data( log_file_path, temp );
 
-      xastir_snprintf(temp,
+      astir_snprintf(temp,
                       sizeof(temp),
                       "REJECT: NOGATE found in path!\n");
       log_data( log_file_path, temp );
@@ -1470,14 +1470,14 @@ void output_nws_igate_rf(char *from, char *path, char *line, int port, int third
   {
     if (xa_log[XA_LOG_IGATE].enabled && (debug_level & 1024) )
     {
-      xastir_snprintf(temp,
+      astir_snprintf(temp,
                       sizeof(temp),
                       "NWS IGATE NET->RF(%c):%s\n",
                       third_party ? 'T':'N',
                       line);
       log_data( log_file_path, temp );
 
-      xastir_snprintf(temp,
+      astir_snprintf(temp,
                       sizeof(temp),
                       "REJECT: No nws-stations.txt file!\n");
       log_data( log_file_path, temp );
@@ -1500,14 +1500,14 @@ void output_nws_igate_rf(char *from, char *path, char *line, int port, int third
 
     if (xa_log[XA_LOG_IGATE].enabled && (debug_level & 1024) )
     {
-      xastir_snprintf(temp,
+      astir_snprintf(temp,
                       sizeof(temp),
                       "NWS IGATE NET->RF(%c):%s\n",
                       third_party ? 'T':'N',
                       line);
       log_data( log_file_path, temp );
 
-      xastir_snprintf(temp,
+      astir_snprintf(temp,
                       sizeof(temp),
                       "REJECT: No matching station in nws-stations.txt file!\n");
       log_data( log_file_path, temp );
@@ -1558,7 +1558,7 @@ void output_nws_igate_rf(char *from, char *path, char *line, int port, int third
             // log traffic for first "up" interface only
             if (xa_log[XA_LOG_IGATE].enabled && first)
             {
-              xastir_snprintf(temp,
+              astir_snprintf(temp,
                               sizeof(temp),
                               "NWS IGATE NET->RF(%c):%s\n",
                               third_party ? 'T':'N',
@@ -1567,7 +1567,7 @@ void output_nws_igate_rf(char *from, char *path, char *line, int port, int third
               first = 0;
             }
 
-            xastir_snprintf(temp,
+            astir_snprintf(temp,
                             sizeof(temp),
                             "TRANSMIT: IGate NET->RF packet on device:%d\n",
                             x);
@@ -1599,14 +1599,14 @@ void output_nws_igate_rf(char *from, char *path, char *line, int port, int third
           {
             if (xa_log[XA_LOG_IGATE].enabled && (debug_level & 1024) )
             {
-              xastir_snprintf(temp,
+              astir_snprintf(temp,
                               sizeof(temp),
                               "NWS IGATE NET->RF(%c):%s\n",
                               third_party ? 'T':'N',
                               line);
               log_data( log_file_path, temp );
 
-              xastir_snprintf(temp,
+              astir_snprintf(temp,
                               sizeof(temp),
                               "REJECT: NET->RF on port [%d]!\n",
                               x);

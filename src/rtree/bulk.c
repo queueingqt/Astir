@@ -1,7 +1,7 @@
 /*
- * bulk.c -- Sort-Tile-Recursive (STR) bulk loading for the Xastir RTree.
+ * bulk.c -- Sort-Tile-Recursive (STR) bulk loading for the Astir RTree.
  *
- * Building an index by repeated Xastir_RTreeInsertRect() is expensive: every
+ * Building an index by repeated Astir_RTreeInsertRect() is expensive: every
  * insert descends the tree, may split nodes, and allocates as it goes.
  * Measured on 2026-07-28 with 333,890 shapes across 14 map files, index
  * construction took 4342.7 ms, of which only 352.3 ms was reading the shape
@@ -14,10 +14,10 @@
  *   3. sort each slice by y centre and fill nodes to capacity
  *   4. treat the resulting nodes as entries and repeat until one node remains
  *
- * The result is a valid RTree for Xastir_RTreeSearch(): leaves are level 0 with
+ * The result is a valid RTree for Astir_RTreeSearch(): leaves are level 0 with
  * branch[i].child holding the data id, internal nodes are level+1 with
  * branch[i].rect covering the child.  Unused branches keep the NULL child that
- * Xastir_RTreeInitNode() leaves, which is what the search tests.
+ * Astir_RTreeInitNode() leaves, which is what the search tests.
  *
  * The tree is not rebalanced afterwards and is not intended to be inserted
  * into; it is built once from a complete set of rectangles.
@@ -92,7 +92,7 @@ static int xa_ceil_div(int a, int b)
 static int xa_pack_level(struct xa_bulk_entry *in, int n, int level,
                          struct xa_bulk_entry *out)
 {
-  int capacity = (level == 0) ? Xastir_LEAFCARD : Xastir_NODECARD;
+  int capacity = (level == 0) ? Astir_LEAFCARD : Astir_NODECARD;
   int nodes_needed, slices, per_slice;
   int i, produced = 0;
 
@@ -126,7 +126,7 @@ static int xa_pack_level(struct xa_bulk_entry *in, int n, int level,
     for (j = 0; j < slice_n; j += capacity)
     {
       int fill = (slice_n - j < capacity) ? (slice_n - j) : capacity;
-      struct Node *node = Xastir_RTreeNewNode();
+      struct Node *node = Astir_RTreeNewNode();
       struct Rect cover;
       int k;
 
@@ -136,13 +136,13 @@ static int xa_pack_level(struct xa_bulk_entry *in, int n, int level,
       }
       node->level = level;
       node->count = fill;
-      cover = Xastir_RTreeNullRect();
+      cover = Astir_RTreeNullRect();
 
       for (k = 0; k < fill; k++)
       {
         node->branch[k].rect  = in[i + j + k].rect;
         node->branch[k].child = (struct Node *)in[i + j + k].child;
-        cover = Xastir_RTreeCombineRect(&cover, &(in[i + j + k].rect));
+        cover = Astir_RTreeCombineRect(&cover, &(in[i + j + k].rect));
       }
 
       out[produced].rect  = cover;
@@ -156,7 +156,7 @@ static int xa_pack_level(struct xa_bulk_entry *in, int n, int level,
 
 // Build a complete tree from n (rect, id) pairs.  Returns the root, or NULL.
 // The caller retains ownership of the input arrays.
-struct Node *Xastir_RTreeBulkLoad(struct Rect *rects, void **ids, int n)
+struct Node *Astir_RTreeBulkLoad(struct Rect *rects, void **ids, int n)
 {
   struct xa_bulk_entry *cur, *next;
   struct Node *root;
@@ -164,7 +164,7 @@ struct Node *Xastir_RTreeBulkLoad(struct Rect *rects, void **ids, int n)
 
   if (n <= 0)
   {
-    return Xastir_RTreeNewIndex();
+    return Astir_RTreeNewIndex();
   }
 
   cur  = (struct xa_bulk_entry *)malloc((size_t)n * sizeof(struct xa_bulk_entry));

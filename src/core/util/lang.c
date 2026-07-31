@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -42,7 +42,7 @@
 #endif // HAVE_SYS_TIME_H
 #include <time.h>
 
-#include "core/xastir.h"
+#include "core/astir.h"
 #include "core/util/lang.h"
 
 // Must be last include file
@@ -70,11 +70,11 @@ char *langcode(char *code)
   // Create an invalid code string to return in case we can't find the proper string
   if (strlen(code) <= MAX_LANG_CODE)      // Code is ok
   {
-    xastir_snprintf(invalid_code, sizeof(invalid_code), "IC>%s", code);
+    astir_snprintf(invalid_code, sizeof(invalid_code), "IC>%s", code);
   }
   else    // Code is too long
   {
-    xastir_snprintf(invalid_code, sizeof(invalid_code), "IC>TOO LONG:%s",code);
+    astir_snprintf(invalid_code, sizeof(invalid_code), "IC>TOO LONG:%s",code);
     fprintf(stderr,"IC>TOO LONG:%s\n",code);
     return(invalid_code);
   }
@@ -198,7 +198,7 @@ int load_language_file(char *filename)
                       }
                       if(lcok)
                       {
-                        xastir_snprintf(lang_code[lang_code_number],
+                        astir_snprintf(lang_code[lang_code_number],
                                         MAX_LANG_CODE+1,
                                         "%s",
                                         temp_ptr);
@@ -214,7 +214,7 @@ int load_language_file(char *filename)
                           if ((buffer_len+data_len+1)< MAX_LANG_BUFFER)
                           {
                             lang_code_ptr[lang_code_number]=lang_buffer+buffer_len;
-                            xastir_snprintf(lang_buffer+buffer_len,
+                            astir_snprintf(lang_buffer+buffer_len,
                                             MAX_LANG_BUFFER-buffer_len,
                                             "%s",
                                             temp_ptr);

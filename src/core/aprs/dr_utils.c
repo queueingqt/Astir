@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -26,7 +26,7 @@
   #include "config.h"
 #endif  // HAVE_CONFIG_H
 
-// Came in via <X11/Xos.h> until xastir.h/main.h gave up their X includes.
+// Came in via <X11/Xos.h> until astir.h/main.h gave up their X includes.
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
@@ -37,11 +37,11 @@
 
 // Calculate new position based on distance and angle.
 //
-// Input:   lat/long in Xastir coordinate system (100ths of seconds)
+// Input:   lat/long in Astir coordinate system (100ths of seconds)
 //          distance in nautical miles
 //          angle in ° true
 //
-// Outputs: *x_long, *y_lat in Xastir coordinate system (100ths of
+// Outputs: *x_long, *y_lat in Astir coordinate system (100ths of
 //           seconds)
 //
 //
@@ -87,7 +87,7 @@ void compute_DR_position(long x_long,   // input
   bearing_radians = (double)((course/360.0) * 2.0 * M_PI);
 
   // Convert lat/long to floats
-  ret = convert_from_xastir_coordinates( &lon_A,
+  ret = convert_from_astir_coordinates( &lon_A,
                                          &lat_A,
                                          x_long,
                                          y_lat);
@@ -126,7 +126,7 @@ void compute_DR_position(long x_long,   // input
 
 //fprintf(stderr,"Lat:%f,  Lon:%f\n", lat_B, lon_B);
 
-  ret = convert_to_xastir_coordinates(&x_u_long,
+  ret = convert_to_astir_coordinates(&x_u_long,
                                       &y_u_lat,
                                       lon_B,
                                       lat_B);
@@ -157,7 +157,7 @@ void compute_DR_position(long x_long,   // input
 //
 // Input:   *p_station
 //
-// Outputs: *x_long, *y_lat in Xastir coordinate system (100ths of
+// Outputs: *x_long, *y_lat in Astir coordinate system (100ths of
 //           seconds)
 //
 //
@@ -198,7 +198,7 @@ void compute_DR_position(long x_long,   // input
 //    move the object consistently, plus we won't compound errors as
 //    we go.
 //
-// *) A server Xastir sees empty strings on it's server port when
+// *) A server Astir sees empty strings on it's server port when
 //    these objects are transmitted to it.  Investigate.  It
 //    sometimes does it when speed is 0, but it's not consistent.
 //
@@ -281,7 +281,7 @@ void compute_current_DR_position(DataRow *p_station, long *x_long, long *y_lat)
   bearing_radians = (double)((my_course/360.0) * 2.0 * M_PI);
 
   // Convert lat/long to floats
-  ret = convert_from_xastir_coordinates( &lon_A,
+  ret = convert_from_astir_coordinates( &lon_A,
                                          &lat_A,
                                          p_station->coord_lon,
                                          p_station->coord_lat);
@@ -320,7 +320,7 @@ void compute_current_DR_position(DataRow *p_station, long *x_long, long *y_lat)
 
 //fprintf(stderr,"Lat:%f,  Lon:%f\n", lat_B, lon_B);
 
-  ret = convert_to_xastir_coordinates(&x_u_long,
+  ret = convert_to_astir_coordinates(&x_u_long,
                                       &y_u_lat,
                                       lon_B,
                                       lat_B);

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-# This shell script copies Xastir snapshots from the directory in which 
-# they are created ~/.xastir/temp to a directory where a web server can deliver
+# This shell script copies Astir snapshots from the directory in which 
+# they are created ~/.astir/temp to a directory where a web server can deliver
 # them as a kml feed to overlay the current snapshot from on the terrain in a kml
 # capable application that is subscribed to the feed.
 #
@@ -16,13 +16,13 @@
 # application instead of http://www.example.com/tracks/snapshot.kml, and run 
 # this shell script with cron to periodically update the snapshot.kml file.  
 # This should enable your KML application to refresh the snapshots in sync
-# with their creation by Xastir.
+# with their creation by Astir.
 #
 # Note: GE will load jpg files but not png files, so ImageMagick's 
-# convert is used here to convert the snapshot.png produced by Xastir to 
+# convert is used here to convert the snapshot.png produced by Astir to 
 # a snapshot.jpg file.
 #
 DIR=/var/www/htdocs/tracks
-cd ~/.xastir/tmp
+cd ~/.astir/tmp
 convert ./snapshot.png $DIR/snapshot.jpg
 cat snapshot.kml | gawk  -- '  { gsub(/<href>/,"&http://www.example.com/tracks/") } { gsub(/snapshot.png/,"snapshot.jpg") } { print } ' > $DIR/snapshot.kml

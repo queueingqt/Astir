@@ -15,7 +15,7 @@
 #
 #       ./ridge_radar.pl OKX > OKX_NOR.geo
 #
-# Of course you'd typically put the resulting file in your Xastir
+# Of course you'd typically put the resulting file in your Astir
 # maps directory and reindex maps to make it available for use.
 
 

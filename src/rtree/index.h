@@ -1,6 +1,6 @@
 /* -*- c-basic-offset: 4; indent-tabs-mode: nil -*-
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -99,36 +99,36 @@ struct ListNode
 typedef int (*SearchHitCallback)(void *id, struct Rect *rect, void* arg);
 
 
-extern int Xastir_RTreeSearch(struct Node*, struct Rect*, SearchHitCallback, void*);
-extern int Xastir_RTreeInsertRect(struct Rect*, void *, struct Node**, int depth);
+extern int Astir_RTreeSearch(struct Node*, struct Rect*, SearchHitCallback, void*);
+extern int Astir_RTreeInsertRect(struct Rect*, void *, struct Node**, int depth);
 
 // Build a tree in one pass from a complete set of rectangles (STR packing).
-extern struct Node *Xastir_RTreeBulkLoad(struct Rect *rects, void **ids, int n);
-extern int Xastir_RTreeDeleteRect(struct Rect*, void *, struct Node**);
-extern struct Node * Xastir_RTreeNewIndex(void);
-extern struct Node * Xastir_RTreeNewNode(void);
-extern void Xastir_RTreeInitNode(struct Node*);
-extern void Xastir_RTreeFreeNode(struct Node *);
-extern void Xastir_RTreePrintNode(struct Node *, int);
-extern void Xastir_RTreeDestroyNode(struct Node*);
-extern void Xastir_RTreeTabIn(int);
-extern struct Rect Xastir_RTreeNodeCover(struct Node *);
-extern void Xastir_RTreeInitRect(struct Rect*);
-extern struct Rect Xastir_RTreeNullRect(void);
-extern RectReal Xastir_RTreeRectArea(struct Rect*);
-extern RectReal Xastir_RTreeRectSphericalVolume(struct Rect *R);
-extern RectReal Xastir_RTreeRectVolume(struct Rect *R);
-extern struct Rect Xastir_RTreeCombineRect(struct Rect*, struct Rect*);
-extern int Xastir_RTreeOverlap(struct Rect*, struct Rect*);
-extern void Xastir_RTreePrintRect(struct Rect*, int);
-extern int Xastir_RTreeAddBranch(struct Branch *, struct Node *, struct Node **);
-extern int Xastir_RTreePickBranch(struct Rect *, struct Node *);
-extern void Xastir_RTreeDisconnectBranch(struct Node *, int);
-extern void Xastir_RTreeSplitNode(struct Node*, struct Branch*, struct Node**);
+extern struct Node *Astir_RTreeBulkLoad(struct Rect *rects, void **ids, int n);
+extern int Astir_RTreeDeleteRect(struct Rect*, void *, struct Node**);
+extern struct Node * Astir_RTreeNewIndex(void);
+extern struct Node * Astir_RTreeNewNode(void);
+extern void Astir_RTreeInitNode(struct Node*);
+extern void Astir_RTreeFreeNode(struct Node *);
+extern void Astir_RTreePrintNode(struct Node *, int);
+extern void Astir_RTreeDestroyNode(struct Node*);
+extern void Astir_RTreeTabIn(int);
+extern struct Rect Astir_RTreeNodeCover(struct Node *);
+extern void Astir_RTreeInitRect(struct Rect*);
+extern struct Rect Astir_RTreeNullRect(void);
+extern RectReal Astir_RTreeRectArea(struct Rect*);
+extern RectReal Astir_RTreeRectSphericalVolume(struct Rect *R);
+extern RectReal Astir_RTreeRectVolume(struct Rect *R);
+extern struct Rect Astir_RTreeCombineRect(struct Rect*, struct Rect*);
+extern int Astir_RTreeOverlap(struct Rect*, struct Rect*);
+extern void Astir_RTreePrintRect(struct Rect*, int);
+extern int Astir_RTreeAddBranch(struct Branch *, struct Node *, struct Node **);
+extern int Astir_RTreePickBranch(struct Rect *, struct Node *);
+extern void Astir_RTreeDisconnectBranch(struct Node *, int);
+extern void Astir_RTreeSplitNode(struct Node*, struct Branch*, struct Node**);
 
-extern int Xastir_RTreeSetNodeMax(int);
-extern int Xastir_RTreeSetLeafMax(int);
-extern int Xastir_RTreeGetNodeMax(void);
-extern int Xastir_RTreeGetLeafMax(void);
+extern int Astir_RTreeSetNodeMax(int);
+extern int Astir_RTreeSetLeafMax(int);
+extern int Astir_RTreeGetNodeMax(void);
+extern int Astir_RTreeGetLeafMax(void);
 
 #endif /* _INDEX_ */

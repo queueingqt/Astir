@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 2025-2026 The Xastir Group
  *
  * This program is free software; you can redistribute it and/or
@@ -60,7 +60,7 @@ int debug_level = 0xfff;
 char aprs_station_message_type = '!';
 
 ioparam devices[MAX_IFACE_DEVICES];
-xastir_mutex devices_lock;
+astir_mutex devices_lock;
 
 #define VERSIONFRM "APX999"
 
@@ -270,13 +270,13 @@ const char *mock_get_last_popup_message(void)
 
 /* Mock implementations of external functions */
 
-int begin_critical_section(xastir_mutex *lock, char *msg)
+int begin_critical_section(astir_mutex *lock, char *msg)
 {
   /* Mock - return 0 to indicate success */
   return 0;
 }
 
-int end_critical_section(xastir_mutex *lock, char *msg)
+int end_critical_section(astir_mutex *lock, char *msg)
 {
   /* Mock - return 0 to indicate success */
   return 0;
@@ -306,7 +306,7 @@ char *langcode(char *code)
   return (char *)code;
 }
 
-int xastir_snprintf(char *str, size_t size, const char *format, ...)
+int astir_snprintf(char *str, size_t size, const char *format, ...)
 {
   va_list args;
   int result;
@@ -421,7 +421,7 @@ char *get_user_base_dir(char *dir, char *path, size_t pathsize)
 char gpgga_save_string[MAX_LINE_SIZE+1] = "";
 char gprmc_save_string[MAX_LINE_SIZE+1] = "";
 int gps_port_save = 0;
-void init_critical_section(xastir_mutex *lock){}
+void init_critical_section(astir_mutex *lock){}
 
 int isGGA(char *line) { (void)line; return 0; }
 int isRMC(char *line) { (void)line; return 0; }
@@ -432,7 +432,7 @@ void log_data(char *file, char *line)
 int log_net_data = 0;
 int log_tnc_data = 0;
 int my_position_valid = 0;
-int pipe_xastir_to_tcp_server = 0;
+int pipe_astir_to_tcp_server = 0;
 void popup_message(char *title, char *message)
 {
   popup_count++;

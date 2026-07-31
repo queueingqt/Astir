@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -21,8 +21,8 @@
  * Look at the README for more information on the program.
  */
 
-#ifndef XASTIR_OBJECTS_GUI_H
-#define XASTIR_OBJECTS_GUI_H
+#ifndef ASTIR_OBJECTS_GUI_H
+#define ASTIR_OBJECTS_GUI_H
 
 #include <X11/Intrinsic.h>
 #include <stdint.h>
@@ -55,7 +55,7 @@ extern char last_obj_sym;
 // number_of_predefined_objects holds the actual number of predefined
 // objects available to display on the Create/Move popup menu.
 extern int number_of_predefined_objects;
-// File name of ~/.xastir/config file containing definitions for
+// File name of ~/.astir/config file containing definitions for
 // a predefined object menu.
 extern char predefined_object_definition_filename[256];
 // Flag to indicate whether or not to load the predefined objects menu

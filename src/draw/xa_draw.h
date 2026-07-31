@@ -92,7 +92,7 @@ typedef struct
 #define XA_SHAPE_NONCONVEX   1
 #define XA_SHAPE_CONVEX      2
 
-// Raster ops.  Only the two Xastir actually uses are exposed.
+// Raster ops.  Only the two Astir actually uses are exposed.
 #define XA_FUNC_COPY         3   /* GXcopy */
 #define XA_FUNC_XOR          6   /* GXxor  */
 
@@ -211,7 +211,7 @@ void xa_draw_text_rotated(xa_surface_id dst, xa_pen pen, xa_font f,
  * alignment and an optional outline.
  *
  * This is the interface the tree actually needs, and the reason it is separate
- * from the handle-based calls above is worth recording.  Xastir has TWO text
+ * from the handle-based calls above is worth recording.  Astir has TWO text
  * implementations selected by HAVE_CAIRO: Cairo, which takes a font spec string
  * and needs no font handle at all, and the older xvertext path, which needs a
  * loaded XFontStruct.  Both were open-coded at the call sites, so every caller
@@ -487,8 +487,8 @@ void xa_draw_string(xa_surface_id dst, xa_pen pen,
  * are defined by the backend (xa_draw_x11.c) and every core drawing site passes
  * them straight to the calls above.
  *
- * They were declared in `xastir.h` and `main.h` as `Pixmap`, `GC` and `Pixel`,
- * which is why `xastir.h` needed <X11/Intrinsic.h> and therefore why every core
+ * They were declared in `astir.h` and `main.h` as `Pixmap`, `GC` and `Pixel`,
+ * which is why `astir.h` needed <X11/Intrinsic.h> and therefore why every core
  * file in the tree got X11 whether it wanted it or not.  Declared here in the
  * neutral types instead, which is what the call sites already treat them as --
  * no core file ever passed one of these to an Xlib function.

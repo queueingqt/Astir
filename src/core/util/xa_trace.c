@@ -1,6 +1,6 @@
 /*
  * xa_trace.c -- deterministic operation log.  See xa_trace.h for why it exists
- * and what it must never record.  Inert unless XASTIR_TRACE is set.
+ * and what it must never record.  Inert unless ASTIR_TRACE is set.
  */
 
 #ifdef HAVE_CONFIG_H
@@ -22,7 +22,7 @@ int xa_trace_enabled(void)
 {
   if (trace_on < 0)
   {
-    const char *path = getenv("XASTIR_TRACE");
+    const char *path = getenv("ASTIR_TRACE");
 
     trace_on = 0;
     if (path && *path)
@@ -58,7 +58,7 @@ void xa_trace(const char *fmt, ...)
   va_end(ap);
   fputc('\n', trace_fp);
 
-  // Flushed per record on purpose.  The snapshot harness stops Xastir with
+  // Flushed per record on purpose.  The snapshot harness stops Astir with
   // SIGTERM and escalates to SIGKILL, so anything still buffered is lost -- and
   // a trace truncated at an arbitrary point would diff as a real difference.
   fflush(trace_fp);

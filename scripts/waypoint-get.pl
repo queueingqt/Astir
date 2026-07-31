@@ -19,9 +19,9 @@
 #
 
 # This script will ask for a name, then create a file
-# with that name + ".log" in the ~/.xastir/logs directory.  The
+# with that name + ".log" in the ~/.astir/logs directory.  The
 # file will contain APRS items created from the downloaded Garmin
-# waypoints.  Reading that log file with Xastir will result in one
+# waypoints.  Reading that log file with Astir will result in one
 # item appearing on the map screen for each waypoint, labeled with
 # the name of that waypoint.
 
@@ -50,7 +50,7 @@ if (length($name) < 1) {
   die "Must be at least one character!\n";
 }
 
-$filename = "~/.xastir/logs/$name.log";
+$filename = "~/.astir/logs/$name.log";
 
 # Get rid of spaces in the filename
 $filename =~ s/\s+//g;
@@ -157,7 +157,7 @@ while ($gps->records)
 }
 
 printf("\n\nThe data has been saved in: ($filename)\n");
-printf("Please open this logfile with Xastir to display the waypoints.\n");
+printf("Please open this logfile with Astir to display the waypoints.\n");
 printf("!!!Remember to set your GPS back to NMEA mode for APRS!!!\n");
 
 

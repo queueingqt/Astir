@@ -28,7 +28,9 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import srctree
 
 GUI_SUFFIX = "_gui.o"
-STANDALONE = {"xastir_udp_client.o", "testdbfawk.o", "callpass.o"}
+# Unused since the core selection became directory-based (src/core/ only);
+# kept because the docstring still refers to what is not core.
+STANDALONE = {"astir_udp_client.o", "astir_testdbfawk.o", "astir_callpass.o"}
 # The X11 backend, all four files of it.  xa_draw_x11.c is the obvious one;
 # the other three are the same thing wearing different names:
 #
@@ -46,15 +48,15 @@ X_LIB = re.compile(r'^-l(X[a-zA-Z0-9]*|Xm|Xt|ICE|SM|Xext|Xpm|xcb.*)$')
 
 
 def link_command(srcdir):
-  """The real link line for xastir, from make, so this tracks ./configure."""
-  mk = subprocess.run(["make", "-n", "-W", "ui/motif/main.c", "xastir"], cwd=srcdir,
+  """The real link line for astir, from make, so this tracks ./configure."""
+  mk = subprocess.run(["make", "-n", "-W", "ui/motif/main.c", "astir"], cwd=srcdir,
                       capture_output=True, text=True).stdout
   for line in mk.splitlines():
-    if " -o xastir " not in line:
+    if " -o astir " not in line:
       continue
     for part in line.split(";"):
       part = part.strip()
-      if part.startswith(("gcc", "cc ", "clang")) and " -o xastir " in part:
+      if part.startswith(("gcc", "cc ", "clang")) and " -o astir " in part:
         return part
   return None
 
@@ -101,7 +103,7 @@ def main():
           if os.path.normpath(os.path.relpath(o, srcdir)).split(os.sep)[0] == "core"]
 
   # Compiled here rather than by make, because it must never end up in the
-  # xastir binary: it defines the same symbols as the X11 backend.  Compiled
+  # astir binary: it defines the same symbols as the X11 backend.  Compiled
   # with no X include path on purpose -- if it ever needs one, xa_draw.h has
   # sprung a leak and this is where that shows up first.
   nullobj = os.path.join(srcdir, os.path.basename(bsrc)[:-2] + ".o")
@@ -164,7 +166,7 @@ def main():
     for t in rebuilt:
       if t == "@OBJS@":
         args += ["@" + rsp, stub]
-      elif t == "xastir":
+      elif t == "astir":
         args.append(out)
       else:
         args.append(t)
@@ -187,7 +189,7 @@ def main():
   # Whatever the linker said, ask the objects directly.  A successful link is
   # not the only useful answer and it is not the one available today: the first
   # thing that fails is GraphicsMagick, which is itself linked against libX11,
-  # so Xastir's own X usage never gets a chance to be reported.
+  # so Astir's own X usage never gets a chance to be reported.
   #
   # So: take the symbols each core object leaves undefined, and intersect them
   # with what the X libraries actually export.  That is the same method
@@ -221,7 +223,7 @@ def main():
       print("\nLinked -- but NOT proof of anything on its own: the binary still")
       print("pulls in %d X libraries transitively (%s ...)."
             % (len(xdeps), ", ".join(xdeps[:3])))
-      print("They arrive through GraphicsMagick's DT_NEEDED, not through Xastir.")
+      print("They arrive through GraphicsMagick's DT_NEEDED, not through Astir.")
       print("The number below is the real result: it comes from nm, not the link.")
     else:
       print("\nLINKED, and the binary has no X library in its dependencies at all.")
@@ -237,7 +239,7 @@ def main():
       print("   ... and %d more" % (len(errs) - 4))
 
   total = len(set().union(*need.values())) if need else 0
-  print("\nX symbols Xastir's own core objects still need: %d, across %d objects\n"
+  print("\nX symbols Astir's own core objects still need: %d, across %d objects\n"
         % (total, len(need)))
   for o in sorted(need, key=lambda k: (-len(need[k]), k)):
     syms = sorted(need[o])

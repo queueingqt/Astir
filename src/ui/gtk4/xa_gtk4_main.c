@@ -1,11 +1,11 @@
 /*
- * xa_gtk4_main.c -- a GTK4 front end for Xastir.
+ * xa_gtk4_main.c -- a GTK4 front end for Astir.
  *
  * WHAT THIS IS
  *
  * A real application: it initialises the core, loads the map index, renders
  * maps through xa_draw_gtk4.c, and shows them in a window you can pan and zoom.
- * It is the first thing in this tree to draw an Xastir map without Motif.
+ * It is the first thing in this tree to draw an Astir map without Motif.
  *
  * WHAT IT IS NOT
  *
@@ -34,7 +34,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "core/xastir.h"
+#include "core/astir.h"
 #include "draw/xa_draw.h"
 #include "core/state/xa_state.h"
 #include "core/state/xa_settings.h"
@@ -115,9 +115,9 @@ static void xa_render(void)
   NW_corner_latitude  = center_latitude  - (screen_height * scale_y / 2);
   SE_corner_longitude = center_longitude + (screen_width  * scale_x / 2);
   SE_corner_latitude  = center_latitude  + (screen_height * scale_y / 2);
-  convert_from_xastir_coordinates(&f_NW_corner_longitude, &f_NW_corner_latitude,
+  convert_from_astir_coordinates(&f_NW_corner_longitude, &f_NW_corner_latitude,
                                   NW_corner_longitude, NW_corner_latitude);
-  convert_from_xastir_coordinates(&f_SE_corner_longitude, &f_SE_corner_latitude,
+  convert_from_astir_coordinates(&f_SE_corner_longitude, &f_SE_corner_latitude,
                                   SE_corner_longitude, SE_corner_latitude);
 
   xa_pen_color(gc, colors[0xfd]);      // map background
@@ -222,7 +222,7 @@ static gboolean render_now(gpointer u)
   {
     view_scale /= s0;
   }
-  if (getenv("XASTIR_GTK4_TRACE_ZOOM"))
+  if (getenv("ASTIR_GTK4_TRACE_ZOOM"))
   {
     g_print("[render] scale_y=%ld view_scale=%.3f\n", scale_y, view_scale);
   }
@@ -272,13 +272,13 @@ static void xa_draw_cb(GtkDrawingArea *area, cairo_t *cr,
  * How many device pixels the toolkit gives us per logical pixel.
  *
  * The widget knows, once it is on a monitor; before that, and in the headless
- * render, there is no widget to ask.  XASTIR_GTK4_DEVICE_SCALE overrides both,
+ * render, there is no widget to ask.  ASTIR_GTK4_DEVICE_SCALE overrides both,
  * which is the only way to render a HiDPI frame without a HiDPI monitor and so
  * the only way to gate this from a script.
  */
 static int wanted_device_scale(GtkWidget *w)
 {
-  const char *env = getenv("XASTIR_GTK4_DEVICE_SCALE");
+  const char *env = getenv("ASTIR_GTK4_DEVICE_SCALE");
   int s;
 
   if (env != NULL && (s = atoi(env)) >= 1)
@@ -360,7 +360,7 @@ static void xa_scale_changed(GObject *obj, GParamSpec *pspec,
 /* ---- navigation -------------------------------------------------------- */
 
 /*
- * Xastir's map position is a centre and a scale in 1/100 second per pixel, and
+ * Astir's map position is a centre and a scale in 1/100 second per pixel, and
  * that is core state (xa_state.h), not front-end state.  So panning is
  * arithmetic on center_longitude/center_latitude and zooming is arithmetic on
  * scale_y -- exactly what the Motif front end does, because it is the only
@@ -375,7 +375,7 @@ static void xa_scale_changed(GObject *obj, GParamSpec *pspec,
  *
  * The first version here multiplied scale_y by calc_dscale_x(), which is not
  * that formula and not even the right shape -- calc_dscale_x is metres per
- * Xastir unit, and the ratio wanted is sc_y/sc_x.  Below 50000 that produced a
+ * Astir unit, and the ratio wanted is sc_y/sc_x.  Below 50000 that produced a
  * wildly wrong x scale; at or above it the guard hid the error entirely, which
  * is why the config's own zoom looked fine and zooming in did not.
  */
@@ -399,13 +399,13 @@ static void xa_zoom(double factor)
   /*
    * Stop zooming out once the whole world already fits.
    *
-   * Xastir's stored limit is 500000, which is not a view limit -- it is just
+   * Astir's stored limit is 500000, which is not a view limit -- it is just
    * the largest value the config will hold.  Past the point where 180 degrees
    * of latitude spans the window there is nothing further to reveal, only a
    * shrinking earth in a growing field of background, which is what "too far
    * out to see anything" is.
    *
-   * 32400000 Xastir units is 180 degrees, so the whole world fits vertically
+   * 32400000 Astir units is 180 degrees, so the whole world fits vertically
    * at exactly this scale.  Derived from the window height rather than fixed,
    * because a taller window can show the same world at a smaller scale.
    */
@@ -430,7 +430,7 @@ static void xa_zoom(double factor)
   // The frame on screen was drawn at the old scale, so showing it that much
   // larger or smaller is exactly right until the new one is ready.
   view_scale *= (double)scale_y / (double)s;
-  if (getenv("XASTIR_GTK4_TRACE_ZOOM"))
+  if (getenv("ASTIR_GTK4_TRACE_ZOOM"))
   {
     g_print("[zoom]   scale_y %ld -> %ld  view_scale=%.3f\n",
             scale_y, s, view_scale);
@@ -570,7 +570,7 @@ static void act_about(GSimpleAction *a, GVariant *p, gpointer u)
 
   (void)a; (void)p;
   dlg = gtk_about_dialog_new();
-  gtk_about_dialog_set_program_name(GTK_ABOUT_DIALOG(dlg), "Xastir");
+  gtk_about_dialog_set_program_name(GTK_ABOUT_DIALOG(dlg), "Astir");
   gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(dlg),
                                 "GTK4 front end.\n"
                                 "The same core as the Motif build, drawing "
@@ -674,13 +674,13 @@ static int init_core(void)
   char base[400];
   struct passwd *pw;
 
-  // Where ~/.xastir lives.  get_user_base_dir() reads user_dir, which is core
+  // Where ~/.astir lives.  get_user_base_dir() reads user_dir, which is core
   // state that nothing in the core fills in -- main.c did it, so a second front
-  // end has to as well.  Without it every path comes out as "/.xastir/...".
+  // end has to as well.  Without it every path comes out as "/.astir/...".
   pw = getpwuid(getuid());
   if (pw != NULL)
   {
-    xastir_snprintf(user_dir, sizeof(user_dir), "%s", pw->pw_dir);
+    astir_snprintf(user_dir, sizeof(user_dir), "%s", pw->pw_dir);
   }
 
   // Language first: almost everything else reports through langcode().
@@ -691,11 +691,11 @@ static int init_core(void)
     return 0;
   }
 
-  // Xastir's own map tracing, which is the fastest way to see why a map is not
+  // Astir's own map tracing, which is the fastest way to see why a map is not
   // drawn: bit 16 reports every name it reads and every one it skips.
-  if (getenv("XASTIR_DEBUG") != NULL)
+  if (getenv("ASTIR_DEBUG") != NULL)
   {
-    debug_level = atoi(getenv("XASTIR_DEBUG"));
+    debug_level = atoi(getenv("ASTIR_DEBUG"));
   }
 
   xa_gtk4_load_palette();
@@ -730,9 +730,9 @@ static int init_core(void)
 
   // Let a scripted render pick the scale, so "are the maps culled by zoom?"
   // is one run rather than a guess.  scale_y is 1/100 second per pixel.
-  if (getenv("XASTIR_GTK4_SCALE") != NULL)
+  if (getenv("ASTIR_GTK4_SCALE") != NULL)
   {
-    scale_y = atol(getenv("XASTIR_GTK4_SCALE"));
+    scale_y = atol(getenv("ASTIR_GTK4_SCALE"));
     xa_rescale();
   }
 
@@ -747,11 +747,11 @@ static int init_core(void)
   // File > Open Log File; here it runs to completion before the first render,
   // which is what a one-shot render needs and is good enough for an
   // interactive run to start with something on screen.
-  if (getenv("XASTIR_REPLAY") != NULL)
+  if (getenv("ASTIR_REPLAY") != NULL)
   {
     // A local, not main.c's read_file_ptr global: that pointer is the Motif
     // front end's own state, and only the `read_file` flag is core.
-    FILE *replay = fopen(getenv("XASTIR_REPLAY"), "r");
+    FILE *replay = fopen(getenv("ASTIR_REPLAY"), "r");
 
     if (replay != NULL)
     {
@@ -760,7 +760,7 @@ static int init_core(void)
       {
         read_file_line(replay);
       }
-      g_print("replayed %s\n", getenv("XASTIR_REPLAY"));
+      g_print("replayed %s\n", getenv("ASTIR_REPLAY"));
     }
   }
   index_restore_from_file();     // the map index
@@ -797,7 +797,7 @@ static void on_activate(GtkApplication *app, gpointer user_data)
   (void)user_data;
 
   win = gtk_application_window_new(app);
-  gtk_window_set_title(GTK_WINDOW(win), "Xastir");
+  gtk_window_set_title(GTK_WINDOW(win), "Astir");
   gtk_window_set_default_size(GTK_WINDOW(win), xa_w, xa_h);
 
   header = gtk_header_bar_new();
@@ -832,7 +832,7 @@ static void on_activate(GtkApplication *app, gpointer user_data)
   g_object_unref(maps);
 
   help = g_menu_new();
-  g_menu_append(help, "About Xastir", "win.about");
+  g_menu_append(help, "About Astir", "win.about");
   g_menu_append_section(menu, NULL, G_MENU_MODEL(help));
   g_object_unref(help);
 
@@ -891,7 +891,7 @@ static void on_activate(GtkApplication *app, gpointer user_data)
   // Open the menu shortly after startup, for screenshots and UI tests.  There
   // is no input automation on this Wayland session, so a popover cannot
   // otherwise be captured at all.
-  if (getenv("XASTIR_GTK4_SHOW_MENU") != NULL)
+  if (getenv("ASTIR_GTK4_SHOW_MENU") != NULL)
   {
     g_timeout_add_seconds(2, (GSourceFunc)popup_menu_once, hamburger);
   }
@@ -927,10 +927,10 @@ int main(int argc, char **argv)
 
   // A one-shot render mode, so the front end can be tested without a human
   // looking at it: draw one frame, write it out, exit.  The same reason
-  // XASTIR_REPLAY exists on the Motif side.
-  if (getenv("XASTIR_GTK4_RENDER_TO") != NULL)
+  // ASTIR_REPLAY exists on the Motif side.
+  if (getenv("ASTIR_GTK4_RENDER_TO") != NULL)
   {
-    const char *path = getenv("XASTIR_GTK4_RENDER_TO");
+    const char *path = getenv("ASTIR_GTK4_RENDER_TO");
     cairo_surface_t *s;
 
     xa_gtk4_set_canvas(NULL, xa_w, xa_h);
@@ -946,11 +946,11 @@ int main(int argc, char **argv)
       return 1;
     }
     g_print("wrote %s\n", path);
-    xa_perf_report_totals();     // XASTIR_PERF=1 to see what was actually drawn
+    xa_perf_report_totals();     // ASTIR_PERF=1 to see what was actually drawn
     return 0;
   }
 
-  app = gtk_application_new("org.xastir.Gtk4", G_APPLICATION_DEFAULT_FLAGS);
+  app = gtk_application_new("org.astir.Gtk4", G_APPLICATION_DEFAULT_FLAGS);
   g_signal_connect(app, "activate", G_CALLBACK(on_activate), NULL);
   status = g_application_run(G_APPLICATION(app), argc, argv);
   g_object_unref(app);

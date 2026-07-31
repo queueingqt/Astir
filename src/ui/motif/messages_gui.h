@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -25,7 +25,7 @@
  * The Send Message windows, and everything about them that is made of
  * widgets.
  *
- * All of this used to live in messages.h and xastir.h, which the core includes,
+ * All of this used to live in messages.h and astir.h, which the core includes,
  * so every core file that wanted a message-store declaration got an array of
  * Motif widgets with it.  The core no longer names any of this: it goes through
  * the msg_window_* callbacks in xa_ui.h instead.
@@ -34,8 +34,8 @@
  * has been put on the wrong side.
  */
 
-#ifndef XASTIR_MESSAGES_GUI_H
-#define XASTIR_MESSAGES_GUI_H
+#ifndef ASTIR_MESSAGES_GUI_H
+#define ASTIR_MESSAGES_GUI_H
 
 // MAX_MESSAGE_WINDOWS stays in messages.h: the core still loops over window
 // indices, it just cannot see what a window is made of.
@@ -82,4 +82,4 @@ extern void Send_message_call(Widget w, XtPointer clientData, XtPointer callData
 // end's callback registration, before it hands the table to xa_ui.
 void messages_gui_register_ui(xa_ui_callbacks *cb);
 
-#endif  /*  XASTIR_MESSAGES_GUI_H */
+#endif  /*  ASTIR_MESSAGES_GUI_H */

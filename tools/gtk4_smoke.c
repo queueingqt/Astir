@@ -11,7 +11,7 @@
  * and samples specific pixels, so an all-black image fails instead of passing
  * quietly.  Headless: Cairo image surfaces and Pango need no display.
  *
- * Built and run by tools/gtk4_smoke.sh.  Not part of the xastir build.
+ * Built and run by tools/gtk4_smoke.sh.  Not part of the astir build.
  */
 
 #include <stdio.h>
@@ -147,9 +147,9 @@ int main(void)
 
   xa_pen_font(pen, font);
   xa_pen_color(pen, 0xffffff);
-  xa_draw_string(canvas, pen, 30, 240, "Xastir GTK4 backend", 19);
+  xa_draw_string(canvas, pen, 30, 240, "Astir GTK4 backend", 19);
   check("xa_pen_text_width() answers from pen state",
-        xa_pen_text_width(pen, "Xastir", 6) > 0);
+        xa_pen_text_width(pen, "Astir", 6) > 0);
 
   xa_draw_text_styled(canvas, 200, 250, 30.0f, "rotated 30", "Sans:size=13",
                       0xffff00, 1, 0x000000, XA_ALIGN_MLEFT);
@@ -247,7 +247,7 @@ int main(void)
   printf("  %-46s %d\n", "distinct colours sampled", distinct);
   check("the frame has real content (>= 8 colours)", distinct >= 8);
 
-  cairo_surface_write_to_png(cs, "/tmp/xastir_gtk4_smoke.png");
+  cairo_surface_write_to_png(cs, "/tmp/astir_gtk4_smoke.png");
   check("PNG written",
         cairo_surface_status(cs) == CAIRO_STATUS_SUCCESS);
 
@@ -258,6 +258,6 @@ int main(void)
 
   printf("\n%s  (%d failure%s)\n", failures ? "SMOKE TEST FAILED" : "SMOKE TEST PASSED",
          failures, failures == 1 ? "" : "s");
-  printf("wrote /tmp/xastir_gtk4_smoke.png\n");
+  printf("wrote /tmp/astir_gtk4_smoke.png\n");
   return failures ? 1 : 0;
 }

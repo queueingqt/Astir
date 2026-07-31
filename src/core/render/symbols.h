@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -21,12 +21,12 @@
  * Look at the README for more information on the program.
  */
 
-#ifndef XASTIR_SYMBOLS_H
-#define XASTIR_SYMBOLS_H
+#ifndef ASTIR_SYMBOLS_H
+#define ASTIR_SYMBOLS_H
 
 /* define Symbol Active */
 
 
 
-#endif /* XASTIR_SYMBOLS_H */
+#endif /* ASTIR_SYMBOLS_H */
 

@@ -2,7 +2,7 @@
 use warnings;
 
 # Enable various functions below.
-$start_xastir           = 0;
+$start_astir           = 0;
 $enable_planes          = 1;  # Requires 1 SDR dongle
 $enable_plane_logging   = 0;  # Can fill up hard drive
 $enable_plane_alternate = 0;  # Must also set $enable_planes. Requires another SDR dongle
@@ -20,19 +20,19 @@ $ship_long_range_SDR = 3;  # Used with "enable_ship_long_range" above
 # Paths to executables: Set to match where things reside on your system.
 $XTERM    = "/usr/bin/xterm";
 $DUMP1090 = "~/src/dump1090/mutability/dump1090";
-$ADSBPL   = "/usr/local/share/xastir/scripts/ads-b.pl";
+$ADSBPL   = "/usr/local/share/astir/scripts/ads-b.pl";
 $RTLSDR   = "/usr/local/bin/rtl_sdr";
 $DUMP978  = "~/src/dump978/dump978";
 $UAT2ESNT = "~/src/dump978/uat2esnt";
 $NC       = "/usr/bin/nc";
-$XASTIR   = "/usr/local/bin/xastir";
+$ASTIR   = "/usr/local/bin/astir";
 $RTLAIS   = "~/src/rtl-ais/rtl-ais/rtl_ais";
-$AISPL    = "/usr/local/share/xastir/scripts/ais.pl";
+$AISPL    = "/usr/local/share/astir/scripts/ais.pl";
 
 #----------------------------------------------------
 
-if ($start_xastir == 1) {
-  system("$XASTIR &");
+if ($start_astir == 1) {
+  system("$ASTIR &");
   sleep(5);
 }
 

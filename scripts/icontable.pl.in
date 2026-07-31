@@ -1,5 +1,5 @@
 #!/usr/bin/env perl
-# XASTIR icon table overview generator                        20.02.01
+# ASTIR icon table overview generator                        20.02.01
 #  Copyright (C) 2001 Rolf Bleher                  http://www.dk7in.de
 
 #  This program is free software; you can redistribute it and/or modify
@@ -20,7 +20,7 @@
 
 #--------------------------------------------------------------------------
 
-# This script produces an overview graphics with all symbols used by Xastir
+# This script produces an overview graphics with all symbols used by Astir
 # Output is as a XPM file to STDOUT
 #     typical call:  icontable.pl > symbols.xpm
 
@@ -28,8 +28,8 @@
 use File::Basename;
 $prefix="@prefix@";
 
-# symbols file from XASTIR V2.1, change the path for your environment
-$SYMBFILE = $prefix."/share/xastir/symbols/symbols.dat";
+# symbols file from ASTIR V2.1, change the path for your environment
+$SYMBFILE = $prefix."/share/astir/symbols/symbols.dat";
 
 #--------------------------------------------------------------------------
 %sympix = ();

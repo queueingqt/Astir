@@ -26,7 +26,7 @@
 use File::Basename;
 $prefix="@prefix@";
 
-my $XASTIR_BASE="${prefix}/share/xastir";
+my $ASTIR_BASE="${prefix}/share/astir";
 
 
 # This script uses temporary storage space in /var/tmp to do its work.
@@ -58,7 +58,7 @@ if (-e $file && -r $file && -f $file) {
   print STDERR "*** Installing the RAC database ***\n";
   print STDERR "***********************************\n";
   `unzip $file $file2`;
-  `mv $file2 $XASTIR_BASE/fcc/AMACALL.LST`;
+  `mv $file2 $ASTIR_BASE/fcc/AMACALL.LST`;
 }
 
 # Remove the RAC download files
@@ -82,7 +82,7 @@ print STDERR "*********************************\n";
 
 if (-e $file && -r $file && -f $file) {
 
-  my $file_out = "$XASTIR_BASE/fcc/$file2";
+  my $file_out = "$ASTIR_BASE/fcc/$file2";
 
   # Get rid of characters "^M^M^J" which are sometimes present, sort
   # the file by callsign & remove old entries for vanity call access.

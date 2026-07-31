@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -26,7 +26,7 @@
   #include "config.h"
 #endif  // HAVE_CONFIG_H
 
-// Came in via <X11/Xos.h> until xastir.h/main.h gave up their X includes.
+// Came in via <X11/Xos.h> until astir.h/main.h gave up their X includes.
 #include <string.h>
 #include "core/util/snprintf.h"
 
@@ -39,7 +39,7 @@
 #endif // HAVE_SYS_TIME_H
 #include <time.h>
 
-#include "core/xastir.h"
+#include "core/astir.h"
 #include "core/main.h"
 #include "core/aprs/db_funcs.h"
 #include "core/state/xa_config.h"
@@ -202,7 +202,7 @@ int Create_object_item_tx_string(DataRow *p_station, char *line, int line_length
     }
   }
 
-  // Lat/lon are in Xastir coordinates, so we need to convert
+  // Lat/lon are in Astir coordinates, so we need to convert
   // them to APRS string format here.
   // Need low-precision if uncompressed, high precision if compressed
   convert_lat_l2s(y_lat, lat_str, sizeof(lat_str),
@@ -239,7 +239,7 @@ int Create_object_item_tx_string(DataRow *p_station, char *line, int line_length
   if ( (p_station->comment_data != NULL)
        && (p_station->comment_data->text_ptr != NULL) )
   {
-    xastir_snprintf(comment,
+    astir_snprintf(comment,
                     sizeof(comment),
                     "%s",
                     p_station->comment_data->text_ptr);
@@ -957,7 +957,7 @@ void log_object_item(char *line, int disable_object, char *object_name)
 
     // Comment out all instances of the object/item in the log
     // file.  This will make sure that the object is not
-    // retransmitted again when Xastir is restarted.
+    // retransmitted again when Astir is restarted.
     if (disable_object)
     {
       disown_object_item(object_name, my_callsign);
@@ -999,7 +999,7 @@ void log_object_item(char *line, int disable_object, char *object_name)
   Parameters:
       name:   the object or item name with trailing spaces deleted
       lat_str,lon_str:  latitude and longitude in DDMM.MM[M]H/DDDMM.MM[M]H
-                        format.  They will be converted to Xastir coordinates
+                        format.  They will be converted to Astir coordinates
                         before storage in the data row.
       obj_group, obj_symbol: The group and symbol taken from the
                               dialog box.  if obj_group is neither '/'
@@ -1150,11 +1150,11 @@ DataRow *construct_object_item_data_row(char *name,
     theDataRow->aprs_symbol.aprs_symbol = obj_symbol;
     if (course && strlen(course) >= 1 && strlen(course)<=3 && atoi(course)>0 && atoi(course) <=360)
     {
-      xastir_snprintf(theDataRow->course,sizeof(theDataRow->course),"%03d",atoi(course));
+      astir_snprintf(theDataRow->course,sizeof(theDataRow->course),"%03d",atoi(course));
     }
     if (speed && strlen(speed) >= 1 && strlen(speed)<=3 )
     {
-      xastir_snprintf(theDataRow->speed,sizeof(theDataRow->speed),"%3d",atoi(speed));
+      astir_snprintf(theDataRow->speed,sizeof(theDataRow->speed),"%3d",atoi(speed));
     }
     if (altitude && strlen(altitude) > 0)
     {
@@ -1162,7 +1162,7 @@ DataRow *construct_object_item_data_row(char *name,
       if (alt_in_feet >=0 && alt_in_feet <= 999999)
       {
         double alt_in_meters=atof(altitude)*0.3048;
-        xastir_snprintf(theDataRow->altitude,sizeof(theDataRow->altitude),"%.2f",alt_in_meters);
+        astir_snprintf(theDataRow->altitude,sizeof(theDataRow->altitude),"%.2f",alt_in_meters);
       }
     }
     if (comment && strlen(comment)>0)
@@ -1175,13 +1175,13 @@ DataRow *construct_object_item_data_row(char *name,
     {
       if (prob_min && strlen(prob_min)>0)
       {
-        xastir_snprintf(theDataRow->probability_min,
+        astir_snprintf(theDataRow->probability_min,
                         sizeof(theDataRow->probability_min),
                         "%s", prob_min);
       }
       if (prob_max && strlen(prob_max)>0)
       {
-        xastir_snprintf(theDataRow->probability_max,
+        astir_snprintf(theDataRow->probability_max,
                         sizeof(theDataRow->probability_max),
                         "%s", prob_max);
       }
@@ -1253,7 +1253,7 @@ DataRow *construct_object_item_data_row(char *name,
 
       if (signpost_str && strlen(signpost_str) >0 && strlen(signpost_str) <= 3)
       {
-        xastir_snprintf(theDataRow->signpost,sizeof(theDataRow->signpost),"%s",signpost_str);
+        astir_snprintf(theDataRow->signpost,sizeof(theDataRow->signpost),"%s",signpost_str);
       }
     }
     else if (df_object)
@@ -1266,7 +1266,7 @@ DataRow *construct_object_item_data_row(char *name,
       {
         if (df_shgd && strlen(df_shgd) == 4)
         {
-          xastir_snprintf(theDataRow->signal_gain,sizeof(theDataRow->signal_gain),"DFS%s",df_shgd);
+          astir_snprintf(theDataRow->signal_gain,sizeof(theDataRow->signal_gain),"DFS%s",df_shgd);
         }
       }
       else if (NRQ && strlen(NRQ) != 0)  // must be a beam df object
@@ -1278,8 +1278,8 @@ DataRow *construct_object_item_data_row(char *name,
         {
           bearing_value=360;
         }
-        xastir_snprintf(theDataRow->bearing,sizeof(theDataRow->bearing),"%03d",bearing_value);
-        xastir_snprintf(theDataRow->NRQ,sizeof(theDataRow->NRQ),"%3s",NRQ);
+        astir_snprintf(theDataRow->bearing,sizeof(theDataRow->bearing),"%03d",bearing_value);
+        astir_snprintf(theDataRow->NRQ,sizeof(theDataRow->NRQ),"%3s",NRQ);
       }
     }
     // and finally, make sure we set the time we created this record,

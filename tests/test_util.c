@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 2025-2026 The Xastir Group
  *
  * This program is free software; you can redistribute it and/or
@@ -47,111 +47,111 @@ int test_convert_lat_l2s_basic(void)
 {
   long lat;
   char lat_str[20];
-  // Compute Xastir coordinates for 35d01.631'N
-  // Xastir coordinates are in hundredths of seconds, with 0 being 90d N
+  // Compute Astir coordinates for 35d01.631'N
+  // Astir coordinates are in hundredths of seconds, with 0 being 90d N
   lat = 90*60*60*100-(35*60+1.631)*60*100;
   convert_lat_l2s(lat,lat_str, sizeof(lat_str),CONVERT_HP_NOSP);
-  TEST_ASSERT_STR_EQ("3501.631N",lat_str,"xastir y value correctly converted to string");
+  TEST_ASSERT_STR_EQ("3501.631N",lat_str,"astir y value correctly converted to string");
   TEST_PASS("convert_lat_l2s: correct");
 }
 int test_convert_lon_l2s_basic(void)
 {
   long lon;
   char lon_str[20];
-  // Compute Xastir coordinates for 106d12.385'W
-  // Xastir coordinates are in hundredths of seconds, with 0 being 90d N
+  // Compute Astir coordinates for 106d12.385'W
+  // Astir coordinates are in hundredths of seconds, with 0 being 90d N
   lon = 180*60*60*100-(106*60+12.385)*60*100;
   convert_lon_l2s(lon,lon_str, sizeof(lon_str),CONVERT_HP_NOSP);
-  TEST_ASSERT_STR_EQ("10612.385W",lon_str,"xastir x value correctly converted to string");
+  TEST_ASSERT_STR_EQ("10612.385W",lon_str,"astir x value correctly converted to string");
   TEST_PASS("convert_lon_l2s: correct");
 }
 int test_convert_lat_l2s_basic_s(void)
 {
   long lat;
   char lat_str[20];
-  // Compute Xastir coordinates for 35d01.631'S
-  // Xastir coordinates are in hundredths of seconds, with 0 being 90d N
+  // Compute Astir coordinates for 35d01.631'S
+  // Astir coordinates are in hundredths of seconds, with 0 being 90d N
   lat = 90*60*60*100+(35*60+1.631)*60*100;
   convert_lat_l2s(lat,lat_str, sizeof(lat_str),CONVERT_HP_NOSP);
-  TEST_ASSERT_STR_EQ("3501.631S",lat_str,"xastir y value correctly converted to string");
+  TEST_ASSERT_STR_EQ("3501.631S",lat_str,"astir y value correctly converted to string");
   TEST_PASS("convert_lat_l2s: correct");
 }
 int test_convert_lon_l2s_basic_e(void)
 {
   long lon;
   char lon_str[20];
-  // Compute Xastir coordinates for 106d12.385'E
-  // Xastir coordinates are in hundredths of seconds, with 0 being 90d N
+  // Compute Astir coordinates for 106d12.385'E
+  // Astir coordinates are in hundredths of seconds, with 0 being 90d N
   lon = 180*60*60*100+(106*60+12.385)*60*100;
   convert_lon_l2s(lon,lon_str, sizeof(lon_str),CONVERT_HP_NOSP);
-  TEST_ASSERT_STR_EQ("10612.385E",lon_str,"xastir x value correctly converted to string");
+  TEST_ASSERT_STR_EQ("10612.385E",lon_str,"astir x value correctly converted to string");
   TEST_PASS("convert_lon_l2s: correct");
 }
 int test_convert_lat_l2s_lp(void)
 {
   long lat;
   char lat_str[20];
-  // Compute Xastir coordinates for 35d01.631'N
-  // Xastir coordinates are in hundredths of seconds, with 0 being 90d N
+  // Compute Astir coordinates for 35d01.631'N
+  // Astir coordinates are in hundredths of seconds, with 0 being 90d N
   lat = 90*60*60*100-(35*60+1.631)*60*100;
   convert_lat_l2s(lat,lat_str, sizeof(lat_str),CONVERT_LP_NOSP);
-  TEST_ASSERT_STR_EQ("3501.63N",lat_str,"xastir y value correctly converted to string");
+  TEST_ASSERT_STR_EQ("3501.63N",lat_str,"astir y value correctly converted to string");
   TEST_PASS("convert_lat_l2s: correct");
 }
 int test_convert_lon_l2s_lp(void)
 {
   long lon;
   char lon_str[20];
-  // Compute Xastir coordinates for 106d12.384'W
-  // Xastir coordinates are in hundredths of seconds, with 0 being 90d N
+  // Compute Astir coordinates for 106d12.384'W
+  // Astir coordinates are in hundredths of seconds, with 0 being 90d N
   // we're using ".384" here because ".385" would get rounded up, not truncated.
   lon = 180*60*60*100-(106*60+12.384)*60*100;
   convert_lon_l2s(lon,lon_str, sizeof(lon_str),CONVERT_LP_NOSP);
-  TEST_ASSERT_STR_EQ("10612.38W",lon_str,"xastir x value correctly converted to string");
+  TEST_ASSERT_STR_EQ("10612.38W",lon_str,"astir x value correctly converted to string");
   TEST_PASS("convert_lon_l2s: correct");
 }
 int test_convert_lat_s2l_basic(void)
 {
   long lat;
   long lat_expect;
-  // Compute Xastir coordinates for 35d01.631'N
-  // Xastir coordinates are in hundredths of seconds, with 0 being 90d N
+  // Compute Astir coordinates for 35d01.631'N
+  // Astir coordinates are in hundredths of seconds, with 0 being 90d N
   lat_expect = 90*60*60*100-(35*60+1.631)*60*100;
   lat = convert_lat_s2l("3501.631N");
-  TEST_ASSERT(lat==lat_expect,"xastir y value correctly converted from string");
+  TEST_ASSERT(lat==lat_expect,"astir y value correctly converted from string");
   TEST_PASS("convert_lat_s2l: correct");
 }
 int test_convert_lon_s2l_basic(void)
 {
   long lon;
   long lon_expect;
-  // Compute Xastir coordinates for 106d12.385'W
-  // Xastir coordinates are in hundredths of seconds, with 0 being 90d N
+  // Compute Astir coordinates for 106d12.385'W
+  // Astir coordinates are in hundredths of seconds, with 0 being 90d N
   lon_expect = 180*60*60*100-(106*60+12.385)*60*100;
   lon = convert_lon_s2l("10612.385W");
-  TEST_ASSERT(lon==lon_expect,"xastir x value correctly converted from string");
+  TEST_ASSERT(lon==lon_expect,"astir x value correctly converted from string");
   TEST_PASS("convert_lon_s2l: correct");
 }
 int test_convert_lat_s2l_basic_s(void)
 {
   long lat;
   long lat_expect;
-  // Compute Xastir coordinates for 35d01.631'S
-  // Xastir coordinates are in hundredths of seconds, with 0 being 90d N
+  // Compute Astir coordinates for 35d01.631'S
+  // Astir coordinates are in hundredths of seconds, with 0 being 90d N
   lat_expect = 90*60*60*100+(35*60+1.631)*60*100;
   lat = convert_lat_s2l("3501.631S");
-  TEST_ASSERT(lat==lat_expect,"xastir y value correctly converted from string");
+  TEST_ASSERT(lat==lat_expect,"astir y value correctly converted from string");
   TEST_PASS("convert_lat_s2l: correct");
 }
 int test_convert_lon_s2l_basic_e(void)
 {
   long lon;
   long lon_expect;
-  // Compute Xastir coordinates for 106d12.385'E
-  // Xastir coordinates are in hundredths of seconds, with 0 being 90d N
+  // Compute Astir coordinates for 106d12.385'E
+  // Astir coordinates are in hundredths of seconds, with 0 being 90d N
   lon_expect = 180*60*60*100+(106*60+12.385)*60*100;
   lon = convert_lon_s2l("10612.385E");
-  TEST_ASSERT(lon==lon_expect,"xastir x value correctly converted from string");
+  TEST_ASSERT(lon==lon_expect,"astir x value correctly converted from string");
   TEST_PASS("convert_lon_s2l: correct");
 }
 
@@ -191,8 +191,8 @@ int test_l2s_s2l_consistency(void)
   TEST_PASS("convert_lon_s2l and back: correct");
 }
 
-// test screen/xastir/other converters
-int test_convert_screen_to_xastir_coordinates(void)
+// test screen/astir/other converters
+int test_convert_screen_to_astir_coordinates(void)
 {
   // presume screen to be 1900x712 pixels
   // NW corner 3515.704N 10706.340W
@@ -208,14 +208,14 @@ int test_convert_screen_to_xastir_coordinates(void)
   NW_corner_latitude  = convert_lat_s2l("3515.704N");
   SE_corner_longitude = convert_lon_s2l("10548.923W");
   SE_corner_latitude  = convert_lat_s2l("3454.727N");
-  // Remember that Xastir coords are 0,0 at 90N 180W and increase as we
+  // Remember that Astir coords are 0,0 at 90N 180W and increase as we
   // go east and south.
   scale_x = (SE_corner_longitude - NW_corner_longitude)/screen_width;
   scale_y = (SE_corner_latitude - NW_corner_latitude)/screen_height;
   center_latitude = (NW_corner_latitude + SE_corner_latitude)/2;
   center_longitude = (NW_corner_longitude + SE_corner_longitude)/2;
 
-  // Now, Xastir itself actually makes the center lat/lon the primary
+  // Now, Astir itself actually makes the center lat/lon the primary
   // variable, and recomputes NW and SW based on that and the scale.  Let's
   // do that ourselves now.  Otherwise we get rounding problems later.
 
@@ -224,31 +224,31 @@ int test_convert_screen_to_xastir_coordinates(void)
   SE_corner_longitude = center_longitude + (screen_width*scale_x)/2;
   SE_corner_latitude  = center_latitude  + (screen_height*scale_y)/2;
 
-  convert_screen_to_xastir_coordinates(screen_width/2, screen_height/2,
+  convert_screen_to_astir_coordinates(screen_width/2, screen_height/2,
                                        &lat_xa, &lon_xa);
   TEST_ASSERT(lon_xa == center_longitude, "Center pixel mapped correctly to center longitude");
   TEST_ASSERT(lat_xa == center_latitude, "Center pixel mapped correctly to center latitude");
 
   // Now the NW corner
-  convert_screen_to_xastir_coordinates(0,0,
+  convert_screen_to_astir_coordinates(0,0,
                                        &lat_xa, &lon_xa);
 
   TEST_ASSERT(lon_xa == NW_corner_longitude, "Top left pixel mapped correctly to NW corner longitude");
   TEST_ASSERT(lat_xa == NW_corner_latitude, "top left pixel mapped correctly to NW corner latitude");
 
   // now the SE corner
-  convert_screen_to_xastir_coordinates(screen_width, screen_height,
+  convert_screen_to_astir_coordinates(screen_width, screen_height,
                                        &lat_xa, &lon_xa);
   TEST_ASSERT(lon_xa == SE_corner_longitude, "Bottom right pixel mapped correctly to SE corner longitude");
   TEST_ASSERT(lat_xa == SE_corner_latitude, "Bottom right pixel mapped correctly to SE corner latitude");
 
-  TEST_PASS("convert_screen_to_xastir_coordinates: works as expected");
+  TEST_PASS("convert_screen_to_astir_coordinates: works as expected");
 }
 
 // Note that this is *identical* to the previous function except it
-// calls convert_xastir_to_screen_coordinates instead of having hard-coded
+// calls convert_astir_to_screen_coordinates instead of having hard-coded
 // junk in it.
-int test_convert_xastir_to_screen_coordinates(void)
+int test_convert_astir_to_screen_coordinates(void)
 {
   // presume screen to be 1900x712 pixels
   // NW corner 3515.704N 10706.340W
@@ -263,14 +263,14 @@ int test_convert_xastir_to_screen_coordinates(void)
   NW_corner_latitude  = convert_lat_s2l("3515.704N");
   SE_corner_longitude = convert_lon_s2l("10548.923W");
   SE_corner_latitude  = convert_lat_s2l("3454.727N");
-  // Remember that Xastir coords are 0,0 at 90N 180W and increase as we
+  // Remember that Astir coords are 0,0 at 90N 180W and increase as we
   // go east and south.
   scale_x = (SE_corner_longitude - NW_corner_longitude)/screen_width;
   scale_y = (SE_corner_latitude - NW_corner_latitude)/screen_height;
   center_latitude = (NW_corner_latitude + SE_corner_latitude)/2;
   center_longitude = (NW_corner_longitude + SE_corner_longitude)/2;
 
-  // Now, Xastir itself actually makes the center lat/lon the primary
+  // Now, Astir itself actually makes the center lat/lon the primary
   // variable, and recomputes NW and SW based on that and the scale.  Let's
   // do that ourselves now.  Otherwise we get rounding problems later.
 
@@ -281,7 +281,7 @@ int test_convert_xastir_to_screen_coordinates(void)
 
   // Now try to convert this back to screen coords using the
   // utility function
-  convert_xastir_to_screen_coordinates(center_longitude, center_latitude, &screen_x, &screen_y);
+  convert_astir_to_screen_coordinates(center_longitude, center_latitude, &screen_x, &screen_y);
 
   // We expect these screen coords to be screen_width/2, screen_height/2
   TEST_ASSERT(screen_x == screen_width/2, "center lon maps onto center pixel");
@@ -289,20 +289,20 @@ int test_convert_xastir_to_screen_coordinates(void)
 
   // Now what about NW and SE corners?
 
-  convert_xastir_to_screen_coordinates(NW_corner_longitude, NW_corner_latitude, &screen_x, &screen_y);
+  convert_astir_to_screen_coordinates(NW_corner_longitude, NW_corner_latitude, &screen_x, &screen_y);
   // We expect these screen coords to be 0,0
   TEST_ASSERT(screen_x == 0, "NW corner lon maps onto top left pixel");
   TEST_ASSERT(screen_y == 0, "NW corner lat maps onto top left pixel.");
 
   // now the SE corner
 
-  convert_xastir_to_screen_coordinates(SE_corner_longitude, SE_corner_latitude, &screen_x, &screen_y);
+  convert_astir_to_screen_coordinates(SE_corner_longitude, SE_corner_latitude, &screen_x, &screen_y);
 
   // We expect these screen coords to be screen_width, screen_height
   TEST_ASSERT(screen_x == screen_width, "SE corner lon maps onto bot right pixel");
   TEST_ASSERT(screen_y == screen_height, "SE corner lat maps onto bot right pixel.");
 
-  TEST_PASS("convert_xastir_to_screen_coordinates: works as expected");
+  TEST_PASS("convert_astir_to_screen_coordinates: works as expected");
 }
 
 int test_short_filename_for_status_notrunc(void)
@@ -448,8 +448,8 @@ int main(int argc, char *argv[])
     {"convert_lon_s2l_basic_e",test_convert_lon_s2l_basic_e},
     {"s2l_l2s_consistency",test_s2l_l2s_consistency},
     {"l2s_s2l_consistency",test_l2s_s2l_consistency},
-    {"convert_screen_to_xastir_coordinates", test_convert_screen_to_xastir_coordinates},
-    {"convert_xastir_to_screen_coordinates", test_convert_xastir_to_screen_coordinates},
+    {"convert_screen_to_astir_coordinates", test_convert_screen_to_astir_coordinates},
+    {"convert_astir_to_screen_coordinates", test_convert_astir_to_screen_coordinates},
     {"short_filename_for_status_notrunc",test_short_filename_for_status_notrunc},
     {"short_filename_for_status_trunc",test_short_filename_for_status_trunc},
     {"copy_token_plain",test_copy_token_plain},

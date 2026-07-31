@@ -1,37 +1,37 @@
-.TH xastir_udp_client 1 2019-05-01 "The Xastir Group"
+.TH astir_udp_client 1 2019-05-01 "The Xastir Group"
 
 .SH NAME
-xastir_udp_client \- send simple messages to xastir for APRS(tm) network.
+astir_udp_client \- send simple messages to astir for APRS(tm) network.
 
 .SH SYNOPSIS
-.B xastir_udp_client
+.B astir_udp_client
 .I <hostname> <port> <callsign> <passcode> {-identify | [-to_rf] <message>}
 
 .SH DESCRIPTION
 
-xastir_udp_client sends packets into the UDP listening port of an enabled xastir instance.
+astir_udp_client sends packets into the UDP listening port of an enabled astir instance.
 
 .SH EXAMPLES
 
- xastir_udp_client localhost 2023 <callsign> <passcode> "APRS Packet Goes Here"
+ astir_udp_client localhost 2023 <callsign> <passcode> "APRS Packet Goes Here"
 
-Currently that will inject the packet into Xastir's decoding routines and send
+Currently that will inject the packet into Astir's decoding routines and send
 it to any TCP-connected clients. It will also igate it to the INET if you have
 igating enabled.  It will send the packet out the RF ports as third-party
 packets only if you add the "\-to_rf" flag after the passcode like this:
 
- xastir_udp_client localhost 2023 <callsign> <passcode> \-to_rf "APRS Packet"
+ astir_udp_client localhost 2023 <callsign> <passcode> \-to_rf "APRS Packet"
 
 The UDP client is useful for generating and injecting APRS packets from
 external scripts.  It can also be used to fetch the callsign of the remote
-xastir server by using the \-identify flag:
+astir server by using the \-identify flag:
 
- xastir_udp_client localhost 2023 <callsign> <passcode> \-identify
+ astir_udp_client localhost 2023 <callsign> <passcode> \-identify
 
 .SH NOTES
 This is a very simple utility that provides no validation of message
 content.  The text passed as the last argument is directly injected
-into Xastir's incoming data stream and processed exactly as if it had
+into Astir's incoming data stream and processed exactly as if it had
 come out of a TNC.
 
 As such, the text passed to it as "APRS Packet" must be a complete
@@ -42,28 +42,28 @@ here" (where obviously you should replace "MYCALL-0" with your own
 callsign and SSID).
 
 If the APRS payload provided is an object or item, and the call sign
-and SSID provided in the packet header match Xastir's exactly, then
-Xastir will "adopt" the object or item and treat it in the same manner
+and SSID provided in the packet header match Astir's exactly, then
+Astir will "adopt" the object or item and treat it in the same manner
 as one that had been created in its own GUI --- that is, the object
 will be retransmitted with decaying intervals until deleted.  This can
-be useful if one wishes to create objects external to Xastir and have
+be useful if one wishes to create objects external to Astir and have
 it take control over them, but can be a bit surprising if you weren't
-expecting it.  If you want the objects treated as Xastir's own, use
+expecting it.  If you want the objects treated as Astir's own, use
 the same callsign and ssid for the object as the callsign/SSID that
-Xastir is using, and if you DON'T want that, use a different SSID.
+Astir is using, and if you DON'T want that, use a different SSID.
 
-If Xastir's callsign is "MYCALL-0" then this invocation will create an
+If Astir's callsign is "MYCALL-0" then this invocation will create an
 object that will be adopted and retransmitted:
 
-  xastir_udp_client localhost 2023 MYCALL-0 <passcode> "MYCALL-0>APX219,WIDE2-1:;foobar   *202111z3501.53N/10619.04W/"
+  astir_udp_client localhost 2023 MYCALL-0 <passcode> "MYCALL-0>APX219,WIDE2-1:;foobar   *202111z3501.53N/10619.04W/"
 
 while this invocation will create an object that will only be
 transmitted once and not adopted:
 
-  xastir_udp_client localhost 2023 MYCALL-0 <passcode> "MYCALL-1>APX219,WIDE2-1:;foobar   *202111z3501.53N/10619.04W/"
+  astir_udp_client localhost 2023 MYCALL-0 <passcode> "MYCALL-1>APX219,WIDE2-1:;foobar   *202111z3501.53N/10619.04W/"
 
 .SH SEE ALSO
-xastir help file
+astir help file
 .br
 .PP
 .B APRS[tm]

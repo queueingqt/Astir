@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 2025-2026 The Xastir Group
  *
  * This program is free software; you can redistribute it and/or
@@ -20,8 +20,8 @@
  * Look at the README for more information on the program.
  */
 
-#ifndef XASTIR_NOMINATIM_H
-#define XASTIR_NOMINATIM_H
+#ifndef ASTIR_NOMINATIM_H
+#define ASTIR_NOMINATIM_H
 
 #ifdef HAVE_NOMINATIM
 
@@ -74,4 +74,4 @@ void nominatim_clear_cache(void);
 
 #endif  // HAVE_NOMINATIM
 
-#endif  // XASTIR_NOMINATIM_H
+#endif  // ASTIR_NOMINATIM_H

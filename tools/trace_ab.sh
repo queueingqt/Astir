@@ -22,17 +22,17 @@ SC="${SNAP_DIR:-$HERE/snapshot}"
 SCENARIO="${TRACE_LOG:-$HERE/trace/messages.log}"
 [ -f "$SC/snap.cnf" ] || { echo "no snap.cnf in $SC (set SNAP_DIR)" >&2; exit 1; }
 [ -f "$SCENARIO" ]    || { echo "no scenario at $SCENARIO" >&2; exit 1; }
-cd /home/aevanger/github/Xastir
+cd /home/aevanger/github/Astir
 
 # A stale $OUT would be diffed against as though this run had produced it.
 rm -f "$OUT" "$OUT.raw"
 
 export XAUTHORITY="${XAUTHORITY:-/run/user/1000/xauth_ZUnYLn}" DISPLAY="${DISPLAY:-:0}"
-pkill -x xastir 2>/dev/null || true
+pkill -x astir 2>/dev/null || true
 waited=0
-while pgrep -x xastir >/dev/null; do sleep 1; waited=$((waited+1)); [ $waited -ge 10 ] && pkill -KILL -x xastir; [ $waited -ge 20 ] && exit 1; done
+while pgrep -x astir >/dev/null; do sleep 1; waited=$((waited+1)); [ $waited -ge 10 ] && pkill -KILL -x astir; [ $waited -ge 20 ] && exit 1; done
 
-cp "$SC/snap.cnf" ~/.xastir/config/xastir.cnf
+cp "$SC/snap.cnf" ~/.astir/config/astir.cnf
 
 # Nothing is cleared between runs on purpose.  msg_data/msg_index are static in
 # db.c and are not reloaded at startup, so the message store starts empty; the
@@ -42,12 +42,12 @@ cp "$SC/snap.cnf" ~/.xastir/config/xastir.cnf
 
 RAW="$OUT.raw"
 LOG="$(mktemp -t trace_ab.XXXXXX.log)"
-BIN="${SNAP_BIN:-./src/xastir}"
+BIN="${SNAP_BIN:-./src/astir}"
 [ -x "$BIN" ] || { echo "not executable: $BIN" >&2; exit 1; }
 echo "running $BIN  (scenario $(basename "$SCENARIO"))"
 
-XASTIR_PERF=1 XASTIR_LOD_PX=1.0 XASTIR_ZOOMOUT=4 \
-  XASTIR_REPLAY="$SCENARIO" XASTIR_TRACE="$RAW" \
+ASTIR_PERF=1 ASTIR_LOD_PX=1.0 ASTIR_ZOOMOUT=4 \
+  ASTIR_REPLAY="$SCENARIO" ASTIR_TRACE="$RAW" \
   "$BIN" > "$LOG" 2>&1 &
 
 # Wait for the replay to consume the whole file.  read_file_line() clears
@@ -55,7 +55,7 @@ XASTIR_PERF=1 XASTIR_LOD_PX=1.0 XASTIR_ZOOMOUT=4 \
 # not a guessed duration.
 w=0
 until grep -qa '\[replay\] done' "$LOG" 2>/dev/null; do
-  pgrep -x xastir >/dev/null || { echo "exited early"; tail -5 "$LOG"; exit 1; }
+  pgrep -x astir >/dev/null || { echo "exited early"; tail -5 "$LOG"; exit 1; }
   sleep 5; w=$((w+5))
   [ $w -ge 600 ] && { echo "replay never finished in 600s" >&2; tail -5 "$LOG" >&2; break; }
 done
@@ -78,11 +78,11 @@ for i in $(seq 1 30); do
 done
 [ $stable -ge 2 ] || echo "WARNING: trace still growing when captured" >&2
 
-kill -TERM "$(pgrep -x xastir | head -1)" 2>/dev/null || true
+kill -TERM "$(pgrep -x astir | head -1)" 2>/dev/null || true
 t=0
-while pgrep -x xastir >/dev/null; do
+while pgrep -x astir >/dev/null; do
   sleep 2; t=$((t+2))
-  [ $t -ge 20 ] && pkill -KILL -x xastir 2>/dev/null
+  [ $t -ge 20 ] && pkill -KILL -x astir 2>/dev/null
   [ $t -ge 40 ] && break
 done
 

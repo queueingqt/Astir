@@ -2,8 +2,8 @@
 // Copyright (C) 2000-2026 The Xastir Group
 
 
-#ifndef __XASTIR_SHP_HASH_H
-#define __XASTIR_SHP_HASH_H
+#ifndef __ASTIR_SHP_HASH_H
+#define __ASTIR_SHP_HASH_H
 
 
 #ifdef HAVE_SHAPEFIL_H
@@ -34,4 +34,4 @@ void destroy_shpinfo(shpinfo *si);
 void purge_shp_hash(time_t secs_now);
 shpinfo *get_shp_from_hash(char *filename);
 
-#endif // __XASTIR_SHP_HASH_H
+#endif // __ASTIR_SHP_HASH_H

@@ -46,7 +46,7 @@
 #include "draw/x11/rotated.h"
 #include "core/util/snprintf.h"
 
-#include "core/xastir.h"
+#include "core/astir.h"
 
 #include "draw/xa_draw.h"
 
@@ -204,7 +204,7 @@ static char *my_strdup(char *str)
 
   if(s!=NULL)
   {
-    xastir_snprintf(s,
+    astir_snprintf(s,
                     strlen(str)+1,
                     "%s",
                     str);
@@ -290,7 +290,7 @@ float XRotVersion(char *str, int n)
 {
   if(str!=NULL)
   {
-    xastir_snprintf(str, n, "%s", XV_COPYRIGHT);
+    astir_snprintf(str, n, "%s", XV_COPYRIGHT);
   }
   return XV_VERSION;
 }

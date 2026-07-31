@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -46,8 +46,8 @@
 #endif // HAVE_SYS_TIME_H
 #include <time.h>
 
-#include "core/xastir.h"
-#include "ui/motif/xastir_gui.h"
+#include "core/astir.h"
+#include "ui/motif/astir_gui.h"
 #include "ui/motif/wx_gui.h"
 #include "ui/motif/main_gui.h"
 #include "ui/motif/draw_symbols_gui.h"
@@ -70,7 +70,7 @@ Widget All_messages_dialog = NULL;
 Widget view_messages_text = NULL;
 Widget vm_dist_data = NULL;
 
-static xastir_mutex All_messages_dialog_lock;
+static astir_mutex All_messages_dialog_lock;
 
 
 
@@ -295,19 +295,19 @@ void all_messages(char from, char *call_sign, char *from_call, char *message)
 
     if (strlen(message)>95)
     {
-      xastir_snprintf(data1,
+      astir_snprintf(data1,
                       sizeof(data1),
                       "%s",
                       message);
       data1[95]='\0';
-      xastir_snprintf(data2,
+      astir_snprintf(data2,
                       sizeof(data2),
                       "\n\t%s",
                       message+95);
     }
     else
     {
-      xastir_snprintf(data1,
+      astir_snprintf(data1,
                       sizeof(data1),
                       "%s",
                       message);
@@ -316,10 +316,10 @@ void all_messages(char from, char *call_sign, char *from_call, char *message)
 
     if (strncmp(call_sign, "java",4) == 0)
     {
-      xastir_snprintf(call_sign,
+      astir_snprintf(call_sign,
                       MAX_CALLSIGN+1,
                       "%s", langcode("WPUPMSB015") );   // Broadcast
-      xastir_snprintf(temp,
+      astir_snprintf(temp,
                       my_size,
                       "%s %s\t%s%s\n",
                       from_call,
@@ -329,10 +329,10 @@ void all_messages(char from, char *call_sign, char *from_call, char *message)
     }
     else if (strncmp(call_sign, "USER", 4) == 0)
     {
-      xastir_snprintf(call_sign,
+      astir_snprintf(call_sign,
                       MAX_CALLSIGN+1,
                       "%s", langcode("WPUPMSB015") );   // Broadcast
-      xastir_snprintf(temp,
+      astir_snprintf(temp,
                       my_size,
                       "%s %s\t%s%s\n",
                       from_call,
@@ -344,7 +344,7 @@ void all_messages(char from, char *call_sign, char *from_call, char *message)
     {
       char from_str[10];
 
-      xastir_snprintf(from_str, sizeof(from_str), "%c", from);
+      astir_snprintf(from_str, sizeof(from_str), "%c", from);
 
       strcpy(temp, from_call);
       temp[sizeof(temp)-1] = '\0';  // Terminate string

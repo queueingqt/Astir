@@ -26,11 +26,11 @@ by existing.  `srctree.py` is where the walk lives, so there is one copy of it.
 | `extract_settings.py src <outbase> [--apply]` | Relocates plain-data definitions out of `main.c` into a core file, reading the target symbol list on stdin. Moves definitions verbatim so no call site changes. |
 | `split_file.py <src.c> <dest.c> <fn,fn,...> [--header=f] [--apply]` | Performs the split: moves the named functions, with their doc comments and any `#if` that wraps one, into a new file. Dry run by default. Refuses to write unless the moved and kept spans reassemble the original byte for byte. |
 | `drop_first_arg.py <file.c> <fn,fn,...>` | Removes a leading argument from *calls*, not definitions, parsing the argument list with balanced parens. Skips definitions (`{` after the closing paren) and declarations (only a type before the name). See the caution below before using it on signatures that have already been edited. |
-| `snapshot_ab.sh <out.xpm>` | Pixel-level A/B, via Xastir's own snapshot facility. `SNAP_BIN=` runs another binary. Requires `snapshot/snap.cnf`, which is committed so the comparison configuration is fixed rather than whatever happened to be in `~/.xastir`. |
+| `snapshot_ab.sh <out.xpm>` | Pixel-level A/B, via Astir's own snapshot facility. `SNAP_BIN=` runs another binary. Requires `snapshot/snap.cnf`, which is committed so the comparison configuration is fixed rather than whatever happened to be in `~/.astir`. |
 | `split_scope.py [--gui=fn,fn] src <file.c>...` | Where the GUI/core seam runs inside one file: which functions have Motif in the **body**, which are pulled in transitively by *calling* one that does, which merely carry a `Widget` in the signature, and which file-scope names both halves touch. `--gui=` adds known-GUI names defined in other files (`redraw_symbols`, `pos_dialog`, `resize_dialog`). |
 | `trace_ab.sh <out.trace>` | Operation-level A/B for the **message windows**, which the pixel harness cannot see at all. Replays `trace/messages.log` and records what the core asks the windows to do. `SNAP_BIN=`, `SNAP_DIR=`, `TRACE_LOG=` as for `snapshot_ab.sh`. |
 | `gtk4_smoke.sh [out]` | Builds and runs the GTK4 backend against Cairo/Pango headlessly, checks 31 assertions and writes a PNG. The difference between "links" and "draws". |
-| `link_null.py [src] [--backend=null\|gtk4]` | **Can the core link without X?** Swaps in `xa_draw_null.o` and strikes every X library off the link line. Reports the X symbols Xastir's own objects still need, per object, via `nm` rather than the linker. |
+| `link_null.py [src] [--backend=null\|gtk4]` | **Can the core link without X?** Swaps in `xa_draw_null.o` and strikes every X library off the link line. Reports the X symbols Astir's own objects still need, per object, via `nm` rather than the linker. |
 | `trace_norm.py <raw.trace>` | Normalises a raw trace so two runs of the same build compare equal. Prints what it collapsed and masked, and an operation histogram, on stderr — read that, it is the coverage report. |
 
 ## There is a GTK4 front end, and it draws
@@ -46,13 +46,13 @@ GtkApplicationWindow, header bar, GtkDrawingArea, the render loop, gesture pan
 and scroll zoom, and the `xa_ui` callbacks -- the part nobody could write until
 the core stopped requiring Motif.
 
-`XASTIR_GTK4_RENDER_TO=<file.png>` renders one frame and exits, so it can be
-tested without a human looking at it -- the same reason `XASTIR_REPLAY` exists
+`ASTIR_GTK4_RENDER_TO=<file.png>` renders one frame and exits, so it can be
+tested without a human looking at it -- the same reason `ASTIR_REPLAY` exists
 on the Motif side.
 
 ### What works, and what does not
 
-**Works.** It initialises the core, reads the same `~/.xastir/config/xastir.cnf`,
+**Works.** It initialises the core, reads the same `~/.astir/config/astir.cnf`,
 loads the map index, and drives `load_maps()`. The output is a 1024x700 PNG with
 the OSM driver's attribution logo and CC-BY-SA badge drawn on the correct
 `colors[0xfd]` background. The whole path -- core to `xa_draw.h` to Cairo to PNG
@@ -64,7 +64,7 @@ call, and the geometry counters read **zero**: `shapes_read`, `vertices` and
 present on disk and named in `selected_maps.sys`, and they are not being drawn.
 So: the pipeline is proven, the map content is not there.
 
-That is measured, not guessed -- `XASTIR_PERF=1` with the render mode prints the
+That is measured, not guessed -- `ASTIR_PERF=1` with the render mode prints the
 same counters the Motif build uses:
 
     [perf] gtk4_render 50.4 ms | map_one 13.4 map_onscreen 0.0 |
@@ -90,7 +90,7 @@ Three things are established, and it is worth being exact about which:
 | the interface is satisfiable by a non-X toolkit | `link_null.py --backend=gtk4` — the core links, needing **0** X symbols |
 | the calls actually draw | `tools/gtk4_smoke.sh` — 31 checks, renders a PNG |
 
-**It has never drawn a frame of Xastir.** There is no GTK4 front end; `main.c`
+**It has never drawn a frame of Astir.** There is no GTK4 front end; `main.c`
 is still 30,000 lines of Motif. Nothing here has been compared against the X11
 backend pixel for pixel, and it cannot be until a front end exists.
 
@@ -116,7 +116,7 @@ ever wrong:
 
 - **`XA_FUNC_XOR`.** X's `GXxor` is bitwise on pixel *values*; Cairo composites
   colours and has no equivalent. `CAIRO_OPERATOR_DIFFERENCE` shares the property
-  Xastir relies on — drawing twice restores the original — but the intermediate
+  Astir relies on — drawing twice restores the original — but the intermediate
   colour differs. Used for rubber-band boxes and the in-progress CAD polygon.
 - **Font metrics.** X reports the widest and narrowest glyph in the font; Pango
   offers approximate character and digit widths. Call sites compute
@@ -154,7 +154,7 @@ include path**, which already proves the header itself is clean.
 `xa_draw_null.o` swapped in for `xa_draw_x11.o` and every X library struck off
 the link line.
 
-    X symbols Xastir's own core objects still need: 18, across 3 objects
+    X symbols Astir's own core objects still need: 18, across 3 objects
       rotated.o           11  XCopyGC XCreateImage XDrawImageString ...
       color.o              6  XAllocColor XFree XGetVisualInfo ...
       cairo_text.o         2  XGetGeometry XQueryColor
@@ -167,9 +167,9 @@ three that do not are exactly the files a second backend replaces outright:
 path.  None is application logic.
 
 The link still does not complete, and the first thing that stops it is not
-Xastir: **GraphicsMagick is itself linked against libX11**.  A no-X build needs
+Astir: **GraphicsMagick is itself linked against libX11**.  A no-X build needs
 a Magick built without it, or a different image path.  Worth knowing before
-anyone plans the port around Xastir's code alone.
+anyone plans the port around Astir's code alone.
 
 ### Two traps in writing that tool, both of which fired
 
@@ -195,7 +195,7 @@ change to `update_messages()` in `db.c` and to the window management in
 (`src/xa_trace.h`), the same packets are replayed through both builds, and the
 records are diffed. It does not depend on the change being visible.
 
-Getting messages into a headless run needed a driver. `XASTIR_REPLAY=<file>`
+Getting messages into a headless run needed a driver. `ASTIR_REPLAY=<file>`
 sets `read_file_ptr`/`read_file` exactly as `File > Open Log File` does and lets
 the existing main-loop replay do the rest; `main.c` prints `[replay] done` when
 `read_file_line()` hits EOF, so the script waits on a condition rather than a
@@ -335,12 +335,12 @@ vertices and draw calls, all of which stay identical while a font change moves
 every label by a pixel. For anything touching text or colour, compare the
 rendered map itself.
 
-`snapshot_ab.sh <out.xpm>` does that, using Xastir's own snapshot facility:
+`snapshot_ab.sh <out.xpm>` does that, using Astir's own snapshot facility:
 `SNAPSHOTS_ENABLED:1` makes it write `pixmap_final` to
-`~/.xastir/tmp/snapshot.xpm`, which is the finished frame with no window
+`~/.astir/tmp/snapshot.xpm`, which is the finished frame with no window
 involved. Run it against each build and `cmp` the two files.
 
-`SNAP_BIN=<path>` runs a binary from somewhere else instead of `./src/xastir`.
+`SNAP_BIN=<path>` runs a binary from somewhere else instead of `./src/astir`.
 Without it there is no way to A/B a change that is already committed; with it,
 build a `git worktree` at the older commit and point at that. Diff the
 worktree's `config.h` against this tree's before believing the result — a
@@ -351,7 +351,7 @@ differently configured baseline is a differently rendered one.
 This one is worse than the three below, because it is *reproducible*.
 
 Snapshots fire the moment they are enabled, which is before the maps have
-finished drawing. The script used to delete the snapshot before starting Xastir
+finished drawing. The script used to delete the snapshot before starting Astir
 and take the first one that appeared, so the captured frame could be partial —
 features simply missing, reading as background grey. That is indistinguishable
 from a broken clip region.
@@ -387,11 +387,11 @@ Three other approaches were tried first and all three produced worthless
 results rather than failing:
 
 - **`ab-shot.sh` captures the whole screen** (`spectacle -b`), so it only works
-  if Xastir is the visible unobscured window. One side came back as a blank grey
-  Xastir window, the other as the browser that happened to be on top of it, and
+  if Astir is the visible unobscured window. One side came back as a blank grey
+  Astir window, the other as the browser that happened to be on top of it, and
   the comparison dutifully reported a 7% difference. `bench-attrib.sh`'s header
   already warns it was written to avoid exactly this.
-- **Cropping the screenshot** to the Xastir window does not help, because the
+- **Cropping the screenshot** to the Astir window does not help, because the
   window content was wrong, not the framing.
 - **`xwd` / `xwininfo` / `xdotool` are not installed here**, so capturing a
   specific window by id was not available either.

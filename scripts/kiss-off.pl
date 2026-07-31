@@ -20,11 +20,11 @@
 
 # This script will send the proper characters to STDOUT to command a
 # KISS TNC out of KISS mode.  Redirect it to the port that the TNC
-# is connected to.  Turn off the port in Xastir first.
+# is connected to.  Turn off the port in Astir first.
 
 # It is assumed that the baud rate on the port and the baud rate of
 # the TNC match, if not, this won't work.  If you've just been using
-# the TNC in Xastir, they probably match.
+# the TNC in Astir, they probably match.
 
 # Use the script like this:
 #

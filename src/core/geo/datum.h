@@ -16,12 +16,12 @@
    John F. Waers <jfwaers@csn.net>"
 
    If you ever read this, John, thanks for the code and feel free to try out
-   Xastir, it's free.
+   Astir, it's free.
 
    The UTM to/from Lat/Long translations were written by Chuck Gantz
    <chuck.gantz@globalstar.com>.  Curt Mills received permission via e-mail
    to release the code under the GPL for a conversion he did to perl.
-   I deduce from this that including it in Xastir, a GPL program is no problem.
+   I deduce from this that including it in Astir, a GPL program is no problem.
    Thanks Chuck!
 
    N7TAP

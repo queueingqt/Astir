@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -22,8 +22,8 @@
  */
 
 
-#ifndef __XASTIR_UTIL_H
-#define __XASTIR_UTIL_H
+#ifndef __ASTIR_UTIL_H
+#define __ASTIR_UTIL_H
 
 #include <stdio.h>
 #include "core/aprs/database.h"
@@ -61,11 +61,11 @@ static __inline__ unsigned short lu16(long val)
   return (unsigned short)val;
 }
 
-extern int convert_from_xastir_coordinates ( float *f_longitude,
+extern int convert_from_astir_coordinates ( float *f_longitude,
     float *f_latitude,
     long x,
     long y );
-extern int convert_to_xastir_coordinates (unsigned long* x,
+extern int convert_to_astir_coordinates (unsigned long* x,
     unsigned long* y,
     float f_longitude,
     float f_latitude);
@@ -92,11 +92,11 @@ extern char *compress_posit(const char *lat, const char group, const char *lon, 
                             const unsigned int course, const unsigned int speed, const char *phg);
 extern char compress_group(char group_in);
 extern int  position_defined(long lat, long lon, int strict);
-extern void convert_screen_to_xastir_coordinates(int x, int y, long *lat, long *lon);
-extern void convert_xastir_to_screen_coordinates(long lon, long lat, long *x, long *y);
-extern void convert_xastir_to_UTM_str(char *str, int str_len, long x, long y);
-extern void convert_xastir_to_UTM(double *easting, double *northing, char *zone, int zone_len, long x, long y);
-extern void convert_UTM_to_xastir(double easting, double northing, char *zone, long *x, long *y);
+extern void convert_screen_to_astir_coordinates(int x, int y, long *lat, long *lon);
+extern void convert_astir_to_screen_coordinates(long lon, long lat, long *x, long *y);
+extern void convert_astir_to_UTM_str(char *str, int str_len, long x, long y);
+extern void convert_astir_to_UTM(double *easting, double *northing, char *zone, int zone_len, long x, long y);
+extern void convert_UTM_to_astir(double easting, double northing, char *zone, long *x, long *y);
 extern double convert_lat_l2r(long lat);
 extern double convert_lon_l2r(long lon);
 extern void convert_lat_l2s(long lat, char *str, int str_len, int type);
@@ -150,7 +150,7 @@ extern int check_unproto_path( char *data );
 extern void set_dangerous( char *ptr );
 extern void clear_dangerous(void);
 
-void xastirWriteWKT(char *name);
+void astirWriteWKT(char *name);
 char * makeMultiline(int numPairs, double *lon, double *lat, char colorStyle,
                      int lineType, char* sqnc,
                      double *lonCentr, double *latCentr );
@@ -158,6 +158,6 @@ char * makeMultiline(int numPairs, double *lon, double *lat, char colorStyle,
 void short_filename_for_status(char *filename, char *short_filename, size_t short_filename_size);
 char *find_last_of(char *instring, char theChar);
 
-#endif // __XASTIR_UTIL_H
+#endif // __ASTIR_UTIL_H
 
 

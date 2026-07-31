@@ -6,19 +6,19 @@
 #
 
 
-# Script to create Xastir "Overlay" files from "CSV" files of the
+# Script to create Astir "Overlay" files from "CSV" files of the
 # proper format (comma-delimited files).
 #
-# 1) Creates files in Xastir "log" format if you enter a callsign
-# below.  These files can then be put in your ~/.xastir/logs/
+# 1) Creates files in Astir "log" format if you enter a callsign
+# below.  These files can then be put in your ~/.astir/logs/
 # directory and brought in via the File->Open Log File menu option.
-# If you start with the CSV files in the ~/.xastir/logs/ directory
+# If you start with the CSV files in the ~/.astir/logs/ directory
 # and process them there with this script, the output files will be
-# placed into the proper place for Xastir to find them.
+# placed into the proper place for Astir to find them.
 #
 # 2) If no callsign is entered, this script will create files in
-# Xastir's "~/.xastir/config/object.log" format.  You can then
-# replace or append the file to the object.log file, restart Xastir
+# Astir's "~/.astir/config/object.log" format.  You can then
+# replace or append the file to the object.log file, restart Astir
 # or "Reload Object/Item History".
 #
 # NOTE: These APRS Items will become part of your locally
@@ -47,11 +47,11 @@
 
 
 
-# Change this to match whatever callsign you're running Xastir as,
+# Change this to match whatever callsign you're running Astir as,
 # so that the APRS Items appear to have been generated locally.  You
-# can then suck this file in as a "log" file from within Xastir.  If
+# can then suck this file in as a "log" file from within Astir.  If
 # this field is empty, then instead write the packets out without a
-# header, as in Xastir's "object.log" format.
+# header, as in Astir's "object.log" format.
 $callsign = "";
 
 if ($callsign ne "") {

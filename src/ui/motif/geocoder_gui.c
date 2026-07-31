@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -33,8 +33,8 @@
 
 #include <Xm/XmAll.h>
 
-#include "core/xastir.h"
-#include "ui/motif/xastir_gui.h"
+#include "core/astir.h"
+#include "ui/motif/astir_gui.h"
 #include "ui/motif/wx_gui.h"
 #include "ui/motif/main_gui.h"
 #include "ui/motif/draw_symbols_gui.h"
@@ -79,8 +79,8 @@ static Widget goto_button = (Widget)NULL;
 static Widget mark_button = (Widget)NULL;
 
 // Dialog state
-static xastir_mutex geocoder_dialog_lock;
-static xastir_mutex geocoder_config_lock;
+static astir_mutex geocoder_dialog_lock;
+static astir_mutex geocoder_config_lock;
 static struct geocode_result_list current_results;
 
 // Country code mapping (ISO 3166-1 alpha-2)
@@ -385,12 +385,12 @@ static void populate_results_list(void)
         struct geocode_result *result = &current_results.results[i];
 
         if (result->display_name[0]) {
-            xastir_snprintf(temp, sizeof(temp), "%s",
+            astir_snprintf(temp, sizeof(temp), "%s",
                            result->display_name);
         } else {
             char subtitle[512];
             geocode_format_subtitle(result, subtitle, sizeof(subtitle));
-            xastir_snprintf(temp, sizeof(temp), "%s",
+            astir_snprintf(temp, sizeof(temp), "%s",
                            subtitle);
         }
 
@@ -407,7 +407,7 @@ static void populate_results_list(void)
     free(items);
 
     // Update status
-    xastir_snprintf(temp, sizeof(temp), langcode("GEOCODE013"), current_results.count);
+    astir_snprintf(temp, sizeof(temp), langcode("GEOCODE013"), current_results.count);
     update_status(temp);
 
     // Enable buttons
@@ -470,10 +470,10 @@ static void search_callback(Widget UNUSED(widget), XtPointer UNUSED(clientData),
         // Error occurred
         const char *error = geocode_get_error();
         if (error) {
-            xastir_snprintf(error_msg, sizeof(error_msg),
+            astir_snprintf(error_msg, sizeof(error_msg),
                            langcode("GEOCODE012"), error);
         } else {
-            xastir_snprintf(error_msg, sizeof(error_msg),
+            astir_snprintf(error_msg, sizeof(error_msg),
                            langcode("GEOCODE012"), "Unknown error");
         }
         update_status(error_msg);
@@ -510,7 +510,7 @@ static void goto_location(struct geocode_result *result, int mark_location)
 {
     unsigned long coord_lat, coord_lon;
 
-    convert_to_xastir_coordinates(&coord_lon, &coord_lat,
+    convert_to_astir_coordinates(&coord_lon, &coord_lat,
                                  (float)result->lon,
                                  (float)result->lat);
 
@@ -917,10 +917,10 @@ static void geocoder_config_save_callback(Widget widget, XtPointer clientData, X
         if (server_url) {
             if (server_url[0] == '\0') {
                 // User cleared the field - restore default
-                xastir_snprintf(nominatim_server_url, sizeof(nominatim_server_url),
+                astir_snprintf(nominatim_server_url, sizeof(nominatim_server_url),
                               "https://nominatim.openstreetmap.org");
             } else {
-                xastir_snprintf(nominatim_server_url, sizeof(nominatim_server_url), "%s", server_url);
+                astir_snprintf(nominatim_server_url, sizeof(nominatim_server_url), "%s", server_url);
             }
             XtFree(server_url);
         }
@@ -931,7 +931,7 @@ static void geocoder_config_save_callback(Widget widget, XtPointer clientData, X
         email = XmTextFieldGetString(config_email_text);
         if (email) {
             // Empty string is valid - clears the email
-            xastir_snprintf(nominatim_user_email, sizeof(nominatim_user_email), "%s", email);
+            astir_snprintf(nominatim_user_email, sizeof(nominatim_user_email), "%s", email);
             XtFree(email);
         }
     }
@@ -941,7 +941,7 @@ static void geocoder_config_save_callback(Widget widget, XtPointer clientData, X
         country_code = get_selected_country_code(config_country_combo, config_country_custom_text, NULL);
 
         if (country_code) {
-            xastir_snprintf(nominatim_country_default,
+            astir_snprintf(nominatim_country_default,
                           sizeof(nominatim_country_default),
                           "%s", country_code);
             XtFree(country_code);

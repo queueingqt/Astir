@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -30,7 +30,7 @@
 #include <stdio.h>
 #include <Xm/XmAll.h>
 
-#include "core/xastir.h"
+#include "core/astir.h"
 #include "draw/x11/xa_draw_x11.h"
 #include "draw/x11/color.h"
 #include "core/state/xa_config.h"
@@ -52,7 +52,7 @@ int visual_depth;
 
 /**********************************************************************************/
 /* load color file                                                                */
-/* load the colors to be used with Xastir                                         */
+/* load the colors to be used with Astir                                         */
 /* Return 1 if good 0 if not found or error                                       */
 /**********************************************************************************/
 
@@ -64,7 +64,7 @@ int load_color_file(void)
   char colorname[50];
   int ok,x;
 
-  xastir_snprintf(temp, sizeof(temp), "config/xastir.rgb");
+  astir_snprintf(temp, sizeof(temp), "config/astir.rgb");
   colors_loaded=0;
   ok=1;
   f=fopen(get_data_base_dir(temp),"r");
@@ -161,14 +161,14 @@ Pixel GetPixelByName( Widget w, char *colorname)
     }
     else
     {
-      xastir_snprintf(warning, sizeof(warning), "Couldn't allocate color %s", colorname);
+      astir_snprintf(warning, sizeof(warning), "Couldn't allocate color %s", colorname);
       XtWarning(warning);
       return(BlackPixel(dpy,scr));
     }
   }
   else
   {
-    xastir_snprintf(warning, sizeof(warning), "Couldn't find color %s", colorname);
+    astir_snprintf(warning, sizeof(warning), "Couldn't find color %s", colorname);
     XtWarning(warning);
     return(BlackPixel(dpy,scr));
   }

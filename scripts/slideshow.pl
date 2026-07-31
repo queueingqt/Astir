@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 
 #
-# Script to create a slideshow from Xastir snapshot images.  Note
+# Script to create a slideshow from Astir snapshot images.  Note
 # that this script is Unix/Linux-centric due to the use of the $HOME
 # variable and the use of the "cp" command.
 #
@@ -25,12 +25,12 @@
 # 02111-1307, USA.
 #
 #
-# Copies/renames ~/.xastir/tmp/snapshot.png files so that a
+# Copies/renames ~/.astir/tmp/snapshot.png files so that a
 # slideshow can be created from the images at a later date.  The
 # script monitors the input directory.  Any new snapshot.png file
 # that appears is allowed to age for a few seconds to make sure that
-# Xastir is done writing the file, then the file is copied to the
-# ~/.xastir/tmp/slideshow/ directory as a numbered file.  See below
+# Astir is done writing the file, then the file is copied to the
+# ~/.astir/tmp/slideshow/ directory as a numbered file.  See below
 # for one method for turning these files into an animated GIF, or
 # else bring them up in some slideshow program and display them in
 # numerical order.  The name of the file contains the Unix Epoch
@@ -51,7 +51,7 @@
 
 
 $home = $ENV{"HOME"};
-$input_dir = "$home/.xastir/tmp";
+$input_dir = "$home/.astir/tmp";
 $output_dir = "$input_dir/slideshow";
 
 
@@ -70,7 +70,7 @@ while (1) {
 
   # If the age of the file is more than 15 seconds but less than 31
   # minutes, copy the file to the slideshow directory and rename it
-  # along the way.  Note that Xastir can produce snapshots at a rate
+  # along the way.  Note that Astir can produce snapshots at a rate
   # of between one per minute, and one per 30 minutes.
   #
   if ( ($difference > 15) && ($difference < (31 * 60)) ) {

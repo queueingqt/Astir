@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -21,8 +21,8 @@
  * Look at the README for more information on the program.
  */
 
-#ifndef XASTIR_POPUP_H
-#define XASTIR_POPUP_H
+#ifndef ASTIR_POPUP_H
+#define ASTIR_POPUP_H
 
 #define MAX_POPUPS 30
 #define MAX_POPUPS_TIME 600 /* Max time popups will display 600=10min*/
@@ -42,5 +42,5 @@ extern void popup_gui_init(void);
 extern void clear_popup_message_windows(void);
 extern void popup_time_out_check(int curr_sec);
 
-#endif /* XASTIR_POPUP_H */
+#endif /* ASTIR_POPUP_H */
 

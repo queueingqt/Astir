@@ -46,7 +46,7 @@ jobs:
     - name: make install
       run: sudo make install
     - name: get NWS data
-      run:  sudo /usr/local/share/xastir/scripts/get-NWSdata
+      run:  sudo /usr/local/share/astir/scripts/get-NWSdata
 
   macos-build:
     runs-on: macos-latest
@@ -90,7 +90,7 @@ jobs:
         cd ..
         mkdir build
         cd build
-        ../Xastir/configure --with-bdb-incdir=/usr/local/include/db18 --with-bdb-libdir=/usr/local/lib CFLAGS="-O2 -g" CC=gcc13 CXX=g++13
+        ../Astir/configure --with-bdb-incdir=/usr/local/include/db18 --with-bdb-libdir=/usr/local/lib CFLAGS="-O2 -g" CC=gcc13 CXX=g++13
     - name: configure out-of-source gcc14
       shell: freebsd {0}
       run: |
@@ -98,7 +98,7 @@ jobs:
         cd ..
         mkdir build-gcc14
         cd build-gcc14
-        ../Xastir/configure --with-bdb-incdir=/usr/local/include/db18 --with-bdb-libdir=/usr/local/lib CFLAGS="-O2 -g" CC=gcc13 CXX=g++14
+        ../Astir/configure --with-bdb-incdir=/usr/local/include/db18 --with-bdb-libdir=/usr/local/lib CFLAGS="-O2 -g" CC=gcc13 CXX=g++14
     - name: make gcc13
       shell: freebsd {0}
       run: |

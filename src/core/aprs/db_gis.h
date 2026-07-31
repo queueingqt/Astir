@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 2000-2026 The Xastir Group
  *
  * This program is free software; you can redistribute it and/or
@@ -20,13 +20,13 @@
  * Look at the README for more information on the program.
  */
 
-#include "core/xastir.h"
+#include "core/astir.h"
 #include "core/io/interface.h"  // ioparam struct is used to store descriptions of databases
 // to which to connect.
-extern int xastirCoordToLatLongWKT(long x, long y, char *wkt);
-extern int xastirCoordToLatLongPoint(long x, long y, char *wkt);
-extern float xastirWKTPointToLatitude(char *wkt);
-extern float xastirWKTPointToLongitude(char *wkt);
+extern int astirCoordToLatLongWKT(long x, long y, char *wkt);
+extern int astirCoordToLatLongPoint(long x, long y, char *wkt);
+extern float astirWKTPointToLatitude(char *wkt);
+extern float astirWKTPointToLongitude(char *wkt);
 
 // maximum size of a well known text representation of a geometry
 // 100 should be fine for points, will need to be longer for other geometries.
@@ -69,29 +69,29 @@ extern float xastirWKTPointToLongitude(char *wkt);
 
 // constants to control database schema versioning
 
-// Version of the mysql/postgresql table structures this version of xastir expects to find.
+// Version of the mysql/postgresql table structures this version of astir expects to find.
 // Any change or addition of database schema elements should trigger a version change.
-// Newer versions of xastir should require an older database to be upgraded to the
+// Newer versions of astir should require an older database to be upgraded to the
 // current version before allowing queries to run against that database.
-#define XASTIR_SPATIAL_DB_VERSION 1
-// Allow grouping of forward compatible table structures allowing an older version of xastir to
-// interact with a database created by a newer version of xastir of the same compatble series
+#define ASTIR_SPATIAL_DB_VERSION 1
+// Allow grouping of forward compatible table structures allowing an older version of astir to
+// interact with a database created by a newer version of astir of the same compatble series
 // addition of new tables and fields shouldn't change comapatable series, but renamed, deleted,
 // or shortened schema elements should change compatible series (changes where a select or
-// or insert query run by an older version of xastir will fail against a newer database).
-#define XASTIR_SPATIAL_DB_COMPATABLE_SERIES 1
+// or insert query run by an older version of astir will fail against a newer database).
+#define ASTIR_SPATIAL_DB_COMPATABLE_SERIES 1
 
 // constants to indicate schema to use in a database
-#define XASTIR_SCHEMA_SIMPLE 1     // simple station table only
-#define XASTIR_SCHEMA_CAD 2        // simple station table and cad objects
-#define XASTIR_SCHEMA_COMPLEX 3    // full aprs concept support
-#define XASTIR_SCHEMA_APRSWORLD 4  // aprs world implementation
+#define ASTIR_SCHEMA_SIMPLE 1     // simple station table only
+#define ASTIR_SCHEMA_CAD 2        // simple station table and cad objects
+#define ASTIR_SCHEMA_COMPLEX 3    // full aprs concept support
+#define ASTIR_SCHEMA_APRSWORLD 4  // aprs world implementation
 
-#define MAX_XASTIR_SCHEMA 4  // largest value for xastir_schema_ 
+#define MAX_ASTIR_SCHEMA 4  // largest value for astir_schema_ 
 // used in load_data_or_default
 
-#define XASTIR_SCHEMA_DESCRIPTOR_MAX_SIZE 50  // largest allowed size of a localized schema descriptor string
-#define XASTIR_DB_DESCRIPTOR_MAX_SIZE 50      // largest allowed size of a localized dbms descriptor string
+#define ASTIR_SCHEMA_DESCRIPTOR_MAX_SIZE 50  // largest allowed size of a localized schema descriptor string
+#define ASTIR_DB_DESCRIPTOR_MAX_SIZE 50      // largest allowed size of a localized dbms descriptor string
 
 
 // description of a database
@@ -109,7 +109,7 @@ typedef struct {
                       // connection with using this descriptor.
    int schema_type;    // table structures to use in the database
                       // A database schema could contain both APRSWorld
-                      // and XASTIR table structures, but a separate database
+                      // and ASTIR table structures, but a separate database
                       // descriptor should be defined for each.
    char unix_socket[255];   // MySQL - unix socket parameter (path and filename)
    //connection_list open_connections // list of open connections to this database
@@ -151,8 +151,8 @@ extern int closeConnection (Connection *aDbConnection, int port_number);
 extern int testConnection(Connection *aDbConnection);
 int pingConnection(Connection *aDbConnection);
 
-extern char xastir_dbms_type[4][51];
-extern char xastir_schema_type[5][51];
+extern char astir_dbms_type[4][51];
+extern char astir_schema_type[5][51];
 
 // storing and retrieving data from a database
 extern int storeStationToGisDb(Connection *aDbConnection, DataRow *aStation);

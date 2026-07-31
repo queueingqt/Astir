@@ -208,7 +208,7 @@ $outputTif =~ s/pdf/tif/i;
 
 # We will warp from whatever the coordinate system is into EPSG:4326, the
 # coordinate system that requires the least work and involves the fewest
-# approximations from Xastir.
+# approximations from Astir.
 #$theGdalWarp="gdalwarp -cutline $inputPDF.vrt -crop_to_cutline -t_srs EPSG:4326  -co \"COMPRESS=PACKBITS\" $inputPDF $outputTif";
 $theGdalWarp="gdalwarp -cutline $inputPDF.vrt -crop_to_cutline -t_srs EPSG:4326  $inputPDF $outputTif";
 

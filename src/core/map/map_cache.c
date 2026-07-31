@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -52,7 +52,7 @@
 #include <sys/stat.h>
 
 #include "core/util/snprintf.h"
-#include "core/xastir.h"
+#include "core/astir.h"
 #include "core/globals.h"
 #include "core/state/xa_config.h"
 #include "core/main.h"
@@ -168,13 +168,13 @@ int map_cache_put( char * map_cache_url, char * map_cache_file )
 
   mc_space_used=0;
 
-  xastir_snprintf(mc_database_filename,
+  astir_snprintf(mc_database_filename,
                   sizeof(mc_database_filename),
                   "%s/map_cache.db",
                   get_user_base_dir("map_cache", temp_file_path, sizeof(temp_file_path)));
 
   // check for reasonable filename
-  // expects file name like /home/brown/.xastir/map_cache/map_1100052372.gif
+  // expects file name like /home/brown/.astir/map_cache/map_1100052372.gif
   //                                   1234567890123456789012345678901234567
 
   mc_ret=strlen(map_cache_file);
@@ -310,7 +310,7 @@ int map_cache_put( char * map_cache_url, char * map_cache_file )
 
   }
 
-//      xastir_snprintf(map_cache_file, MAX_FILENAME, "%s",(char *)mc_data.data);
+//      astir_snprintf(map_cache_file, MAX_FILENAME, "%s",(char *)mc_data.data);
 
   if ( debug_level & 512 )
   {
@@ -356,7 +356,7 @@ int map_cache_put( char * map_cache_url, char * map_cache_file )
     mc_key.data = "CACHE_SPACE_USED";
     mc_key.size = sizeof("CACHE_SPACE_USED");
 
-    xastir_snprintf(mc_buf, sizeof(mc_buf), "%d", mc_space_used);
+    astir_snprintf(mc_buf, sizeof(mc_buf), "%d", mc_space_used);
 
     if ( debug_level & 512 )
     {
@@ -477,8 +477,8 @@ int map_cache_get( char * map_cache_url, char * map_cache_file )
     return(1);
   }
 
-  set_dangerous("map_cache_get: xastir_snprintf 1");
-  xastir_snprintf(mc_database_filename,
+  set_dangerous("map_cache_get: astir_snprintf 1");
+  astir_snprintf(mc_database_filename,
                   sizeof(mc_database_filename),   // change to max_filename?
                   "%s/map_cache.db",
                   get_user_base_dir("map_cache", temp_file_path, sizeof(temp_file_path)));
@@ -544,12 +544,12 @@ int map_cache_get( char * map_cache_url, char * map_cache_file )
               (mc_key.data == NULL) ? "(null)" : (char *)mc_key.data,
               (mc_data.data == NULL) ? "(null)" : (char *)mc_data.data);
     }
-    set_dangerous("map_cache_get: xastir_snprintf 2");
-    xastir_snprintf(map_cache_file, MAX_FILENAME, "%s",(char *)mc_data.data);
+    set_dangerous("map_cache_get: astir_snprintf 2");
+    astir_snprintf(map_cache_file, MAX_FILENAME, "%s",(char *)mc_data.data);
     clear_dangerous();
 
     // check for reasonable filename
-    // expects file name like /home/brown/.xastir/map_cache/map_1100052372.gif
+    // expects file name like /home/brown/.astir/map_cache/map_1100052372.gif
     //                                   1234567890123456789012345678901234567
 
     mc_ret=strlen(map_cache_file);
@@ -761,7 +761,7 @@ int map_cache_del( char * map_cache_url )
 
   mc_space_used = 0 ;
 
-  xastir_snprintf(mc_database_filename,
+  astir_snprintf(mc_database_filename,
                   MAX_FILENAME,
                   "%s/map_cache.db",
                   get_user_base_dir("map_cache", temp_file_path, sizeof(temp_file_path)));
@@ -834,7 +834,7 @@ int map_cache_del( char * map_cache_url )
 
   // stat the file
 
-  xastir_snprintf(mc_delete_file,
+  astir_snprintf(mc_delete_file,
                   MAX_FILENAME,
                   "%s",
                   (char *) mc_data.data);
@@ -978,7 +978,7 @@ int map_cache_del( char * map_cache_url )
   mc_size_key.data = "CACHE_SPACE_USED";
   mc_size_key.size = sizeof("CACHE_SPACE_USED");
 
-  xastir_snprintf(mc_buf, sizeof(mc_buf), "%d", mc_space_used);
+  astir_snprintf(mc_buf, sizeof(mc_buf), "%d", mc_space_used);
 
   if ( debug_level & 512 )
   {
@@ -1084,7 +1084,7 @@ char * map_cache_fileid(void)
 
 // check for files old enough to expire
 // this is lame but it should work for now.
-// expects file name like /home/brown/.xastir/map_cache/map_1100052372.gif
+// expects file name like /home/brown/.astir/map_cache/map_1100052372.gif
 //
 // writing this proved a good example of why pointer arithmetic is tricky
 // and a good example of why I should avoid it - n8ysz 20041110

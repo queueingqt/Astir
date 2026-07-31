@@ -2,7 +2,7 @@
 
 > [!IMPORTANT]
 >
-> This document makes a lot of references to the Xastir
+> This document makes a lot of references to the Astir
 > wiki and mailing lists at xastir.org.  At this time (December 2025)
 > that site is experiencing frequent downtime and may be unavailable.
 > This is being worked on.
@@ -19,15 +19,15 @@
 ------------------------------------------------------------------------
 
  Please at least SKIM this document before asking questions. In fact,
- READ IT if you've never successfully set up Xastir before. PLEASE!
+ READ IT if you've never successfully set up Astir before. PLEASE!
  READ IT! If you haven't read this file, and ask for help
  expect to be told to READ the README file first! or RTFM :)
 
  Contents:
 
  0.    Important notice
- 1.    What is Xastir?
- 2.    How do I get Xastir & Git usage
+ 1.    What is Astir?
+ 2.    How do I get Astir & Git usage
  3.    Quick startup
  4.    Upgrading
  5.    Identification notes
@@ -42,39 +42,39 @@
 
 0. NOTICE
 
-   Please read this file carefully before trying to set up Xastir.
+   Please read this file carefully before trying to set up Astir.
    This software was developed to be used by licensed amateur radio
    operators.  You are responsible for any information transmitted
    or propagated on any network.
 
-1. WHAT IS XASTIR?
+1. WHAT IS ASTIR?
 
-   Xastir is an open-source project to create a free X11 graphical
+   Astir is an open-source project to create a free X11 graphical
    APRS(tm) client. APRS(tm) use amateur radio and Internet services to
    convey GPS mapping, weather, and positional data in a graphical
    application.  It has been developed by and for amateur radio
    enthusiasts to provide real-time data in an easy to use package.
 
-   Xastir currently runs under several flavors of Linux and BSD Unix.
-   A few people are running Xastir on Solaris Unix, FreeBSD, Lindows
+   Astir currently runs under several flavors of Linux and BSD Unix.
+   A few people are running Astir on Solaris Unix, FreeBSD, Lindows
    and Mac OS X, but there may be small changes necessary in order to
-   get Xastir to configure/compile on some systems.  There are a few
+   get Astir to configure/compile on some systems.  There are a few
    notes below which may help in this task.  Most of the developers use
    Linux which makes it the best supported platform at the moment.
 
-   Xastir is an open-source project: Most sources, documentation, and
+   Astir is an open-source project: Most sources, documentation, and
    binaries are available under the GPL license, with a few modules
    available under other open-source or public domain licenses.
 
-   More information on Xastir can be found here:
+   More information on Astir can be found here:
 
-   * https://github.com/Xastir/Xastir/wiki
-   * http://github.com/Xastir
+   * https://github.com/Astir/Astir/wiki
+   * http://github.com/Astir
    * http://xastir.org
 
    including the latest releases, Git access (lets you
    download the latest developers' code), and information on how to join
-   Xastir mailing lists.  Note that you must be subscribed in order to
+   Astir mailing lists.  Note that you must be subscribed in order to
    post to the mailing lists.
 
    SmartBeaconing(tm) was invented by Tony Arnerich (KD7TA) and Steve
@@ -85,19 +85,19 @@
 
    -- The Xastir Group.
 
-2. HOW TO GET XASTIR
+2. HOW TO GET ASTIR
 
-   Xastir is currently developed at
-   <http://github.com/Xastir/Xastir>
-   You can get the latest version of Xastir from there.
+   Astir is currently developed at
+   <http://github.com/Astir/Astir>
+   You can get the latest version of Astir from there.
 
    You might try <http://xastir.org> for help and information,
-   particularly the Xastir mailing list (listed near the bottom
+   particularly the Astir mailing list (listed near the bottom
    of the page).
 
    * Git USAGE
 
-     Obtain the *very latest* version of Xastir under development by
+     Obtain the *very latest* version of Astir under development by
      using Git.
 
      See the file [README.GIT](README.GIT.md) for more details.
@@ -105,51 +105,51 @@
    * Release version tarballs
 
      You can get the latest packaged release source code without git
-     at https://github.com/Xastir/Xastir/releases.  Be warned that packaged
+     at https://github.com/Astir/Astir/releases.  Be warned that packaged
      source tarballs may be quite old and not representative of the current
      state of the project.  We highly recommend not using this method unless
      you have a specific reason to stick to official releases.
 
 3. QUICK STARTUP
 
-   Please see the [Xastir wiki at github](https://github.com/Xastir/Xastir/wiki) for the most
-   up-to-date documentation on getting started with Xastir.
+   Please see the [Astir wiki at github](https://github.com/Astir/Astir/wiki) for the most
+   up-to-date documentation on getting started with Astir.
 
    See [INSTALL.md](INSTALL.md) for a
-   relatively quick overview of how to build and use Xastir.
+   relatively quick overview of how to build and use Astir.
 
-   The Xastir wiki (http://xastir.org) might have OS-specific guidance
-   for building Xastir on your system.
+   The Astir wiki (http://xastir.org) might have OS-specific guidance
+   for building Astir on your system.
 
    WINDOWS USERS:  Please refer to the [README.CYGWIN](README.CYGWIN) file for
    specific instructions.
 
 4. UPGRADING
 
-   Upgrading Xastir that has been built from a recent Git clone
+   Upgrading Astir that has been built from a recent Git clone
    is as simple as running "git pull" in the source tree and
    recompiling.
 
 5. IDENTIFICATION NOTES
 
    Packet radio modes, by their very nature, typically identify
-   themselves with every transmission. Xastir has a few features
-   targeted to people who used Xastir in demonstrations and other
-   broadcasts where Xastir itself is used over radio.
+   themselves with every transmission. Astir has a few features
+   targeted to people who used Astir in demonstrations and other
+   broadcasts where Astir itself is used over radio.
 
-   Xastir can auto-ID via voice if Festival is compiled in and/or via a
+   Astir can auto-ID via voice if Festival is compiled in and/or via a
    message splashed across the screen. It does this identification
    every 9.5 minutes if enabled. These identification modes were
-   designed for broadcasting Xastir across fast-scan television (for
+   designed for broadcasting Astir across fast-scan television (for
    events perhaps). Set the "ATV_SCREEN_ID" variable to 1 to enable the
    screen message, and "SPEAK_ID" variable to 1 to enable festival to
    speak the message. These variables are in the
-   ~/.xastir/config/xastir.cnf file.
+   ~/.astir/config/astir.cnf file.
 
 6. OS SPECIFIC NOTES
 
    There are some OS-specific installation notes at
-   https://github.com/Xastir/Xastir/wiki.  We are working on expanding
+   https://github.com/Astir/Astir/wiki.  We are working on expanding
    the section.
 
    There are more OS-specific installation notes at http://xastir.org
@@ -162,7 +162,7 @@
 
    If you wish to gate NWS weather alerts from the Internet onto RF, you'll
    need to create a text file in the users directory as
-   ~/.xastir/data/nws-stations.txt
+   ~/.astir/data/nws-stations.txt
    List each NWS station that you would like to transmit via RF. Wildcards
    are implied for lengths of 3 or greater. Here's what an example file
    looks like:
@@ -215,15 +215,15 @@
 
 8. BORING LEGAL STUFF
 
-   Xastir is Copyright © by Frank Giannandrea. Xastir is
+   Astir is Copyright © by Frank Giannandrea. Astir is
    distributed according to the GNU General Public
    License. There should be a copy of this license in the
    file COPYING. If not, write to the Free Software
    Foundation, Inc., 675 Mass Ave, Cambridge, MA
    02139, USA.
 
-   As of Xastir 0.4.0 all changes made by the Xastir
-   development team to the Xastir source code and any related
+   As of Astir 0.4.0 all changes made by the Astir
+   development team to the Astir source code and any related
    files are Copyright (C) 2000-2026 The Xastir Group. The source
    code will still be distributed according to the GNU General
    Public License as Frank Giannandrea did in the past.
@@ -237,28 +237,28 @@
 
 9. MAILING LIST
 
-   There are currently a couple of mailing lists about Xastir.
-   xastir@xastir.org is the one relevant for most users.
+   There are currently a couple of mailing lists about Astir.
+   astir@xastir.org is the one relevant for most users.
 
-   The xastir@xastir.org mail-list is dedicated to Bug
+   The astir@xastir.org mail-list is dedicated to Bug
    reports, technical questions, your thoughts or
-   suggestions on new features being added to Xastir, things
+   suggestions on new features being added to Astir, things
    that should be removed or fixed, amazing problems that even
    stump the guru's, etc... are what we want to see here.  You
    must be subscribed to the list in order to post messages.
 
-   To subscribe to the Xastir mailing list, send email to:
-   xastir-request@xastir.org In the body of the message,
-   put "subscribe xastir"; or go to
-   http://xastir.org and click on "XASTIR MAILING LISTS" (in the
+   To subscribe to the Astir mailing list, send email to:
+   astir-request@xastir.org In the body of the message,
+   put "subscribe astir"; or go to
+   http://xastir.org and click on "ASTIR MAILING LISTS" (in the
    "Resources" section near the bottom) to subscribe.
 
-        ### DO NOT SEND FRANK EMAIL ABOUT XASTIR ###
+        ### DO NOT SEND FRANK EMAIL ABOUT ASTIR ###
 
-   Frank is no longer developing the Xastir code and has not
-   participated in Xastir development for many years, so don't bother
+   Frank is no longer developing the Astir code and has not
+   participated in Astir development for many years, so don't bother
    searching him out and emailing him. If you have a serious problem,
-   open an issue on Github.  You may also try posting to the xastir
+   open an issue on Github.  You may also try posting to the astir
    mailing list.
 
    Please, before posting to this list, see what things are
@@ -272,21 +272,21 @@
    spelling), or even substantive issues either for that
    matter. Please read and follow the mailing list rules.
 
-   A second mailing list, xastir-dev@xastir.org is intended for
+   A second mailing list, astir-dev@xastir.org is intended for
    developer's discussion.
 
 10. DOCUMENTATION
 
     We're trying to get the documentation up to date. If you
     feel that anything is missing here, or that anything should
-    be added etc, please email xastir@xastir.org about it,
+    be added etc, please email astir@xastir.org about it,
     thank you.
 
 11. OBTAINING HELP
 
     Please read the file FAQ, and make sure you've followed any relevant
     instructions in INSTALL. If the problem still exists, feel free to
-    ask on the Xastir mailing-list, as described above.
+    ask on the Astir mailing-list, as described above.
 
 
   ------------------------------------------------------------------------

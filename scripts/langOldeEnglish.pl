@@ -22,12 +22,12 @@
 
 # Run it like this:
 #
-#   cd xastir/config
+#   cd astir/config
 #   ../scripts/langOldeEnglish.pl -split <language-English.sys >language-OldeEnglish.sys
 # or
 #   ../scripts/langOldeEnglish.pl <some-input-file >some-output-file
 #
-# "-split": Translate 2nd part of line only (Xastir language file).
+# "-split": Translate 2nd part of line only (Astir language file).
 # Without it:  Translate entire text.
 
 
@@ -36,7 +36,7 @@
 # http://www.siafoo.net/snippet/133
 
 
-# Check whether we're translating an Xastir language file or plain
+# Check whether we're translating an Astir language file or plain
 # text:
 #   "-split" present:  Translate the 2nd piece of each line.
 #   "-split" absent:   Translate the entire text.

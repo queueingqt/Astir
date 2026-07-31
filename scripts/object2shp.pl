@@ -24,13 +24,13 @@
 # according to the "Rolling your own shapefile maps" section of README.MAPS
 # The point file will display using the TIGER Landmark Point dbfawk file
 #
-# This enables fast generation of point maps by using xastir to plop down
+# This enables fast generation of point maps by using astir to plop down
 # objects, then this script to turn the object.log file into a shapefile
 #
 # Typical usage:  
 #   object2shp.pl object.log myshape
 #
-# Remember to exit xastir and delete "object.log", otherwise xastir will
+# Remember to exit astir and delete "object.log", otherwise astir will
 # never forget your objects.
 #--------------------------------------------------------------------------
 

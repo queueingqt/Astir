@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -22,10 +22,10 @@
  */
 
 
-#ifndef __XASTIR_GPS_H
-#define __XASTIR_GPS_H
+#ifndef __ASTIR_GPS_H
+#define __ASTIR_GPS_H
 
-#include "core/xastir.h"
+#include "core/astir.h"
 
 #define MAX_GPS_STRING 300
 
@@ -41,6 +41,6 @@ extern void create_garmin_waypoint(long latitude,long longitude,char *call_sign)
 int isGGA(char *gps_line_data);
 int isRMC(char *gps_line_data);
 
-#endif  // __XASTIR_GPS_H
+#endif  // __ASTIR_GPS_H
 
 

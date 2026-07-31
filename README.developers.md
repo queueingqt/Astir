@@ -11,7 +11,7 @@ between building a tarball release and building from a git clone.
 
 ## Development snapshots
 
-Xastir migrated to git and github instead of cvs and sourceforge, and
+Astir migrated to git and github instead of cvs and sourceforge, and
 therefore creating "development snapshots" isn't necessary, because
 every commit is essentially a development snapshot that can be checked
 out by referencing its SHA-1 hash.  Furthermore, github allows users
@@ -29,7 +29,7 @@ versions-of-the-day out of source code management systems.
 
 Beginning with release 2.1.8 we stopped providing "configure" scripts
 and all the droppings from "bootstrap.sh" in release tarballs, and all
-users must now use "bootstrap.sh" as a first step in building Xastir.
+users must now use "bootstrap.sh" as a first step in building Astir.
 
 ### Stable release process in a nutshell
 
@@ -48,8 +48,8 @@ users must now use "bootstrap.sh" as a first step in building Xastir.
   release.  This should include all documentation updates and help
   file updates.  Only when the master branch is really ready to
   release do you perform the following steps.  Let's assume we're
-  creating release X.Y.Z, and that our Xastir clone and working
-  directory is in ~/XASTIR/Xastir.
+  creating release X.Y.Z, and that our Astir clone and working
+  directory is in ~/ASTIR/Astir.
 
 - By our long-standing convention, stable releases are always even
   numbers in the last field of the release number, and odd numbers
@@ -84,7 +84,7 @@ users must now use "bootstrap.sh" as a first step in building Xastir.
   If the code builds you should be in good shape, and you should also
   try querying the binary it produced to have it print its version:
 
-      build-release-check/src/xastir -V
+      build-release-check/src/astir -V
 
   Confirm that it is reporting the version you expect it to.  It will
   have additional decorations indicating stuff about git, ignore those.
@@ -108,7 +108,7 @@ users must now use "bootstrap.sh" as a first step in building Xastir.
 - Create an annotated tag marking the current state of the repo as
   your new release:
 
-      git tag -a -m "Xastir Release X.Y.Z" Release-X.Y.Z
+      git tag -a -m "Astir Release X.Y.Z" Release-X.Y.Z
 
   Don't forget the "-a", as this is what allows our use of "git
   describe" to give the user an accurate description of what code
@@ -120,14 +120,14 @@ users must now use "bootstrap.sh" as a first step in building Xastir.
   to build it somewhere other than in your git checkout directory:
 
 
-      git archive --format=tar.gz --prefix=Xastir-Release-X.Y.Z/ Release-X.Y.Z > ~/src/Xastir-Release-X.Y.Z.tar.gz
+      git archive --format=tar.gz --prefix=Astir-Release-X.Y.Z/ Release-X.Y.Z > ~/src/Astir-Release-X.Y.Z.tar.gz
 
   This process will exactly reproduce what Github will be doing when
   we're finished and actually create the release.  Now make sure it builds:
 
       cd ~/src
-      tar xzf Xastir-Release-X.Y.Z.tar.gz
-      cd Xastir-Release-X.Y.Z
+      tar xzf Astir-Release-X.Y.Z.tar.gz
+      cd Astir-Release-X.Y.Z
       ./bootstrap.sh          # You could also use "autoreconf -i"
       mkdir build
       cd build
@@ -144,7 +144,7 @@ users must now use "bootstrap.sh" as a first step in building Xastir.
   tarball and unpacked code:
 
       cd ~/src
-      rm -rf Xastir-Release-X.Y.Z Xastir-Release-X.Y.Z.tar.gz
+      rm -rf Astir-Release-X.Y.Z Astir-Release-X.Y.Z.tar.gz
 
   - If the sanity check did NOT work, then you need to go back to
     your original working directory and fix any problems you found.
@@ -152,26 +152,26 @@ users must now use "bootstrap.sh" as a first step in building Xastir.
     NEW proposed release:
 
       git tag -d Release-X.Y.Z
-      git tag -a -m "Xastir Release X.Y.Z" Release-X.Y.Z
+      git tag -a -m "Astir Release X.Y.Z" Release-X.Y.Z
 
     Now go back and redo the sanity check.  Repeat until the tarball
-    you created actually produces a working Xastir.
+    you created actually produces a working Astir.
 
 - Now go back to your working directory and finish up by pushing the
   code and tag to Github:
 
-      cd ~/XASTIR/Xastir
+      cd ~/ASTIR/Astir
       git push origin master
       git push origin Release-X.Y.Z
 
-- Log in to github and go to the Xastir project releases page at
-  http://github.com/Xastir/Xastir/releases.  Click the "Draft a new
+- Log in to github and go to the Astir project releases page at
+  http://github.com/Astir/Astir/releases.  Click the "Draft a new
   release" button.  Put your tag name (Release-X.Y.Z) into the
   dialog box that says "Tag version" and Github will display a note
   that it found a matching, existing tag.  Fill in the rest of the
   form:
 
-    - Give the release a name ("Xastir Release X.Y.Z") that will
+    - Give the release a name ("Astir Release X.Y.Z") that will
       appear prominently above it in the releases list.
 
     - Enter some release notes in the large text box below the title
@@ -187,21 +187,21 @@ users must now use "bootstrap.sh" as a first step in building Xastir.
   This new release will now appear on the "Releases" page, along with
   links to tar and zip files for the source code and the release notes
   you just created.  The fixed URL
-  https://github.com/Xastir/Xastir/releases/latest will always point
+  https://github.com/Astir/Astir/releases/latest will always point
   to the most recent release.  The source code download link will be
 
-    https://github.com/Xastir/Xastir/archive/Release-X.Y.Z/Xastir-Release-X.Y.Z.tar.gz
+    https://github.com/Astir/Astir/archive/Release-X.Y.Z/Astir-Release-X.Y.Z.tar.gz
 
   with the obvious change for the zip version.
 
 - The last step here is to announce the new release in all the usual
   places.  These days it is probably enough to announce it on the
-  xastir mailing list, and possibly the aprssig and linux-hams groups.
+  astir mailing list, and possibly the aprssig and linux-hams groups.
   No need to spam every ham radio mailing list.  On the other hand,
-  the Xastir wiki does recommend sending notification of all releases
+  the Astir wiki does recommend sending notification of all releases
   (both development and stable) to:
 
-      - xastir at xastir.org
+      - astir at xastir.org
       - nwaprssig at nwaprs.info
       - aprssig at  tapr.org
       - aprsnews at tapr.org
@@ -231,7 +231,7 @@ different version than releases.
 
 - Make sure you're still in your master branch in your main clone:
 
-      cd ~/src/Xastir
+      cd ~/src/Astir
       git checkout master
 
 

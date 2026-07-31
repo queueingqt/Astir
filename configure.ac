@@ -20,15 +20,20 @@
 #
 #
 # AC_INIT():
-# It should look something like this:  ([xastir], [2.0.8], [xastir@xastir.org])
+# It should look something like this:  ([astir], [2.0.8], [<bug report address>])
 # The revision number must contain at least one '.' and two digits.
-AC_INIT([xastir], [2.2.5], [xastir@xastir.org])
+#
+# The bug address is this fork's, not xastir@xastir.org.  The rename turned the
+# local part of upstream's address into "astir@xastir.org", which is nobody --
+# reports sent there would vanish, and any that arrived would land on a project
+# that did not write this code.
+AC_INIT([astir], [2.2.5], [https://github.com/queueingqt/Xastir/issues])
 #########################################################################
 
 
 AC_PREREQ(2.60)
 
-AC_CONFIG_SRCDIR([src/core/xastir.h])
+AC_CONFIG_SRCDIR([src/core/astir.h])
 #AM_CONFIG_HEADER(config.h)
 AC_CONFIG_HEADERS(config.h)
 AM_INIT_AUTOMAKE([subdir-objects 1.16])
@@ -39,7 +44,17 @@ echo "Configuring AC_PACKAGE_NAME AC_PACKAGE_VERSION"
 echo ""
 
 # Take out the dots in order to create the TOCALL
-AC_DEFINE_UNQUOTED(XASTIR_TOCALL, "`echo AC_PACKAGE_VERSION | sed -e 's/^/APX/' -e 's/\.//g'`", [Defines the version tocall])
+#
+# APZ, not APX.  A tocall is a registered identifier that goes out in the
+# destination field of every packet this program transmits, and APX belongs to
+# upstream Xastir.  A fork emitting APX tells every station on the air that it
+# is Xastir, which is both false and impossible for anyone to debug.
+#
+# APZ is the prefix the APRS specification reserves for experimental and
+# unregistered software, which is exactly what this is until a tocall is
+# applied for.  Registering one is a follow-up, not a code change: it means
+# asking the APRS tocall registry for an APxxxx and putting it here.
+AC_DEFINE_UNQUOTED(ASTIR_TOCALL, "`echo AC_PACKAGE_VERSION | sed -e 's/^/APZ/' -e 's/\.//g'`", [Defines the version tocall])
 
 # Check for host type
 AC_CANONICAL_HOST
@@ -65,16 +80,16 @@ AC_PROG_RANLIB
 AM_PROG_CC_C_O
 
 # test for devices
-XASTIR_DETECT_DEVICES
+ASTIR_DETECT_DEVICES
 
 # add includes and libs
-XASTIR_ADD_SEARCH_PATHS
+ASTIR_ADD_SEARCH_PATHS
 
 # check for pthread first
 ACX_PTHREAD
 
 # add compiler flags 
-XASTIR_COMPILER_FLAGS
+ASTIR_COMPILER_FLAGS
 
 # Check for binaries
 use_festival=yes
@@ -90,7 +105,7 @@ AC_ARG_WITH(gpsman,[  --without-gpsman          Disable gpsman features.],use_gp
 AC_ARG_WITH(errorpopups,[  --with-errorpopups        Send error popups to stderr.],use_err_popups=$withval)
 
 # Now that all the various "use_" variables are set, probe for binaries.
-XASTIR_DETECT_BINARIES
+ASTIR_DETECT_BINARIES
 
 # if the probes failed, then make sure the "use_" variables are set to no,
 # even if we requested them.
@@ -128,13 +143,13 @@ AC_CHECK_LIB([Xext], [XextAddDisplay])
 # This was in place for a very long time, but libxp is now deprecated and
 # has even been removed from some distros
 #
-# XpGetDocumentData is not used *anywhere* in Xastir, but some distros have
+# XpGetDocumentData is not used *anywhere* in Astir, but some distros have
 # a Motif library that is linked against it.  This is supposed to be
 # taken care of by the shared library loader, not by explicit linking, but
 # as late as 2007 some distros had it linked wrong.  It appears as of 2015
 # that nobody still does that, and this check causes more harm than good.
 #
-# If the build of Xastir fails at link time looking for XpGetDocumentData,
+# If the build of Astir fails at link time looking for XpGetDocumentData,
 # then somebody *does* still do that incorrect shared library linking,
 # and y9ou'll need to re-enable this on your system
 #
@@ -314,7 +329,7 @@ AC_C_BIGENDIAN
 # Checks for header files. 
 #AC_CHECK_HEADERS([Xm/Xm.h],MOTIF_INC="yes", AC_MSG_ERROR(*** Cannot find Motif include files:  Please install one of Motif/OpenMotif/Lesstif development packages. ***))
 
-XASTIR_PATH_MOTIF
+ASTIR_PATH_MOTIF
 if test "x$xm_includes" != "x" ; then
     CFLAGS="$CFLAGS -I$xm_includes"
     CPPFLAGS="$CPPFLAGS -I$xm_includes"
@@ -451,7 +466,7 @@ if test "${shapelib_desired}" = "yes" -a "${use_shapelib}" = "yes"; then
                       [AC_CHECK_LIB([pcre], [pcre_compile],
                                     [use_pcre="yes (legacy)"
                                      LIBS="$LIBS -lpcre"
-                                     AC_DEFINE(XASTIR_LEGACY_PCRE, 1, Define to 1 if you have the legacy `pcre' library (-lpcre). )
+                                     AC_DEFINE(ASTIR_LEGACY_PCRE, 1, Define to 1 if you have the legacy `pcre' library (-lpcre). )
                                                    ])
                        break
                        ])
@@ -536,12 +551,12 @@ fi
 use_postgis=no
 AC_ARG_WITH(postgis, [  --with-postgis            Enable Postgresql with PostGIS.],use_postgis=$withval)
 if test "${use_postgis}" != "no"; then
-  XASTIR_CHECK_POSTGIS
+  ASTIR_CHECK_POSTGIS
 fi
 use_mysql=no
 AC_ARG_WITH(mysql, [  --with-mysql	            Enable MySQL, with spatial support if available.],use_mysql=$withval)
 if test "${use_mysql}" != "no"; then
-  XASTIR_CHECK_MYSQL
+  ASTIR_CHECK_MYSQL
 fi
 
 if test "${use_postgis}" = "yes"; then
@@ -587,7 +602,7 @@ fi
 
 
 # Check for LIBGC, a Garbage Collection library.  If found, allow
-# linking it with Xastir, but require the "--with-libgc" flag to
+# linking it with Astir, but require the "--with-libgc" flag to
 # enable it.
 use_libgc=no
 AC_ARG_WITH(libgc,[  --with-libgc              Enable libgc features.],use_libgc=$withval)
@@ -616,7 +631,7 @@ fi
 use_map_cache=yes
 AC_ARG_WITH(map_cache,[  --without-map-cache       Disable Berkeley DB Map Caching.],use_map_cache=$withval)
 if test "${use_map_cache}" = "yes"; then
-  XASTIR_BERKELEY_DB_CHK
+  ASTIR_BERKELEY_DB_CHK
 fi
 
 
@@ -631,7 +646,7 @@ use_graphicsmagick=yes
 use_imagemagick=no
 AC_ARG_WITH(graphicsmagick,[  --without-graphicsmagick  Disable graphicsmagick features.],use_graphicsmagick=$withval)
 if test "${use_graphicsmagick}" = "yes"; then
-    XASTIR_CHECK_GRAPHICSMAGICK
+    ASTIR_CHECK_GRAPHICSMAGICK
 fi
 #
 # Note: This must be a separate "if" as the use_graphicsmagick
@@ -641,7 +656,7 @@ if test "${use_graphicsmagick}" = "no"; then
   use_imagemagick=yes
   AC_ARG_WITH(imagemagick,[  --without-imagemagick     Disable imagemagick features.],use_imagemagick=$withval)
   if test "${use_imagemagick}" = "yes"; then
-    XASTIR_CHECK_IMAGEMAGICK
+    ASTIR_CHECK_IMAGEMAGICK
   fi
 fi
 #
@@ -655,12 +670,12 @@ fi
 
 
 
-# Set XASTIR_DATA_BASE in CPPFLAGS due to Gnu coding standard that requires
+# Set ASTIR_DATA_BASE in CPPFLAGS due to Gnu coding standard that requires
 # datadir expansion to be deferred until make time.
 if test "x${datadir}" = "x"; then 
-  CPPFLAGS="$CPPFLAGS -DXASTIR_DATA_BASE=\\\"${ac_default_prefix}/share/xastir\\\""
+  CPPFLAGS="$CPPFLAGS -DASTIR_DATA_BASE=\\\"${ac_default_prefix}/share/astir\\\""
 else 
-  CPPFLAGS="$CPPFLAGS -DXASTIR_DATA_BASE=\\\"${datadir}/xastir\\\""
+  CPPFLAGS="$CPPFLAGS -DASTIR_DATA_BASE=\\\"${datadir}/astir\\\""
 fi 
  
 
@@ -689,8 +704,8 @@ fi
 # following steps.  Here I'm adding them to the beginning so the   
 # dupe-check portion will take out the later ones that might be in 
 # the wrong order.  If they're in the wrong order, we can get 
-# "Error: Shell widget xastir has zero width and/or height" when 
-# Xastir is started up.   Can also get "Error: attempt to add
+# "Error: Shell widget astir has zero width and/or height" when 
+# Astir is started up.   Can also get "Error: attempt to add
 # non-widget child "DropSiteManager" to parent", but that can also
 # be caused by other problems with libraries.
 # 
@@ -718,7 +733,7 @@ esac
 
 # Create the ILIBS defined variable.  We add spaces here in the else
 # clauses in order to make the REGRESSION_TESTS format nicely.  We
-# take them back out before we define the variable that Xastir uses
+# take them back out before we define the variable that Astir uses
 # for it's Help->About dialog.
 #
 if test "${use_ax25}" = "yes"; then
@@ -841,12 +856,12 @@ fi
 if test "x$exec_prefix" != xNONE; then
   tmp_bin_path="$exec_prefix"
 fi
-AC_DEFINE_UNQUOTED(XASTIR_PATH, "`echo $tmp_path`", [Path to installed Xastir files.])
-AC_DEFINE_UNQUOTED(XASTIR_BIN_PATH, "`echo $tmp_bin_path`", [Path to installed Xastir binaries.])
+AC_DEFINE_UNQUOTED(ASTIR_PATH, "`echo $tmp_path`", [Path to installed Astir files.])
+AC_DEFINE_UNQUOTED(ASTIR_BIN_PATH, "`echo $tmp_bin_path`", [Path to installed Astir binaries.])
 
 
 
-AC_DEFINE_UNQUOTED(XASTIR_INSTALLED_LIBS, "`echo $ILIBS`", [Defines the installed libs])
+AC_DEFINE_UNQUOTED(ASTIR_INSTALLED_LIBS, "`echo $ILIBS`", [Defines the installed libs])
 
 
 AC_SUBST(LDFLAGS) 
@@ -944,9 +959,9 @@ fi
 #echo   Davis/MySQL............................. : $davis
 echo 
 echo AC_PACKAGE_NAME will be installed in $prefix/bin. 
-if test "x$xastirpath" != "x" ; then 
-        echo Warning: You have an old copy of Xastir at $xastirpath. 
+if test "x$astirpath" != "x" ; then 
+        echo Warning: You have an old copy of Astir at $astirpath. 
 fi 
-echo "Type 'make' to build Xastir (Use 'gmake' instead on some systems)." 
+echo "Type 'make' to build Astir (Use 'gmake' instead on some systems)." 
 
 

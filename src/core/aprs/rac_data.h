@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -27,8 +27,8 @@
  * qual fields represent basic, 5wpm, 12wpm, advanced
  */
 
-#ifndef __XASTIR_RAC_DATA_H
-#define __XASTIR_RAC_DATA_H
+#ifndef __ASTIR_RAC_DATA_H
+#define __ASTIR_RAC_DATA_H
 
 #define RAC_DATA_LEN 472
 
@@ -59,5 +59,5 @@ extern int search_rac_data_appl(char *callsign, rac_record *data);
 extern int check_rac_data(void);
 
 
-#endif /* __XASTIR_RAC_DATA_H */
+#endif /* __ASTIR_RAC_DATA_H */
 

@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 2000-2026 The Xastir Group
  *
  * This program is free software; you can redistribute it and/or
@@ -45,7 +45,7 @@
 
 /*
  * This is a library of Awk-like functions to facilitate, for example,
- * canonicalizing DBF attributes for shapefiles into internal Xastir
+ * canonicalizing DBF attributes for shapefiles into internal Astir
  * values when rendering shapefile maps, or rewriting labels
  * (e.g. callsigns into tactical calls), etc.
  *
@@ -260,7 +260,7 @@ int awk_set_sym(awk_symbol *s,
   case STRING:
     if (minlen > 0)
     {
-      // Change this to an xastir_snprintf() function if we
+      // Change this to an astir_snprintf() function if we
       // need to use this awk_set_sym() function later.
       // strncpy won't null-terminate the string if there's no
       // '\0' in the first minlen bytes.
@@ -315,7 +315,7 @@ int awk_get_sym(awk_symbol *s,          /* symbol */
         minlen = min(s->len,size-1);
         if (minlen > 0)
         {
-          xastir_snprintf(store,
+          astir_snprintf(store,
                           size,
                           "%s",
                           (char *)(s->val));
@@ -339,7 +339,7 @@ int awk_get_sym(awk_symbol *s,          /* symbol */
         minlen = min(cbl,size-1);
         if (minlen > 0)
         {
-          xastir_snprintf(store,
+          astir_snprintf(store,
                           size,
                           "%s",
                           cbuf);
@@ -363,7 +363,7 @@ int awk_get_sym(awk_symbol *s,          /* symbol */
         minlen = min(cbl,size-1);
         if (minlen > 0)
         {
-          xastir_snprintf(store,
+          astir_snprintf(store,
                           size,
                           "%s",
                           cbuf);
@@ -802,7 +802,7 @@ void awk_free_rule(awk_rule *r)
       }
       if (r->tables)
       {
-#ifdef XASTIR_LEGACY_PCRE
+#ifdef ASTIR_LEGACY_PCRE
         pcre_free((void *)r->tables);
 #else
         pcre2_maketables_free(NULL,r->tables);
@@ -810,13 +810,13 @@ void awk_free_rule(awk_rule *r)
       }
       if (r->re)
       {
-#ifdef XASTIR_LEGACY_PCRE
+#ifdef ASTIR_LEGACY_PCRE
         pcre_free(r->re);
 #else
         pcre2_code_free(r->re);
 #endif
       }
-#ifdef XASTIR_LEGACY_PCRE
+#ifdef ASTIR_LEGACY_PCRE
       if (r->pe)
       {
         pcre_free(r->pe);
@@ -1141,7 +1141,7 @@ loop:
 int awk_compile_program(awk_symtab *symtab, awk_program *rs)
 {
   awk_rule *r;
-#ifdef XASTIR_LEGACY_PCRE
+#ifdef ASTIR_LEGACY_PCRE
   const char *error;
   int erroffset;
 #else
@@ -1162,13 +1162,13 @@ int awk_compile_program(awk_symtab *symtab, awk_program *rs)
     {
       if (r->tables)
       {
-#ifdef XASTIR_LEGACY_PCRE
+#ifdef ASTIR_LEGACY_PCRE
         pcre_free((void *)r->tables);
 #else
         pcre2_maketables_free(NULL,r->tables);
 #endif
       }
-#ifdef XASTIR_LEGACY_PCRE
+#ifdef ASTIR_LEGACY_PCRE
       r->tables = pcre_maketables(); /* NLS locale parse tables */
 #else
       theCompileContext=pcre2_compile_context_create(NULL);
@@ -1178,7 +1178,7 @@ int awk_compile_program(awk_symtab *symtab, awk_program *rs)
 #endif
       if (!r->re)
       {
-#ifdef XASTIR_LEGACY_PCRE
+#ifdef ASTIR_LEGACY_PCRE
         r->re = pcre_compile(r->pattern, /* the pattern */
                              0, /* default options */
                              &error, /* for error message */
@@ -1206,7 +1206,7 @@ int awk_compile_program(awk_symtab *symtab, awk_program *rs)
         fprintf(stderr,"^\n");
         return -1;
       }
-#ifdef XASTIR_LEGACY_PCRE
+#ifdef ASTIR_LEGACY_PCRE
       if (!r->pe)
       {
         r->pe = pcre_study(r->re, 0, &error); /* optimize the regexp */
@@ -1263,7 +1263,7 @@ void awk_uncompile_program(awk_program *p)
     {
       if (r->tables)
       {
-#ifdef XASTIR_LEGACY_PCRE
+#ifdef ASTIR_LEGACY_PCRE
         pcre_free((void *)r->tables);
 #else
         pcre2_maketables_free(NULL,r->tables);
@@ -1272,14 +1272,14 @@ void awk_uncompile_program(awk_program *p)
       r->tables = NULL;
       if (r->re)
       {
-#ifdef XASTIR_LEGACY_PCRE
+#ifdef ASTIR_LEGACY_PCRE
         pcre_free(r->re);
 #else
         pcre2_code_free(r->re);
 #endif
       }
       r->re = NULL;
-#ifdef XASTIR_LEGACY_PCRE
+#ifdef ASTIR_LEGACY_PCRE
       if (r->pe)
       {
         pcre_free(r->pe);
@@ -1306,7 +1306,7 @@ int awk_exec_program(awk_program *this, char *buf, int len)
 {
   int i,rc,done = 0;
   awk_rule *r;
-#ifdef XASTIR_LEGACY_PCRE
+#ifdef ASTIR_LEGACY_PCRE
   int ovector[3*MAXSUBS];
   #define OVECLEN (sizeof(ovector)/sizeof(ovector[0]))
 #else
@@ -1322,7 +1322,7 @@ int awk_exec_program(awk_program *this, char *buf, int len)
   {
     if (r->ruletype == REGEXP)
     {
-#ifdef XASTIR_LEGACY_PCRE
+#ifdef ASTIR_LEGACY_PCRE
       rc = pcre_exec(r->re,r->pe,buf,len,0,0,ovector,OVECLEN);
 #else
       pcre2_match_data *match_data;
@@ -1359,7 +1359,7 @@ int awk_exec_program(awk_program *this, char *buf, int len)
       {
         done = awk_exec_action(this->symtbl,r->code);
       }
-#ifndef XASTIR_LEGACY_PCRE
+#ifndef ASTIR_LEGACY_PCRE
       pcre2_match_data_free(match_data);
 #endif
     }

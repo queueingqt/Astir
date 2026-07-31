@@ -26,7 +26,7 @@
 
 void xa_x11_set_canvas(Widget canvas);
 
-// The colormap the backend allocates into.  Was in xastir.h, which every core
+// The colormap the backend allocates into.  Was in astir.h, which every core
 // file includes; only this backend and the two renderer files that sit beside
 // it (color.c, cairo_text.c) use it, and all three include X11 anyway.
 extern Colormap cmap;

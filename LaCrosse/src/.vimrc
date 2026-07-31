@@ -1,5 +1,5 @@
 "
-" Per-project .vimrc file: Configures Vim per Xastir project standards.
+" Per-project .vimrc file: Configures Vim per Astir project standards.
 "
 " Add these two files to the end of your ~/.vimrc file:
 "

@@ -1,4 +1,4 @@
-# Git Instructions for Xastir users and developers
+# Git Instructions for Astir users and developers
 
 For those who think git might be a bit too complicated to deal with,
 here are (I think) the minimal commands.
@@ -16,7 +16,7 @@ here are (I think) the minimal commands.
      git config --global user.email "Your@email.address"
 ```
 The above is not strictly necessary, but if you ever try to make changes
-to Xastir and get them integrated with the project it is important.
+to Astir and get them integrated with the project it is important.
 
 <details>
 <summary>If you already have a different git config</summary>
@@ -32,20 +32,20 @@ Check the config by:
      git config -l   # Doesn't differentiate between global and local though!
 ```
 
-2. Go to <http://github.com/Xastir/Xastir> to access the project page.
+2. Go to <http://github.com/Astir/Astir> to access the project page.
   There you will find the URL of the git repository, just to the right
   of a button that says "HTTPS". Copy this URL to your clipboard.  (At
   the time of this writing, the URL was
-  https://github.com/Xastir/Xastir.git)
+  https://github.com/Astir/Astir.git)
 
 3. Open a shell, navigate to a directory where you want to store the
-Xastir source code, and enter this command:
+Astir source code, and enter this command:
 ```
-    git  clone https://github.com/Xastir/Xastir.git
+    git  clone https://github.com/Astir/Astir.git
 ```
 
-This will create a clone of the Xastir git repository in an
-"Xastir" subdirectory of the current directory.
+This will create a clone of the Astir git repository in an
+"Astir" subdirectory of the current directory.
 
 
 All done!  You now have the latest development sources on your
@@ -53,10 +53,10 @@ computer.  Not only that, you have a complete copy of the entire
 project history and access to all prior releases.
 
 4. Please set your default git commit message template for the project to
-the one included in the Xastir source tree:
+the one included in the Astir source tree:
 
 ```
-    cd Xastir
+    cd Astir
     cp git_commit_message_template ~
     git config --global commit.template ~/git_commit_message_template
 ```
@@ -76,7 +76,7 @@ day you did it.  From time to time you'll want to update that to get
 the latest changes.  It's easy.
 
 ```
- cd Xastir
+ cd Astir
  git pull           # Update your local repo (May be dangerous for developers)
  ./bootstrap.sh     # "autoreconf -i" also works
  mkdir -p build     # Build in a separate directory
@@ -85,8 +85,8 @@ the latest changes.  It's easy.
  (make clean;make -j3 2>&1) | tee make.log
  sudo make install  # "make install-strip" can be used after the first
                     # time: It removes debugging info from executable
- sudo chmod 4555 /usr/local/bin/xastir  # Only needed if using kernel AX.25
- xastir &   # Start it up!
+ sudo chmod 4555 /usr/local/bin/astir  # Only needed if using kernel AX.25
+ astir &   # Start it up!
 ```
 
 Note that you'll need autoconf 2.53 or newer and automake 1.16 or newer
@@ -111,9 +111,9 @@ stop, fix the problem and try again.  There is no point continuing if
 bootstrap.sh gives you error messages about programs not being found
 (aclocal, autoconf, automake).
 
-This is a common problem reported to the Xastir team, and its solution
+This is a common problem reported to the Astir team, and its solution
 is always the same:  install all prerequisite tools before trying to
-build Xastir.
+build Astir.
 </details>
 
 # Git details for DEVELOPERS:
@@ -121,7 +121,7 @@ build Xastir.
 These instructions are by necessity very, very incomplete.  Don't rely
 solely on this document to learn git.  See a good resource like [Pro
 Git](https://git-scm.com/book/en/v2) before getting too involved in
-Xastir development.
+Astir development.
 
 ## Initial Checkout:
 
@@ -131,7 +131,7 @@ get set up right.  Choose your initial clone URL accordingly.
 ### HTTPS Method:
 
 ```
-   git clone https://github.com/Xastir/Xastir
+   git clone https://github.com/Astir/Astir
 ```
 
 ### SSH public key method
@@ -139,7 +139,7 @@ get set up right.  Choose your initial clone URL accordingly.
 [Add keys to GitHub](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account) and then:
 
 ```
-   git clone git@github.com:Xastir/Xastir
+   git clone git@github.com:Astir/Astir
 ```
 
 Note that using the SSH method means that you won't have to answer the
@@ -150,10 +150,10 @@ your SSH key. The SSH method is highly recommended for active developers!
 
 # Normal Development Worklow:
 
-## The Xastir team prefers a "fork and pull request" development flow
+## The Astir team prefers a "fork and pull request" development flow
 
 In this way of working with git, you create a fork on github (just
-click the "fork" button on the Xastir github main page).  This creates
+click the "fork" button on the Astir github main page).  This creates
 a clone in your own account on github that is entirely yours, but is
 linked back to the main repo.
 
@@ -163,12 +163,12 @@ good summary of how the process works.
 
 ## Create your fork
 
-Go to Xastir's github repo, click the fork button, and make your fork
+Go to Astir's github repo, click the fork button, and make your fork
 in your own github account.
 
 ## Link your local clone to your fork
 
-When you cloned Xastir's main repo, git set up a "remote" for you that
+When you cloned Astir's main repo, git set up a "remote" for you that
 refers back to that main repo on github.  It was called "origin" if
 you didn't do anything special to rename it.
 
@@ -176,10 +176,10 @@ You now want to create a second remote that points at your own fork.
 
 Navigate to your fork on github and look at the "Code" button, which
 will show you the URL you would use to clone your repo.  Use this URL
-in a command like the following in your Xastir clone directory:
+in a command like the following in your Astir clone directory:
 
 ```
-git remote add myremote git@github.com:myusername/Xastir.git
+git remote add myremote git@github.com:myusername/Astir.git
 ```
 
 You now have a way of working with your own fork and the main upstream
@@ -189,10 +189,10 @@ git remote -v
 ```
 which should list your remotes:
 ```
-origin  git@github.com:Xastir/Xastir.git (fetch)
-origin  git@github.com:Xastir/Xastir.git (push)
-myremote git@github.com:myusername/Xastir.git (fetch)
-myremote git@github.com:myusername/Xastir.git (push)
+origin  git@github.com:Astir/Astir.git (fetch)
+origin  git@github.com:Astir/Astir.git (push)
+myremote git@github.com:myusername/Astir.git (fetch)
+myremote git@github.com:myusername/Astir.git (push)
 ```
 
 You should then actually fetch the contents of your fork:
@@ -218,7 +218,7 @@ Assume you're getting ready to start some work on a new feature or bug
 fix.  Update your master branch and create a new branch from it:
 
 ```
-cd /path/to/Xastir
+cd /path/to/Astir
 git pull            # updates the code to the latest
 git checkout -b my_feature_branch   # Creates a new branch from the
                                   # latest code on master
@@ -291,7 +291,7 @@ github.   The main repository will not be touched.
 
 ### Open a pull request
 
-Go back to github to the main Xastir repository.  You should see a
+Go back to github to the main Astir repository.  You should see a
 banner near the top saying that you have added code to a branch on a
 fork, and it should have a button that says "Compare and make pull
 request" or some such words.
@@ -342,7 +342,7 @@ git pull               # get all the changes that have been made to
 # Git Commit Message Format
 
 > [!IMPORTANT]
-> The Xastir team has a specific format we want you to use in commit
+> The Astir team has a specific format we want you to use in commit
 > messages.  Please read this section and follow it.
 
 Git commit messages need to be in a certain format to make the best use
@@ -356,12 +356,12 @@ http://chris.beams.io/posts/git-commit/
 
 ## Checking Out A Branch:
 
-All branches associated with the Xastir project are contained in the clone
+All branches associated with the Astir project are contained in the clone
 you made earlier. You can switch your current working directory to
 one of those branches easily:
 
 ```
-cd Xastir
+cd Astir
 git fetch (this updates your local repo copy from github, but doesn't
            merge changes into your working tree)
 git checkout <branch name>    (this switches all the files in your working
@@ -382,7 +382,7 @@ you can do that if you have git version 2.5 or later with the following
 commands:
 
 ```
-cd Xastir
+cd Astir
 git worktree add <path> <branchname>
 ```
 
@@ -476,8 +476,8 @@ Colorizing Git output (set once and forget):
 
 Clone a repo:
 ```
-    git clone https://github.com/Xastir/Xastir
-    git clone git@github.com:Xastir/Xastir
+    git clone https://github.com/Astir/Astir
+    git clone git@github.com:Astir/Astir
 ```
 
 Status of local repo:

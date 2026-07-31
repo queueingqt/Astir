@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 2000-2026 The Xastir Group
  *
  * This program is free software; you can redistribute it and/or
@@ -22,7 +22,7 @@
  */
 #ifndef AWK_H
 #define AWK_H
-#ifdef XASTIR_LEGACY_PCRE
+#ifdef ASTIR_LEGACY_PCRE
   #ifdef HAVE_PCRE_H
     #include <pcre.h>
   #endif
@@ -78,7 +78,7 @@ typedef struct awk_rule_
   struct awk_rule_ *next_rule;    /* linked list */
   enum {BEGIN,BEGIN_REC,END_REC,END,REGEXP} ruletype;
   const char *pattern;        /* pcre pattern string */
-  #ifdef XASTIR_LEGACY_PCRE
+  #ifdef ASTIR_LEGACY_PCRE
     const u_char *tables;       /* pcre NLS tables */
     pcre *re;                   /* pcre compiled pattern */
     pcre_extra *pe;             /* pcre optimized pattern */

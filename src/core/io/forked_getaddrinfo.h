@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -22,13 +22,13 @@
  */
 
 
-#ifndef __XASTIR_GETAADDRINFO_H
-#define __XASTIR_GETAADDRINFO_H
+#ifndef __ASTIR_GETAADDRINFO_H
+#define __ASTIR_GETAADDRINFO_H
 
 int forked_getaddrinfo(const char *hostname, const char *servname, const struct addrinfo *hints, struct addrinfo **resout, int time);
 void forked_freeaddrinfo(struct addrinfo *ai);
 
 #define FAI_TIMEOUT -55
-#endif  // __XASTIR_GETAADDRINFO_H
+#endif  // __ASTIR_GETAADDRINFO_H
 
 

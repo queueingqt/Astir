@@ -10,7 +10,7 @@
  * failure names precisely what leaked.
  *
  * It draws nothing.  Surfaces, pens, images and regions are plain malloc'd
- * records; drawing calls are counted and, with XASTIR_TRACE set, recorded.
+ * records; drawing calls are counted and, with ASTIR_TRACE set, recorded.
  * That is enough for the question being asked, and it also makes this usable
  * as a harness in its own right: a core linked against this backend reports
  * what it *asked* to have drawn without needing a display.
@@ -21,7 +21,7 @@
  * backend -- that is honest rather than a bug, and it is the one part of the
  * interface a null backend cannot exercise faithfully.
  *
- * Built but not linked into xastir; see tools/link_null.py, which links the
+ * Built but not linked into astir; see tools/link_null.py, which links the
  * core against this instead of xa_draw_x11.o and with no X libraries.
  */
 

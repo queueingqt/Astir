@@ -19,16 +19,16 @@ SUDO Instructions:
     labeled "# User alias specification".  Add a line there that reads like
     this:
 
-        User_Alias XASTIR = username1, username2, username3
+        User_Alias ASTIR = username1, username2, username3
 
     where username1, etc, are valid usernames that you wish to be able to do
-    Xastir installs.  For instance you might have:
+    Astir installs.  For instance you might have:
 
-        User_Alias XASTIR = mikey
+        User_Alias ASTIR = mikey
 
     Next, add a line near the bottom that reads like this:
 
-        XASTIR ALL = NOPASSWD: /bin/chmod, /usr/bin/make
+        ASTIR ALL = NOPASSWD: /bin/chmod, /usr/bin/make
 
     Now write out and close the file.  At this point the "mikey" user will have
     root permissions when he/she runs the commands "/bin/chmod" or
@@ -37,7 +37,7 @@ SUDO Instructions:
 
     Exit from "su" so that you're a regular (non-root) user again.
 
-    To update xastir when the upstream sources have changed, one need only
+    To update astir when the upstream sources have changed, one need only
     pull the updated source code and rebuild the code.  The process is:
 
         git pull
@@ -47,10 +47,10 @@ SUDO Instructions:
         ../configure [options needed to help configure find dependencies]
         sudo make clean
         sudo make install
-        sudo chmod 4755 /usr/local/bin/xastir
+        sudo chmod 4755 /usr/local/bin/astir
 
     This is actually overly conservative, as it forces a full rebuild
-    of Xastir after each git update.  You can keep your build
+    of Astir after each git update.  You can keep your build
     directories around and just rerun configure and make in them and
     make will only recompile files that have changed.
 

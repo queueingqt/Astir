@@ -1,5 +1,5 @@
 #!/bin/bash
-# Build Xastir for performance work on the Getac V200-X.
+# Build Astir for performance work on the Getac V200-X.
 #
 #   ./build.sh          incremental make
 #   ./build.sh full     bootstrap + configure + make (after configure changes)
@@ -9,9 +9,9 @@
 #  * -j3 on purpose. This CPU has 4 threads; a fully saturated compile plus a
 #    GUI application hung the Ironlake GPU on 2026-07-28 07:43 and required a
 #    hard power-off, which then silently corrupted five object files. Leave a
-#    thread free, and do not run xastir (or any GUI ham app) while building.
-#  * Built binary is run straight from ./src/xastir. Nothing is installed, so
-#    no root is needed and the packaged xastir stays untouched as a fallback.
+#    thread free, and do not run astir (or any GUI ham app) while building.
+#  * Built binary is run straight from ./src/astir. Nothing is installed, so
+#    no root is needed and the packaged astir stays untouched as a fallback.
 set -eu
 
 cd "$(dirname "$0")"
@@ -44,13 +44,13 @@ fi
 # would report it, so check it on every build.
 core_hdr_fail=""
 #
-# xastir.h and interface.h are in this list because they are included by core
-# files and used to name Widget/Pixmap/GC.  xastir.h in particular opened with
+# astir.h and interface.h are in this list because they are included by core
+# files and used to name Widget/Pixmap/GC.  astir.h in particular opened with
 # #include <X11/Intrinsic.h>, which put Xt in front of the shapefile reader and
 # the APRS parser.  One convenient #include puts it back, and nothing else would
 # report it, so it is checked here.
 for h in core/state/xa_state.h core/state/xa_settings.h draw/xa_draw.h \
-         core/globals.h core/xastir.h core/io/interface.h; do
+         core/globals.h core/astir.h core/io/interface.h; do
   [ -f "src/$h" ] || continue
   probe="$(mktemp -t xacore.XXXXXX.c)"
   printf '#include "%s"\nint main(void){return 0;}\n' "$h" > "$probe"
@@ -79,7 +79,7 @@ fi
 make -j3
 
 echo
-echo "built: $(pwd)/src/xastir"
-ls -l src/xastir
+echo "built: $(pwd)/src/astir"
+ls -l src/astir
 echo
-echo "run with:  XASTIR_PERF=1 ./src/xastir"
+echo "run with:  ASTIR_PERF=1 ./src/astir"

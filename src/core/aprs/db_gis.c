@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 2000-2026 The Xastir Group
  *
  * This program is free software; you can redistribute it and/or
@@ -61,7 +61,7 @@
 #include "core/aprs/database.h"
 #include "core/main.h"
 #include "core/util/util.h"
-#include "core/xastir.h"
+#include "core/astir.h"
 #include "core/aprs/db_gis.h"
 
 #include "core/xa_ui.h"
@@ -72,9 +72,9 @@
  * Functions supporting connections to databases, including GIS enabled
  * databases that hold OpenGIS objects and can apply spatial indices.
  *
- * XASTIR GIS database code is separated into three layers
+ * ASTIR GIS database code is separated into three layers
  *
- *  1) Supporting XASTIR logic (ui elements, cad integration,
+ *  1) Supporting ASTIR logic (ui elements, cad integration,
  *     map drawing, etc).
  *  2a) Generic db storage/retrieval code - wrappers for layer 3
  *  2b) Connection management code
@@ -87,16 +87,16 @@
  *  Code for layers 2 and 3 is in this file.
  *
  *  Layer 2 functions should be extern and called from elsewhere to
- *    perform spatial database operations.  Xastir shouldn't need to care
+ *    perform spatial database operations.  Astir shouldn't need to care
  *    if an underlying database has spatial support or not for simple data.
  *    Some functionality might require spatial object support and might be
  *    included only if a spatial database is available.  Thus 3b code may only
  *    support a subset of the 2a functions, while 3a code should support all
  *    2a functions.
- *    Layer 2a wrappers should take and return values in xastir coordinates,
+ *    Layer 2a wrappers should take and return values in astir coordinates,
  *    and convert them to decimal degrees to pass on to layer 3.  Likewise
  *    return values from layer 3 to layer 2a should be in decimal degrees,
- *    limiting the number of different places at which the xastir/decimal
+ *    limiting the number of different places at which the astir/decimal
  *    degree conversion code needs to be invoked.  This would not be true if
  *    data are fed directly from decimal degree feeds into the database, so
  *    there may also be a need for layer 2 functions that deal only with
@@ -105,7 +105,7 @@
  *  Layer 3 functions should not be extern and should only be called
  *    by layer 2 functions from within this file.
  *    Layer 3 functions should take and return values in decimal degrees.
- *    Xastir objects should be passed down into layer 3, as doing
+ *    Astir objects should be passed down into layer 3, as doing
  *    so should make code easier to maintain (but harder to extend) than using
  *    generic structures for transport of data between layers 2 and 3.
  *    Passing a station struct from layer 2 to 3 makes layer 2 a very simple
@@ -114,7 +114,7 @@
  *    temperature data at points for analysis and generation of a temperature
  *    grid.)  [Using generic structures for transport would let the layer 3
  *    code remain unchanged while layer 2 functions are added or extended, but
- *    requires added maintenance to synchronise xastir structs, the generic
+ *    requires added maintenance to synchronise astir structs, the generic
  *    structs, and database structures.]
  *
  *  A spatially enabled database is expected to support OpenGIS spatial
@@ -144,23 +144,23 @@
  *  Descriptions of how to make connections to databases are stored in
  *  connection descriptors.  Connection descriptors describe the DBMS, whether
  *  the database has/lacks spatial support, the schema type (simple,
- *  simple+cad, xastir full, APRSWorld, etc for the database, and connection
+ *  simple+cad, astir full, APRSWorld, etc for the database, and connection
  *  parameters (server, user, database).  The layer 2/3 separation is intended
- *  to allow functions (layer 2) to be called from within xastir (layer 1)
+ *  to allow functions (layer 2) to be called from within astir (layer 1)
  *  without the need to test which function to call for which dbms.  Some
  *  functions may be schema specific, others may be able to use any of
  *  several different schemas.  Connections can be opened from a database
  *  descriptor, and more than one descriptor can point to the same database.
- *  (Thus a single MySQL database may contain simple xastir tables, xastir
+ *  (Thus a single MySQL database may contain simple astir tables, astir
  *  CAD object tables, and APRSWorld tables, but two different descriptors
  *  would be used to define connections to talk to the APRSWorld tables and
  *  the simple+cad tables within what MySQL considers one schema.  A given
- *  version of xastir will expect a particular version or range of versions
- *  for database schemas - an older version of xastir may expect fields that
- *  no longer exist in a database created for a newer version of xastir and
+ *  version of astir will expect a particular version or range of versions
+ *  for database schemas - an older version of astir may expect fields that
+ *  no longer exist in a database created for a newer version of astir and
  *  vice versa.
  *
- *  Data selected from a spatial database might be brought into xastir as
+ *  Data selected from a spatial database might be brought into astir as
  *   stations just like an internet feed or findu fetch trail query, as
  *   editable CAD objects, or as map layers.
  */
@@ -169,41 +169,41 @@
 /**************** CODE IN THIS FILE MAY CHANGE AT ANY TIME ******************/
 // Layer 3 declarations
 
-// xastir_dbms_type is used in interface_gui.c to set up cb_items to populate
+// astir_dbms_type is used in interface_gui.c to set up cb_items to populate
 // database picklist.  Define and internationalise here.
-char xastir_dbms_type[4][XASTIR_DB_DESCRIPTOR_MAX_SIZE+1] = {"","MySQL (lat/long)","Postgresql/Postgis","MySQL Spatial"} ;
-// xastir_schema_type is used in interface_gui.c to set up cb_item to populate
+char astir_dbms_type[4][ASTIR_DB_DESCRIPTOR_MAX_SIZE+1] = {"","MySQL (lat/long)","Postgresql/Postgis","MySQL Spatial"} ;
+// astir_schema_type is used in interface_gui.c to set up cb_item to populate
 // schema type picklist Sql_Database_schema_type_data. Define and internationalize here.
-char xastir_schema_type[5][XASTIR_SCHEMA_DESCRIPTOR_MAX_SIZE+1] = {"","Xastir Simple","Xastir CAD","Xastir Full","APRSWorld"} ;
+char astir_schema_type[5][ASTIR_SCHEMA_DESCRIPTOR_MAX_SIZE+1] = {"","Astir Simple","Astir CAD","Astir Full","APRSWorld"} ;
 
 const char *POSTGIS_TIMEFORMAT = "%Y-%m-%d %H:%M:%S%z";
 const char *MYSQL_TIMEFORMAT = "%Y-%m-%d %H:%M:%S";
 
 /*
 // store integer values for picklist items, but use localized strings on picklists
-char xastir_dbms_type[3][XASTIR_DB_DESCRIPTOR_MAX_SIZE+1];   // array of xastir database type strings
-xastir_snprintf(&xastir_dbms_type[DB_MYSQL][0],
-     XASTIR_DB_DESCRIPTOR_MAX_SIZE,
+char astir_dbms_type[3][ASTIR_DB_DESCRIPTOR_MAX_SIZE+1];   // array of astir database type strings
+astir_snprintf(&astir_dbms_type[DB_MYSQL][0],
+     ASTIR_DB_DESCRIPTOR_MAX_SIZE,
      "%s",langcode("XADBMST001"));
-xastir_snprintf(&xastir_dbms_type[DB_POSTGIS][0],
-     sizeof(&xastir_dbms_type[DB_POSTGIS][0]),
+astir_snprintf(&astir_dbms_type[DB_POSTGIS][0],
+     sizeof(&astir_dbms_type[DB_POSTGIS][0]),
      "%s", langcode("XADBMST002"));
-xastir_snprintf(&xastir_dbms_type[DB_MYSQL_SPATIAL][0],
-     sizeof(&xastir_dbms_type[DB_MYSQL_SPATIAL][0]),
+astir_snprintf(&astir_dbms_type[DB_MYSQL_SPATIAL][0],
+     sizeof(&astir_dbms_type[DB_MYSQL_SPATIAL][0]),
      "%s",langcode("XADBMST003"));
 
-char xastir_schema_type[4][XASTIR_SCHEMA_DESCRIPTOR_MAX_SIZE+1];  // array of xastir schema type strings
-xastir_snprintf(xastir_schema_type[XASTIR_SCHEMA_SIMPLE],
-     sizeof(xastir_schema_type[XASTIR_SCHEMA_SIMPLE][0]),
+char astir_schema_type[4][ASTIR_SCHEMA_DESCRIPTOR_MAX_SIZE+1];  // array of astir schema type strings
+astir_snprintf(astir_schema_type[ASTIR_SCHEMA_SIMPLE],
+     sizeof(astir_schema_type[ASTIR_SCHEMA_SIMPLE][0]),
       "%s",langcode ("XASCHEMA01"));
-xastir_snprintf(xastir_schema_type[XASTIR_SCHEMA_CAD][0],
-     sizeof(xastir_schema_type[XASTIR_SCHEMA_CAD][0]),
+astir_snprintf(astir_schema_type[ASTIR_SCHEMA_CAD][0],
+     sizeof(astir_schema_type[ASTIR_SCHEMA_CAD][0]),
       "%s", langcode("XASCHEMA02"));
-xastir_snprintf(xastir_schema_type[XASTIR_SCHEMA_COMPLEX][0],
-     sizeof(xastir_schema_type[XASTIR_SCHEMA_COMPLEX][0]),
+astir_snprintf(astir_schema_type[ASTIR_SCHEMA_COMPLEX][0],
+     sizeof(astir_schema_type[ASTIR_SCHEMA_COMPLEX][0]),
      "%s", langcode("XASCHEMA03"));
-xastir_snprintf(xastir_schema_type[XASTIR_SCHEMA_APRSWORLD],
-     sizeof(xastir_schema_type[XASTIR_SCHEMA_APRSWORLD][0]),
+astir_snprintf(astir_schema_type[ASTIR_SCHEMA_APRSWORLD],
+     sizeof(astir_schema_type[ASTIR_SCHEMA_APRSWORLD][0]),
      "%s", langcode("XASCHEMA04"));
 */
 
@@ -212,7 +212,7 @@ xastir_snprintf(xastir_schema_type[XASTIR_SCHEMA_APRSWORLD],
     int storeStationToGisDbPostgis(Connection *aDbConnection, DataRow *aStation);
     int storeCadToGisDbPostgis(Connection *aDbConnection, CADRow *aCadObject);
     int storeStationSimplePointToGisDbPostgis(Connection *aDbConnection, DataRow *aStation);
-    int testXastirVersionPostgis(Connection *aDbConnection);
+    int testAstirVersionPostgis(Connection *aDbConnection);
     int getAllSimplePositionsPostgis(Connection *aDbConnection);
     int getAllSimplePositionsPostgisInBoundingBox(Connection *aDbConnection, char* str_e_long, char* str_w_long, char* str_n_lat, char* str_s_lat);
     //PGconn postgres_conn_struct[MAX_DB_CONNECTIONS];
@@ -233,7 +233,7 @@ int connections_initialized = 0;
   //MYSQL mysql_conn_struct, *mysql_connection = &mysql_conn_struct;
   //MYSQL mcs[MAX_DB_CONNECTIONS];
   Connection dbc_struct, *dbc = &dbc_struct;
-  int testXastirVersionMysql(Connection *aDbConnection);
+  int testAstirVersionMysql(Connection *aDbConnection);
   int storeStationSimplePointToDbMysql(Connection *aDbConnection, DataRow *aStation);
   int getAllSimplePositionsMysql(Connection *aDbConnection);
   int getAllSimplePositionsMysqlInBoundingBox(Connection *aDbConnection, char *str_e_long, char *str_w_long, char *str_n_lat, char *str_s_lat);
@@ -499,7 +499,7 @@ int getAllSimplePositions(Connection *aDbConnection)
 /* function getAllSimplePositionsInBoundingBox()
  * Given a database connection and a bounding box, return all simple station
  * positions stored in that database that fall within the bounds of the box.
- * Takes eastern, western, northern, and southern bounds of box in xastir
+ * Takes eastern, western, northern, and southern bounds of box in astir
  * coordinates.
  */
 int getAllSimplePositionsInBoundingBox(Connection *aDbConnection, int east, int west, int north, int south)
@@ -514,7 +514,7 @@ int getAllSimplePositionsInBoundingBox(Connection *aDbConnection, int east, int 
   {
     return returnvalue;
   }
-  // convert from xastir coordinates to decimal degrees
+  // convert from astir coordinates to decimal degrees
   convert_lon_l2s(east, str_e_long, sizeof(str_e_long), CONVERT_DEC_DEG);
   convert_lat_l2s(north, str_n_lat, sizeof(str_n_lat), CONVERT_DEC_DEG);
   convert_lon_l2s(west, str_w_long, sizeof(str_w_long), CONVERT_DEC_DEG);
@@ -576,16 +576,16 @@ ioparam simpleDbTest(void) {
    ioparam test;
    Connection conn;
    int ok;
-   xastir_snprintf(test.device_name, sizeof(test.device_name), "Test Connection");
+   astir_snprintf(test.device_name, sizeof(test.device_name), "Test Connection");
    test.database_type = DB_MYSQL;
-   xastir_snprintf(test.device_host_name, sizeof(test.device_host_name), "localhost");
+   astir_snprintf(test.device_host_name, sizeof(test.device_host_name), "localhost");
    test.sp = 3306;
-   xastir_snprintf(test.database_username, sizeof(test.database_username), "xastir_test");
+   astir_snprintf(test.database_username, sizeof(test.database_username), "astir_test");
    // hardcode a test password here for simple test
-   xastir_snprintf(test.device_host_pswd, sizeof(test.device_host_pswd), "hardcoded test password");
-   xastir_snprintf(test.database_schema, sizeof(test.database_schema), "xastir");
-   test.database_schema_type = XASTIR_SCHEMA_SIMPLE;
-   xastir_snprintf(test.database_unix_socket, sizeof(test.database_unix_socket), "/var/lib/mysql/mysql.sock");
+   astir_snprintf(test.device_host_pswd, sizeof(test.device_host_pswd), "hardcoded test password");
+   astir_snprintf(test.database_schema, sizeof(test.database_schema), "astir");
+   test.database_schema_type = ASTIR_SCHEMA_SIMPLE;
+   astir_snprintf(test.database_unix_socket, sizeof(test.database_unix_socket), "/var/lib/mysql/mysql.sock");
 
    got_conn=openConnection(&test, conn);
    ok = storeStationSimpleToGisDb(&conn, n_first);
@@ -710,7 +710,7 @@ int openConnection(ioparam *anIface, Connection *connection)
 //    }
 //    #endif /* HAVE_MYSQL */
   // clear any existing error message
-  xastir_snprintf(anIface->database_errormessage, sizeof(anIface->database_errormessage), " ");
+  astir_snprintf(anIface->database_errormessage, sizeof(anIface->database_errormessage), " ");
   if (debug_level & 4096)
   {
     fprintf(stderr,"Entering openConnection with anIface [%p] and conn [%p]\n",anIface,connection);
@@ -740,7 +740,7 @@ int openConnection(ioparam *anIface, Connection *connection)
         }
         // If type is postgis, connect to postgis database.
         // build connection string from parameters
-        xastir_snprintf(connection_string, sizeof(connection_string), \
+        astir_snprintf(connection_string, sizeof(connection_string), \
                         "host=%s user=%s password=%s dbname=%s port=%d", \
                         anIface->device_host_name, anIface->database_username, anIface->device_host_pswd, anIface->database_schema, anIface->sp);
         // Use nonblocking connection (connectStart and connectPoll)
@@ -749,13 +749,13 @@ int openConnection(ioparam *anIface, Connection *connection)
         //if (connection->phandle == NULL) {
         if (postgres_connection == NULL)
         {
-          xastir_snprintf(anIface->database_errormessage, sizeof(anIface->database_errormessage), "Insufficient memory to open connection.");
+          astir_snprintf(anIface->database_errormessage, sizeof(anIface->database_errormessage), "Insufficient memory to open connection.");
         }
         else
         {
           connected = 0;
           // can connect, run PQ_connect_poll loop
-          // Note: xastir needs to decide when to time out
+          // Note: astir needs to decide when to time out
           start_time = sec_now();
           xa_ui_status("Connecting to Postgresql database");
           while ((connected==0) & (sec_now()<(start_time+30)))
@@ -780,7 +780,7 @@ int openConnection(ioparam *anIface, Connection *connection)
             connection->phandle = postgres_connection;
             connection->type=DB_POSTGIS;
             //connection->descriptor = anIface;
-            xastir_snprintf(connection->errormessage, MAX_CONNECTION_ERROR_MESSAGE, " ");
+            astir_snprintf(connection->errormessage, MAX_CONNECTION_ERROR_MESSAGE, " ");
             connection_made = 1;
           }
           else
@@ -788,7 +788,7 @@ int openConnection(ioparam *anIface, Connection *connection)
             // connection attempt failed
             fprintf(stderr,"Failed to connect to Postgresql database on %s\n",anIface->device_host_name);
             fprintf(stderr,"Postgres Error: %s\n", PQerrorMessage(postgres_connection));
-            xastir_snprintf(anIface->database_errormessage, sizeof(anIface->database_errormessage), "Unable to make Postgresql connection %s. %s", PQerrorMessage(postgres_connection), connection_string);
+            astir_snprintf(anIface->database_errormessage, sizeof(anIface->database_errormessage), "Unable to make Postgresql connection %s. %s", PQerrorMessage(postgres_connection), connection_string);
           }
         }
         break;
@@ -803,7 +803,7 @@ int openConnection(ioparam *anIface, Connection *connection)
         if (&connection->mhandle == NULL)
         {
           // insufficient memory to initialize a new database handle
-          xastir_snprintf(anIface->database_errormessage, sizeof(anIface->database_errormessage), "Insufficient memory to open connection.");
+          astir_snprintf(anIface->database_errormessage, sizeof(anIface->database_errormessage), "Insufficient memory to open connection.");
         }
         else
         {
@@ -818,7 +818,7 @@ int openConnection(ioparam *anIface, Connection *connection)
           if (&connection->mhandle == NULL)
           {
             // unable to establish connection
-            xastir_snprintf(anIface->database_errormessage, sizeof(anIface->database_errormessage), "Unable to establish connection: %s", mysql_error(&connection->mhandle));
+            astir_snprintf(anIface->database_errormessage, sizeof(anIface->database_errormessage), "Unable to establish connection: %s", mysql_error(&connection->mhandle));
             fprintf(stderr,"Failed to connect to MySQL database on %s\n",anIface->device_host_name);
             fprintf(stderr, "MySQL Error: %s", mysql_error(&connection->mhandle));
           }
@@ -829,8 +829,8 @@ int openConnection(ioparam *anIface, Connection *connection)
 
             // connected to database
             // make sure error message for making connection is empty.
-            xastir_snprintf(anIface->database_errormessage, sizeof(anIface->database_errormessage), " ");
-            xastir_snprintf(connection->errormessage, MAX_CONNECTION_ERROR_MESSAGE, " ");
+            astir_snprintf(anIface->database_errormessage, sizeof(anIface->database_errormessage), " ");
+            astir_snprintf(connection->errormessage, MAX_CONNECTION_ERROR_MESSAGE, " ");
 
             // ping the server
             if (mysql_ping(&connection->mhandle)==0)
@@ -849,7 +849,7 @@ int openConnection(ioparam *anIface, Connection *connection)
             {
               fprintf(stderr,"mysql ping failed [1]\n");
               fprintf(stderr,"Can't connect to MySQL database: Can't ping server.\n");
-              xastir_snprintf(anIface->database_errormessage, sizeof(anIface->database_errormessage), "Unable to ping MySQL server.  Server may be down. Check connection parameters.");
+              astir_snprintf(anIface->database_errormessage, sizeof(anIface->database_errormessage), "Unable to ping MySQL server.  Server may be down. Check connection parameters.");
             }
           }
         }
@@ -865,7 +865,7 @@ int openConnection(ioparam *anIface, Connection *connection)
         if (&connection->mhandle == NULL)
         {
           // insufficient memory to initialize a new database handle
-          xastir_snprintf(anIface->database_errormessage, sizeof(anIface->database_errormessage), "Insufficient memory to open connection.");
+          astir_snprintf(anIface->database_errormessage, sizeof(anIface->database_errormessage), "Insufficient memory to open connection.");
           fprintf(stderr,"Insufficient memory to open mysql connection [mysql_init(*MYSQL) returned null].\n");
         }
         else
@@ -878,7 +878,7 @@ int openConnection(ioparam *anIface, Connection *connection)
           {
             fprintf(stderr,"Unable to establish connection to MySQL database\nHost: %s Schema: %s Username: %s\n",anIface->device_host_name, anIface->database_schema, anIface->database_username);
             // unable to establish connection
-            xastir_snprintf(anIface->database_errormessage, sizeof(anIface->database_errormessage), "Unable to establish MySQL connection. Host: %s Username: %s Password: %s Schema %s Port: %d", anIface->device_host_name, anIface->database_username, anIface->device_host_pswd, anIface->database_schema, port);
+            astir_snprintf(anIface->database_errormessage, sizeof(anIface->database_errormessage), "Unable to establish MySQL connection. Host: %s Username: %s Password: %s Schema %s Port: %d", anIface->device_host_name, anIface->database_username, anIface->device_host_pswd, anIface->database_schema, port);
             fprintf(stderr,"Failed to connect to MySQL database on %s\n",anIface->device_host_name);
             fprintf(stderr, "MySQL Error: %s", mysql_error(&connection->mhandle));
           }
@@ -887,8 +887,8 @@ int openConnection(ioparam *anIface, Connection *connection)
             fprintf(stderr,"Connected to MySQL database on %s\n",anIface->device_host_name);
             // connected to database
             // make sure error message for making connection is empty.
-            xastir_snprintf(anIface->database_errormessage, sizeof(anIface->database_errormessage), " ");
-            xastir_snprintf(connection->errormessage, MAX_CONNECTION_ERROR_MESSAGE, " ");
+            astir_snprintf(anIface->database_errormessage, sizeof(anIface->database_errormessage), " ");
+            astir_snprintf(connection->errormessage, MAX_CONNECTION_ERROR_MESSAGE, " ");
 
             // ping the server
             if (mysql_ping(&connection->mhandle)==0)
@@ -906,7 +906,7 @@ int openConnection(ioparam *anIface, Connection *connection)
             else
             {
               fprintf(stderr,"mysql ping failed [1]\n");
-              xastir_snprintf(anIface->database_errormessage, sizeof(anIface->database_errormessage), "Unable to ping MySQL server.  Server may be down. Check connection parameters.");
+              astir_snprintf(anIface->database_errormessage, sizeof(anIface->database_errormessage), "Unable to ping MySQL server.  Server may be down. Check connection parameters.");
               fprintf(stderr,"Can't connect to MySQL database: Can't ping server.\n");
             }
           }
@@ -932,7 +932,7 @@ int openConnection(ioparam *anIface, Connection *connection)
     {
       xa_ui_status("Incompatible database schema");
       fprintf(stderr,"Connection OK, but incompatible schema. [%s]\n",connection->errormessage);
-      xastir_snprintf(anIface->database_errormessage, sizeof(anIface->database_errormessage), "%s",connection->errormessage);
+      astir_snprintf(anIface->database_errormessage, sizeof(anIface->database_errormessage), "%s",connection->errormessage);
       closeConnection(connection,-1);
       //free(connection);
     }
@@ -1052,7 +1052,7 @@ int pingConnection(Connection *aDbConnection)
         psql_status = PQstatus(aDbConnection->phandle);
         if (psql_status!=CONNECTION_OK)
         {
-          xastir_snprintf(aDbConnection->errormessage, MAX_CONNECTION_ERROR_MESSAGE, "Postgresql connection failed");
+          astir_snprintf(aDbConnection->errormessage, MAX_CONNECTION_ERROR_MESSAGE, "Postgresql connection failed");
           fprintf(stderr, "PQstatus returned CONNECTION_BAD, probably unable to connect to server.\n");
 
         }
@@ -1150,7 +1150,7 @@ int testConnection(Connection *aDbConnection)
   {
     return 0;
   }
-  xastir_snprintf(warning, 100, " ");  // make sure warning is empty
+  astir_snprintf(warning, 100, " ");  // make sure warning is empty
   switch (aDbConnection->type)
   {
 #ifdef HAVE_POSTGIS
@@ -1162,7 +1162,7 @@ int testConnection(Connection *aDbConnection)
         psql_status = PQstatus(aDbConnection->phandle);
         if (psql_status!=CONNECTION_OK)
         {
-          xastir_snprintf(aDbConnection->errormessage, MAX_CONNECTION_ERROR_MESSAGE, "Postgresql connection failed");
+          astir_snprintf(aDbConnection->errormessage, MAX_CONNECTION_ERROR_MESSAGE, "Postgresql connection failed");
           fprintf(stderr, "PQstatus returned CONNECTION_BAD, probably unable to connect to server.\n");
 
         }
@@ -1180,7 +1180,7 @@ int testConnection(Connection *aDbConnection)
           if (result==NULL)
           {
             // PQexec probably couldn't allocate memory for the result set.
-            xastir_snprintf(aDbConnection->errormessage, MAX_CONNECTION_ERROR_MESSAGE, "Null result: %s\n",PQerrorMessage(aDbConnection->phandle));
+            astir_snprintf(aDbConnection->errormessage, MAX_CONNECTION_ERROR_MESSAGE, "Null result: %s\n",PQerrorMessage(aDbConnection->phandle));
             fprintf(stderr, "testConnection() Null result\nPostgresql Error : %s\n",PQerrorMessage(aDbConnection->phandle));
           }
           else
@@ -1194,7 +1194,7 @@ int testConnection(Connection *aDbConnection)
               // are the needed tables present [required]
               // check schema type (simple, simple+cad, full, aprsworld)
               // check version of database schema for compatibility
-              if (testXastirVersionPostgis(aDbConnection)==1)
+              if (testAstirVersionPostgis(aDbConnection)==1)
               {
                 returnvalue = True;
               }
@@ -1206,8 +1206,8 @@ int testConnection(Connection *aDbConnection)
             else
             {
               // schema lacks a geometry_columns table, either schema or database lacks postgis support
-              xastir_snprintf(aDbConnection->errormessage, MAX_CONNECTION_ERROR_MESSAGE, "No geometry_columns table found.  Is PostGIS installed and added to this schema?\n");
-              xastir_snprintf(warning, 100, "No geometry_columns table found. PostGIS may not be installed, or the schema may not have PostGIS support added.");
+              astir_snprintf(aDbConnection->errormessage, MAX_CONNECTION_ERROR_MESSAGE, "No geometry_columns table found.  Is PostGIS installed and added to this schema?\n");
+              astir_snprintf(warning, 100, "No geometry_columns table found. PostGIS may not be installed, or the schema may not have PostGIS support added.");
               fprintf(stderr, "No geometry_columns table found.\nPostGIS may not be installed, or the schema may not have PostGIS support added.\n");
               fprintf(stderr, "Postgresql Error : %s\n",PQerrorMessage(aDbConnection->phandle));
             }
@@ -1228,7 +1228,7 @@ int testConnection(Connection *aDbConnection)
         {
           mysql_interpret_error(dbreturn, aDbConnection);
           fprintf(stderr,"Ping of mysql server failed.\n");
-          xastir_snprintf(warning, 100, "%s",aDbConnection->errormessage);
+          astir_snprintf(warning, 100, "%s",aDbConnection->errormessage);
 
         }
         else
@@ -1250,10 +1250,10 @@ int testConnection(Connection *aDbConnection)
             {
               fprintf(stderr,"MySQL Server version %d.%d OK.\n",major_version,minor_version);
               // check version of database schema for compatibility
-              dbreturn = testXastirVersionMysql(aDbConnection);
+              dbreturn = testAstirVersionMysql(aDbConnection);
               if (dbreturn==1)
               {
-                fprintf(stderr,"Compatible Xastir database version found on server.\n");
+                fprintf(stderr,"Compatible Astir database version found on server.\n");
 
                 // are the needed tables present [required]
                 // check schema type (simple, simple+cad, full, aprsworld)
@@ -1265,16 +1265,16 @@ int testConnection(Connection *aDbConnection)
               }
               else
               {
-                fprintf(stderr,"Xastir database version on server is not compatible with this version of Xastir.\n");
-                // aDbConnection->errormessage should have been set in testXastirVersionMysql
-                xastir_snprintf(warning, 100, "%s",aDbConnection->errormessage);
+                fprintf(stderr,"Astir database version on server is not compatible with this version of Astir.\n");
+                // aDbConnection->errormessage should have been set in testAstirVersionMysql
+                astir_snprintf(warning, 100, "%s",aDbConnection->errormessage);
               }
             }
             else
             {
               // version too low
-              fprintf(stderr,"MySQL Server version %d.%d is too low and is not supported in Xastir.\n",major_version,minor_version);
-              xastir_snprintf(warning, 100, "MySQL Server version %d.%d is too low and is not supported in Xastir.",major_version,minor_version);
+              fprintf(stderr,"MySQL Server version %d.%d is too low and is not supported in Astir.\n",major_version,minor_version);
+              astir_snprintf(warning, 100, "MySQL Server version %d.%d is too low and is not supported in Astir.",major_version,minor_version);
             }
           }
           else
@@ -1311,7 +1311,7 @@ int testConnection(Connection *aDbConnection)
           // check schema type (simple, simple+cad, aprsworld)
           // full requires objects, not supported here.
           // check version of database schema for compatibility
-          dbreturn = testXastirVersionMysql(aDbConnection);
+          dbreturn = testAstirVersionMysql(aDbConnection);
           // does the user have select privileges [required]
           // does the user have update privileges [optional]
           // does the user have insert privileges [optional]
@@ -1324,7 +1324,7 @@ int testConnection(Connection *aDbConnection)
   if (returnvalue==0)
   {
     fprintf(stderr,"\n[%s]\n",aDbConnection->errormessage);
-    xastir_snprintf(aDbConnection->errormessage, MAX_CONNECTION_ERROR_MESSAGE, "Incompatible schema: %s",warning);
+    astir_snprintf(aDbConnection->errormessage, MAX_CONNECTION_ERROR_MESSAGE, "Incompatible schema: %s",warning);
     fprintf(stderr,"\n[%s]\n",aDbConnection->errormessage);
     // Note: Don't close connection here, we haven't handed the error to the user yet.
     //closeConnection(aDbConnection,-1);
@@ -1358,15 +1358,15 @@ int storeStationToGisDbPostgis(Connection *aDbConnection, DataRow *aStation)
 {
   int returnvalue = 0;
   //ioparam *device = aDbConnection->descriptor;
-  // check type of schema to use (XASTIR simple, full or APRSWorld)
+  // check type of schema to use (ASTIR simple, full or APRSWorld)
   switch (devices[aDbConnection->interface_number].database_schema_type)
   {
-    case XASTIR_SCHEMA_SIMPLE :
+    case ASTIR_SCHEMA_SIMPLE :
       returnvalue = storeStationSimplePointToGisDbPostgis(aDbConnection,aStation);
       break;
-    case XASTIR_SCHEMA_APRSWORLD :
+    case ASTIR_SCHEMA_APRSWORLD :
       break;
-    case XASTIR_SCHEMA_COMPLEX :
+    case ASTIR_SCHEMA_COMPLEX :
       break;
       // otherwise error message
   }
@@ -1464,7 +1464,7 @@ int storeStationSimplePointToGisDbPostgis(Connection *aDbConnection, DataRow *aS
     if (result==NULL)
     {
       fprintf(stderr,"Postgres Check for Prepared Query exec Failed: %s\n", PQerrorMessage(aDbConnection->phandle));
-      xastir_snprintf(aDbConnection->errormessage,MAX_CONNECTION_ERROR_MESSAGE,PQerrorMessage(aDbConnection->phandle));
+      astir_snprintf(aDbConnection->errormessage,MAX_CONNECTION_ERROR_MESSAGE,PQerrorMessage(aDbConnection->phandle));
     }
     else
     {
@@ -1485,7 +1485,7 @@ int storeStationSimplePointToGisDbPostgis(Connection *aDbConnection, DataRow *aS
         {
           // error condition - can't prepare statement
           fprintf(stderr,"Postgres Prepare Query Failed: %s\n", PQerrorMessage(aDbConnection->phandle));
-          xastir_snprintf(aDbConnection->errormessage,MAX_CONNECTION_ERROR_MESSAGE,PQerrorMessage(aDbConnection->phandle));
+          astir_snprintf(aDbConnection->errormessage,MAX_CONNECTION_ERROR_MESSAGE,PQerrorMessage(aDbConnection->phandle));
           exit(1);
 
         }
@@ -1498,7 +1498,7 @@ int storeStationSimplePointToGisDbPostgis(Connection *aDbConnection, DataRow *aS
       else
       {
         fprintf(stderr,"Postgres Check for Prepared Query getvalue (count=%d) failed: %s\n",count, PQresultErrorMessage(result));
-        xastir_snprintf(aDbConnection->errormessage,MAX_CONNECTION_ERROR_MESSAGE,PQresultErrorMessage(result));
+        astir_snprintf(aDbConnection->errormessage,MAX_CONNECTION_ERROR_MESSAGE,PQresultErrorMessage(result));
       }
     }
   }
@@ -1510,11 +1510,11 @@ int storeStationSimplePointToGisDbPostgis(Connection *aDbConnection, DataRow *aS
   if (ok==1)
   {
     // native postgis POINT is (99.999 099.999) instead of POINT (99.999 099.999)
-    // ok = xastirCoordToLatLongPosgresPoint(aStation->coord_lon, aStation->coord_lat, wkt);
+    // ok = astirCoordToLatLongPosgresPoint(aStation->coord_lon, aStation->coord_lat, wkt);
     //
     // Prepared query is ready, get and fill in the parameter values
     // from the station provided, then fire the query.
-    ok = xastirCoordToLatLongWKT(aStation->coord_lon, aStation->coord_lat, wkt);
+    ok = astirCoordToLatLongWKT(aStation->coord_lon, aStation->coord_lat, wkt);
     if (ok==1)
     {
       // Postgresql 8 documentation indicates that escape string should not be performed
@@ -1523,23 +1523,23 @@ int storeStationSimplePointToGisDbPostgis(Connection *aDbConnection, DataRow *aS
       // shouldn't be running PQescapeStringConn() on the parameters.
       // If used, form would be:
       // PQescapeStringConn(conn,call_sign,aStation->call_sign,(MAX_CALLSIGN*2)+1,escape_error);
-      xastir_snprintf(call_sign,MAX_CALLSIGN+1,"%s",aStation->call_sign);
+      astir_snprintf(call_sign,MAX_CALLSIGN+1,"%s",aStation->call_sign);
       if (strlen(aStation->origin) > 0)
       {
-        xastir_snprintf(origin,sizeof(origin),"%s",aStation->origin);
+        astir_snprintf(origin,sizeof(origin),"%s",aStation->origin);
       }
       else
       {
-        xastir_snprintf(origin,1,"%c",'\0');
+        astir_snprintf(origin,1,"%c",'\0');
       }
-      xastir_snprintf(record_type,2,"%c",aStation->record_type);
+      astir_snprintf(record_type,2,"%c",aStation->record_type);
       if (aStation->node_path_ptr==NULL)
       {
-        xastir_snprintf(node_path,2," ");
+        astir_snprintf(node_path,2," ");
       }
       else
       {
-        xastir_snprintf(node_path,sizeof(node_path),"%s",aStation->node_path_ptr);
+        astir_snprintf(node_path,sizeof(node_path),"%s",aStation->node_path_ptr);
       }
       if (debug_level & 4096)
       {
@@ -1558,32 +1558,32 @@ int storeStationSimplePointToGisDbPostgis(Connection *aDbConnection, DataRow *aS
       paramValues[2]=wkt;
       if (aStation->aprs_symbol.aprs_symbol==NULL)
       {
-        xastir_snprintf(aprs_symbol,2," ");
+        astir_snprintf(aprs_symbol,2," ");
         paramValues[3]=&aprs_symbol;
       }
       else
       {
-        xastir_snprintf(aprs_symbol,2,"%c",aStation->aprs_symbol.aprs_symbol);
+        astir_snprintf(aprs_symbol,2,"%c",aStation->aprs_symbol.aprs_symbol);
         paramValues[3]=aprs_symbol;
       }
       if (aStation->aprs_symbol.special_overlay==NULL)
       {
-        xastir_snprintf(special_overlay,2," ");
+        astir_snprintf(special_overlay,2," ");
         paramValues[4]=&special_overlay;
       }
       else
       {
-        xastir_snprintf(special_overlay,2,"%c",aStation->aprs_symbol.special_overlay);
+        astir_snprintf(special_overlay,2,"%c",aStation->aprs_symbol.special_overlay);
         paramValues[4]=&special_overlay;
       }
       if (aStation->aprs_symbol.aprs_type==NULL)
       {
-        xastir_snprintf(aprs_type,2," ");
+        astir_snprintf(aprs_type,2," ");
         paramValues[5]=&aprs_type;
       }
       else
       {
-        xastir_snprintf(aprs_type,2,"%c",aStation->aprs_symbol.aprs_type);
+        astir_snprintf(aprs_type,2,"%c",aStation->aprs_symbol.aprs_type);
         paramValues[5]=aprs_type;
       }
       paramValues[6]=origin;
@@ -1601,7 +1601,7 @@ int storeStationSimplePointToGisDbPostgis(Connection *aDbConnection, DataRow *aS
       {
         fprintf(stderr,"Postgres Insert query failed:%s\n",PQresultErrorMessage(result));
         // error, get error message.
-        xastir_snprintf(aDbConnection->errormessage,MAX_CONNECTION_ERROR_MESSAGE,PQresultErrorMessage(result));
+        astir_snprintf(aDbConnection->errormessage,MAX_CONNECTION_ERROR_MESSAGE,PQresultErrorMessage(result));
       }
       else
       {
@@ -1612,8 +1612,8 @@ int storeStationSimplePointToGisDbPostgis(Connection *aDbConnection, DataRow *aS
     else
     {
       // problem with coordinates of station
-      fprintf(stderr,"Unable to save station to Postgres db, Error converting latitude or longitude from xastir coordinates\n");
-      xastir_snprintf(aDbConnection->errormessage, MAX_CONNECTION_ERROR_MESSAGE, "Error converting latitude or longitude from xastir coordinates: %ld,%ld",aStation->coord_lat,aStation->coord_lon);
+      fprintf(stderr,"Unable to save station to Postgres db, Error converting latitude or longitude from astir coordinates\n");
+      astir_snprintf(aDbConnection->errormessage, MAX_CONNECTION_ERROR_MESSAGE, "Error converting latitude or longitude from astir coordinates: %ld,%ld",aStation->coord_lat,aStation->coord_lon);
     }
   }
   if (result!=NULL)
@@ -1631,11 +1631,11 @@ int storeStationSimplePointToGisDbPostgis(Connection *aDbConnection, DataRow *aS
 
 
 
-/* function testXastirVersionPostgis()
- * Postgresql/Postgis implementation of wrapper testXastirVersionPostgis().
+/* function testAstirVersionPostgis()
+ * Postgresql/Postgis implementation of wrapper testAstirVersionPostgis().
  * Should only be called through wrapper function.  Do not call directly.
  */
-int testXastirVersionPostgis(Connection *aDbConnection)
+int testAstirVersionPostgis(Connection *aDbConnection)
 {
   int returnvalue = 0;
   int version_number;
@@ -1648,8 +1648,8 @@ int testXastirVersionPostgis(Connection *aDbConnection)
   if (result==NULL)
   {
     // PQexec probably couldn't allocate memory for the result set.
-    xastir_snprintf(aDbConnection->errormessage, MAX_CONNECTION_ERROR_MESSAGE, "Null result: %s\n",PQerrorMessage(conn));
-    fprintf(stderr, "testXastirVersionPostgis() Null result\nPostgresql Error : %s\n",PQerrorMessage(conn));
+    astir_snprintf(aDbConnection->errormessage, MAX_CONNECTION_ERROR_MESSAGE, "Null result: %s\n",PQerrorMessage(conn));
+    fprintf(stderr, "testAstirVersionPostgis() Null result\nPostgresql Error : %s\n",PQerrorMessage(conn));
   }
   else
   {
@@ -1659,27 +1659,27 @@ int testXastirVersionPostgis(Connection *aDbConnection)
       if (PQntuples(result)!=1)
       {
         fprintf(stderr,"Version table doesn't appear to contain any rows.\n");
-        xastir_snprintf(aDbConnection->errormessage, MAX_CONNECTION_ERROR_MESSAGE, "Version table doesn't appear to contain any rows.");
+        astir_snprintf(aDbConnection->errormessage, MAX_CONNECTION_ERROR_MESSAGE, "Version table doesn't appear to contain any rows.");
       }
       else
       {
         version_number = atoi(PQgetvalue(result,0,0));
         compatable_series = atoi(PQgetvalue(result,0,1));
-        if (version_number == XASTIR_SPATIAL_DB_VERSION)
+        if (version_number == ASTIR_SPATIAL_DB_VERSION)
         {
           returnvalue = 1;
         }
         else
         {
-          if (version_number < XASTIR_SPATIAL_DB_VERSION && compatable_series == XASTIR_SPATIAL_DB_COMPATABLE_SERIES)
+          if (version_number < ASTIR_SPATIAL_DB_VERSION && compatable_series == ASTIR_SPATIAL_DB_COMPATABLE_SERIES)
           {
             returnvalue = 1;
-            fprintf(stderr,"Version in schema (%d) is compatible with this version of xastir (%d).\n",version_number,XASTIR_SPATIAL_DB_VERSION);
+            fprintf(stderr,"Version in schema (%d) is compatible with this version of astir (%d).\n",version_number,ASTIR_SPATIAL_DB_VERSION);
           }
           else
           {
-            fprintf(stderr,"Version in schema (%d) is not compatible with this version of xastir (%d).\n",version_number,XASTIR_SPATIAL_DB_VERSION);
-            xastir_snprintf(aDbConnection->errormessage, MAX_CONNECTION_ERROR_MESSAGE, "Version in schema (%d) is not compatible with this version of xastir (%d).",version_number,XASTIR_SPATIAL_DB_VERSION);
+            fprintf(stderr,"Version in schema (%d) is not compatible with this version of astir (%d).\n",version_number,ASTIR_SPATIAL_DB_VERSION);
+            astir_snprintf(aDbConnection->errormessage, MAX_CONNECTION_ERROR_MESSAGE, "Version in schema (%d) is not compatible with this version of astir (%d).",version_number,ASTIR_SPATIAL_DB_VERSION);
             fprintf(stderr,"%s",aDbConnection->errormessage);
             returnvalue = 0;
           }
@@ -1706,8 +1706,8 @@ int getAllSimplePositionsPostgis(Connection *aDbConnection)
   int returnvalue = 0;  // value to return from function, 1 for success, 0 for failure
   int row;  // row counter for result set loop
   int station_count = 0;  // number of new stations retrieved
-  unsigned long x;  // xastir coordinate for longitude
-  unsigned long y;  // xastir coordinate for latitude
+  unsigned long x;  // astir coordinate for longitude
+  unsigned long y;  // astir coordinate for latitude
   unsigned long u_long;
   unsigned long u_lat;
   char *s_lat[13];  // string latitude
@@ -1728,7 +1728,7 @@ int getAllSimplePositionsPostgis(Connection *aDbConnection)
   struct tm time;
   time_t sec;
   empty[0]='\0';
-  xastir_snprintf(feedback,100,"Retrieving Postgis records\n");
+  astir_snprintf(feedback,100,"Retrieving Postgis records\n");
   stderr_and_statusline(feedback);
   //fprintf(stderr,"connection->phandle [%p]\n",aDbConnection->phandle);
   // run query and retrieve result set
@@ -1737,7 +1737,7 @@ int getAllSimplePositionsPostgis(Connection *aDbConnection)
   if (result==NULL)
   {
     // PQexec probably couldn't allocate memory for the result set.
-    xastir_snprintf(aDbConnection->errormessage, MAX_CONNECTION_ERROR_MESSAGE, "Null result: %s\n",PQerrorMessage(conn));
+    astir_snprintf(aDbConnection->errormessage, MAX_CONNECTION_ERROR_MESSAGE, "Null result: %s\n",PQerrorMessage(conn));
     fprintf(stderr, "getAllSimplePositionsPostgis() Null result\nPostgresql Error : %s\n",PQerrorMessage(conn));
   }
   else
@@ -1746,13 +1746,13 @@ int getAllSimplePositionsPostgis(Connection *aDbConnection)
     if (PQresultStatus(result)==PGRES_COMMAND_OK || PQresultStatus(result)==PGRES_TUPLES_OK)
     {
       // PQexec returned a valid result set.
-      xastir_snprintf(feedback,100,"Retrieving %i Postgis records\n",PQntuples(result));
+      astir_snprintf(feedback,100,"Retrieving %i Postgis records\n",PQntuples(result));
       stderr_and_statusline(feedback);
-      xastir_snprintf(lastcall,MAX_CALLSIGN+1," ");
+      astir_snprintf(lastcall,MAX_CALLSIGN+1," ");
       points_this_station = 0;
       for (row=0; row<PQntuples(result); row++)
       {
-        // step through rows in result set and add each to xastir db as a minimal DataRow
+        // step through rows in result set and add each to astir db as a minimal DataRow
         if (PQgetisnull(result,row,0))
         {
           // station name is null, skip.
@@ -1772,7 +1772,7 @@ int getAllSimplePositionsPostgis(Connection *aDbConnection)
           // existing stations and stations not being found on station info
           // (because they have expired from the list).
           // This will also be a problem if old data for stations heard live are
-          // retrieved from a database while xastir is running.
+          // retrieved from a database while astir is running.
           if (strcmp(PQgetvalue(result,row,0),lastcall)==0)
           {
             points_this_station++;
@@ -1790,10 +1790,10 @@ int getAllSimplePositionsPostgis(Connection *aDbConnection)
               points_this_station=1;
             }
           }
-          xastir_snprintf(lastcall,MAX_CALLSIGN+1,PQgetvalue(result,row,0));
+          astir_snprintf(lastcall,MAX_CALLSIGN+1,PQgetvalue(result,row,0));
           if (exists==1)
           {
-            // This station allready exists as a DataRow in the xastir db.
+            // This station allready exists as a DataRow in the astir db.
             // Don't create a duplicate record, but add to the DataRow's track.
 
             //  check if it is a mobile station
@@ -1830,7 +1830,7 @@ int getAllSimplePositionsPostgis(Connection *aDbConnection)
                   strptime(PQgetvalue(result,row,4), "%Y-%m-%d %H:%M:%S%z", &time);
                   sec = mktime(&time);
                 }
-                if(convert_to_xastir_coordinates( &u_long, &u_lat, lon, lat))
+                if(convert_to_astir_coordinates( &u_long, &u_lat, lon, lat))
                 {
                   (void)store_trail_point(p_new_station, u_long, u_lat, sec, empty, empty, empty, 0);
                 }
@@ -1838,7 +1838,7 @@ int getAllSimplePositionsPostgis(Connection *aDbConnection)
                 if (p_new_station->sec_heard < sec)
                 {
                   // update the station record to this position
-                  if(convert_to_xastir_coordinates(&u_long, &u_lat, lon, lat))
+                  if(convert_to_astir_coordinates(&u_long, &u_lat, lon, lat))
                   {
                     p_new_station->coord_lat = u_lat;
                     p_new_station->coord_lon = u_long;
@@ -1851,7 +1851,7 @@ int getAllSimplePositionsPostgis(Connection *aDbConnection)
           }
           else
           {
-            // This station isn't in the xastir db.
+            // This station isn't in the astir db.
             //int add_simple_station(DataRow *p_new_station,char *station, char *origin, char *symbol, char *overlay, char *aprs_type, char *latitude, char *longitude, char *record_type, char *node_path, char *transmit_time) {
             //const char *sql = "select station, symbol, overlay, aprstype, transmit_time, AsText(position), origin, record_type, node_path, X(position), Y(position) from simpleStation order by station, transmit_time asc";
             add_simple_station(p_new_station,PQgetvalue(result,row,0), PQgetvalue(result,row,6), PQgetvalue(result,row,1), PQgetvalue(result,row,2), PQgetvalue(result,row,3), PQgetvalue(result,row,10), PQgetvalue(result,row,9), PQgetvalue(result,row,7), PQgetvalue(result,row,8), PQgetvalue(result,row,4), POSTGIS_TIMEFORMAT);
@@ -1861,13 +1861,13 @@ int getAllSimplePositionsPostgis(Connection *aDbConnection)
         } // end else, station is not null
       } // end for loop stepping through rows
       redo_list = (int)TRUE;      // update active station lists
-      xastir_snprintf(feedback,100,"Added %d stations from Postgis\n",station_count);
+      astir_snprintf(feedback,100,"Added %d stations from Postgis\n",station_count);
       stderr_and_statusline(feedback);
     }
     else
     {
       // sql query had a problem retrieving result set.
-      xastir_snprintf(aDbConnection->errormessage, MAX_CONNECTION_ERROR_MESSAGE, "%s %s\n",PQresStatus(PQresultStatus(result)),PQerrorMessage(conn));
+      astir_snprintf(aDbConnection->errormessage, MAX_CONNECTION_ERROR_MESSAGE, "%s %s\n",PQresStatus(PQresultStatus(result)),PQerrorMessage(conn));
       fprintf(stderr, "getAllSimplePositionsPostgis() %s\nPostgresql Error : %s\n",PQresStatus(PQresultStatus(result)),PQerrorMessage(conn));
     }
     // done with result set, so free the resource.
@@ -1912,7 +1912,7 @@ int getAllSimplePositionsPostgisInBoundingBox(Connection *aDbConnection, char* s
  * MySQL implementation of storeStationToGisDb
  * Should be private to db_gis.c
  * Should only be called through wrapper function.  Do not call directly.
- * @param aDbConnection an exastir database connection struct describing
+ * @param aDbConnection an eastir database connection struct describing
  * the connection.
  * @param aStation
  * Returns 0 for failure, 1 for success.
@@ -1922,15 +1922,15 @@ int storeStationToGisDbMysql(Connection *aDbConnection, DataRow *aStation)
 {
   int returnvalue = 0;
   //ioparam *device = aDbConnection->descriptor;
-  // check type of schema to use (XASTIR simple, full or APRSWorld)
+  // check type of schema to use (ASTIR simple, full or APRSWorld)
   switch (devices[aDbConnection->interface_number].database_schema_type)
   {
-    case XASTIR_SCHEMA_SIMPLE :
+    case ASTIR_SCHEMA_SIMPLE :
       returnvalue = storeStationSimplePointToGisDbMysql(aDbConnection,aStation);
       break;
-    case XASTIR_SCHEMA_APRSWORLD :
+    case ASTIR_SCHEMA_APRSWORLD :
       break;
-    case XASTIR_SCHEMA_COMPLEX :
+    case ASTIR_SCHEMA_COMPLEX :
       break;
       // otherwise error message
   }
@@ -1946,7 +1946,7 @@ int storeStationToGisDbMysql(Connection *aDbConnection, DataRow *aStation)
  * MySQL implementation of storeCadToGisDbMysql
  * Should be private to db_gis.c
  * Should only be called through wrapper function.  Do not call directly.
- * @param aDbConnection an exastir database connection struct describing
+ * @param aDbConnection an eastir database connection struct describing
  * the connection.
  * @param aCadObject
  * Returns 0 for failure, 1 for success.
@@ -1982,7 +1982,7 @@ int bind_mysql_string_parameter(MYSQL_BIND *bind, int bind_number, char* buffer,
  * MySQL implementation of wrapper storeStationSimplePointToGisDb().
  * Should be private to db_gis.c
  * Should only be called through wrapper function.  Do not call directly.
- * @param aDbConnection an xastir database connection struct describing
+ * @param aDbConnection an astir database connection struct describing
  * the connection.
  * @param aStation
  * Returns 0 for failure, 1 for success.
@@ -2149,7 +2149,7 @@ int storeStationSimplePointToGisDbMysql(Connection *aDbConnection, DataRow *aSta
           timestamp.hour = ts->tm_hour;
           timestamp.minute = ts->tm_min;
           timestamp.second = ts->tm_sec;
-          ok = xastirCoordToLatLongWKT(aStation->coord_lon, aStation->coord_lat, wkt);
+          ok = astirCoordToLatLongWKT(aStation->coord_lon, aStation->coord_lat, wkt);
           if (ok==1)
           {
             wkt_length = strlen(wkt);
@@ -2157,52 +2157,52 @@ int storeStationSimplePointToGisDbMysql(Connection *aDbConnection, DataRow *aSta
 
             if (aStation->aprs_symbol.aprs_symbol)
             {
-              xastir_snprintf(aprs_symbol,2,"%c",aStation->aprs_symbol.aprs_symbol);
+              astir_snprintf(aprs_symbol,2,"%c",aStation->aprs_symbol.aprs_symbol);
             }
             else
             {
-              xastir_snprintf(aprs_symbol,2,"%c",'\0');
+              astir_snprintf(aprs_symbol,2,"%c",'\0');
             }
             aprs_symbol_length = strlen(aprs_symbol);
 
             if (aStation->aprs_symbol.aprs_type)
             {
-              xastir_snprintf(aprs_type,2,"%c",aStation->aprs_symbol.aprs_type);
+              astir_snprintf(aprs_type,2,"%c",aStation->aprs_symbol.aprs_type);
             }
             else
             {
-              xastir_snprintf(aprs_type,2,"%c",'\0');
+              astir_snprintf(aprs_type,2,"%c",'\0');
             }
             aprs_type_length = strlen(aprs_type);
 
             if (aStation->aprs_symbol.special_overlay)
             {
-              xastir_snprintf(special_overlay,2,"%c",aStation->aprs_symbol.special_overlay);
+              astir_snprintf(special_overlay,2,"%c",aStation->aprs_symbol.special_overlay);
             }
             else
             {
-              xastir_snprintf(special_overlay,2,"%c",'\0');
+              astir_snprintf(special_overlay,2,"%c",'\0');
             }
             special_overlay_length = strlen(special_overlay);
 
             if (aStation->origin)
             {
-              xastir_snprintf(origin,MAX_CALLSIGN+1,"%s",aStation->origin);
+              astir_snprintf(origin,MAX_CALLSIGN+1,"%s",aStation->origin);
             }
             else
             {
-              //xastir_snprintf(origin,2,"%c",'\0');
+              //astir_snprintf(origin,2,"%c",'\0');
               origin[0]='\0';
             }
             origin_length = strlen(origin);
 
             if (aStation->record_type)
             {
-              xastir_snprintf(record_type,2,"%c",aStation->record_type);
+              astir_snprintf(record_type,2,"%c",aStation->record_type);
             }
             else
             {
-              //xastir_snprintf(record_type,2,"%c",'\0');
+              //astir_snprintf(record_type,2,"%c",'\0');
               record_type[0]='\0';
             }
             record_type_length = strlen(record_type);
@@ -2214,11 +2214,11 @@ int storeStationSimplePointToGisDbMysql(Connection *aDbConnection, DataRow *aSta
                 fprintf(stderr,"node_path   (12345678901234567890123456789012345678901234567890123456)\n");
                 fprintf(stderr,"node_path = [%s]\n",aStation->node_path_ptr);
               }
-              xastir_snprintf(node_path,NODE_PATH_SIZE+1,"%s",aStation->node_path_ptr);
+              astir_snprintf(node_path,NODE_PATH_SIZE+1,"%s",aStation->node_path_ptr);
             }
             else
             {
-              //xastir_snprintf(node_path,2,"%c",'\0');
+              //astir_snprintf(node_path,2,"%c",'\0');
               node_path[0]='\0';
             }
             node_path_length = strlen(node_path);
@@ -2243,15 +2243,15 @@ int storeStationSimplePointToGisDbMysql(Connection *aDbConnection, DataRow *aSta
           }
           else
           {
-            fprintf(stderr,"Unable to save station to mysql db, Error converting latitude or longitude from xastir coordinates\n");
-            xastir_snprintf(aDbConnection->errormessage, MAX_CONNECTION_ERROR_MESSAGE, "Error converting latitude or longitude from xastir coordinates: %ld,%ld",aStation->coord_lat,aStation->coord_lon);
+            fprintf(stderr,"Unable to save station to mysql db, Error converting latitude or longitude from astir coordinates\n");
+            astir_snprintf(aDbConnection->errormessage, MAX_CONNECTION_ERROR_MESSAGE, "Error converting latitude or longitude from astir coordinates: %ld,%ld",aStation->coord_lat,aStation->coord_lon);
           }
         }
         else
         {
           // set call not null error message
           fprintf(stderr,"Unable to save station to mysql db, Station call sign was blank or null.\n");
-          xastir_snprintf(aDbConnection->errormessage, MAX_CONNECTION_ERROR_MESSAGE, "Station callsign is required and was blank or null.");
+          astir_snprintf(aDbConnection->errormessage, MAX_CONNECTION_ERROR_MESSAGE, "Station callsign is required and was blank or null.");
         }
       } // end of bind check
     }  // end of parameter count check
@@ -2301,12 +2301,12 @@ int getAllSimplePositionsMysqlSpatial(Connection *aDbConnection)
     result = mysql_use_result(&aDbConnection->mhandle);
     if (result!=NULL)
     {
-      xastir_snprintf(feedback,100,"Retrieving MySQL records\n");
+      astir_snprintf(feedback,100,"Retrieving MySQL records\n");
       stderr_and_statusline(feedback);
       // with mysql_use_result each call to mysql_fetch_row retrieves
       // a row of data from the server.  Mysql_store_result might use
       // too much memory in retrieving a large result set all at once.
-      xastir_snprintf(lastcall,MAX_CALLSIGN+1," ");
+      astir_snprintf(lastcall,MAX_CALLSIGN+1," ");
       points_this_station=0;
       while ((row = mysql_fetch_row(result)))
       {
@@ -2339,10 +2339,10 @@ int getAllSimplePositionsMysqlSpatial(Connection *aDbConnection)
               points_this_station=1;
             }
           }
-          xastir_snprintf(lastcall,MAX_CALLSIGN+1,row[0]);
+          astir_snprintf(lastcall,MAX_CALLSIGN+1,row[0]);
           if (exists==1)
           {
-            // This station is allready in present as a DataRow in the xastir db.
+            // This station is allready in present as a DataRow in the astir db.
             // check to see if this is likely to be a mobile station
 
             // We can't easily identify mobile stations from position position
@@ -2370,22 +2370,22 @@ int getAllSimplePositionsMysqlSpatial(Connection *aDbConnection)
                   (void)store_trail_point(p_new_station, p_new_station->coord_lon, p_new_station->coord_lat, p_new_station->sec_heard, empty, empty, empty, 0);
                 }
                 // store this trail point
-                lat = xastirWKTPointToLatitude(row[2]);
-                lon = xastirWKTPointToLongitude(row[2]);
+                lat = astirWKTPointToLatitude(row[2]);
+                lon = astirWKTPointToLongitude(row[2]);
                 if (strlen(row[1]) > 0)
                 {
                   strptime(row[1], "%Y-%m-%d %H:%M:%S", &time);
                   sec = mktime(&time);
                   //fprintf(stderr,"trailpoint time:  %ld  [%s]\n", sec, row[1]);
                 }
-                if(convert_to_xastir_coordinates( &u_long, &u_lat, lon, lat))
+                if(convert_to_astir_coordinates( &u_long, &u_lat, lon, lat))
                 {
                   (void)store_trail_point(p_new_station, u_long, u_lat, sec, empty, empty, empty, 0);
                 }
                 if (p_new_station->sec_heard < sec)
                 {
                   // update the station record to this position
-                  if(convert_to_xastir_coordinates(&u_long, &u_lat, lon, lat))
+                  if(convert_to_astir_coordinates(&u_long, &u_lat, lon, lat))
                   {
                     p_new_station->coord_lat = u_lat;
                     p_new_station->coord_lon = u_long;
@@ -2397,12 +2397,12 @@ int getAllSimplePositionsMysqlSpatial(Connection *aDbConnection)
           }
           else
           {
-            // This station isn't in the xastir db.
+            // This station isn't in the astir db.
             // Add a datarow using the retrieved station record from the postgis database.
-            lat = xastirWKTPointToLatitude(row[2]);
-            lon = xastirWKTPointToLongitude(row[2]);
-            xastir_snprintf(s_lat,13,"%3.6f",lat);
-            xastir_snprintf(s_lon,13,"%3.6f",lon);
+            lat = astirWKTPointToLatitude(row[2]);
+            lon = astirWKTPointToLongitude(row[2]);
+            astir_snprintf(s_lat,13,"%3.6f",lat);
+            astir_snprintf(s_lon,13,"%3.6f",lon);
             add_simple_station(p_new_station, row[0], row[6], row[3], row[4], row[5], s_lat, s_lon, row[7], row[8], row[1],(char*)MYSQL_TIMEFORMAT);
 
             station_count++;
@@ -2416,7 +2416,7 @@ int getAllSimplePositionsMysqlSpatial(Connection *aDbConnection)
       fprintf(stderr,"mysql error: %s\n",mysql_error(&aDbConnection->mhandle));
       mysql_interpret_error(mysql_errno(&aDbConnection->mhandle),aDbConnection);
     }
-    xastir_snprintf(feedback,100,"Retrieved %d new stations from MySQL\n",station_count);
+    astir_snprintf(feedback,100,"Retrieved %d new stations from MySQL\n",station_count);
     stderr_and_statusline(feedback);
     mysql_free_result(result);
   }
@@ -2464,19 +2464,19 @@ int getAllSimplePositionsMysqlSpatialInBoundingBox(Connection *aDbConnection, ch
 
   // some thoughts on database schema elements
 
-  create database xastir;
-  grant select on xastir to user xastir_user@localhost identified by encrypted password '<password>';
+  create database astir;
+  grant select on astir to user astir_user@localhost identified by encrypted password '<password>';
 
   create table version (
      version_number int,
      compatable_series int
   );
-  grant select on version to xastir_user@localhost
-  insert into version (version_number) values (XASTIR_SPATIAL_DB_VERSION);
-  insert into version (version_number) values (XASTIR_SPATIAL_DB_COMPATIBLE_SERIES);
+  grant select on version to astir_user@localhost
+  insert into version (version_number) values (ASTIR_SPATIAL_DB_VERSION);
+  insert into version (version_number) values (ASTIR_SPATIAL_DB_COMPATIBLE_SERIES);
 
   # should be minimum fields needed to populate a DataRow and a related
-  # APRS_Symbol in xastir
+  # APRS_Symbol in astir
   create table simpleStation (
      simpleStationId int primary key not null auto_increment
      station varchar(MAX_CALLSIGN) not null,  # callsign of station, length up to max_callsign
@@ -2489,7 +2489,7 @@ int getAllSimplePositionsMysqlSpatialInBoundingBox(Connection *aDbConnection, ch
 
 
 
-  grant select, insert on simpleStation to xastir_user@localhost;
+  grant select, insert on simpleStation to astir_user@localhost;
 
 
   create table datarow (
@@ -2598,8 +2598,8 @@ int storeStationSimplePointToDbMysql(Connection *aDbConnection, DataRow *aStatio
     // encountered, use current time instead, use time
     // provided if it was invalid.
     get_iso_datetime(aStation->sec_heard,timestring,True,False);
-    // get coord_lat, coord_long in xastir coordinates and convert to decimal degrees
-    ok = convert_from_xastir_coordinates (&longitude, &latitude, aStation->coord_lon, aStation->coord_lat);
+    // get coord_lat, coord_long in astir coordinates and convert to decimal degrees
+    ok = convert_from_astir_coordinates (&longitude, &latitude, aStation->coord_lon, aStation->coord_lat);
     // latitude and longitude are required elements for a simple station record.
     if (ok==1)
     {
@@ -2607,30 +2607,30 @@ int storeStationSimplePointToDbMysql(Connection *aDbConnection, DataRow *aStatio
       // handle special cases of null, \ and ' characters in type, symbol, and overlay.
       if (aStation->aprs_symbol.aprs_symbol)
       {
-        xastir_snprintf(from,2,"%c",aStation->aprs_symbol.aprs_symbol);
+        astir_snprintf(from,2,"%c",aStation->aprs_symbol.aprs_symbol);
         mysql_real_escape_string(&aDbConnection->mhandle,aprs_symbol,from,1);
       }
       else
       {
-        xastir_snprintf(aprs_symbol,2,"%c",'\0');
+        astir_snprintf(aprs_symbol,2,"%c",'\0');
       }
       if (aStation->aprs_symbol.aprs_type)
       {
-        xastir_snprintf(from,2,"%c",aStation->aprs_symbol.aprs_type);
+        astir_snprintf(from,2,"%c",aStation->aprs_symbol.aprs_type);
         mysql_real_escape_string(&aDbConnection->mhandle,aprs_type,from,1);
       }
       else
       {
-        xastir_snprintf(aprs_type,2,"%c",'\0');
+        astir_snprintf(aprs_type,2,"%c",'\0');
       }
       if (aStation->aprs_symbol.special_overlay)
       {
-        xastir_snprintf(from,2,"%c",aStation->aprs_symbol.special_overlay);
+        astir_snprintf(from,2,"%c",aStation->aprs_symbol.special_overlay);
         mysql_real_escape_string(&aDbConnection->mhandle,special_overlay,from,1);
       }
       else
       {
-        xastir_snprintf(special_overlay,2,"%c",'\0');
+        astir_snprintf(special_overlay,2,"%c",'\0');
       }
 
       // Need to escape call sign - may contain special characters:
@@ -2641,12 +2641,12 @@ int storeStationSimplePointToDbMysql(Connection *aDbConnection, DataRow *aStatio
       if (aStation->record_type)
       {
         fprintf(stderr,"record_type: %c\n",aStation->record_type);
-        xastir_snprintf(from,2,"%c",aStation->record_type);
+        astir_snprintf(from,2,"%c",aStation->record_type);
         mysql_real_escape_string(&aDbConnection->mhandle,record_type,from,1);
       }
       else
       {
-        xastir_snprintf(record_type,2,"%c",NORMAL_APRS);
+        astir_snprintf(record_type,2,"%c",NORMAL_APRS);
       }
 
       if (strlen(aStation->origin) > 0)
@@ -2655,19 +2655,19 @@ int storeStationSimplePointToDbMysql(Connection *aDbConnection, DataRow *aStatio
       }
       else
       {
-        xastir_snprintf(origin,2,"%c",'\0');
+        astir_snprintf(origin,2,"%c",'\0');
       }
       if (aStation->node_path_ptr)
       {
         //mysql_real_escape_string(conn,&node_path,aStation->node_path_ptr,((strlen(aStation->node_path_ptr)*2)+1));
-        xastir_snprintf(node_path,sizeof(node_path),"%s",aStation->node_path_ptr);
+        astir_snprintf(node_path,sizeof(node_path),"%s",aStation->node_path_ptr);
       }
       else
       {
-        xastir_snprintf(node_path,2,"%c",'\0');
+        astir_snprintf(node_path,2,"%c",'\0');
       }
 
-      xastir_snprintf(sql,sizeof(sql),"insert into simpleStation (station, symbol, overlay, aprstype, transmit_time, latitude, longitude, origin, record_type, node_path) values ('%s','%s','%s','%s','%s','%3.6f','%3.6f','%s','%s','%s')", call_sign, aprs_symbol, special_overlay, aprs_type,timestring,latitude,longitude,origin,record_type,node_path);
+      astir_snprintf(sql,sizeof(sql),"insert into simpleStation (station, symbol, overlay, aprstype, transmit_time, latitude, longitude, origin, record_type, node_path) values ('%s','%s','%s','%s','%s','%3.6f','%3.6f','%s','%s','%s')", call_sign, aprs_symbol, special_overlay, aprs_type,timestring,latitude,longitude,origin,record_type,node_path);
 
       if (debug_level & 4096)
       {
@@ -2692,13 +2692,13 @@ int storeStationSimplePointToDbMysql(Connection *aDbConnection, DataRow *aStatio
     }
     else
     {
-      xastir_snprintf(aDbConnection->errormessage, MAX_CONNECTION_ERROR_MESSAGE, "Error converting latitude or longitude from xastir coordinates: %ld,%ld",aStation->coord_lat,aStation->coord_lon);
+      astir_snprintf(aDbConnection->errormessage, MAX_CONNECTION_ERROR_MESSAGE, "Error converting latitude or longitude from astir coordinates: %ld,%ld",aStation->coord_lat,aStation->coord_lon);
     }
   }
   else
   {
     // set call not null error message
-    xastir_snprintf(aDbConnection->errormessage, MAX_CONNECTION_ERROR_MESSAGE, "Station callsign is required and was blank or null.");
+    astir_snprintf(aDbConnection->errormessage, MAX_CONNECTION_ERROR_MESSAGE, "Station callsign is required and was blank or null.");
   }
   return returnvalue;
 }
@@ -2707,9 +2707,9 @@ int storeStationSimplePointToDbMysql(Connection *aDbConnection, DataRow *aStatio
 
 
 
-/* function testXastirVersionMysql()
- * checks the xastir database version number of a connected MySQL database against the
- * version range supported by the running copy of xastir.
+/* function testAstirVersionMysql()
+ * checks the astir database version number of a connected MySQL database against the
+ * version range supported by the running copy of astir.
  * @param aDbConnection pointer to a Connection struct describing the connection
  * @returns 0 if incompatible, 1 if compatible, -1 on connection failure.
  *
@@ -2723,7 +2723,7 @@ int storeStationSimplePointToDbMysql(Connection *aDbConnection, DataRow *aStatio
  *
  * TODO: Need function to test for available schemas with mysql_list_tables()
  */
-int testXastirVersionMysql(Connection *aDbConnection)
+int testAstirVersionMysql(Connection *aDbConnection)
 {
   int returnvalue = -1;
   MYSQL_RES *result;
@@ -2741,23 +2741,23 @@ int testXastirVersionMysql(Connection *aDbConnection)
       if ((row = mysql_fetch_row(result)))
       {
         version_number = atoi((char *)row[0]);
-        if (version_number == XASTIR_SPATIAL_DB_VERSION)
+        if (version_number == ASTIR_SPATIAL_DB_VERSION)
         {
           returnvalue = 1;
-          fprintf(stderr,"Version in schema (%d) is the same as this version of xastir (%d).\n",version_number,XASTIR_SPATIAL_DB_VERSION);
+          fprintf(stderr,"Version in schema (%d) is the same as this version of astir (%d).\n",version_number,ASTIR_SPATIAL_DB_VERSION);
         }
         else
         {
           compatible_series = atoi((char *)row[1]);
-          if (version_number < XASTIR_SPATIAL_DB_VERSION && compatible_series == XASTIR_SPATIAL_DB_COMPATABLE_SERIES)
+          if (version_number < ASTIR_SPATIAL_DB_VERSION && compatible_series == ASTIR_SPATIAL_DB_COMPATABLE_SERIES)
           {
             returnvalue = 1;
-            fprintf(stderr,"Version in schema (%d) is compatible with this version of xastir (%d).\n",version_number,XASTIR_SPATIAL_DB_VERSION);
+            fprintf(stderr,"Version in schema (%d) is compatible with this version of astir (%d).\n",version_number,ASTIR_SPATIAL_DB_VERSION);
           }
           else
           {
-            fprintf(stderr,"Version in schema (%d) is not compatible with this version of xastir (%d).\n",version_number,XASTIR_SPATIAL_DB_VERSION);
-            xastir_snprintf(aDbConnection->errormessage, MAX_CONNECTION_ERROR_MESSAGE, "Version in schema (%d) is not compatible with this version of xastir (%d).",version_number,XASTIR_SPATIAL_DB_VERSION);
+            fprintf(stderr,"Version in schema (%d) is not compatible with this version of astir (%d).\n",version_number,ASTIR_SPATIAL_DB_VERSION);
+            astir_snprintf(aDbConnection->errormessage, MAX_CONNECTION_ERROR_MESSAGE, "Version in schema (%d) is not compatible with this version of astir (%d).",version_number,ASTIR_SPATIAL_DB_VERSION);
             fprintf(stderr,"%s",aDbConnection->errormessage);
             returnvalue = 0;
           }
@@ -2768,20 +2768,20 @@ int testXastirVersionMysql(Connection *aDbConnection)
         // result returned, but no rows = incompatible
         returnvalue = 0;
         fprintf(stderr,"Version table doesn't appear to contain any rows.\n");
-        xastir_snprintf(aDbConnection->errormessage, MAX_CONNECTION_ERROR_MESSAGE, "Version table doesn't appear to contain any rows.");
+        astir_snprintf(aDbConnection->errormessage, MAX_CONNECTION_ERROR_MESSAGE, "Version table doesn't appear to contain any rows.");
       }
     }
     else
     {
       fprintf(stderr,"Schema doesn't appear to contain a version table.\n");
-      xastir_snprintf(aDbConnection->errormessage, MAX_CONNECTION_ERROR_MESSAGE, "Schema doesn't appear to contain a version table.");
+      astir_snprintf(aDbConnection->errormessage, MAX_CONNECTION_ERROR_MESSAGE, "Schema doesn't appear to contain a version table.");
     }
     mysql_free_result(result);
   }
   else
   {
     fprintf(stderr,"Query failed, Schema doesn't appear to contain a version table.\n");
-    xastir_snprintf(aDbConnection->errormessage, MAX_CONNECTION_ERROR_MESSAGE, "Query for version table failed.");
+    astir_snprintf(aDbConnection->errormessage, MAX_CONNECTION_ERROR_MESSAGE, "Query for version table failed.");
   }
   return returnvalue;
 }
@@ -2796,15 +2796,15 @@ int storeStationToDbMysql(Connection *aDbConnection, DataRow *aStation)
 {
   int returnvalue = 0;
   //ioparam *device = aDbConnection->descriptor;
-  // check type of schema to use (XASTIR simple, full or APRSWorld)
+  // check type of schema to use (ASTIR simple, full or APRSWorld)
   switch (devices[aDbConnection->interface_number].database_schema_type)
   {
-    case XASTIR_SCHEMA_SIMPLE :
+    case ASTIR_SCHEMA_SIMPLE :
       returnvalue = storeStationSimplePointToDbMysql(aDbConnection,aStation);
       break;
-    case XASTIR_SCHEMA_APRSWORLD :
+    case ASTIR_SCHEMA_APRSWORLD :
       break;
-    case XASTIR_SCHEMA_COMPLEX :
+    case ASTIR_SCHEMA_COMPLEX :
       break;
       // otherwise error message
   }
@@ -2818,7 +2818,7 @@ int storeStationToDbMysql(Connection *aDbConnection, DataRow *aStation)
 /* function getAllSimplePositionsMysql()
  * MySQL implementation of getAllSimplePositions for a MySQL database that
  * does not include spatial support.
- * @param aDbConnection an exastir database connection struct describing
+ * @param aDbConnection an eastir database connection struct describing
  * the connection.
  * Returns 0 for failure, 1 for success.
  * If failure, stores error message in aDbConnection->errormessage.
@@ -2829,8 +2829,8 @@ int getAllSimplePositionsMysql(Connection *aDbConnection)
   DataRow *p_new_station;
   //DataRow *p_time;
   int station_count = 0;  // number of new stations retrieved
-  //unsigned long x;  // xastir coordinate for longitude
-  //unsigned long y;  // xastir coordinate for latitude
+  //unsigned long x;  // astir coordinate for longitude
+  //unsigned long y;  // astir coordinate for latitude
   //float lat;  // latitude converted from retrieved string
   //float lon;  // longitude converted from retrieved string
   char feedback[100];
@@ -2845,7 +2845,7 @@ int getAllSimplePositionsMysql(Connection *aDbConnection)
     result = mysql_use_result(&aDbConnection->mhandle);
     if (result!=NULL)
     {
-      xastir_snprintf(feedback,100,"Retrieving MySQL records\n");
+      astir_snprintf(feedback,100,"Retrieving MySQL records\n");
       stderr_and_statusline(feedback);
       // with mysql_use_result each call to mysql_fetch_row retrieves
       // a row of data from the server.  Mysql_store_result might use
@@ -2863,12 +2863,12 @@ int getAllSimplePositionsMysql(Connection *aDbConnection)
           p_new_station = NULL;
           if (search_station_name(&p_new_station,row[0],1))
           {
-            // This station is allready in present as a DataRow in the xastir db.
+            // This station is allready in present as a DataRow in the astir db.
             // Add data to the station's track.
           }
           else
           {
-            // This station isn't in the xastir db.
+            // This station isn't in the astir db.
             // Add a datarow using the retrieved station record from the postgis database.
             add_simple_station(p_new_station, row[0], row[7], row[4], row[5], row[6], row[2], row[3], row[8], row[9], row[1],(char*)MYSQL_TIMEFORMAT);
 
@@ -2883,7 +2883,7 @@ int getAllSimplePositionsMysql(Connection *aDbConnection)
       fprintf(stderr,"mysql error: %s\n",mysql_error(&aDbConnection->mhandle));
       mysql_interpret_error(mysql_errno(&aDbConnection->mhandle),aDbConnection);
     }
-    xastir_snprintf(feedback,100,"Retrieved %d new stations from MySQL\n",station_count);
+    astir_snprintf(feedback,100,"Retrieved %d new stations from MySQL\n",station_count);
     stderr_and_statusline(feedback);
     mysql_free_result(result);
   }
@@ -2906,12 +2906,12 @@ int getAllSimplePositionsMysqlInBoundingBox(Connection *aDbConnection, char *str
 
 
 /* function mysql_interpret_error()
- * given a mysql error code and an xastir connection, sets an appropriate
+ * given a mysql error code and an astir connection, sets an appropriate
  * error message in the errormessage field of the connection.  Interprets
  * numeric error codes returned by mysql functions.
  * @param errorcode A result returned by a mysql function that can be
  * interpreted as an error code.
- * @param aDbConnection an xastir database connection struct describing the
+ * @param aDbConnection an astir database connection struct describing the
  * connection and its current state.
  * Note - it is possible to give this function a connection on which an
  * error has not occurred along with an error code.  This function does
@@ -2926,29 +2926,29 @@ void mysql_interpret_error(int errorcode, Connection *aDbConnection)
   {
     case CR_OUT_OF_MEMORY :
       // insufficient memory for query
-      xastir_snprintf(aDbConnection->errormessage, MAX_CONNECTION_ERROR_MESSAGE, "MySQL: Out of Memory");
+      astir_snprintf(aDbConnection->errormessage, MAX_CONNECTION_ERROR_MESSAGE, "MySQL: Out of Memory");
       // notify the connection status listener
       break;
     // mysql_query errors
     case CR_COMMANDS_OUT_OF_SYNC :
       // commands in improper order
-      xastir_snprintf(aDbConnection->errormessage, MAX_CONNECTION_ERROR_MESSAGE, "MySQL: Commands out of sync");
+      astir_snprintf(aDbConnection->errormessage, MAX_CONNECTION_ERROR_MESSAGE, "MySQL: Commands out of sync");
       break;
     case CR_SERVER_GONE_ERROR :
       // mysql server has gone away
-      xastir_snprintf(aDbConnection->errormessage, MAX_CONNECTION_ERROR_MESSAGE, "MySQL: Connection to server lost");
+      astir_snprintf(aDbConnection->errormessage, MAX_CONNECTION_ERROR_MESSAGE, "MySQL: Connection to server lost");
       // notify the connection status listener
       break;
     case CR_SERVER_LOST :
       // server connection was lost during query
-      xastir_snprintf(aDbConnection->errormessage, MAX_CONNECTION_ERROR_MESSAGE, "MySQL: Connection to server lost during query");
+      astir_snprintf(aDbConnection->errormessage, MAX_CONNECTION_ERROR_MESSAGE, "MySQL: Connection to server lost during query");
       // notify the connection status listener
       break;
     case CR_UNKNOWN_ERROR :
-      xastir_snprintf(aDbConnection->errormessage, MAX_CONNECTION_ERROR_MESSAGE, "MySQL: Unknown Error");
+      astir_snprintf(aDbConnection->errormessage, MAX_CONNECTION_ERROR_MESSAGE, "MySQL: Unknown Error");
       break;
     default:
-      xastir_snprintf(aDbConnection->errormessage, MAX_CONNECTION_ERROR_MESSAGE, "MySQL: Unrecognized error Code [%d]", errorcode);
+      astir_snprintf(aDbConnection->errormessage, MAX_CONNECTION_ERROR_MESSAGE, "MySQL: Unrecognized error Code [%d]", errorcode);
   }
   fprintf(stderr,"%s\n",aDbConnection->errormessage);
 }
@@ -2970,29 +2970,29 @@ void mysql_interpret_error(int errorcode, Connection *aDbConnection)
 
 
 
-/* Function  xastirCoordToLatLongPostgresPoint
- * converts a point in xastir coordinates to a native postgres representation
+/* Function  astirCoordToLatLongPostgresPoint
+ * converts a point in astir coordinates to a native postgres representation
  * of a point using latitude and longitude in decimal degrees in the WGS84
  * projection EPSG:4326. Format is similar to WKT, but without leading POINT.
- * @param x longitude in xastir coordinates = decimal 100ths of a second.
- * @param y latitude in xastir coordinates = decimal 100ths of a second.
+ * @param x longitude in astir coordinates = decimal 100ths of a second.
+ * @param y latitude in astir coordinates = decimal 100ths of a second.
  * @param pointer to a char[ at least 24] string to hold point representation.
  * returns 1 on success, 0 on failure.
  */
-int xastirCoordToLatLongPostgresPoint(long x, long y, char *wkt)
+int astirCoordToLatLongPostgresPoint(long x, long y, char *wkt)
 {
-  // 1 xastir coordinate = 1/100 of a second
-  // 100*60*60 xastir coordinates (=360000 xastir coordinates) = 1 degree
-  // 360000   xastir coordinates = 1 degree
+  // 1 astir coordinate = 1/100 of a second
+  // 100*60*60 astir coordinates (=360000 astir coordinates) = 1 degree
+  // 360000   astir coordinates = 1 degree
   // conversion to string decimal degrees handled by utility functions
   int returnvalue = 0;  // defaults to failure
   float latitude;
   float longitude;
   int ok;
-  ok = convert_from_xastir_coordinates (&longitude,&latitude, x, y);
+  ok = convert_from_astir_coordinates (&longitude,&latitude, x, y);
   if (ok>0)
   {
-    xastir_snprintf(wkt, MAX_WKT, "(%3.6f, %3.6f)", latitude, longitude);
+    astir_snprintf(wkt, MAX_WKT, "(%3.6f, %3.6f)", latitude, longitude);
     returnvalue = 1;
   }
   return returnvalue;
@@ -3003,29 +3003,29 @@ int xastirCoordToLatLongPostgresPoint(long x, long y, char *wkt)
 
 
 
-/* Function  xastirCoordToLatLongWKT
- * converts a point in xastir coordinates to a well known text string (WKT)
+/* Function  astirCoordToLatLongWKT
+ * converts a point in astir coordinates to a well known text string (WKT)
  * representation of a point using latitude and longitude in decimal degrees
  * in the WGS84 projection EPSG:4326
- * @param x longitude in xastir coordinates = decimal 100ths of a second.
- * @param y latitude in xastir coordinates = decimal 100ths of a second.
+ * @param x longitude in astir coordinates = decimal 100ths of a second.
+ * @param y latitude in astir coordinates = decimal 100ths of a second.
  * @param pointer to a char[29] string to hold well known text representation.
  * returns 1 on success, 0 on failure.
  */
-int xastirCoordToLatLongWKT(long x, long y, char *wkt)
+int astirCoordToLatLongWKT(long x, long y, char *wkt)
 {
-  // 1 xastir coordinate = 1/100 of a second
-  // 100*60*60 xastir coordinates (=360000 xastir coordinates) = 1 degree
-  // 360000   xastir coordinates = 1 degree
+  // 1 astir coordinate = 1/100 of a second
+  // 100*60*60 astir coordinates (=360000 astir coordinates) = 1 degree
+  // 360000   astir coordinates = 1 degree
   // conversion to string decimal degrees handled by utility functions
   int returnvalue = 0;  // defaults to failure
   float latitude;
   float longitude;
   int ok;
-  ok = convert_from_xastir_coordinates (&longitude,&latitude, x, y);
+  ok = convert_from_astir_coordinates (&longitude,&latitude, x, y);
   if (ok>0)
   {
-    xastir_snprintf(wkt, MAX_WKT, "POINT(%3.6f %3.6f)", longitude, latitude);
+    astir_snprintf(wkt, MAX_WKT, "POINT(%3.6f %3.6f)", longitude, latitude);
     returnvalue = 1;
   }
   return returnvalue;
@@ -3035,7 +3035,7 @@ int xastirCoordToLatLongWKT(long x, long y, char *wkt)
 
 
 
-float xastirWKTPointToLongitude(char *wkt)
+float astirWKTPointToLongitude(char *wkt)
 {
   float returnvalue = 0.0;
   char temp[MAX_WKT];
@@ -3044,7 +3044,7 @@ float xastirWKTPointToLongitude(char *wkt)
   if (wkt[0]=='P' && wkt[1]=='O' && wkt[2]=='I' && wkt[3]=='N' && wkt[4]=='T' && wkt[5]=='(')
   {
     // this is a point
-    xastir_snprintf(temp, MAX_WKT, "%s", wkt);
+    astir_snprintf(temp, MAX_WKT, "%s", wkt);
     // truncate at the space
     space = strchr(temp,' ');
     if (space != NULL)
@@ -3065,7 +3065,7 @@ float xastirWKTPointToLongitude(char *wkt)
 
 
 
-float xastirWKTPointToLatitude(char *wkt)
+float astirWKTPointToLatitude(char *wkt)
 {
   float returnvalue = 0.0;
   char temp[MAX_WKT];
@@ -3074,7 +3074,7 @@ float xastirWKTPointToLatitude(char *wkt)
   if (wkt[0]=='P' && wkt[1]=='O' && wkt[2]=='I' && wkt[3]=='N' && wkt[4]=='T' && wkt[5]=='(')
   {
     // this is a point
-    xastir_snprintf(temp, MAX_WKT, "%s", wkt);
+    astir_snprintf(temp, MAX_WKT, "%s", wkt);
     // truncate at the trailing parenthesis
     paren = strchr(temp,')');
     if (paren != NULL)

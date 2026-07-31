@@ -1,4 +1,4 @@
-// Modification for Xastir CVS purposes
+// Modification for Astir CVS purposes
 //
 // Portions Copyright (C) 2000-2026 The Xastir Group
 //
@@ -63,7 +63,7 @@
 /*************************************************************************/
 /*                                                                       */
 /* Heavily modified and Hacked together to provide a general purpose     */
-/* interface for use in XASTIR by:                                       */
+/* interface for use in ASTIR by:                                       */
 /*                                                                       */
 /*    Ken Koster    N7IPB    03/24/2001                                  */
 /*                                                                       */
@@ -98,7 +98,7 @@
 #include "core/io/festival.h"
 #include "core/util/snprintf.h"
 #include "core/util/util.h"
-#include "core/xastir.h"
+#include "core/astir.h"
 
 
 // Must be last include file
@@ -387,7 +387,7 @@ void festivalStringToSpeech(char *text)
     }
   }
   /*
-  ** Complete the command to xastir, close the quotes and
+  ** Complete the command to astir, close the quotes and
   ** set the mode to 'fundamental'
   */
   ret = fprintf(fd,"\" \"%s\")\n",info->text_mode);
@@ -492,7 +492,7 @@ int SayText(char *text)
 
   //fprintf(stderr,"Speaking: %s\n",text);
 
-  xastir_snprintf(last_speech_text,
+  astir_snprintf(last_speech_text,
                   sizeof(last_speech_text),
                   "%s",
                   text);

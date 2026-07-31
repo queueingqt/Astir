@@ -1,7 +1,7 @@
-# Main Autotest suite for Xastir 
+# Main Autotest suite for Astir 
 # This file defines the test suite structure
 
-AT_INIT([Xastir Tests])
+AT_INIT([Astir Tests])
 AT_COPYRIGHT([Copyright (C) 2025-2026 The Xastir Group])
 
 AT_COLOR_TESTS

@@ -1,9 +1,9 @@
 # Copyright (C) 2000-2026 The Xastir Group
 #
-# Este es el archivo del Lenguaje Español usado para todas, consultas en Xastir.
+# Este es el archivo del Lenguaje Español usado para todas, consultas en Astir.
 #
 # Creador        : por Jose R. Marte A. <hi8gn@amsat.org>
-# Mantenido por  : El Xastir Grupo <xastir@xastir.org>
+# Mantenido por  : El Astir Grupo <astir@xastir.org>
 # Ult. Revisión  : 05/20/2003, Por Jose R. Marte A. <hi8gn@amsat.org>
 #
 # Líneas de comentarios con un signo de libra en frente son ignorado
@@ -248,7 +248,7 @@ PULDNHEL01|Acerca de|A|
 PULDNHEL02|Índice de ayuda|I|
 PULDNHEL03|ACTIVAR MODO BALIZA DE EMERGENCIA|E|
 PULDNHEL04|!!! MODO BALIZA DE EMERGENCIA !!!||
-PULDNHEL05|Acerca de Xastir||
+PULDNHEL05|Acerca de Astir||
 #
 # Menú de Ratón
 POPUPMA001|Opciones||
@@ -1048,7 +1048,7 @@ POPEM00017|¡No hay más interfaces disponibles!||
 POPEM00018|Consulta de datos - Línea de mensaje única||
 POPEM00019|La transmisión está desactivada para el puerto %d||
 POPEM00020|Error de base de datos||
-POPEM00021|¡El soporte de AX.25 no está compilado en Xastir!||
+POPEM00021|¡El soporte de AX.25 no está compilado en Astir!||
 POPEM00022|Error de entrada||
 POPEM00023|No se especificó nombre de ubicación||
 POPEM00024|El nombre de ubicación especificado ya está en uso||
@@ -1332,18 +1332,18 @@ CADPUD014|Doble guion||
 #
 #
 # Format strings for map metadata in top border
-#"XASTIR Map of <utm_coord> (upper left) to <utm_coord> (lower right).  UTM <grid_size> m grid, <wgs84> datum. ",
-MDATA001|Mapa XASTIR de %s (sup. izq.) a %s (inf. der.).  Cuadrícula UTM de %d m, datum %s. ||
+#"ASTIR Map of <utm_coord> (upper left) to <utm_coord> (lower right).  UTM <grid_size> m grid, <wgs84> datum. ",
+MDATA001|Mapa ASTIR de %s (sup. izq.) a %s (inf. der.).  Cuadrícula UTM de %d m, datum %s. ||
 #
 #
 # Format strings for map metadata in top border
-#"XASTIR Map of <utm_coord> (upper left) to <utm_coord> (lower right).  UTM <grid_size> m grid, <wgs84> datum. ",
-MDATA002|Mapa XASTIR de %s (sup. izq.) a %s %s (inf. der.).  Cuadrícula Lat/Long, datum %s.||
+#"ASTIR Map of <utm_coord> (upper left) to <utm_coord> (lower right).  UTM <grid_size> m grid, <wgs84> datum. ",
+MDATA002|Mapa ASTIR de %s (sup. izq.) a %s %s (inf. der.).  Cuadrícula Lat/Long, datum %s.||
 #
 #
 # Format strings for map metadata in top border
-#"XASTIR Map of <utm_coord> (upper left) to <utm_coord> (lower right).  UTM <grid_size> m grid, <wgs84> datum. ",
-MDATA003|Mapa XASTIR de %s (sup. izq.) a %s (inf. der.).  Zonas UTM, datum %s.||
+#"ASTIR Map of <utm_coord> (upper left) to <utm_coord> (lower right).  UTM <grid_size> m grid, <wgs84> datum. ",
+MDATA003|Mapa ASTIR de %s (sup. izq.) a %s (inf. der.).  Zonas UTM, datum %s.||
 #
 # Text interpretation of integer values of database type and schema type
 # used for sql database configuration in interface_gui.c
@@ -1359,11 +1359,11 @@ XADBMST002|Postgreql with Postgis||
 # used for sql database configuration in interface_gui.c
 # DB_MYSQL 
 XADBMST003|MySQL (spatial)||
-# XASTIR_SCHEMA_SIMPLE]
-XASCHEMA01|Xastir Simple Schema||
-# XASTIR_SCHEMA_SIMPLE]
-XASCHEMA02|Xastir CAD Schema||
-# XASTIR_SCHEMA_SIMPLE]
-XASCHEMA03|Xastir full Schema||
-# XASTIR_SCHEMA_SIMPLE]
+# ASTIR_SCHEMA_SIMPLE]
+XASCHEMA01|Astir Simple Schema||
+# ASTIR_SCHEMA_SIMPLE]
+XASCHEMA02|Astir CAD Schema||
+# ASTIR_SCHEMA_SIMPLE]
+XASCHEMA03|Astir full Schema||
+# ASTIR_SCHEMA_SIMPLE]
 XASCHEMA04|APRSWorld Schema||

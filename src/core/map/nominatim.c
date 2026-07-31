@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 2025-2026 The Xastir Group
  *
  * This program is free software; you can redistribute it and/or
@@ -35,7 +35,7 @@
 #include <ctype.h>
 #include <unistd.h>
 
-#include "core/xastir.h"
+#include "core/astir.h"
 #include "core/map/nominatim.h"
 #include "core/map/geocoder.h"
 #include "core/state/xa_config.h"
@@ -66,7 +66,7 @@ static char nominatim_error[512] = "";
 
 // Rate limiting (1 request per second per Nominatim usage policy)
 static time_t last_request_time = 0;
-static xastir_mutex rate_limit_lock;
+static astir_mutex rate_limit_lock;
 
 // Cache entry structure (Nominatim usage policy suggests caching results)
 struct nominatim_cache_entry {
@@ -78,7 +78,7 @@ struct nominatim_cache_entry {
 };
 
 static struct nominatim_cache_entry *cache_head = NULL;
-static xastir_mutex cache_lock;
+static astir_mutex cache_lock;
 
 // Buffer for HTTP response
 struct http_response {
@@ -96,7 +96,7 @@ static size_t write_callback(void *contents, size_t size, size_t nmemb, void *us
 
     char *ptr = realloc(response->data, response->size + realsize + 1);
     if (!ptr) {
-        xastir_snprintf(nominatim_error, sizeof(nominatim_error),
+        astir_snprintf(nominatim_error, sizeof(nominatim_error),
                        "Out of memory");
         return 0;
     }
@@ -157,7 +157,7 @@ static void compute_query_hash(const char *query, const char *country_codes, cha
         }
     }
 
-    xastir_snprintf(hash, hash_size, "%016lx", h);
+    astir_snprintf(hash, hash_size, "%016lx", h);
 }
 
 /**
@@ -251,7 +251,7 @@ static void cache_store(const char *query, const char *country_codes, const stru
     // Create new entry
     entry = malloc(sizeof(struct nominatim_cache_entry));
     if (entry) {
-        xastir_snprintf(entry->query_hash, sizeof(entry->query_hash), "%s", query_hash);
+        astir_snprintf(entry->query_hash, sizeof(entry->query_hash), "%s", query_hash);
         entry->timestamp = time(NULL);
         entry->result_count = results->count;
         entry->results = malloc(sizeof(struct geocode_result) * results->count);
@@ -297,7 +297,7 @@ static int parse_nominatim_result(cJSON *json_result, struct geocode_result *res
     // Display name
     item = cJSON_GetObjectItem(json_result, "display_name");
     if (item && cJSON_IsString(item)) {
-        xastir_snprintf(result->display_name, sizeof(result->display_name),
+        astir_snprintf(result->display_name, sizeof(result->display_name),
                        "%s", item->valuestring);
     }
 
@@ -319,20 +319,20 @@ static int parse_nominatim_result(cJSON *json_result, struct geocode_result *res
     // Place ID (service-specific)
     item = cJSON_GetObjectItem(json_result, "place_id");
     if (item && cJSON_IsNumber(item)) {
-        xastir_snprintf(result->service_id, sizeof(result->service_id),
+        astir_snprintf(result->service_id, sizeof(result->service_id),
                        "%d", item->valueint);
     }
 
     // Classification
     item = cJSON_GetObjectItem(json_result, "class");
     if (item && cJSON_IsString(item)) {
-        xastir_snprintf(result->place_class, sizeof(result->place_class),
+        astir_snprintf(result->place_class, sizeof(result->place_class),
                        "%s", item->valuestring);
     }
 
     item = cJSON_GetObjectItem(json_result, "type");
     if (item && cJSON_IsString(item)) {
-        xastir_snprintf(result->place_type, sizeof(result->place_type),
+        astir_snprintf(result->place_type, sizeof(result->place_type),
                        "%s", item->valuestring);
     }
 
@@ -342,14 +342,14 @@ static int parse_nominatim_result(cJSON *json_result, struct geocode_result *res
         // House number
         item = cJSON_GetObjectItem(address, "house_number");
         if (item && cJSON_IsString(item)) {
-            xastir_snprintf(result->house_number, sizeof(result->house_number),
+            astir_snprintf(result->house_number, sizeof(result->house_number),
                            "%s", item->valuestring);
         }
 
         // Road
         item = cJSON_GetObjectItem(address, "road");
         if (item && cJSON_IsString(item)) {
-            xastir_snprintf(result->road, sizeof(result->road),
+            astir_snprintf(result->road, sizeof(result->road),
                            "%s", item->valuestring);
         }
 
@@ -359,7 +359,7 @@ static int parse_nominatim_result(cJSON *json_result, struct geocode_result *res
             item = cJSON_GetObjectItem(address, "suburb");
         }
         if (item && cJSON_IsString(item)) {
-            xastir_snprintf(result->neighbourhood, sizeof(result->neighbourhood),
+            astir_snprintf(result->neighbourhood, sizeof(result->neighbourhood),
                            "%s", item->valuestring);
         }
 
@@ -375,56 +375,56 @@ static int parse_nominatim_result(cJSON *json_result, struct geocode_result *res
             item = cJSON_GetObjectItem(address, "hamlet");
         }
         if (item && cJSON_IsString(item)) {
-            xastir_snprintf(result->settlement, sizeof(result->settlement),
+            astir_snprintf(result->settlement, sizeof(result->settlement),
                            "%s", item->valuestring);
         }
 
         // County
         item = cJSON_GetObjectItem(address, "county");
         if (item && cJSON_IsString(item)) {
-            xastir_snprintf(result->county, sizeof(result->county),
+            astir_snprintf(result->county, sizeof(result->county),
                            "%s", item->valuestring);
         }
 
         // State
         item = cJSON_GetObjectItem(address, "state");
         if (item && cJSON_IsString(item)) {
-            xastir_snprintf(result->state, sizeof(result->state),
+            astir_snprintf(result->state, sizeof(result->state),
                            "%s", item->valuestring);
         }
 
         // State district
         item = cJSON_GetObjectItem(address, "state_district");
         if (item && cJSON_IsString(item)) {
-            xastir_snprintf(result->state_district, sizeof(result->state_district),
+            astir_snprintf(result->state_district, sizeof(result->state_district),
                            "%s", item->valuestring);
         }
 
         // Postcode
         item = cJSON_GetObjectItem(address, "postcode");
         if (item && cJSON_IsString(item)) {
-            xastir_snprintf(result->postcode, sizeof(result->postcode),
+            astir_snprintf(result->postcode, sizeof(result->postcode),
                            "%s", item->valuestring);
         }
 
         // Country
         item = cJSON_GetObjectItem(address, "country");
         if (item && cJSON_IsString(item)) {
-            xastir_snprintf(result->country, sizeof(result->country),
+            astir_snprintf(result->country, sizeof(result->country),
                            "%s", item->valuestring);
         }
 
         // Country code
         item = cJSON_GetObjectItem(address, "country_code");
         if (item && cJSON_IsString(item)) {
-            xastir_snprintf(result->country_code, sizeof(result->country_code),
+            astir_snprintf(result->country_code, sizeof(result->country_code),
                            "%s", item->valuestring);
         }
 
         // ISO3166-2
         item = cJSON_GetObjectItem(address, "ISO3166-2-lvl4");
         if (item && cJSON_IsString(item)) {
-            xastir_snprintf(result->iso3166_2, sizeof(result->iso3166_2),
+            astir_snprintf(result->iso3166_2, sizeof(result->iso3166_2),
                            "%s", item->valuestring);
         }
     }
@@ -453,7 +453,7 @@ int nominatim_search(const char *query,
                      struct geocode_result_list *results)
 {
 #ifndef HAVE_LIBCURL
-    xastir_snprintf(nominatim_error, sizeof(nominatim_error),
+    astir_snprintf(nominatim_error, sizeof(nominatim_error),
                    "libcurl not available - cannot perform network request");
     return -1;
 #else
@@ -476,9 +476,9 @@ int nominatim_search(const char *query,
     enforce_rate_limit();
 
     // Initialize curl
-    curl = xastir_curl_init(nominatim_error);
+    curl = astir_curl_init(nominatim_error);
     if (!curl) {
-        xastir_snprintf(nominatim_error, sizeof(nominatim_error),
+        astir_snprintf(nominatim_error, sizeof(nominatim_error),
                        "Failed to initialize HTTP client");
         return -1;
     }
@@ -486,14 +486,14 @@ int nominatim_search(const char *query,
     // URL-encode the query
     escaped_query = curl_easy_escape(curl, query, 0);
     if (!escaped_query) {
-        xastir_snprintf(nominatim_error, sizeof(nominatim_error),
+        astir_snprintf(nominatim_error, sizeof(nominatim_error),
                        "Failed to encode query");
         curl_easy_cleanup(curl);
         return -1;
     }
 
     // Build URL
-    xastir_snprintf(url, sizeof(url),
+    astir_snprintf(url, sizeof(url),
                    "%s/search?q=%s&format=jsonv2&addressdetails=1&limit=%d",
                    nominatim_server_url, escaped_query, limit);
 
@@ -522,7 +522,7 @@ int nominatim_search(const char *query,
     curl_easy_setopt(curl, CURLOPT_URL, url);
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&response);
-    xastir_snprintf(user_agent, sizeof(user_agent), "Xastir/%s", PACKAGE_VERSION);
+    astir_snprintf(user_agent, sizeof(user_agent), "Astir/%s", PACKAGE_VERSION);
     curl_easy_setopt(curl, CURLOPT_USERAGENT, user_agent);
 
     // Perform request
@@ -530,14 +530,14 @@ int nominatim_search(const char *query,
     curl_easy_cleanup(curl);
 
     if (res != CURLE_OK) {
-        xastir_snprintf(nominatim_error, sizeof(nominatim_error),
+        astir_snprintf(nominatim_error, sizeof(nominatim_error),
                        "Network error: %s", curl_easy_strerror(res));
         if (response.data) free(response.data);
         return -1;
     }
 
     if (!response.data || response.size == 0) {
-        xastir_snprintf(nominatim_error, sizeof(nominatim_error),
+        astir_snprintf(nominatim_error, sizeof(nominatim_error),
                        "Empty response from server");
         if (response.data) free(response.data);
         return -1;
@@ -548,13 +548,13 @@ int nominatim_search(const char *query,
     free(response.data);
 
     if (!json) {
-        xastir_snprintf(nominatim_error, sizeof(nominatim_error),
+        astir_snprintf(nominatim_error, sizeof(nominatim_error),
                        "Invalid JSON response");
         return -1;
     }
 
     if (!cJSON_IsArray(json)) {
-        xastir_snprintf(nominatim_error, sizeof(nominatim_error),
+        astir_snprintf(nominatim_error, sizeof(nominatim_error),
                        "Unexpected JSON format");
         cJSON_Delete(json);
         return -1;
@@ -585,7 +585,7 @@ int nominatim_search(const char *query,
             // Store in cache
             cache_store(query, country_codes, results);
         } else {
-            xastir_snprintf(nominatim_error, sizeof(nominatim_error),
+            astir_snprintf(nominatim_error, sizeof(nominatim_error),
                            "Out of memory");
             ret = -1;
         }

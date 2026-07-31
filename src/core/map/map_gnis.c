@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -56,7 +56,7 @@
 
 #include <math.h>
 
-#include "core/xastir.h"
+#include "core/astir.h"
 #include "core/globals.h"
 #include "core/map/maps.h"
 #include "core/aprs/alert.h"
@@ -77,7 +77,7 @@
 
 
 //NOTE:  This function has a problem if a non-gnis file is labeled
-//with a ".gnis" extension.  It causes a segfault in Xastir.  More
+//with a ".gnis" extension.  It causes a segfault in Astir.  More
 //error checking needs to be done in order to prevent this.
 
 // draw_gnis_map()
@@ -140,7 +140,7 @@ void draw_gnis_map (char *dir,
 
   //fprintf(stderr,"draw_gnis_map starting: %s/%s\n",dir,filenm);
 
-  xastir_snprintf(file, sizeof(file), "%s/%s", dir, filenm);
+  astir_snprintf(file, sizeof(file), "%s/%s", dir, filenm);
 
   // Create a shorter filename for display
   short_filename_for_status(filenm, short_filenm, sizeof(short_filenm));
@@ -161,14 +161,14 @@ void draw_gnis_map (char *dir,
   if ( (destination_pixmap == INDEX_CHECK_TIMESTAMPS)
        || (destination_pixmap == INDEX_NO_TIMESTAMPS) )
   {
-    xastir_snprintf(status_text,
+    astir_snprintf(status_text,
                     sizeof(status_text),
                     langcode ("BBARSTA039"),
                     short_filenm);
   }
   else
   {
-    xastir_snprintf(status_text,
+    astir_snprintf(status_text,
                     sizeof(status_text),
                     langcode ("BBARSTA028"),
                     short_filenm);
@@ -247,7 +247,7 @@ void draw_gnis_map (char *dir,
 
           // Default population, in case the field isn't
           // present in the file.
-          xastir_snprintf(population,sizeof(population),"0");
+          astir_snprintf(population,sizeof(population),"0");
 
 // Examples of old/new format:
 // 1462331|VA|Abingdon Elementary School|school|Arlington|51|013|385023N|0770546W|38.83972|-77.09611||||||||Alexandria
@@ -281,7 +281,7 @@ void draw_gnis_map (char *dir,
           }
 
           i[0] = '\0';
-          xastir_snprintf(name,sizeof(name),"%s",j);
+          astir_snprintf(name,sizeof(name),"%s",j);
 
           // Find end of Feature Type field
           j = index(++i, '|');
@@ -292,7 +292,7 @@ void draw_gnis_map (char *dir,
           }
 
           j[0] = '\0';
-          xastir_snprintf(type,sizeof(type),"%s",i);
+          astir_snprintf(type,sizeof(type),"%s",i);
 
           // Find end of State field
           i = index(++j, '|');
@@ -303,7 +303,7 @@ void draw_gnis_map (char *dir,
           }
 
           i[0] = '\0';
-          xastir_snprintf(state,sizeof(state),"%s",j);
+          astir_snprintf(state,sizeof(state),"%s",j);
 
           // Find end of State Number Code field
           j = index(++i, '|');
@@ -324,7 +324,7 @@ void draw_gnis_map (char *dir,
           }
 
           i[0] = '\0';
-          xastir_snprintf(county,sizeof(county),"%s",j);
+          astir_snprintf(county,sizeof(county),"%s",j);
 
           // Find end of County Number Code field
           j = index(++i, '|');
@@ -349,7 +349,7 @@ void draw_gnis_map (char *dir,
           }
 
           i[0] = '\0';
-          xastir_snprintf(latitude,sizeof(latitude),"%s",j);
+          astir_snprintf(latitude,sizeof(latitude),"%s",j);
           if (!isdigit((int)latitude[0]))   // skip record if not
           {
             continue;                // numeric! (e.g. "UNKNOWN")
@@ -367,7 +367,7 @@ void draw_gnis_map (char *dir,
           }
 
           j[0] = '\0';
-          xastir_snprintf(longitude,sizeof(longitude),"%s",i);
+          astir_snprintf(longitude,sizeof(longitude),"%s",i);
           if (!isdigit((int)longitude[0]))   // skip record if not
           {
             continue;                 // numeric (e.g. UNKNOWN)
@@ -467,7 +467,7 @@ void draw_gnis_map (char *dir,
           if ( j != NULL )
           {
             j[0] = '\0';
-            xastir_snprintf(population,sizeof(population),"%s",i);
+            astir_snprintf(population,sizeof(population),"%s",i);
           }
 
 FINISH:
@@ -495,14 +495,14 @@ FINISH:
           lat_dir[1] = '\0';
 
           // Now must convert from DD MM SS format to DD MM.MM format so that we
-          // can run it through our conversion routine to Xastir coordinates.
+          // can run it through our conversion routine to Astir coordinates.
           if (1 != sscanf(lat_ss, "%d", &temp1))
           {
             fprintf(stderr,"draw_gnis_map:sscanf parsing error\n");
           }
 
           temp1 = (int)((temp1 / 60.0) * 100 + 0.5);  // Poor man's rounding
-          xastir_snprintf(lat_str, sizeof(lat_str), "%s%s.%02d%s", lat_dd,
+          astir_snprintf(lat_str, sizeof(lat_str), "%s%s.%02d%s", lat_dd,
                           lat_mm, temp1, lat_dir);
           coord_lat = convert_lat_s2l(lat_str);
 
@@ -557,7 +557,7 @@ FINISH:
           }
 
           temp1 = (int)((temp1 / 60.0) * 100 + 0.5);  // Poor man's rounding
-          xastir_snprintf(long_str, sizeof(long_str), "%s%s.%02d%s", long_dd,
+          astir_snprintf(long_str, sizeof(long_str), "%s%s.%02d%s", long_dd,
                           long_mm, temp1, long_dir);
           coord_lon = convert_lon_s2l(long_str);
 
@@ -569,7 +569,7 @@ FINISH:
 
             // Save the min/max extents of the file.  We
             // should really initially set the extents
-            // to the min/max for the Xastir coordinate
+            // to the min/max for the Astir coordinate
             // system, but in practice zeroes should
             // work just as well.
             //
@@ -611,7 +611,7 @@ FINISH:
               fprintf(stderr,"%s\t%s\n", lat_str, long_str);
             }
 
-            convert_xastir_to_screen_coordinates(coord_lon, coord_lat, &x, &y);
+            convert_astir_to_screen_coordinates(coord_lon, coord_lat, &x, &y);
 
             ok = 1;
 
@@ -1162,7 +1162,7 @@ FINISH:
     {
 
       // We're indexing only.  Save the extents in the index.
-      index_update_xastir(filenm, // Filename only
+      index_update_astir(filenm, // Filename only
                           bottom_extent,  // Bottom
                           top_extent,     // Top
                           left_extent,    // Left
@@ -1245,7 +1245,7 @@ int gnis_locate_place( Widget UNUSED(w),
   int my_count = 0;
 
 
-  xastir_snprintf(file,sizeof(file),"%s",filename_in);
+  astir_snprintf(file,sizeof(file),"%s",filename_in);
 
   if (debug_level & 16)
   {
@@ -1253,11 +1253,11 @@ int gnis_locate_place( Widget UNUSED(w),
   }
 
 
-  xastir_snprintf(name_in2,sizeof(name_in2),"%s",name_in);
-  xastir_snprintf(state_in2,sizeof(state_in2),"%s",state_in);
-  xastir_snprintf(county_in2,sizeof(county_in2),"%s",county_in);
-  xastir_snprintf(quad_in2,sizeof(quad_in2),"%s",quad_in);
-  xastir_snprintf(type_in2,sizeof(type_in2),"%s",type_in);
+  astir_snprintf(name_in2,sizeof(name_in2),"%s",name_in);
+  astir_snprintf(state_in2,sizeof(state_in2),"%s",state_in);
+  astir_snprintf(county_in2,sizeof(county_in2),"%s",county_in);
+  astir_snprintf(quad_in2,sizeof(quad_in2),"%s",quad_in);
+  astir_snprintf(type_in2,sizeof(type_in2),"%s",type_in);
 
 
   // Convert State/Province to upper-case always (they're
@@ -1335,7 +1335,7 @@ int gnis_locate_place( Widget UNUSED(w),
         }
 
         i[0] = '\0';
-        xastir_snprintf(name,sizeof(name),"%s",j);
+        astir_snprintf(name,sizeof(name),"%s",j);
         clean_string(name);
 
         // Find end of Feature Type field
@@ -1347,7 +1347,7 @@ int gnis_locate_place( Widget UNUSED(w),
         }
 
         j[0] = '\0';
-        xastir_snprintf(type,sizeof(type),"%s",i);
+        astir_snprintf(type,sizeof(type),"%s",i);
         clean_string(type);
 
         // Find end of State field
@@ -1359,7 +1359,7 @@ int gnis_locate_place( Widget UNUSED(w),
         }
 
         i[0] = '\0';
-        xastir_snprintf(state,sizeof(state),"%s",j);
+        astir_snprintf(state,sizeof(state),"%s",j);
         clean_string(state);
 
         // Find end of State Number Code field
@@ -1381,7 +1381,7 @@ int gnis_locate_place( Widget UNUSED(w),
         }
 
         i[0] = '\0';
-        xastir_snprintf(county,sizeof(county),"%s",j);
+        astir_snprintf(county,sizeof(county),"%s",j);
         clean_string(county);
 
         // Find end of County Number Code field
@@ -1403,7 +1403,7 @@ int gnis_locate_place( Widget UNUSED(w),
         }
 
         i[0] = '\0';
-        xastir_snprintf(latitude,sizeof(latitude),"%s",j);
+        astir_snprintf(latitude,sizeof(latitude),"%s",j);
         clean_string(latitude);
 
         // Find end of Primary Longitude field (DDDMMSSW)
@@ -1415,7 +1415,7 @@ int gnis_locate_place( Widget UNUSED(w),
         }
 
         j[0] = '\0';
-        xastir_snprintf(longitude,sizeof(longitude),"%s",i);
+        astir_snprintf(longitude,sizeof(longitude),"%s",i);
         clean_string(longitude);
 
         // Find end of Primary Latitude field (decimal
@@ -1492,7 +1492,7 @@ int gnis_locate_place( Widget UNUSED(w),
 
         i[0] = '\0';
 
-        xastir_snprintf(population,sizeof(population),"%s",j);
+        astir_snprintf(population,sizeof(population),"%s",j);
         clean_string(population);
 
         // Find end of Quad field
@@ -1505,7 +1505,7 @@ int gnis_locate_place( Widget UNUSED(w),
 
         j[0] = '\0';
 
-        xastir_snprintf(quad,sizeof(quad),"%s",i);
+        astir_snprintf(quad,sizeof(quad),"%s",i);
         clean_string(quad);
 
         // If "Match Case" togglebutton is not set, convert
@@ -1636,14 +1636,14 @@ int gnis_locate_place( Widget UNUSED(w),
           long_dir[1] = '\0';
 
           // Now must convert from DD MM SS format to DD MM.MM format so that we
-          // can run it through our conversion routine to Xastir coordinates.
+          // can run it through our conversion routine to Astir coordinates.
           if (1 != sscanf(lat_ss, "%d", &temp1))
           {
             fprintf(stderr,"locate_place:sscanf parsing error\n");
           }
 
           temp1 = (int)((temp1 / 60.0) * 100 + 0.5);  // Poor man's rounding
-          xastir_snprintf(lat_str, sizeof(lat_str), "%s%s.%02d%s", lat_dd,
+          astir_snprintf(lat_str, sizeof(lat_str), "%s%s.%02d%s", lat_dd,
                           lat_mm, temp1, lat_dir);
           coord_lat = convert_lat_s2l(lat_str);
 
@@ -1653,7 +1653,7 @@ int gnis_locate_place( Widget UNUSED(w),
           }
 
           temp1 = (int)((temp1 / 60.0) * 100 + 0.5);  // Poor man's rounding
-          xastir_snprintf(long_str, sizeof(long_str), "%s%s.%02d%s", long_dd,
+          astir_snprintf(long_str, sizeof(long_str), "%s%s.%02d%s", long_dd,
                           long_mm, temp1, long_dir);
           coord_lon = convert_lon_s2l(long_str);
 
@@ -1662,7 +1662,7 @@ int gnis_locate_place( Widget UNUSED(w),
 
           // Fill in the array values with what we just
           // found, increment the counter.
-          xastir_snprintf(match_array_name[my_count],200,"%s",name);
+          astir_snprintf(match_array_name[my_count],200,"%s",name);
           match_array_lat[my_count] = coord_lat;
           match_array_long[my_count] = coord_lon;
           my_count++;

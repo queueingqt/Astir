@@ -27,7 +27,7 @@
   #include "config.h"
 #endif  // HAVE_CONFIG_H
 
-// Came in via <X11/Xos.h> until xastir.h/main.h gave up their X includes.
+// Came in via <X11/Xos.h> until astir.h/main.h gave up their X includes.
 #include <string.h>
 #include "core/util/snprintf.h"
 
@@ -43,7 +43,7 @@
   #include <curl/curl.h>
 #endif
 
-#include "core/xastir.h"
+#include "core/astir.h"
 #include "core/globals.h"
 #include "core/main.h"
 #include "core/util/mutex_utils.h"
@@ -133,7 +133,7 @@ struct DLM_queue_entry
   int              osm_zl;
 
   int              state;
-  xastir_mutex      lock;
+  astir_mutex      lock;
   char          fileName[MAX_FILENAME];
   char          desc[MAX_DESCLEN];
   char          *tempName;
@@ -153,7 +153,7 @@ struct DLM_queue_entry
  * the linkages of the items in the queue.  Each item also has a lock
  * for changing data in that item.
  */
-xastir_mutex DLM_queue_lock = { .threadID=0, .lock=PTHREAD_MUTEX_INITIALIZER };
+astir_mutex DLM_queue_lock = { .threadID=0, .lock=PTHREAD_MUTEX_INITIALIZER };
 pthread_t DLM_queue_thread;
 
 volatile int DLM_queue_progress_flag=0;
@@ -161,7 +161,7 @@ volatile int DLM_queue_progress_flag=0;
 /* DLM_queue_state is protected by a lock to ensure memory consistency
  * between threads. It is held for every read or write of DLM_queue_state
  */
-xastir_mutex DLM_state_lock = { .threadID=0, .lock=PTHREAD_MUTEX_INITIALIZER };
+astir_mutex DLM_state_lock = { .threadID=0, .lock=PTHREAD_MUTEX_INITIALIZER };
 volatile int DLM_queue_state=DLM_Q_STOP;
 struct DLM_queue_entry *DLM_queue=NULL;
 
@@ -526,7 +526,7 @@ static CURL *DLM_curl_init(char *errBuf)
 
     curl_easy_setopt(mySession, CURLOPT_ERRORBUFFER, errBuf);
 
-    xastir_snprintf(agent_string, sizeof(agent_string),"Xastir");
+    astir_snprintf(agent_string, sizeof(agent_string),"Astir");
     curl_easy_setopt(mySession, CURLOPT_USERAGENT, agent_string);
 
     // write and progress functions
@@ -742,8 +742,8 @@ static void *DLM_transfer_thread(void * UNUSED(arg) )
         // We have no other option - use wget, one file at a time
         {
           char cmd[500];
-          xastir_snprintf(cmd, sizeof(cmd),
-                          "%s --server-response --user-agent=Xastir --tries=1 --timeout=%d --output-document=\'%s\' \'%s\' 2> /dev/null\n",
+          astir_snprintf(cmd, sizeof(cmd),
+                          "%s --server-response --user-agent=Astir --tries=1 --timeout=%d --output-document=\'%s\' \'%s\' 2> /dev/null\n",
                           "wget",
                           net_map_timeout,
                           (tile->tempName ? tile->tempName : tile->fileName),
@@ -956,23 +956,23 @@ void DLM_queue_tile(
 #endif
 #endif
 
-  xastir_snprintf(tile->desc, sizeof(tile->desc), "Tile:%u/%lu/%lu", osm_zl, x, y);
+  astir_snprintf(tile->desc, sizeof(tile->desc), "Tile:%u/%lu/%lu", osm_zl, x, y);
 
-  xastir_snprintf(tile->fileName, sizeof(tile->fileName), "%u/%lu/%lu.%s",
+  astir_snprintf(tile->fileName, sizeof(tile->fileName), "%u/%lu/%lu.%s",
                   osm_zl, x, y, ext);
   len = strlen(serverURL) + strlen(tile->fileName) +2;
   tile->url = malloc(len);
   if (tile->url)
   {
-    xastir_snprintf(tile->url, len, "%s/%s", serverURL, tile->fileName);
+    astir_snprintf(tile->url, len, "%s/%s", serverURL, tile->fileName);
   }
 
-  xastir_snprintf(tile->fileName, sizeof(tile->fileName),
+  astir_snprintf(tile->fileName, sizeof(tile->fileName),
                   "%s/%u/%lu/%lu.%s.part",
                   baseDir, osm_zl, x, y, ext);
   tile->tempName = strdup(tile->fileName);
 
-  xastir_snprintf(tile->fileName, sizeof(tile->fileName),
+  astir_snprintf(tile->fileName, sizeof(tile->fileName),
                   "%s/%u/%lu/%lu.%s",
                   baseDir, osm_zl, x, y, ext);
 
@@ -1057,14 +1057,14 @@ void DLM_queue_file(
   p-=sizeof(tile->desc)-6;
   if (p<filename)
   {
-    xastir_snprintf(tile->desc, sizeof(tile->desc), "File:%s", filename);
+    astir_snprintf(tile->desc, sizeof(tile->desc), "File:%s", filename);
   }
   else
   {
-    xastir_snprintf(tile->desc, sizeof(tile->desc), "File:...%s", p+3);
+    astir_snprintf(tile->desc, sizeof(tile->desc), "File:...%s", p+3);
   }
 
-  xastir_snprintf(tile->fileName, sizeof(tile->fileName), "%s.part", filename);
+  astir_snprintf(tile->fileName, sizeof(tile->fileName), "%s.part", filename);
   tile->tempName = strdup(tile->fileName);
 
   strncpy(tile->fileName, filename, sizeof(tile->fileName));

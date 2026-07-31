@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -21,13 +21,13 @@
  * Look at the README for more information on the program.
  */
 
-#ifndef __XASTIR_INTERFACE_H
-#define __XASTIR_INTERFACE_H
+#ifndef __ASTIR_INTERFACE_H
+#define __ASTIR_INTERFACE_H
 
 #include <termios.h>
 #include <unistd.h>
 #include "core/util/util.h"
-#include "core/xastir.h"
+#include "core/astir.h"
 
 
 #define MAX_DEVICE_NAME 128
@@ -132,11 +132,11 @@ typedef struct
   int    read_in_pos;                           /* current read buffer input pos           */
   int    read_out_pos;                          /* current read buffer output pos          */
   char   device_read_buffer[MAX_DEVICE_BUFFER]; /* read buffer for this port               */
-  xastir_mutex read_lock;                       /* Lock for reading the port data          */
+  astir_mutex read_lock;                       /* Lock for reading the port data          */
   pthread_t write_thread;                       /* write thread                            */
   int    write_in_pos;                          /* current write buffer input pos          */
   int    write_out_pos;                         /* current write buffer output pos         */
-  xastir_mutex write_lock;                      /* Lock for writing the port data          */
+  astir_mutex write_lock;                      /* Lock for writing the port data          */
   char   device_write_buffer[MAX_DEVICE_BUFFER];/* write buffer for this port              */
 } iface;
 
@@ -189,7 +189,7 @@ typedef struct
                                                      connection with using this descriptor.  */
   int    database_schema_type;                  /* table structures to use in the database
                                                      A database schema could contain both
-                                                     APRSWorld and XASTIR table structures,
+                                                     APRSWorld and ASTIR table structures,
                                                      but a separate database descriptor
                                                      needs to be defined for each.  */
   char   database_unix_socket[255];             /* MySQL - unix socket parameter (path and
@@ -212,8 +212,8 @@ typedef struct
 
 extern iodevices dtype[];
 
-extern xastir_mutex port_data_lock; // Protects the port_data[] array of structs
-extern xastir_mutex devices_lock;    // Protects the devices[] array
+extern astir_mutex port_data_lock; // Protects the port_data[] array of structs
+extern astir_mutex devices_lock;    // Protects the devices[] array
 
 extern iface port_data[];
 extern int port_id[];
@@ -228,9 +228,9 @@ extern int add_device(int port_avail,int dev_type,
                       int reconnect,
                       char *filter_string);
 
-extern xastir_mutex data_lock;          // Protects incoming_data_queue
-extern xastir_mutex output_data_lock;   // Protects interface.c:channel_data() function only
-extern xastir_mutex connect_lock;       // Protects port_data[].thread_status and port_data[].connect_status
+extern astir_mutex data_lock;          // Protects incoming_data_queue
+extern astir_mutex output_data_lock;   // Protects interface.c:channel_data() function only
+extern astir_mutex connect_lock;       // Protects port_data[].thread_status and port_data[].connect_status
 
 extern ioparam devices[];
 
@@ -255,12 +255,12 @@ extern int WX_rain_gauge_type;
 // This header is included by core files -- interface.c itself is one -- and
 // naming a Widget in it made them compile only because some *other* header
 // happened to have pulled in Xt first.  db_gui.c includes db_gis.h before
-// xastir.h and so did not, which is how it surfaced.
+// astir.h and so did not, which is how it surfaced.
 
 /* interface.c */
 extern int is_local_interface(int port);
 extern int is_network_interface(int port);
-extern void send_agwpe_packet(int xastir_interface, int RadioPort, unsigned char type, unsigned char *FromCall, unsigned char *ToCall, unsigned char *Path, unsigned char *Data, int length);
+extern void send_agwpe_packet(int astir_interface, int RadioPort, unsigned char type, unsigned char *FromCall, unsigned char *ToCall, unsigned char *Path, unsigned char *Data, int length);
 
 extern int pop_incoming_data(unsigned char *data_string, int *port);
 extern int push_incoming_data(unsigned char *data_string, int length, int port);
@@ -286,5 +286,5 @@ extern void send_ax25_frame(int port, char *source, char *destination, char *pat
 extern pid_t getpgid(pid_t pid);
 
 
-#endif /* XASTIR_INTERFACE_H */
+#endif /* ASTIR_INTERFACE_H */
 

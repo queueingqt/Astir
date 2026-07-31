@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -40,7 +40,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 
-#include "core/xastir.h"
+#include "core/astir.h"
 #include "core/main.h"
 #include "core/globals.h"
 #include "core/util/util.h"
@@ -114,8 +114,8 @@ void rotate_file(char *file, int max_keep )
       fprintf(stderr, "rotate: %s : %s\n", file_b, file_a);
     }
 
-    xastir_snprintf(file_a,sizeof(file_a),"%s.%d",file,i);
-    xastir_snprintf(file_b,sizeof(file_b),"%s.%d",file,i-1);
+    astir_snprintf(file_a,sizeof(file_a),"%s.%d",file,i);
+    astir_snprintf(file_b,sizeof(file_b),"%s.%d",file,i-1);
 
     unlink (file_a);
     if (stat(file_a, &file_status) == 0)
@@ -232,7 +232,7 @@ void load_wx_alerts_from_log_working_sub(time_t time_now, char *filename)
     return;
   }
 
-  xastir_snprintf(tmp_filename, sizeof(tmp_filename), "%s.tmp", filename);
+  astir_snprintf(tmp_filename, sizeof(tmp_filename), "%s.tmp", filename);
   ftmp = fopen(tmp_filename, "w");
   if (!ftmp)
   {
@@ -270,7 +270,7 @@ restart_sync:
       {
         // Age is good, read next line and process it
 
-        xastir_snprintf(timestamp_line, sizeof(timestamp_line), "%s", line);
+        astir_snprintf(timestamp_line, sizeof(timestamp_line), "%s", line);
 
         (void)fetch_file_line(f, line);
 
@@ -278,7 +278,7 @@ restart_sync:
         {
           char packet_line[MAX_LINE_SIZE+1];
 
-          xastir_snprintf(packet_line, sizeof(packet_line), "%s", line);
+          astir_snprintf(packet_line, sizeof(packet_line), "%s", line);
 
 //fprintf(stderr,"%s\n",line);
           decode_ax25_line(line,'F',-1, 1);   // Decode the packet, mutates line
@@ -339,28 +339,28 @@ void load_wx_alerts_from_log(void)
   fprintf(stderr,"*** Reading WX Alert log files\n");
 
   // wx_alert.log.3
-  xastir_snprintf(filename,
+  astir_snprintf(filename,
                   sizeof(filename),
                   "%s.3",
                   logfile_path );
   load_wx_alerts_from_log_working_sub(time_now, filename);
 
   // wx_alert.log.2
-  xastir_snprintf(filename,
+  astir_snprintf(filename,
                   sizeof(filename),
                   "%s.2",
                   logfile_path );
   load_wx_alerts_from_log_working_sub(time_now, filename);
 
   // wx_alert.log.1
-  xastir_snprintf(filename,
+  astir_snprintf(filename,
                   sizeof(filename),
                   "%s.1",
                   logfile_path );
   load_wx_alerts_from_log_working_sub(time_now, filename);
 
   // wx_alert.log
-  xastir_snprintf(filename,
+  astir_snprintf(filename,
                   sizeof(filename),
                   "%s",
                   logfile_path );
@@ -407,7 +407,7 @@ void log_data(char *file, char *line)
 
     (void)strftime(timestring,100,"%a %b %d %H:%M:%S %Z %Y",time_now);
 
-    xastir_snprintf(temp,
+    astir_snprintf(temp,
                     sizeof(temp),
                     "# %ld  %s",
                     (unsigned long)secs_now,

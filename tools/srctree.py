@@ -8,7 +8,7 @@ that measures nothing reports success -- link_null.py would have linked an
 empty object list and announced a clean link.  Six copies of the same glob is
 six chances to fix five of them.
 
-rtree/ is excluded everywhere: it is a vendored R-tree library, not Xastir
+rtree/ is excluded everywhere: it is a vendored R-tree library, not Astir
 code, and counting it would inflate every number these tools produce.
 """
 import os
@@ -27,12 +27,12 @@ def _walk(srcdir, suffix):
 
 
 def objects(srcdir="src"):
-    """Every compiled object belonging to Xastir, recursively."""
+    """Every compiled object belonging to Astir, recursively."""
     return _walk(srcdir, ".o")
 
 
 def sources(srcdir="src", suffix=".c"):
-    """Every source file belonging to Xastir, recursively."""
+    """Every source file belonging to Astir, recursively."""
     return _walk(srcdir, suffix)
 
 

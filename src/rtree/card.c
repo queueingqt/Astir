@@ -1,6 +1,6 @@
 /* -*- c-basic-offset: 4; indent-tabs-mode: nil -*-
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -34,8 +34,8 @@
 #include "index.h"
 #include "card.h"
 
-int Xastir_NODECARD = MAXCARD;
-int Xastir_LEAFCARD = MAXCARD;
+int Astir_NODECARD = MAXCARD;
+int Astir_LEAFCARD = MAXCARD;
 
 static int set_max(int *which, int new_max)
 {
@@ -47,19 +47,19 @@ static int set_max(int *which, int new_max)
   return 1;
 }
 
-int Xastir_RTreeSetNodeMax(int new_max)
+int Astir_RTreeSetNodeMax(int new_max)
 {
-  return set_max(&Xastir_NODECARD, new_max);
+  return set_max(&Astir_NODECARD, new_max);
 }
-int Xastir_RTreeSetLeafMax(int new_max)
+int Astir_RTreeSetLeafMax(int new_max)
 {
-  return set_max(&Xastir_LEAFCARD, new_max);
+  return set_max(&Astir_LEAFCARD, new_max);
 }
-int Xastir_RTreeGetNodeMax(void)
+int Astir_RTreeGetNodeMax(void)
 {
-  return Xastir_NODECARD;
+  return Astir_NODECARD;
 }
-int Xastir_RTreeGetLeafMax(void)
+int Astir_RTreeGetLeafMax(void)
 {
-  return Xastir_LEAFCARD;
+  return Astir_LEAFCARD;
 }

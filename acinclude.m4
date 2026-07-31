@@ -1,4 +1,4 @@
-# acinclude.m4 for Xastir
+# acinclude.m4 for Astir
 #
 # Copyright (C) 2000-2026 The Xastir Group
 #
@@ -6,7 +6,7 @@
 # test for devices.  Avoid the tests on Cygwin as they hang on some
 # WinXP boxes.
 #
-AC_DEFUN([XASTIR_DETECT_DEVICES],
+AC_DEFUN([ASTIR_DETECT_DEVICES],
 [
 AC_MSG_CHECKING([for devices])
 if test -d /proc/registry ; then
@@ -32,7 +32,7 @@ AC_MSG_RESULT(found $ac_tnc_port and $ac_gps_port)
 ])
 
 # add search paths
-AC_DEFUN([XASTIR_ADD_SEARCH_PATHS],
+AC_DEFUN([ASTIR_ADD_SEARCH_PATHS],
 [
 AC_MSG_CHECKING([for search paths])
 
@@ -48,7 +48,7 @@ AC_MSG_RESULT([done])
 ])
 
 # add compiler flags
-AC_DEFUN([XASTIR_COMPILER_FLAGS],
+AC_DEFUN([ASTIR_COMPILER_FLAGS],
 [
 
 # brutal!
@@ -94,7 +94,7 @@ AC_MSG_CHECKING([for compiler flags])
 AC_MSG_RESULT(using $CFLAGS)
 ])
 
-AC_DEFUN([XASTIR_DETECT_BINARIES],
+AC_DEFUN([ASTIR_DETECT_BINARIES],
 [
 BINPATH=$PATH
 
@@ -188,7 +188,7 @@ fi
 
 ])
 
-AC_DEFUN([XASTIR_CHECK_POSTGIS],
+AC_DEFUN([ASTIR_CHECK_POSTGIS],
 [
 BINPATH="${PATH}${EXTRA_BIN_PATH}"
 # test for postgresql
@@ -241,7 +241,7 @@ fi
 
 ])
 
-AC_DEFUN([XASTIR_CHECK_MYSQL],
+AC_DEFUN([ASTIR_CHECK_MYSQL],
 [
 BINPATH="${PATH}${EXTRA_BIN_PATH}"
 
@@ -312,7 +312,7 @@ fi
 
 
 
-AC_DEFUN([XASTIR_CHECK_IMAGEMAGICK],
+AC_DEFUN([ASTIR_CHECK_IMAGEMAGICK],
 [
 BINPATH="${PATH}${EXTRA_BIN_PATH}"
 
@@ -384,7 +384,7 @@ if test "${use_imagemagick}" = "yes"; then
     #endif
     ])],[AC_MSG_RESULT([yes])],
     [AC_MSG_RESULT([no])
-     AC_MSG_WARN([***Your ImageMagick is too new and Xastir cannot use it***])
+     AC_MSG_WARN([***Your ImageMagick is too new and Astir cannot use it***])
      use_imagemagick="no"
      ])
     if test "${use_imagemagick}" = "yes"
@@ -415,7 +415,7 @@ fi
 
 
 
-AC_DEFUN([XASTIR_CHECK_GRAPHICSMAGICK],
+AC_DEFUN([ASTIR_CHECK_GRAPHICSMAGICK],
 [
 BINPATH="${PATH}${EXTRA_BIN_PATH}"
 
@@ -693,7 +693,7 @@ AC_LANG_POP([C])
 
 
 #
-AC_DEFUN([XASTIR_PATH_MOTIF], [
+AC_DEFUN([ASTIR_PATH_MOTIF], [
 # New stuff to check for Motif/Lesstif.  Shamelessly borrowed from
 # the opendx project. Opendx in turn snarfed their test from AC_PATH_X.
 
@@ -869,12 +869,12 @@ fi
 # the path augmented by "--with-bdb-incdir", but we have no way of telling
 # (without actually running a program that calls db_version) whether
 # this header is actually for the most recent libdb installed on the
-# system.  This can bite users who have multiple versions, but tell Xastir
+# system.  This can bite users who have multiple versions, but tell Astir
 # that they want to use the older header in some nonstandard directory.
 #
 # In that case, the ONLY solution for forcing use of the old library is to
 # specify it in LIBS (e.g. "LIBS='-ldb-5.3'").
-AC_DEFUN([XASTIR_BERKELEY_DB_CHK_LIB],
+AC_DEFUN([ASTIR_BERKELEY_DB_CHK_LIB],
 [
 
   BDB_SAVE_LDFLAGS=$LDFLAGS
@@ -891,7 +891,7 @@ AC_DEFUN([XASTIR_BERKELEY_DB_CHK_LIB],
   LDFLAGS=$BDB_SAVE_LDFLAGS
 ])
 
-AC_DEFUN([XASTIR_BERKELEY_DB_OPTS],
+AC_DEFUN([ASTIR_BERKELEY_DB_OPTS],
 [
 AC_ARG_WITH(bdb-libdir,
 	[  --with-bdb-libdir=DIR     Berkeley DB lib files are in DIR],
@@ -903,11 +903,11 @@ AC_ARG_WITH(bdb-incdir,
 	[ test "${with_bdb_inc+set}" = set || with_bdb_inc=none ])
 ])
 
-AC_DEFUN([XASTIR_BERKELEY_DB_CHK],
+AC_DEFUN([ASTIR_BERKELEY_DB_CHK],
 [
-	AC_REQUIRE([XASTIR_BERKELEY_DB_OPTS])
+	AC_REQUIRE([ASTIR_BERKELEY_DB_OPTS])
 
-	xastir_save_CPPFLAGS=$CPPFLAGS
+	astir_save_CPPFLAGS=$CPPFLAGS
 
 	if test -d $with_bdb_inc; then
 	    CPPFLAGS="$CPPFLAGS -I$with_bdb_inc"
@@ -932,13 +932,13 @@ AC_DEFUN([XASTIR_BERKELEY_DB_CHK],
             ])],
          [
            AC_MSG_RESULT([yes])
-           XASTIR_BERKELEY_DB_CHK_LIB()
+           ASTIR_BERKELEY_DB_CHK_LIB()
          ],
          [
            AC_MSG_RESULT([no]);
            dblib="no"
          ])
-	CPPFLAGS=$xastir_save_CPPFLAGS
+	CPPFLAGS=$astir_save_CPPFLAGS
 
   use_map_cache="no"
   if test "${dblib}" = "berkeley"; then

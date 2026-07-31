@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -23,8 +23,8 @@
  */
 
 
-#ifndef XASTIR_MAP_CACHE_H
-#define XASTIR_MAP_CACHE_H
+#ifndef ASTIR_MAP_CACHE_H
+#define ASTIR_MAP_CACHE_H
 
 // Global variable declarations
 extern int map_cache_fetch_disable;
@@ -75,4 +75,4 @@ extern char * map_cache_fileid(void);
 #define MAP_CACHE_SPACE_LIMIT 128*1024*1024
 
 
-#endif /* XASTIR_MAP_CACHE_H */
+#endif /* ASTIR_MAP_CACHE_H */

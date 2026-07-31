@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 2025-2026 The Xastir Group
  *
  * This program is free software; you can redistribute it and/or
@@ -25,7 +25,7 @@
  * but not used by the unit tests.
  * 
  * These stubs allow us to link with the real util.o for testing
- * without pulling in the entire Xastir codebase.
+ * without pulling in the entire Astir codebase.
  */
 
 #include <stdio.h>
@@ -36,7 +36,7 @@
 
 #include "tests/test_framework.h"
 
-// define from xastir.h
+// define from astir.h
 #define MAX_LINE_SIZE 512
 
 // global variables referenced but unused in tests so far:

@@ -1,4 +1,4 @@
-// Modification for Xastir CVS purposes
+// Modification for Astir CVS purposes
 //
 // Portions Copyright (C) 2000-2026 The Xastir Group
 //

@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -64,8 +64,8 @@
   #include <Xm/XpmI.h>
 #endif // HAVE_XM_XPMI_H
 
-#include "core/xastir.h"
-#include "ui/motif/xastir_gui.h"
+#include "core/astir.h"
+#include "ui/motif/astir_gui.h"
 #include "ui/motif/wx_gui.h"
 #include "ui/motif/main_gui.h"
 #include "ui/motif/draw_symbols_gui.h"
@@ -94,7 +94,7 @@ extern void resize_dialog(Widget form, Widget dialog);
 // symbol_change_requested_from are read by main.c and objects_gui.c, which are
 // the two places that open the chooser; the rest is private to it.
 Widget select_symbol_dialog = (Widget)NULL;
-static xastir_mutex select_symbol_dialog_lock;
+static astir_mutex select_symbol_dialog_lock;
 Pixmap select_icons[(126-32)*2];    //33 to 126 with both '/' and '\' symbols (94 * 2) or 188
 int symbol_change_requested_from = 0;
 

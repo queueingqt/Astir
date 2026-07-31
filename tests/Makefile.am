@@ -1,4 +1,4 @@
-# Makefile.am for Xastir tests
+# Makefile.am for Astir tests
 # Autotest-based test suite for interface helper functions
 
 TESTSUITE = $(srcdir)/testsuite

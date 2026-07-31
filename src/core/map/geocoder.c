@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 2025-2026 The Xastir Group
  *
  * This program is free software; you can redistribute it and/or
@@ -30,7 +30,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "core/xastir.h"
+#include "core/astir.h"
 #include "core/map/geocoder.h"
 
 #ifdef HAVE_NOMINATIM
@@ -72,7 +72,7 @@ int geocode_search(geocode_service_t service,
 
     // Validate parameters
     if (!query || !results) {
-        xastir_snprintf(last_error, sizeof(last_error),
+        astir_snprintf(last_error, sizeof(last_error),
                        "Invalid parameters");
         return -1;
     }
@@ -94,20 +94,20 @@ int geocode_search(geocode_service_t service,
             if (ret < 0) {
                 const char *err = nominatim_get_error();
                 if (err) {
-                    xastir_snprintf(last_error, sizeof(last_error), "%s", err);
+                    astir_snprintf(last_error, sizeof(last_error), "%s", err);
                 }
             }
             break;
 #endif
 
         case GEOCODE_SERVICE_NONE:
-            xastir_snprintf(last_error, sizeof(last_error),
+            astir_snprintf(last_error, sizeof(last_error),
                            "No geocoding service specified");
             ret = -1;
             break;
 
         default:
-            xastir_snprintf(last_error, sizeof(last_error),
+            astir_snprintf(last_error, sizeof(last_error),
                            "Geocoding service not available (not compiled in)");
             ret = -1;
             break;
@@ -195,7 +195,7 @@ void geocode_format_subtitle(const struct geocode_result *result,
 
     // Add primary settlement if present
     if (result->settlement[0]) {
-        xastir_snprintf(components, sizeof(components), "%s", result->settlement);
+        astir_snprintf(components, sizeof(components), "%s", result->settlement);
         added = 1;
     }
 
@@ -240,5 +240,5 @@ void geocode_format_subtitle(const struct geocode_result *result,
         strncat(components, result->country, sizeof(components) - strlen(components) - 1);
     }
 
-    xastir_snprintf(subtitle, size, "%s", components);
+    astir_snprintf(subtitle, size, "%s", components);
 }

@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 2000-2026 The Xastir Group
  *
  * This program is free software; you can redistribute it and/or
@@ -46,7 +46,7 @@
 
 #include <poll.h>
 
-#include "core/xastir.h"
+#include "core/astir.h"
 
 // Must be last include file
 #include "core/util/leak_detection.h"
@@ -147,7 +147,7 @@ int exchange_packet(char *hostname, char *port, char *buffer, int buflen)
 }
 
 // Send a UDP packet to a UDP listening port.  This allows scripts
-// and other programs to inject packets into Xastir via UDP
+// and other programs to inject packets into Astir via UDP
 // protocol.
 // Inputs:
 //      hostname    (argv[1])
@@ -177,12 +177,12 @@ int main(int argc, char *argv[])
   if (argc < 6)
   {
     fprintf(stderr,
-            "\nUsage: xastir_udp_client server port call passcode -identify\n");
+            "\nUsage: astir_udp_client server port call passcode -identify\n");
     fprintf(stderr,
-            "       xastir_udp_client server port call passcode [-to_rf] [-to_inet] \"APRS Packet\"\n");
+            "       astir_udp_client server port call passcode [-to_rf] [-to_inet] \"APRS Packet\"\n");
 
     fprintf(stderr,
-            "\nExample: xastir_udp_client localhost 2023 ab7cd 1234 \"APRS packet goes here\"\n");
+            "\nExample: astir_udp_client localhost 2023 ab7cd 1234 \"APRS packet goes here\"\n");
     return(1);
   }
 

@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -21,8 +21,8 @@
  * Look at the README for more information on the program.
  */
 
-#ifndef __XASTIR_ALERT_H
-#define __XASTIR_ALERT_H
+#ifndef __ASTIR_ALERT_H
+#define __ASTIR_ALERT_H
 
 
 #if HAVE_SYS_TIME_H
@@ -92,6 +92,6 @@ extern struct hashtable_itr *create_wx_alert_iterator(void);
 extern alert_entry *get_next_wx_alert(struct hashtable_itr *iterator);
 extern int alert_list_count(void);
 
-#endif /* __XASTIR_ALERT_H */
+#endif /* __ASTIR_ALERT_H */
 
 

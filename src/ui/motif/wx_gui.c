@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -39,8 +39,8 @@
 
 #include <math.h>
 
-#include "core/xastir.h"
-#include "ui/motif/xastir_gui.h"
+#include "core/astir.h"
+#include "ui/motif/astir_gui.h"
 #include "ui/motif/wx_gui.h"
 #include "ui/motif/main_gui.h"
 #include "ui/motif/draw_symbols_gui.h"
@@ -69,9 +69,9 @@ Widget wx_alert_shell = (Widget)NULL;
 Widget wx_detailed_alert_shell = (Widget)NULL;
 static Widget wx_alert_list;
 
-static xastir_mutex wx_alert_shell_lock;
-static xastir_mutex wx_detailed_alert_shell_lock;
-static xastir_mutex wx_station_dialog_lock;
+static astir_mutex wx_alert_shell_lock;
+static astir_mutex wx_detailed_alert_shell_lock;
+static astir_mutex wx_station_dialog_lock;
 
 
 
@@ -282,7 +282,7 @@ void wx_alert_finger_output( Widget UNUSED(widget), char *handle)
   if ((server_fd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0)
   {
 //        fprintf(stderr,"wx_alert_finger_output: can't get socket\n");
-    xastir_snprintf(temp,
+    astir_snprintf(temp,
                     sizeof(temp),
                     "wx_alert_finger_output: can't get socket");
     item = XmStringGenerate(temp, XmFONTLIST_DEFAULT_TAG, XmCHARSET_TEXT, NULL);
@@ -304,7 +304,7 @@ void wx_alert_finger_output( Widget UNUSED(widget), char *handle)
   if (serverhost == (struct hostent *)0)
   {
 //        fprintf(stderr,"wx_alert_finger_output: gethostbyname failed\n");
-    xastir_snprintf(temp,
+    astir_snprintf(temp,
                     sizeof(temp),
                     "wx_alert_finger_output: gethostbyname failed");
     item = XmStringGenerate(temp, XmFONTLIST_DEFAULT_TAG, XmCHARSET_TEXT, NULL);
@@ -320,7 +320,7 @@ void wx_alert_finger_output( Widget UNUSED(widget), char *handle)
   if (connect(server_fd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) != 0)
   {
 //        fprintf(stderr,"wx_alert_finger_output: connect to server failed\n");
-    xastir_snprintf(temp,
+    astir_snprintf(temp,
                     sizeof(temp),
                     "wx_alert_finger_output: connect to server failed");
     item = XmStringGenerate(temp, XmFONTLIST_DEFAULT_TAG, XmCHARSET_TEXT, NULL);
@@ -335,7 +335,7 @@ void wx_alert_finger_output( Widget UNUSED(widget), char *handle)
   if (fd == NULL)
   {
 //        fprintf(stderr,"Couldn't create duplicate write socket\n");
-    xastir_snprintf(temp,
+    astir_snprintf(temp,
                     sizeof(temp),
                     "Couldn't create duplicate write socket");
     item = XmStringGenerate(temp, XmFONTLIST_DEFAULT_TAG, XmCHARSET_TEXT, NULL);
@@ -347,7 +347,7 @@ void wx_alert_finger_output( Widget UNUSED(widget), char *handle)
 
   // Set up the text we're going to send to the remote finger
   // server.
-  xastir_snprintf(temp,
+  astir_snprintf(temp,
                   sizeof(temp),
                   "%s\r\n",
                   handle);
@@ -358,7 +358,7 @@ void wx_alert_finger_output( Widget UNUSED(widget), char *handle)
   if (ret == 0 || ret == -1)
   {
 //        fprintf(stderr,"Couldn't send finger command to wxsvr\n");
-    xastir_snprintf(temp,
+    astir_snprintf(temp,
                     sizeof(temp),
                     "Couldn't send finger command to wxsvr");
     item = XmStringGenerate(temp, XmFONTLIST_DEFAULT_TAG, XmCHARSET_TEXT, NULL);
@@ -381,7 +381,7 @@ void wx_alert_finger_output( Widget UNUSED(widget), char *handle)
   if (fd == NULL)
   {
 //        fprintf(stderr,"Couldn't create duplicate read socket\n");
-    xastir_snprintf(temp,
+    astir_snprintf(temp,
                     sizeof(temp),
                     "Couldn't create duplicate read socket");
     item = XmStringGenerate(temp, XmFONTLIST_DEFAULT_TAG, XmCHARSET_TEXT, NULL);
@@ -440,7 +440,7 @@ void wx_alert_double_click_action( Widget widget, XtPointer UNUSED(clientData), 
   // Grab the first 13 characters.  Remove spaces.  This is our handle
   // into the weather server for the full weather alert text.
 
-  xastir_snprintf(handle,
+  astir_snprintf(handle,
                   sizeof(handle),
                   "%s",
                   choice);
@@ -601,9 +601,9 @@ void wx_alert_update_list(void)
       alert = alert_list[ii];
       // AFGNPW      NWS-WARN    Until: 191500z   AK_Z213   WIND               P7IAA
       // TSATOR      NWS-ADVIS   Until: 190315z   OK_C127   TORNDO             H2VAA
-      //xastir_snprintf(temp, sizeof(temp), "%-9s   %-9s   Until: %-7s   %-7s   %-20s   %s",
+      //astir_snprintf(temp, sizeof(temp), "%-9s   %-9s   Until: %-7s   %-7s   %-20s   %s",
 
-      xastir_snprintf(temp,
+      astir_snprintf(temp,
                       sizeof(temp),
                       "%-9s %-5s %-9s %c%c @%c%c%c%cz ==> %c%c @%c%c%c%cz %c%c %-7s %s %s%s%s%s",
                       alert->from,
@@ -1894,7 +1894,7 @@ void fill_wx_data(void)
           {
             if (!english_units)
             {
-              xastir_snprintf(temp,
+              astir_snprintf(temp,
                               sizeof(temp),
                               "%03d",
                               (int)(((atof(weather->wx_temp)-32)*5.0)/9.0));
@@ -1927,7 +1927,7 @@ void fill_wx_data(void)
           {
             if (!english_units)
             {
-              xastir_snprintf(temp,
+              astir_snprintf(temp,
                               sizeof(temp),
                               "%03d",
                               (int)(atof(weather->wx_speed)*1.6094));
@@ -1950,7 +1950,7 @@ void fill_wx_data(void)
           {
             if (!english_units)
             {
-              xastir_snprintf(temp,
+              astir_snprintf(temp,
                               sizeof(temp),
                               "%03d",
                               (int)(atof(weather->wx_gust)*1.6094));
@@ -1972,12 +1972,12 @@ void fill_wx_data(void)
           if (strlen(weather->wx_rain_total) > 0)
           {
             if (!english_units)
-              xastir_snprintf(temp,
+              astir_snprintf(temp,
                               sizeof(temp),
                               "%0.2f",
                               atof(weather->wx_rain_total)*.254);
             else
-              xastir_snprintf(temp,
+              astir_snprintf(temp,
                               sizeof(temp),
                               "%0.2f",
                               atof(weather->wx_rain_total)/100.0);
@@ -1994,12 +1994,12 @@ void fill_wx_data(void)
           if (strlen(weather->wx_rain) > 0)
           {
             if (!english_units)
-              xastir_snprintf(temp,
+              astir_snprintf(temp,
                               sizeof(temp),
                               "%0.2f",
                               atof(weather->wx_rain)*.254);
             else
-              xastir_snprintf(temp,
+              astir_snprintf(temp,
                               sizeof(temp),
                               "%0.2f",
                               atof(weather->wx_rain)/100.0);
@@ -2016,12 +2016,12 @@ void fill_wx_data(void)
           if (strlen(weather->wx_prec_24) > 0)
           {
             if (!english_units)
-              xastir_snprintf(temp,
+              astir_snprintf(temp,
                               sizeof(temp),
                               "%0.2f",
                               atof(weather->wx_prec_24)*.254);
             else
-              xastir_snprintf(temp,
+              astir_snprintf(temp,
                               sizeof(temp),
                               "%0.2f",
                               atof(weather->wx_prec_24)/100.0);
@@ -2038,12 +2038,12 @@ void fill_wx_data(void)
           if (strlen(weather->wx_prec_00) > 0)
           {
             if (!english_units)
-              xastir_snprintf(temp,
+              astir_snprintf(temp,
                               sizeof(temp),
                               "%0.2f",
                               atof(weather->wx_prec_00)*.254);
             else
-              xastir_snprintf(temp,
+              astir_snprintf(temp,
                               sizeof(temp),
                               "%0.2f",
                               atof(weather->wx_prec_00)/100.0);
@@ -2072,7 +2072,7 @@ void fill_wx_data(void)
           {
             if (!english_units)
             {
-              xastir_snprintf(temp,
+              astir_snprintf(temp,
                               sizeof(temp),
                               "%03d",
                               (int)(((atof(wx_dew_point)-32)*5.0)/9.0));
@@ -2094,7 +2094,7 @@ void fill_wx_data(void)
           {
             if (!english_units)
             {
-              xastir_snprintf(temp,
+              astir_snprintf(temp,
                               sizeof(temp),
                               "%03d",
                               (int)(atof(wx_high_wind)*1.6094));
@@ -2116,7 +2116,7 @@ void fill_wx_data(void)
           {
             if (!english_units)
             {
-              xastir_snprintf(temp,
+              astir_snprintf(temp,
                               sizeof(temp),
                               "%03d",
                               (int)(((atof(wx_wind_chill)-32)*5.0)/9.0));
@@ -2138,14 +2138,14 @@ void fill_wx_data(void)
           {
             if (!english_units)
             {
-              //xastir_snprintf(temp, sizeof(temp), "%0.0f",
+              //astir_snprintf(temp, sizeof(temp), "%0.0f",
               //        atof(wx_baro_inHg)*25.4); // inch Hg -> mm Hg
               //XmTextFieldSetString(WX_baro_data,temp);
               XmTextFieldSetString(WX_baro_data,weather->wx_baro); // hPa
             }
             else    // inches mercury
             {
-              xastir_snprintf(temp,
+              astir_snprintf(temp,
                               sizeof(temp),
                               "%0.2f",
                               (atof(weather->wx_baro)*0.02953));
@@ -2163,13 +2163,13 @@ void fill_wx_data(void)
           {
             if (!english_units)    // hPa
             {
-              //xastir_snprintf(temp, sizeof(temp), "%0.0f",
+              //astir_snprintf(temp, sizeof(temp), "%0.0f",
               //        atof(wx_three_hour_baro)*25.4); // inch Hg -> mm Hg
               XmTextFieldSetString(WX_three_hour_baro_data,wx_three_hour_baro);
             }
             else      // inches mercury
             {
-              xastir_snprintf(temp,
+              astir_snprintf(temp,
                               sizeof(temp),
                               "%0.2f",
                               (atof(wx_three_hour_baro)*0.02953));
@@ -2187,7 +2187,7 @@ void fill_wx_data(void)
           {
             if (!english_units)
             {
-              xastir_snprintf(temp,
+              astir_snprintf(temp,
                               sizeof(temp),
                               "%03d",
                               (int)(((atof(wx_hi_temp)-32)*5.0)/9.0));
@@ -2209,7 +2209,7 @@ void fill_wx_data(void)
           {
             if (!english_units)
             {
-              xastir_snprintf(temp,
+              astir_snprintf(temp,
                               sizeof(temp),
                               "%03d",
                               (int)(((atof(wx_low_temp)-32)*5.0)/9.0));
@@ -2231,7 +2231,7 @@ void fill_wx_data(void)
           {
             if (!english_units)
             {
-              xastir_snprintf(temp,
+              astir_snprintf(temp,
                               sizeof(temp),
                               "%03d",
                               (int)(((atof(wx_heat_index)-32)*5.0)/9.0));

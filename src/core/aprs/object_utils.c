@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -51,12 +51,12 @@ char compress_group(char group_in);
 void pad_item_name(char *name, size_t name_size)
 {
   char tempstr[10]; // max name is 9 characters
-  xastir_snprintf(tempstr,
+  astir_snprintf(tempstr,
                   sizeof(tempstr),
                   "%s",
                   name);
   if (strlen(tempstr) < 3)
-    xastir_snprintf(name, name_size,"%-3s",tempstr);
+    astir_snprintf(name, name_size,"%-3s",tempstr);
 }
 
 // Given strings representing course and speed, return an appropriate
@@ -67,7 +67,7 @@ void format_course_speed(char *dst, size_t dst_size, char *course_str, char *spe
   char tempstr[50];
   int temp;
 
-  xastir_snprintf(dst, dst_size, ".../"); // Start with invalid-data string
+  astir_snprintf(dst, dst_size, ".../"); // Start with invalid-data string
   *course = 0;
   if (strlen(course_str) != 0)      // Course was entered
   {
@@ -76,12 +76,12 @@ void format_course_speed(char *dst, size_t dst_size, char *course_str, char *spe
     temp = atoi(course_str);
     if ( (temp >= 1) && (temp <= 360) )
     {
-      xastir_snprintf(dst, dst_size, "%03d/",temp);
+      astir_snprintf(dst, dst_size, "%03d/",temp);
       *course = temp;
     }
     else if (temp == 0)     // Spec says 001 to 360 degrees...
     {
-      xastir_snprintf(dst, dst_size, "360/");
+      astir_snprintf(dst, dst_size, "360/");
     }
   }
   *speed = 0;
@@ -91,7 +91,7 @@ void format_course_speed(char *dst, size_t dst_size, char *course_str, char *spe
     temp = atoi(speed_str);
     if ( (temp >= 0) && (temp <= 999) )
     {
-      xastir_snprintf(tempstr, sizeof(tempstr), "%03d",temp);
+      astir_snprintf(tempstr, sizeof(tempstr), "%03d",temp);
       strncat(dst,
               tempstr,
               dst_size - 1 - strlen(dst));
@@ -136,7 +136,7 @@ void format_altitude(char *dst, size_t dst_size, char *altitude_str)
       alt_in_meters = (int)( (atof(altitude_str) / 0.3048) + 0.5);
       if ( (alt_in_meters >= 0) && (alt_in_meters <= 99999l) )
       {
-        xastir_snprintf(dst, dst_size, "/A=%06ld",alt_in_meters);
+        astir_snprintf(dst, dst_size, "/A=%06ld",alt_in_meters);
       }
     }
   }
@@ -150,7 +150,7 @@ void format_zulu_time(char *dst, size_t dst_size)
   time_t sec;
   sec = sec_now();
   day_time = gmtime(&sec);
-  xastir_snprintf(dst,
+  astir_snprintf(dst,
                   dst_size,
                   "%02d%02d%02dz",
                   day_time->tm_mday,
@@ -178,13 +178,13 @@ void format_area_color_from_numeric(char * dst, size_t dst_size, unsigned int co
   // case.
   if (color <= 15)
   {
-    xastir_snprintf(dst,dst_size,"%02d", color);
+    astir_snprintf(dst,dst_size,"%02d", color);
     if ( dst[0] == '0')
       dst[0]='/';
   }
   else
   {
-    xastir_snprintf(dst,dst_size,"/4");
+    astir_snprintf(dst,dst_size,"/4");
     fprintf(stderr,"Invalid color value passed to format_area_from_numeric.  Returning string for bright red instead.\n");
   }
 }
@@ -253,7 +253,7 @@ void format_area_color_from_dialog(char *dst, size_t dst_size, char *color, int 
 // buffer that Create_object_item_tx_string reserves for the formatted
 // string.  So really we mustmake sure that the corridor is less than
 // 1000 (miles) before formatting it.  Otherwise we'd create a
-// truncated string and a malformed corridor.  Fortunately, Xastir's
+// truncated string and a malformed corridor.  Fortunately, Astir's
 // object creation dialog doesn't let us enter more than three digits,
 // so there has never been a problem.
 
@@ -264,7 +264,7 @@ void format_area_corridor(char *dst, size_t dst_size, unsigned int type, unsigne
   {
     if (width > 0 && width < 1000)
     {
-      xastir_snprintf(dst, dst_size, "{%d}", width);
+      astir_snprintf(dst, dst_size, "{%d}", width);
     }
   }
 }
@@ -279,7 +279,7 @@ void format_signpost(char *dst, size_t dst_size, char *signpost)
   dst[0]='\0';
   if (strlen(signpost) > 0 && strlen(signpost)<=3)
   {
-    xastir_snprintf(dst, dst_size, "{%s}", signpost);
+    astir_snprintf(dst, dst_size, "{%s}", signpost);
   }
 }
 
@@ -299,23 +299,23 @@ void format_probability_ring_data(char *dst, size_t dst_size, char *pmin,
 
     if (pmax[0] == '\0')
     {
-      xastir_snprintf(dst, dst_size, "Pmin%s,%s",pmin,comment2);
+      astir_snprintf(dst, dst_size, "Pmin%s,%s",pmin,comment2);
     }
     else if (pmin[0] == '\0')
     {
-      xastir_snprintf(dst, dst_size, "Pmax%s,%s",pmax,comment2);
+      astir_snprintf(dst, dst_size, "Pmax%s,%s",pmax,comment2);
     }
     else    // Have both
     {
-      xastir_snprintf(dst, dst_size, "Pmin%s,Pmax%s,%s",pmin,pmax,comment2);
+      astir_snprintf(dst, dst_size, "Pmin%s,Pmax%s,%s",pmin,pmax,comment2);
     }
   }
 }
 
-// While Xastir doesn't actually allow you to enter PHG and RNG for
+// While Astir doesn't actually allow you to enter PHG and RNG for
 // objects (?) it does check to see if a station record for an object
 // has such data and tries to insert it.  Perhaps this is possible only
-// when Xastir adopts an object created elsewhere, and that other station
+// when Astir adopts an object created elsewhere, and that other station
 // transmitted the object with PHG?
 //
 // If it's there, this data needs to be prepended to the comment
@@ -324,7 +324,7 @@ void format_probability_ring_data(char *dst, size_t dst_size, char *pmin,
 void prepend_rng_phg(char *dst, size_t dst_size, char *power_gain)
 {
   char comment2[43+1];
-  xastir_snprintf(comment2,sizeof(comment2),"%s%s",power_gain,dst);
+  astir_snprintf(comment2,sizeof(comment2),"%s%s",power_gain,dst);
   strncpy(dst,comment2,dst_size-1);
 }
 
@@ -348,7 +348,7 @@ void format_area_object_item_packet(char *dst, size_t dst_size,
     if (compressed)
     {
 
-      xastir_snprintf(dst, dst_size, ";%-9s*%s%s%1d%02d%2s%02d%s%s%s",
+      astir_snprintf(dst, dst_size, ";%-9s*%s%s%1d%02d%2s%02d%s%s%s",
                       name,
                       time,
                       compress_posit(lat_str,
@@ -370,7 +370,7 @@ void format_area_object_item_packet(char *dst, size_t dst_size,
     else    // Non-compressed posit object
     {
 
-      xastir_snprintf(dst, dst_size, ";%-9s*%s%s%c%s%c%1d%02d%2s%02d%s%s%s",
+      astir_snprintf(dst, dst_size, ";%-9s*%s%s%c%s%c%1d%02d%2s%02d%s%s%s",
                       name,
                       time,
                       lat_str,
@@ -392,7 +392,7 @@ void format_area_object_item_packet(char *dst, size_t dst_size,
     if (compressed)
     {
 
-      xastir_snprintf(dst, dst_size, ")%s!%s%1d%02d%2s%02d%s%s%s",
+      astir_snprintf(dst, dst_size, ")%s!%s%1d%02d%2s%02d%s%s%s",
                       name,
                       compress_posit(lat_str,
                                      object_group,
@@ -413,7 +413,7 @@ void format_area_object_item_packet(char *dst, size_t dst_size,
     else    // Non-compressed item
     {
 
-      xastir_snprintf(dst, dst_size, ")%s!%s%c%s%c%1d%02d%2s%02d%s%s%s",
+      astir_snprintf(dst, dst_size, ")%s!%s%c%s%c%1d%02d%2s%02d%s%s%s",
                       name,
                       lat_str,
                       object_group,
@@ -450,7 +450,7 @@ void format_signpost_object_item_packet(char *dst, size_t dst_size,
     if (compressed)
     {
 
-      xastir_snprintf(dst, dst_size, ";%-9s*%s%s%s%s",
+      astir_snprintf(dst, dst_size, ";%-9s*%s%s%s%s",
                       name,
                       time,
                       compress_posit(lat_str,
@@ -466,7 +466,7 @@ void format_signpost_object_item_packet(char *dst, size_t dst_size,
     else    // Non-compressed posit object
     {
 
-      xastir_snprintf(dst, dst_size, ";%-9s*%s%s%c%s%c%s%s%s",
+      astir_snprintf(dst, dst_size, ";%-9s*%s%s%c%s%c%s%s%s",
                       name,
                       time,
                       lat_str,
@@ -484,7 +484,7 @@ void format_signpost_object_item_packet(char *dst, size_t dst_size,
     if (compressed)
     {
 
-      xastir_snprintf(dst, dst_size, ")%s!%s%s%s",
+      astir_snprintf(dst, dst_size, ")%s!%s%s%s",
                       name,
                       compress_posit(lat_str,
                                      object_group,
@@ -499,7 +499,7 @@ void format_signpost_object_item_packet(char *dst, size_t dst_size,
     else    // Non-compressed item
     {
 
-      xastir_snprintf(dst, dst_size, ")%s!%s%c%s%c%s%s%s",
+      astir_snprintf(dst, dst_size, ")%s!%s%c%s%c%s%s%s",
                       name,
                       lat_str,
                       object_group,
@@ -531,7 +531,7 @@ void format_omni_df_object_item_packet(char *dst, size_t dst_size,
     {
       char temp_group = object_group;
 
-      xastir_snprintf(dst, dst_size, ";%-9s*%s%s%s/%s%s",
+      astir_snprintf(dst, dst_size, ";%-9s*%s%s%s/%s%s",
                       name,
                       time,
                       compress_posit(lat_str,
@@ -548,7 +548,7 @@ void format_omni_df_object_item_packet(char *dst, size_t dst_size,
     else    // Non-compressed posit object
     {
 
-      xastir_snprintf(dst, dst_size, ";%-9s*%s%s%c%s%c%s/%s%s",
+      astir_snprintf(dst, dst_size, ";%-9s*%s%s%c%s%c%s/%s%s",
                       name,
                       time,
                       lat_str,
@@ -567,7 +567,7 @@ void format_omni_df_object_item_packet(char *dst, size_t dst_size,
     {
       char temp_group = object_group;
 
-      xastir_snprintf(dst, dst_size, ")%s!%s%s/%s%s",
+      astir_snprintf(dst, dst_size, ")%s!%s%s/%s%s",
                       name,
                       compress_posit(lat_str,
                                      temp_group,
@@ -583,7 +583,7 @@ void format_omni_df_object_item_packet(char *dst, size_t dst_size,
     else    // Non-compressed item
     {
 
-      xastir_snprintf(dst, dst_size, ")%s!%s%c%s%c%s/%s%s",
+      astir_snprintf(dst, dst_size, ")%s!%s%c%s%c%s/%s%s",
                       name,
                       lat_str,
                       object_group,
@@ -625,7 +625,7 @@ void format_beam_df_object_item_packet(char *dst, size_t dst_size,
     if (compressed)
     {
 
-      xastir_snprintf(dst, dst_size, ";%-9s*%s%s/%03i/%s%s",
+      astir_snprintf(dst, dst_size, ";%-9s*%s%s/%03i/%s%s",
                       name,
                       time,
                       compress_posit(lat_str,
@@ -642,7 +642,7 @@ void format_beam_df_object_item_packet(char *dst, size_t dst_size,
     else    // Non-compressed posit object
     {
 
-      xastir_snprintf(dst, dst_size, ";%-9s*%s%s%c%s%c%s/%03i/%s%s",
+      astir_snprintf(dst, dst_size, ";%-9s*%s%s%c%s%c%s/%03i/%s%s",
                       name,
                       time,
                       lat_str,
@@ -661,7 +661,7 @@ void format_beam_df_object_item_packet(char *dst, size_t dst_size,
     if (compressed)
     {
 
-      xastir_snprintf(dst, dst_size, ")%s!%s/%03i/%s%s",
+      astir_snprintf(dst, dst_size, ")%s!%s/%03i/%s%s",
                       name,
                       compress_posit(lat_str,
                                      object_group,
@@ -677,7 +677,7 @@ void format_beam_df_object_item_packet(char *dst, size_t dst_size,
     else    // Non-compressed item
     {
 
-      xastir_snprintf(dst, dst_size, ")%s!%s%c%s%c%s/%03i/%s%s",
+      astir_snprintf(dst, dst_size, ")%s!%s%c%s%c%s/%03i/%s%s",
                       name,
                       lat_str,
                       object_group,
@@ -706,7 +706,7 @@ void format_normal_object_item_packet(char *dst, size_t dst_size,
 
     if (compressed)
     {
-      xastir_snprintf(dst, dst_size, ";%-9s*%s%s%s",
+      astir_snprintf(dst, dst_size, ";%-9s*%s%s%s",
                       name,
                       time,
                       compress_posit(lat_str,
@@ -720,7 +720,7 @@ void format_normal_object_item_packet(char *dst, size_t dst_size,
     }
     else    // Non-compressed posit object
     {
-      xastir_snprintf(dst, dst_size, ";%-9s*%s%s%c%s%c%s%s",
+      astir_snprintf(dst, dst_size, ";%-9s*%s%s%c%s%c%s%s",
                       name,
                       time,
                       lat_str,
@@ -736,7 +736,7 @@ void format_normal_object_item_packet(char *dst, size_t dst_size,
 
     if (compressed)
     {
-      xastir_snprintf(dst, dst_size, ")%s!%s%s",
+      astir_snprintf(dst, dst_size, ")%s!%s%s",
                       name,
                       compress_posit(lat_str,
                                      object_group,
@@ -749,7 +749,7 @@ void format_normal_object_item_packet(char *dst, size_t dst_size,
     }
     else    // Non-compressed item
     {
-      xastir_snprintf(dst, dst_size, ")%s!%s%c%s%c%s%s",
+      astir_snprintf(dst, dst_size, ")%s!%s%c%s%c%s%s",
                       name,
                       lat_str,
                       object_group,

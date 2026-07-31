@@ -1,5 +1,5 @@
 #!/bin/bash
-# Capture Xastir's own rendered map (pixmap_final) via its snapshot facility.
+# Capture Astir's own rendered map (pixmap_final) via its snapshot facility.
 # Independent of window stacking, which is what made the screenshot A/B useless.
 set -eu
 OUT="$1"
@@ -11,34 +11,34 @@ OUT="$1"
 SC="$(cd "$(dirname "$0")" && pwd)/snapshot"
 SC="${SNAP_DIR:-$SC}"
 [ -f "$SC/snap.cnf" ] || { echo "no snap.cnf in $SC (set SNAP_DIR)" >&2; exit 1; }
-cd /home/aevanger/github/Xastir
+cd /home/aevanger/github/Astir
 # A stale $OUT is worse than no $OUT: cmp would compare a previous run's capture
 # and report a clean A/B.  Remove it, and fail loudly if nothing replaces it.
 rm -f "$OUT"
 export XAUTHORITY="${XAUTHORITY:-/run/user/1000/xauth_ZUnYLn}" DISPLAY="${DISPLAY:-:0}"
-pkill -x xastir 2>/dev/null || true
+pkill -x astir 2>/dev/null || true
 waited=0
-while pgrep -x xastir >/dev/null; do sleep 1; waited=$((waited+1)); [ $waited -ge 10 ] && pkill -KILL -x xastir; [ $waited -ge 20 ] && exit 1; done
+while pgrep -x astir >/dev/null; do sleep 1; waited=$((waited+1)); [ $waited -ge 10 ] && pkill -KILL -x astir; [ $waited -ge 20 ] && exit 1; done
 # Let the X server reclaim the previous instance's colours before starting the
 # next one.  Back-to-back runs otherwise contend for the shared colormap:
 # XAllocColor returns approximate matches instead of the exact entries, and the
 # capture comes out with a couple of hundred extra near-black shades.  See the
 # colour-count check at the end for how that presented.
 sleep 5
-cp "$SC/snap.cnf" ~/.xastir/config/xastir.cnf
-rm -f ~/.xastir/tmp/snapshot.xpm
+cp "$SC/snap.cnf" ~/.astir/config/astir.cnf
+rm -f ~/.astir/tmp/snapshot.xpm
 LOG="$(mktemp -t snapshot_ab.XXXXXX.log)"
 # Which binary to run.  Overridable so that two builds can be compared without
 # rebuilding between captures -- e.g. against a git worktree at an older commit,
 # which is the only way to A/B a change that is already committed.  Whatever
 # binary is named must come from a tree configured the same way; diff its
 # config.h against this one before believing the result.
-BIN="${SNAP_BIN:-./src/xastir}"
+BIN="${SNAP_BIN:-./src/astir}"
 [ -x "$BIN" ] || { echo "not executable: $BIN" >&2; exit 1; }
 echo "running $BIN"
-XASTIR_PERF=1 XASTIR_LOD_PX=1.0 XASTIR_ZOOMOUT=4 "$BIN" > "$LOG" 2>&1 &
+ASTIR_PERF=1 ASTIR_LOD_PX=1.0 ASTIR_ZOOMOUT=4 "$BIN" > "$LOG" 2>&1 &
 until grep -qa 'holding at final scale' "$LOG" 2>/dev/null; do
-  pgrep -x xastir >/dev/null || { echo "exited early"; tail -3 "$LOG"; exit 1; }
+  pgrep -x astir >/dev/null || { echo "exited early"; tail -3 "$LOG"; exit 1; }
   sleep 5
 done
 # Take a snapshot written AFTER the render settled, and prove it settled.
@@ -53,7 +53,7 @@ done
 # So: discard everything written up to now, then require two consecutive fresh
 # snapshots to be byte-identical.  One fresh snapshot only proves it was taken
 # after the hold message; two identical ones prove nothing is still being drawn.
-snap=~/.xastir/tmp/snapshot.xpm
+snap=~/.astir/tmp/snapshot.xpm
 wait_fresh() {           # $1 = destination; waits for a newly written snapshot
   rm -f "$snap"
   local w=0
@@ -80,14 +80,14 @@ else
   echo "FAILED: render never settled; refusing to emit a capture" >&2
 fi
 rm -f "$TMP_A" "$TMP_B"
-kill -TERM "$(pgrep -x xastir | head -1)" 2>/dev/null || true
-# Bounded.  Xastir does not always act on SIGTERM -- one run sat for six minutes
+kill -TERM "$(pgrep -x astir | head -1)" 2>/dev/null || true
+# Bounded.  Astir does not always act on SIGTERM -- one run sat for six minutes
 # after the snapshot was already captured -- and an unbounded wait here stalls
 # the whole verification loop for a process whose output is already on disk.
 t=0
-while pgrep -x xastir >/dev/null; do
+while pgrep -x astir >/dev/null; do
   sleep 2; t=$((t+2))
-  [ $t -ge 20 ] && pkill -KILL -x xastir 2>/dev/null
+  [ $t -ge 20 ] && pkill -KILL -x astir 2>/dev/null
   [ $t -ge 40 ] && break
 done
 [ -s "$OUT" ] || { echo "FAILED: no snapshot captured; do not A/B this run" >&2; exit 1; }
@@ -98,7 +98,7 @@ done
 #
 #   792 -- the render was captured half-drawn (the race fixed above)
 #   822 -- correct, for tools/snapshot/snap.cnf
-#   960+ -- the colormap was still held by the previous Xastir when this one
+#   960+ -- the colormap was still held by the previous Astir when this one
 #           started, so XAllocColor returned approximations.  Roughly 180
 #           near-black and near-grey shades appear that are not in a good
 #           capture, and consecutive bad runs differ from each other by a

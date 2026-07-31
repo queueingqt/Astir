@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 2025-2026 The Xastir Group
  *
  * This program is free software; you can redistribute it and/or
@@ -25,7 +25,7 @@
  * but not needed by the unit tests.
  *
  * These stubs allow us to link with the nominatim code for testing
- * without pulling in the entire Xastir codebase.
+ * without pulling in the entire Astir codebase.
  */
 
 #include <stdio.h>
@@ -35,7 +35,7 @@
 
 #include "tests/test_framework.h"
 
-// Debug level (used throughout Xastir)
+// Debug level (used throughout Astir)
 int debug_level = 0;
 
 // Package version (for User-Agent string)
@@ -62,7 +62,7 @@ void end_critical_section(void *mutex, const char *location) {
 }
 
 // snprintf wrapper - just use system snprintf
-int xastir_snprintf(char *str, size_t size, const char *format, ...) {
+int astir_snprintf(char *str, size_t size, const char *format, ...) {
     va_list args;
     int ret;
 
@@ -76,7 +76,7 @@ int xastir_snprintf(char *str, size_t size, const char *format, ...) {
 #include <curl/curl.h>
 
 // curl initialization wrapper - stub implementation for tests
-CURL* xastir_curl_init(char *error_buffer) {
+CURL* astir_curl_init(char *error_buffer) {
     (void)error_buffer;  // Unused in stub
     CURL *curl = curl_easy_init();
     return curl;

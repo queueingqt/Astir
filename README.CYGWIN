@@ -1,6 +1,6 @@
 November 2017 Update
 
-This document offers a method of running Xastir on Windows using
+This document offers a method of running Astir on Windows using
 the Cygwin environment.  Cygwin is a large collection of GNU and
 Open Source tools which provide functionality similar to a Linux
 distribution on Windows.
@@ -8,12 +8,12 @@ distribution on Windows.
 Microsoft now offers their own Linux solution, using an Ubuntu
 Linux framework that runs under Windows.  However, you must be
 running a 64 bit version of Windows 10 to use the Microsoft option.
-More information may be found in the Xastir Wiki at:
+More information may be found in the Astir Wiki at:
 
 http://xastir.org/index.php/HowTo:Win10
 
 ------------------------------------
-Installing Xastir on Windows/Cygwin:
+Installing Astir on Windows/Cygwin:
 ------------------------------------
 
 These directions were most recently validated on Windows 10, both 32
@@ -23,14 +23,14 @@ SPACES IN FILENAMES/USERNAMES:  Cygwin specifically, and Unix boxes in
 general, don't much like spaces in filenames, directories, or login
 names.  Any of these may cause you headaches while playing with Cygwin.
 Create a new login that doesn't have spaces and log in as that user
-before installing Cygwin, and whenever you intend to run Cygwin/Xastir.
-It's very likely that Xastir won't work for you if you use a login that
+before installing Cygwin, and whenever you intend to run Cygwin/Astir.
+It's very likely that Astir won't work for you if you use a login that
 has spaces embedded in it.  For additional info, see this link:
 
    https://cygwin.com/faq/faq.html#faq.using.filename-spaces
 
-The following steps direct you through installing Cygwin, Xastir, and
-a few optional map libraries that Xastir can use.  Note that in most
+The following steps direct you through installing Cygwin, Astir, and
+a few optional map libraries that Astir can use.  Note that in most
 of the places below where the directions state to type commands, this
 must be done from within a Cygwin BASH shell, not a DOS window.
 Where you are asked to edit files, it's best to use Wordpad instead
@@ -38,12 +38,12 @@ of Notepad, as Notepad doesn't do nice things to Unix-format files.
 
 Cygwin now allows you to have Xwindows apps and Windows apps all on
 the screen and visible at the same time!  The instructions here set
-it up in that manner, so you can have Xastir as just another app on
+it up in that manner, so you can have Astir as just another app on
 your Windows desktop.
 
-Please subscribe to the "xastir" mailing list at "http://xastir.org".
+Please subscribe to the "astir" mailing list at "http://xastir.org".
 There are lots of helpful people there that can aid you in
-installing/running Xastir.  You must be subscribed in order to post
+installing/running Astir.  You must be subscribed in order to post
 messages there.
 
 [ ] Step 1)  Install Cygwin, a free download.
@@ -104,7 +104,7 @@ the install succeeds completely.
    
  
 In addition to the base packages, the following packages required to
-compile and run Xastir, along with their dependencies, will be installed.
+compile and run Astir, along with their dependencies, will be installed.
 
 [ ] autoconf
 [ ] automake
@@ -198,34 +198,34 @@ It's a BASH shell window and understands Unix commands instead of DOS
 commands.
 
 Once you've gotten to this stage, you now have Cygwin and Xwindows
-installed and operational.  Next we go after Xastir itself.
+installed and operational.  Next we go after Astir itself.
 
-[ ] Step 4)  Download Xastir sources.  Use the Cygwin Terminal window
+[ ] Step 4)  Download Astir sources.  Use the Cygwin Terminal window
 that you just started.  Type the three lines below into the shell exactly
 as shown.
 
   mkdir git
   cd git
-  git clone http://github.com/Xastir/Xastir
+  git clone http://github.com/Astir/Astir
 
-The end result when it succeeds will be a new directory "~\git\Xastir\"
-which contains all of the Xastir source code.  You can type "ls Xastir"
+The end result when it succeeds will be a new directory "~\git\Astir\"
+which contains all of the Astir source code.  You can type "ls Astir"
 (that's lower-case LS) to see the file listing.
 
 Side Note:  Here's the coolest thing about Git:  Once you've done
 this initial source-code download, you'll never have to do the whole
-Xastir download again.  You'll just go into the "git/xastir"
+Astir download again.  You'll just go into the "git/astir"
 directory and type "git pull", which will snag just the _changes_
 to the files since you last updated, and is very fast.  Compile and
 install at that point and you'll be running the latest developer's
 version in just a few minutes!  It's very easy to keep up with the
 developers this way.
 
-[ ] Step 5)  Configure/compile/install Xastir.  Type these commands
+[ ] Step 5)  Configure/compile/install Astir.  Type these commands
 into the BASH shell, waiting until each one completes before typing
 the next command:
 
-    cd ~/git/Xastir
+    cd ~/git/Astir
     ./bootstrap.sh
     mkdir -p build
     cd build
@@ -237,12 +237,12 @@ NOTE:  You'll probably want to run the configure step from an xterm
 window with the X11 server running of course.  If you do this from a
 non-X11 window then the configure test for "gv" will fail, as "gv"
 requires an X11 server even when asking it for it's version number.
-Without "gv" support you won't be able to print from Xastir.
+Without "gv" support you won't be able to print from Astir.
 
-Once you get through the above commands, Xastir is compiled and
+Once you get through the above commands, Astir is compiled and
 installed on your system, with minimal map support.  Later sections
 of this document detail adding additional map libraries in order to
-give you access to the full mapping capability of Xastir.
+give you access to the full mapping capability of Astir.
 
 ---------------------------------------------------------------------
 
@@ -253,7 +253,7 @@ Cygwin/BASH windows you may have.
 
 Click on the shortcut you created to start Xwindows.
 
-From the resulting BASH window, type "xastir &".  Xastir should
+From the resulting BASH window, type "astir &".  Astir should
 start up shortly.
 
 As built, using this documentation, the following map types are
@@ -275,22 +275,22 @@ Support for these additional map types has been compiled in:
        tif   USGS DRG Geotiff Topographic Maps (libgeotiff/libproj)
        xpm   X Pixmap Maps (XPM library)
 
-The Xastir wiki at Github (https://github.com/Xastir/Xastir/wiki) has
+The Astir wiki at Github (https://github.com/Astir/Astir/wiki) has
 instructions for where to get maps and where to put them under the
-Xastir hierarchy.
+Astir hierarchy.
 
 If you have any WinAPRS or APRSDOS maps, now is a good
-time to place them in the /cygwin/usr/local/share/xastir/maps folder
+time to place them in the /cygwin/usr/local/share/astir/maps folder
 (or a subdirectory of it).  You can also use "*.geo" files and the
-associated image files with Xastir.  You may place them in this
+associated image files with Astir.  You may place them in this
 directory (or a subdirectory of it) as well.
 
 FILESYSTEM PATHS (WINDOWS VS CYGWIN):
 
 From Windows, just prefix all paths with "/cygwin" or "/cygwin64" as
-appropriate.  For instance, maps go into /cgwin/usr/local/share/xastir/maps
-instead of /usr/local/share/xastir/maps.  Xastir will continue to see
-them as "/usr/local/share/xastir/maps" though from inside Cygwin.  It kind
+appropriate.  For instance, maps go into /cgwin/usr/local/share/astir/maps
+instead of /usr/local/share/astir/maps.  Astir will continue to see
+them as "/usr/local/share/astir/maps" though from inside Cygwin.  It kind
 of looks like a miniature Unix box from inside Cygwin.
 
 LANGUAGE OPTIONS:
@@ -298,7 +298,7 @@ LANGUAGE OPTIONS:
 To set a new language or change the language current choice, use
 this command line instead from inside an Xterm:
 
-     xastir -l <language>
+     astir -l <language>
 
 Current choices are:
 
@@ -306,27 +306,27 @@ Current choices are:
     ElmerFudd MuppetsChef OldeEnglish PigLatin PirateEnglish
 
 This option will be stored in the users config file for the next
-time Xastir is run. On new installs Xastir will default to English
+time Astir is run. On new installs Astir will default to English
 until you use this command line option once.
 
 CYGWIN vs LINUX/UNIX:
 
 Another difference with Cygwin as opposed to Unix-like operating
-systems:  You can't do the make install portion if Xastir is up and
-running.  You have to kill Xastir first before you do "make install"
-or "make install-strip".  Otherwise the newly compiled Xastir won't
+systems:  You can't do the make install portion if Astir is up and
+running.  You have to kill Astir first before you do "make install"
+or "make install-strip".  Otherwise the newly compiled Astir won't
 replace the old one.
 
 Another interesting "feature" of Cygwin/Xwindows is that some of the
 modifier keys like ScrollLock/CapsLock/NumLock must be pressed while
 that X-window is the active foreground window.  If not, the event
 can be missed, and Xwindows can get out of sync with the actual
-state of the key.  This doesn't appear to be an Xastir-specific
+state of the key.  This doesn't appear to be an Astir-specific
 problem, but a Cygwin/Xwindow problem.  With just a BASH shell under
 Cygwin (not involving Xwindows), the problem doesn't appear to
 happen.  Just inside Xwindows on Cygwin.
 
-When specifying serial ports to use with Xastir,
+When specifying serial ports to use with Astir,
 
     "COM1" is called "/dev/ttyS0" in Cygwin (and Linux)
     "COM2" is called "/dev/ttyS1" in Cygwin (and Linux)
@@ -335,7 +335,7 @@ Note the capital 'S'.
 
 OPTIONAL
 
-Please see the INSTALL file and the Help menu in Xastir itself
+Please see the INSTALL file and the Help menu in Astir itself
 for additional information not mentioned in this document.
 
 Additional info can be found on the cygwin web-site:
@@ -352,9 +352,9 @@ Keeping up-to-date:
 Once a week or once a month, run the Cygwin network installer
 program (setup-x86.exe or setup-x86_64.exe).  After it finishes,
 open a Cygwin terminal window and type these commands to update the
-Xastir source code:
+Astir source code:
 
-    cd ~/git/xastir
+    cd ~/git/astir
     git pull
 
 Every once in a while Windows will refuse to allow you to
@@ -363,19 +363,19 @@ around this problem is to reboot.  I sometimes see this when trying
 to do a "git pull", and Windows won't allow one or more files to get
 updated.
 
-You can now repeat step 5 to update Xastir.
+You can now repeat step 5 to update Astir.
 
 -------------------------------------------
 OPTIONAL:  ADDING ADDITIONAL MAP LIBRARIES:
 -------------------------------------------
 
-These additional Xastir libraries have been tested on Cygwin:
+These additional Astir libraries have been tested on Cygwin:
 
     ImageMagick (no need to use if using GraphicsMagick)
     Festival
 
 Anyone testing additional libraries is encouraged to share their
-findings on the Xastir mailing lists (you must be subscribed in
+findings on the Astir mailing lists (you must be subscribed in
 order to post messages there).  The libraries which have _not_ been
 made to work yet on Cygwin are:
 
@@ -393,10 +393,10 @@ OPTIONAL:  Install Festival support:
 Note: The most recent version of Festival is 2.4.  According to the
 README for this version, "Do NOT use Windows with Cygwin".  With that
 warning up front, here are instructions that were previously used to
-make a legacy version of Festival work with Xastir.  They were not
+make a legacy version of Festival work with Astir.  They were not
 revalidated during the November 2017 update to this document.
 
-Allows using a synthesized voice from within Xastir for alerts,
+Allows using a synthesized voice from within Astir for alerts,
 reading messages to you, and other cool things.  Tom Russo did the
 initial work on this, Henk de Groot optimized it:
 
@@ -450,7 +450,7 @@ initial work on this, Henk de Groot optimized it:
 
     -------------------
 
-7) Configure and build xastir.  Configure should report that
+7) Configure and build astir.  Configure should report that
    festival is found.
 
 8) Start the festival server:
@@ -468,7 +468,7 @@ initial work on this, Henk de Groot optimized it:
     fi
     -------------------
 
-9) Run xastir, do File->Configure->Speech, add things to say, and
+9) Run astir, do File->Configure->Speech, add things to say, and
    listen.
 
 
@@ -480,17 +480,17 @@ There is currently (November 2017) a problem using sound alerts
 under Cygwin.  It is recommended that sound alerts are turned off
 within Cygwin or you may experience lockups.
 
-You'll need to add the .wav files to Xastir.
+You'll need to add the .wav files to Astir.
 
-git clone http://github.com/Xastir/Xastir-sounds
+git clone http://github.com/Astir/Astir-sounds
 
-cd Xastir-sounds
-cp -r sounds/* /usr/local/share/xastir/sounds/
+cd Astir-sounds
+cp -r sounds/* /usr/local/share/astir/sounds/
 
 
 November 2017 documentation updates by K2DLS.  There may be
 out-of-date items that remain in this document.  Please report
-issues via the Xastir mailing list.
+issues via the Astir mailing list.
 
 APRS(tm) is a Trademark of Bob Bruninga
 

@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -70,7 +70,7 @@
 
 #include <math.h>
 
-#include "core/xastir.h"
+#include "core/astir.h"
 #include "core/globals.h"
 #include "core/map/maps.h"
 #include "core/util/xa_perf.h"
@@ -155,14 +155,14 @@ int RTree_hitarray_index=0;
 // scale_x / scale_y are 1/100 second per pixel; shape bounds are degrees.
 // degrees -> 1/100 sec is  * 3600 * 100.
 // ---------------------------------------------------------------------------
-#define XA_LOD_DEG_TO_XASTIR 360000.0
+#define XA_LOD_DEG_TO_ASTIR 360000.0
 
 static double xa_lod_threshold_px(void)
 {
   static double px = -1.0;
   if (px < 0.0)
   {
-    const char *e = getenv("XASTIR_LOD_PX");
+    const char *e = getenv("ASTIR_LOD_PX");
     px = (e && *e) ? atof(e) : 1.0;
     if (px < 0.0)
     {
@@ -209,8 +209,8 @@ static int xa_lod_index_worthwhile(int shape_type,
   // true -- shapes are large, almost nothing is culled, and forcing a build
   // just stalls the first render.  (Doing that unconditionally is what made a
   // close-zoom first render take minutes.)
-  w_px = (bnds_max[0] - bnds_min[0]) * XA_LOD_DEG_TO_XASTIR / (double)scale_x;
-  h_px = (bnds_max[1] - bnds_min[1]) * XA_LOD_DEG_TO_XASTIR / (double)scale_y;
+  w_px = (bnds_max[0] - bnds_min[0]) * XA_LOD_DEG_TO_ASTIR / (double)scale_x;
+  h_px = (bnds_max[1] - bnds_min[1]) * XA_LOD_DEG_TO_ASTIR / (double)scale_y;
   area_px = w_px * h_px;
 
   if (area_px < 1.0)
@@ -235,8 +235,8 @@ static int xa_lod_subpixel(SHPObject *object)
     return 0;
   }
 
-  w_px = (object->dfXMax - object->dfXMin) * XA_LOD_DEG_TO_XASTIR / (double)scale_x;
-  h_px = (object->dfYMax - object->dfYMin) * XA_LOD_DEG_TO_XASTIR / (double)scale_y;
+  w_px = (object->dfXMax - object->dfXMin) * XA_LOD_DEG_TO_ASTIR / (double)scale_x;
+  h_px = (object->dfYMax - object->dfYMin) * XA_LOD_DEG_TO_ASTIR / (double)scale_y;
 
   if (w_px < thr && h_px < thr)
   {
@@ -265,9 +265,9 @@ int RTreeSearchCallback(int id, struct Rect *rect, void* UNUSED(arg) )
     if (thr > 0.0 && scale_x > 0 && scale_y > 0)
     {
       double w_px = (rect->boundary[2] - rect->boundary[0])
-                    * XA_LOD_DEG_TO_XASTIR / (double)scale_x;
+                    * XA_LOD_DEG_TO_ASTIR / (double)scale_x;
       double h_px = (rect->boundary[3] - rect->boundary[1])
-                    * XA_LOD_DEG_TO_XASTIR / (double)scale_y;
+                    * XA_LOD_DEG_TO_ASTIR / (double)scale_y;
 
       if (w_px < thr && h_px < thr)
       {
@@ -333,7 +333,7 @@ void create_shapefile_map(char *dir, char *shapefile_name, int type,
   char timedatestring[101];
   int index;
   int max_objects = 1;
-  char credit_string[] = "Created by Xastir, http://www.xastir.org";
+  char credit_string[] = "Created by Astir, http://www.xastir.org";
   char temp_shapefile_name[MAX_FILENAME];
   char temp_prj_name[MAX_FILENAME];
 
@@ -361,7 +361,7 @@ void create_shapefile_map(char *dir, char *shapefile_name, int type,
   {
     int ii;
 
-    xastir_snprintf(temp_shapefile_name,
+    astir_snprintf(temp_shapefile_name,
                     sizeof(temp_shapefile_name),
                     "%s%s_%s",
                     dir,
@@ -381,7 +381,7 @@ void create_shapefile_map(char *dir, char *shapefile_name, int type,
   }
   else    // Use the filename directly, no timestamp
   {
-    xastir_snprintf(temp_shapefile_name,
+    astir_snprintf(temp_shapefile_name,
                     sizeof(temp_shapefile_name),
                     "%s%s",
                     dir,
@@ -413,7 +413,7 @@ void create_shapefile_map(char *dir, char *shapefile_name, int type,
   strcat(temp_prj_name, ".prj");
   temp_prj_name[sizeof(temp_prj_name)-1] = '\0';  // Terminate string
 
-  xastirWriteWKT(temp_prj_name);
+  astirWriteWKT(temp_prj_name);
 
   // Create the different fields we'll use to store the
   // attributes:
@@ -538,14 +538,14 @@ void create_map_from_trail(char *call_sign)
     CHECKMALLOC(y);
     CHECKMALLOC(z);
 
-    // Fill in the values.  We need to convert from Xastir
+    // Fill in the values.  We need to convert from Astir
     // coordinate system to lat/long doubles as we go.
     ptr = p_station->oldest_trackpoint;
     ii = 0;
     while ((ptr != NULL) && (ii < count) )
     {
 
-      // Convert from Xastir coordinates to lat/long
+      // Convert from Astir coordinates to lat/long
 
       // Convert to string
       convert_lon_l2s(ptr->trail_long_pos, temp, sizeof(temp), CONVERT_DEC_DEG);
@@ -582,14 +582,14 @@ void create_map_from_trail(char *call_sign)
     }
 
     // Create a Shapefile from the APRS trail.  Write it into
-    // "~/.xastir/tracklogs" and add a date/timestamp to the end.
+    // "~/.astir/tracklogs" and add a date/timestamp to the end.
     //
-    xastir_snprintf(temp, sizeof(temp),
+    astir_snprintf(temp, sizeof(temp),
                     "%s/",
                     get_user_base_dir("tracklogs", temp_base_dir, sizeof(temp_base_dir)));
 
     // Create filename
-    xastir_snprintf(temp2, sizeof(temp2),
+    astir_snprintf(temp2, sizeof(temp2),
                     "%s%s",
                     call_sign,
                     "_APRS_Trail_Red");
@@ -623,7 +623,7 @@ void create_map_from_trail(char *call_sign)
 // or CCW.  Thanks to Frank Warmerdam for permitting us to use this
 // under the GPL license!  Per e-mail of 04/29/2003 between Frank
 // and Curt, WE7U.  Frank gave permission for us to use _any_
-// portion of Shapelib inside the GPL'ed Xastir program.
+// portion of Shapelib inside the GPL'ed Astir program.
 //
 // Test Ring for Clockwise/Counter-Clockwise (fill or hole ring)
 //
@@ -841,7 +841,7 @@ void draw_shapefile_map (char *dir,
   }
 
 
-  xastir_snprintf(file, sizeof(file), "%s/%s", dir, filenm);
+  astir_snprintf(file, sizeof(file), "%s/%s", dir, filenm);
 
   // Create a shorter filename for display
   short_filename_for_status(filenm, short_filenm, sizeof(short_filenm));
@@ -859,7 +859,7 @@ void draw_shapefile_map (char *dir,
     weather_alert_flag++;
   }
 
-  // Check for ~/.xastir/GPS directory.  We set up the
+  // Check for ~/.astir/GPS directory.  We set up the
   // labels and colors differently for these types of files.
   if (strstr(filenm,"GPS"))   // We're in the maps/GPS directory
   {
@@ -993,7 +993,7 @@ void draw_shapefile_map (char *dir,
        || (destination_pixmap == INDEX_NO_TIMESTAMPS) )
   {
 
-    xastir_snprintf(status_text,
+    astir_snprintf(status_text,
                     sizeof(status_text),
                     langcode ("BBARSTA039"),
                     short_filenm);
@@ -1016,7 +1016,7 @@ void draw_shapefile_map (char *dir,
   }
   else
   {
-    xastir_snprintf(status_text,
+    astir_snprintf(status_text,
                     sizeof(status_text),
                     langcode ("BBARSTA028"),
                     short_filenm);
@@ -1033,7 +1033,7 @@ void draw_shapefile_map (char *dir,
   // in it anyway, and all we'd be doing is extra work searching the
   // RTree
   // Forcing an index for fully-visible files is ON by default; set
-  // XASTIR_NO_FORCE_INDEX to disable it.  It was originally disabled because
+  // ASTIR_NO_FORCE_INDEX to disable it.  It was originally disabled because
   // constructing an index blocked the first render for 122 s with a cold page
   // cache.  Reading only the record extents rather than the full geometry, and
   // packing the tree with STR bulk loading rather than repeated inserts,
@@ -1050,7 +1050,7 @@ void draw_shapefile_map (char *dir,
                                    adfBndsMax[1],
                                    adfBndsMin[0],
                                    adfBndsMax[0])
-      || (!getenv("XASTIR_NO_FORCE_INDEX")
+      || (!getenv("ASTIR_NO_FORCE_INDEX")
           && xa_lod_index_worthwhile(nShapeType, nEntities,
                                      adfBndsMin, adfBndsMax)))
   {
@@ -1156,7 +1156,7 @@ void draw_shapefile_map (char *dir,
       fprintf(stderr,"xa_bitmap_load() failed: Bitmap not found? %s\n",xbm_path);
 
       // We shouldn't exit on this one, as it's not so severe
-      // that we should kill Xastir.  I've seen this happen
+      // that we should kill Astir.  I've seen this happen
       // after very long runtimes though, so perhaps there's a
       // problem somewhere in the X11 server and/or it's
       // caching?
@@ -1236,10 +1236,10 @@ void draw_shapefile_map (char *dir,
                              || nShapeType == SHPT_POLYGON
                              || nShapeType == SHPT_POLYGONZ
                              || nShapeType == SHPT_POLYGONM);
-      nhits = Xastir_RTreeSearch(si->root, &viewportRect,
+      nhits = Astir_RTreeSearch(si->root, &viewportRect,
                                  (void *)RTreeSearchCallback, 0);
 
-      // Xastir_RTreeSearch() returns the number of leaves that overlapped the
+      // Astir_RTreeSearch() returns the number of leaves that overlapped the
       // viewport, which is not the same as the number of hits the callback
       // chose to record now that it rejects sub-pixel shapes.  The iteration
       // below indexes RTree_hitarray, so it must be bounded by what was
@@ -1463,7 +1463,7 @@ void draw_shapefile_map (char *dir,
             {
               temp = name;
             }
-            // Convert point to Xastir coordinates
+            // Convert point to Astir coordinates
             ok = get_vertex_screen_coords(object, 0, &x, &y);
 
             if (ok == 1)
@@ -2010,7 +2010,7 @@ int find_wx_alert_shape(alert_entry *alert, DBFHandle hDBF, int recordcount,
           }
         }
 
-        xastir_snprintf(modified_title, sizeof(modified_title), "%s", alert->title);
+        astir_snprintf(modified_title, sizeof(modified_title), "%s", alert->title);
 
         // Tweak for RED_FLAG alerts:  If RED_FLAG alert
         // we've changed the 'Z' to an 'F' in our
@@ -2174,20 +2174,20 @@ void get_alert_xbm_path(char *xbm_path, size_t xbm_path_size, alert_entry *alert
   FILE *alert_fp = NULL;
   char xbm_filename[MAX_FILENAME];
 
-  xastir_snprintf(xbm_filename, sizeof(xbm_filename), "%s", alert->alert_tag);
+  astir_snprintf(xbm_filename, sizeof(xbm_filename), "%s", alert->alert_tag);
 
   // Convert the filename to lower-case
   to_lower(xbm_filename);
 
   // Construct the complete path/filename
-  xastir_snprintf(xbm_path, xbm_path_size, "%s/%s.xbm",SYMBOLS_DIR, xbm_filename);
+  astir_snprintf(xbm_path, xbm_path_size, "%s/%s.xbm",SYMBOLS_DIR, xbm_filename);
 
   // Try opening the file
   alert_fp = fopen(xbm_path, "rb");
   if (alert_fp == NULL)
   {
     // Failed to find a matching file:  Instead use the "alert.xbm" file
-    xastir_snprintf(xbm_path, xbm_path_size, "%s/%s", SYMBOLS_DIR, "alert.xbm");
+    astir_snprintf(xbm_path, xbm_path_size, "%s/%s", SYMBOLS_DIR, "alert.xbm");
   }
   else
   {
@@ -2221,7 +2221,7 @@ void get_alert_xbm_path(char *xbm_path, size_t xbm_path_size, alert_entry *alert
 // suggestion wouldn't work unless we used shapelib code to modify it after
 // the fact.
 //
-// Since commit 6bc21a, however, Xastir creates a per-file dbfawk file
+// Since commit 6bc21a, however, Astir creates a per-file dbfawk file
 // to go with every shapefile it creates from GPS data, so this
 // filename-based technique is not really the recommended practice
 // anymore.  Now, the recommended technique is to move the files
@@ -2235,7 +2235,7 @@ void get_gps_color_and_label(char *filename, char *gps_label,
   int done = 0;
 
   // Fill in the label we'll use later
-  xastir_snprintf(gps_label, gps_label_size, "%s", filename);
+  astir_snprintf(gps_label, gps_label_size, "%s", filename);
 
   // Knock off the "_Color.shp" portion of the label.  Find the last
   // underline character and change it to an end-of-string.
@@ -2303,8 +2303,8 @@ int convert_ll_to_screen_coords(long *x, long *y, float lon, float lat)
 
   ok = 1;
 
-  // Convert to Xastir coordinates
-  temp_ok = convert_to_xastir_coordinates(&my_long,
+  // Convert to Astir coordinates
+  temp_ok = convert_to_astir_coordinates(&my_long,
                                           &my_lat,
                                           lon,
                                           lat);
@@ -2318,7 +2318,7 @@ int convert_ll_to_screen_coords(long *x, long *y, float lon, float lat)
   }
   else
   {
-    convert_xastir_to_screen_coordinates(my_long, my_lat, x, y);
+    convert_astir_to_screen_coordinates(my_long, my_lat, x, y);
   }
 
   return ok;
@@ -2464,7 +2464,7 @@ int select_arc_label_mod(void)
 //
 // The problem with this method is that we might get strings "written"
 // at the extreme top or right edge of the display, which means the
-// strings wouldn't be visible, but Xastir thinks that it wrote the
+// strings wouldn't be visible, but Astir thinks that it wrote the
 // string out visibly.  To partially counteract this I've set it up to
 // write only some of the identical strings.  This still doesn't help
 // in the cases where a street only comes in from the top or right and

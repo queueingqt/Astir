@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 2025-2026 The Xastir Group
  *
  * This program is free software; you can redistribute it and/or
@@ -1934,7 +1934,7 @@ int test_constructor_item_df_beam(void)
 
 // Tests for probability circles
 // Probability circles are just like normal objects but they get a
-// bit of Xastir-specific text added to their comments reflecting radii.
+// bit of Astir-specific text added to their comments reflecting radii.
 // beam DF objects
 int test_constructor_object_prob_circles_noring(void)
 {

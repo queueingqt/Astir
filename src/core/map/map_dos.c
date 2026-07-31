@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -55,7 +55,7 @@
 
 #include <math.h>
 
-#include "core/xastir.h"
+#include "core/astir.h"
 #include "core/globals.h"
 #include "core/map/maps.h"
 #include "core/aprs/alert.h"
@@ -120,7 +120,7 @@ void map_plot (long max_x, long max_y, long x_long_cord,
   /* don't ever go over MAX_MAP_POINTS have a bad map not a crashed program */
   if (npoints > MAX_MAP_POINTS)
   {
-    xastir_snprintf(warning, sizeof(warning), "Warning line point count overflow: map_plot\b\n");
+    astir_snprintf(warning, sizeof(warning), "Warning line point count overflow: map_plot\b\n");
     xa_ui_warn(warning);
     npoints = MAX_MAP_POINTS;
   }
@@ -453,7 +453,7 @@ void draw_dos_map(char *dir,
 //  map_maxed_symbol_labels = 0;
   npoints = 0;
 
-  xastir_snprintf(file, sizeof(file), "%s/%s", dir, filenm);
+  astir_snprintf(file, sizeof(file), "%s/%s", dir, filenm);
 
   // Create a shorter filename for display
   short_filename_for_status(filenm, short_filenm, sizeof(short_filenm));
@@ -491,9 +491,9 @@ void draw_dos_map(char *dir,
     rewind (f);
     map_title[0] = map_creator[0] = Buffer[0] = '\0';
     // set map_type for DOS ASCII maps
-    xastir_snprintf(map_type,sizeof(map_type),"DOS ");
+    astir_snprintf(map_type,sizeof(map_type),"DOS ");
     map_type[4] = '\0';
-    xastir_snprintf(file_name,sizeof(file_name),"%s",filenm);
+    astir_snprintf(file_name,sizeof(file_name),"%s",filenm);
     total_vector_points = 200000;
     total_labels = 2000;
 
@@ -560,7 +560,7 @@ void draw_dos_map(char *dir,
             break;
         } // end of switch
 
-        xastir_snprintf(Buffer,sizeof(Buffer),"%s",ptr);
+        astir_snprintf(Buffer,sizeof(Buffer),"%s",ptr);
 
 //                if (strlen (Buffer))
 //                    j++;
@@ -728,7 +728,7 @@ void draw_dos_map(char *dir,
   {
 
     // We're indexing only.  Save the extents in the index.
-    index_update_xastir(filenm, // Filename only
+    index_update_astir(filenm, // Filename only
                         bottom_boundary,  // Bottom
                         top_boundary,     // Top
                         left_boundary,    // Left
@@ -738,7 +738,7 @@ void draw_dos_map(char *dir,
     (void)fclose (f);
 
     // Update the statusline
-    xastir_snprintf(map_it,
+    astir_snprintf(map_it,
                     sizeof(map_it),
                     langcode ("BBARSTA039"),
                     short_filenm);
@@ -767,7 +767,7 @@ void draw_dos_map(char *dir,
   }
 
   // Update the statusline
-  xastir_snprintf(map_it,
+  astir_snprintf(map_it,
                   sizeof(map_it),
                   langcode ("BBARSTA028"),
                   short_filenm);
@@ -838,7 +838,7 @@ process:
             if (color == -1)
             {
               dos_labels = (int)TRUE;
-              xastir_snprintf(Buffer,sizeof(Buffer),"%s",ptr);
+              astir_snprintf(Buffer,sizeof(Buffer),"%s",ptr);
               break;
             }
 
@@ -913,7 +913,7 @@ process:
             }
             else if (LongHld == 0 && *trailer != '\0')
             {
-              xastir_snprintf(map_version,sizeof(map_version),"Comp");
+              astir_snprintf(map_version,sizeof(map_version),"Comp");
               map_version[4] = '\0';
               goto process;
             }
@@ -976,7 +976,7 @@ process:
               for (; *trailer == ',' || *trailer == ' '; trailer++) ;
 
               dos_flag = (int)strtol (trailer, &trailer, 0);
-              xastir_snprintf(Tag,sizeof(Tag),"%s",trailer);
+              astir_snprintf(Tag,sizeof(Tag),"%s",trailer);
               Tag[79] = '\0';
               if (dos_flag == -1)
               {
@@ -1084,7 +1084,7 @@ process:
 
               if (dos_flag == 0 && *trailer != '\0')
               {
-                xastir_snprintf(map_version,sizeof(map_version),"Line");
+                astir_snprintf(map_version,sizeof(map_version),"Line");
                 map_version[4] = '\0';
                 goto process;
               }
@@ -1093,11 +1093,11 @@ process:
           }
           else
           {
-            xastir_snprintf(map_version,sizeof(map_version),"Comp");
+            astir_snprintf(map_version,sizeof(map_version),"Comp");
           }
           map_version[4] = '\0';
         }
-        xastir_snprintf(Buffer,sizeof(Buffer),"%s",ptr);
+        astir_snprintf(Buffer,sizeof(Buffer),"%s",ptr);
       }
     }
     else
@@ -1258,7 +1258,7 @@ process:
           // Would be good to take another look at this later.
         }
 
-        for (; (ptr = strpbrk (Buffer, "\r\n")) != NULL; xastir_snprintf(Buffer,sizeof(Buffer),"%s",ptr))
+        for (; (ptr = strpbrk (Buffer, "\r\n")) != NULL; astir_snprintf(Buffer,sizeof(Buffer),"%s",ptr))
         {
 
           *ptr = '\0';
@@ -1290,7 +1290,7 @@ process:
                 symbol_id = label_text[1];
                 symbol_color = label_text[2];
                 // Take the object out of the label text
-                xastir_snprintf(label_text,sizeof(label_text),"%s",Buffer+3);
+                astir_snprintf(label_text,sizeof(label_text),"%s",Buffer+3);
               }
               else    // Could be in new or old format with a leading '#' character
               {
@@ -1300,7 +1300,7 @@ process:
                   symbol_id = label_text[2];
                   symbol_color = label_text[3];
                   // Take the object out of the label text
-                  xastir_snprintf(label_text,sizeof(label_text),"%s",Buffer+4);
+                  astir_snprintf(label_text,sizeof(label_text),"%s",Buffer+4);
                 }
                 else                                    // Old format: #xC
                 {
@@ -1308,7 +1308,7 @@ process:
                   symbol_id = label_text[1];
                   symbol_color = label_text[2];
                   // Take the object out of the label text
-                  xastir_snprintf(label_text,sizeof(label_text),"%s",Buffer+3);
+                  astir_snprintf(label_text,sizeof(label_text),"%s",Buffer+3);
                 }
               }
               if (debug_level & 512)

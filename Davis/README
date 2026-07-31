@@ -1,10 +1,10 @@
 
 Copyright (C) 2004 Bruce Bennett <bruts@adelphia.net>
 Portions Copyright (C) 2000-2026 The Xastir Group
-(Modified for the Xastir project under GPL license)
+(Modified for the Astir project under GPL license)
 
 
-Davis Weather Station support for Xastir - db2APRS
+Davis Weather Station support for Astir - db2APRS
 
 
 OVERVIEW
@@ -12,19 +12,19 @@ OVERVIEW
 
 This is a bridge utility between "meteo", a Davis Weather Station 
 data storage & display application by Andreas Muller (see 
-http://meteo.othello.ch) and "Xastir", the APRS package for
+http://meteo.othello.ch) and "Astir", the APRS package for
 Linux (see http://www.xastir.org). It allows your Davis weather 
-data to be used by Xastir for local station data.
+data to be used by Astir for local station data.
 
-You will need to obtain and install Xastir, mysql and meteo as 
-outlined in the following sections. After Xastir and meteo are
+You will need to obtain and install Astir, mysql and meteo as 
+outlined in the following sections. After Astir and meteo are
 in working order, this utility can be run as a daemon to provide 
-weather data to Xastir (or any other APRS-format application).
+weather data to Astir (or any other APRS-format application).
 
 "db2APRS" watches for new weather data in the database, retrieves
 the new data, formats it in APRS "position less" ASCII format and
-makes it available on a TCP port of your choosing. Xastir is 
-capable of reading this data (see note under Xastir installation).
+makes it available on a TCP port of your choosing. Astir is 
+capable of reading this data (see note under Astir installation).
 
 
 INSTALLATION
@@ -48,8 +48,8 @@ Steps in order:
    worth the efort. Some SQL/XML skills can help here, but are 
    not absolutely required...
 
-3) Install or update your installation for Xastir to the latest
-   version ("http://github.com/Xastir/Xastir" project Xastir) 
+3) Install or update your installation for Astir to the latest
+   version ("http://github.com/Astir/Astir" project Astir) 
 
 4) Install db2APRS -  version 0.1.2
    See instructions below.
@@ -62,11 +62,11 @@ SETTINGS & STARTUP
    this usage it doesn't matter. In fact, it's a bit of a pain.
    TODO - db2APRS has the annoying fault of clearly displaying 
    the password used for the mysql database for anyone to see via 
-   'ps -ef'. Start mysqld before db2APRS, meteo and Xastir in your 
+   'ps -ef'. Start mysqld before db2APRS, meteo and Astir in your 
    boot-time initializations.
 
 2) meteo - my testing used a one minute data accumulation rate. 
-   Thirty seconds would more closely match Xastir, but the 
+   Thirty seconds would more closely match Astir, but the 
    database growth rate would be twice as fast (about 600  
    Mbytes/year at 30 sec rate). Set your desired rate using the 
    meteopoll command line options. I run the full meteopoll 
@@ -76,11 +76,11 @@ SETTINGS & STARTUP
    the doc's that come with meteo and man pages).
 
 3) db2APRS - see "db2APRS RUN OPTIONS" below. Start this daemon 
-   after mysqld and before Xastir. When meteopoll isn't running, 
-   you will get old weather data, time stamped by Xastir as new 
+   after mysqld and before Astir. When meteopoll isn't running, 
+   you will get old weather data, time stamped by Astir as new 
    data.
 
-4) xastir - start this last, if you are auto-opening the WX port.
+4) astir - start this last, if you are auto-opening the WX port.
    Set the weather port as a network weather station on 
    "localhost", port number as chosen in "db2APRS RUN OPTIONS" 
    (default is 1313). Make sure your station is set to one of the
@@ -163,12 +163,12 @@ this string at 25 second intervals, after new database entries
 are checked for.
 
 This daemon could run on any networked Linux machine instead of 
-the machine hosting Xastir, if desired (it's a good way around 
+the machine hosting Astir, if desired (it's a good way around 
 lack of processing power, disk space or serial ports!).
 
-Note that the db2APRS daemon keeps providing data to Xastir even 
+Note that the db2APRS daemon keeps providing data to Astir even 
 when no new entries in the database have been made. This could 
-lead to errors in the timestamp on the data that Xastir is 
+lead to errors in the timestamp on the data that Astir is 
 transmitting.
 
 
@@ -177,7 +177,7 @@ BUILD db2APRS
 
 It's the usual:
 
-$ cd xastir/Davis
+$ cd astir/Davis
 $ ./bootstrap.sh
 $ ./configure
 $ make
@@ -203,7 +203,7 @@ meteo is the work of Andreas Muller <afm@othello.ch>, et. al.
 mysql is the product of MySQL - see http://www.mysql.com for
 team details.
 
-and finally, Xastir is the brain child of Frank Giannandrea et. 
+and finally, Astir is the brain child of Frank Giannandrea et. 
 al. (see http://www.xastir.org for current EMAIL addresses)
 
 

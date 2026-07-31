@@ -1,7 +1,7 @@
 #!/bin/bash
 # Build the GTK4 front end.
 #
-# Not part of the autotools build: it links the same core objects as xastir but
+# Not part of the autotools build: it links the same core objects as astir but
 # with xa_draw_gtk4.o in place of the X11 backend and no Motif at all, which is
 # a second binary from one object set rather than a configure option.  Keeping
 # it a script means the Motif build is untouched by its existence.
@@ -10,7 +10,7 @@
 set -eu
 cd "$(dirname "$0")/.."
 SRC=src
-OUT="${1:-$SRC/xastir-gtk4}"
+OUT="${1:-$SRC/astir-gtk4}"
 
 [ -f "$SRC/ui/motif/main.o" ] || { echo "run ./build.sh first" >&2; exit 1; }
 
@@ -25,7 +25,7 @@ CORE=$(find $SRC/core -name '*.o' | sort | tr '\n' ' ')
 
 # The library set the Motif build uses, minus every X and Motif library, plus
 # gtk4.  If a link error here names an X symbol, something crept back in.
-LIBS=$(make -n -C $SRC -W ui/motif/main.c xastir 2>/dev/null \
+LIBS=$(make -n -C $SRC -W ui/motif/main.c astir 2>/dev/null \
   | tr ' ' '\n' | grep -E '^-(l|L)' \
   | grep -vE '^-l(X[a-zA-Z0-9]*|Xm|Xt|ICE|SM)$' | tr '\n' ' ')
 

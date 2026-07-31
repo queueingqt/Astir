@@ -12,8 +12,8 @@
  * The note outlived the reason for it by two sessions.
  */
 
-#ifndef XASTIR_STATION_DRAW_H
-#define XASTIR_STATION_DRAW_H
+#ifndef ASTIR_STATION_DRAW_H
+#define ASTIR_STATION_DRAW_H
 
 #include "core/aprs/database.h"           // DataRow
 
@@ -36,4 +36,4 @@ void draw_ruler_text(char *text, long ofs);
 void draw_test_line(long x, long y, long dx, long dy, long ofs);
 void draw_range_scale(void);
 
-#endif // XASTIR_STATION_DRAW_H
+#endif // ASTIR_STATION_DRAW_H

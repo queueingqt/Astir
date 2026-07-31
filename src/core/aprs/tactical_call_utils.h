@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -21,8 +21,8 @@
  * Look at the README for more information on the program.
  */
 
-#ifndef __XASTIR_TACTICAL_CALL_UTILS_H
-#define __XASTIR_TACTICAL_CALL_UTILS_H
+#ifndef __ASTIR_TACTICAL_CALL_UTILS_H
+#define __ASTIR_TACTICAL_CALL_UTILS_H
 
 #include "core/util/hashtable.h"
 

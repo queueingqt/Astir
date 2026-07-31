@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -22,8 +22,8 @@
  */
 
 
-#ifndef __XASTIR_LIST_GUI_H
-#define __XASTIR_LIST_GUI_H
+#ifndef __ASTIR_LIST_GUI_H
+#define __ASTIR_LIST_GUI_H
 
 // different list types:
 #define LST_ALL 0
@@ -43,6 +43,6 @@ extern void list_gui_init(void);
 extern void update_station_scroll_list(void);
 extern void Station_List_fill(int type, int new_offset);
 
-#endif  // __XASTIR_LIST_GUI_H
+#endif  // __ASTIR_LIST_GUI_H
 
 

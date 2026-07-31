@@ -9,7 +9,7 @@
  * xa_draw.h is here, it compiles against gtk4/cairo/pango with no X headers,
  * and the core links against it with the X libraries struck off.
  *
- * It has never drawn a frame of Xastir.  There is no GTK4 front end to drive
+ * It has never drawn a frame of Astir.  There is no GTK4 front end to drive
  * it -- main.c is still 30,000 lines of Motif -- so nothing here has been
  * compared against the X11 backend pixel for pixel.  tools/gtk4_smoke.c
  * exercises the drawing calls end to end and writes a PNG, which proves they
@@ -151,7 +151,7 @@ static cairo_surface_t *canvas_surface_create(int width, int height)
  *
  * The canvas is an offscreen image surface, not the widget's own.  GTK4 has no
  * persistent window pixels to draw into -- a widget renders from a snapshot
- * callback -- so the canvas Xastir presents to has to be one we keep, and the
+ * callback -- so the canvas Astir presents to has to be one we keep, and the
  * widget draws it. xa_gtk4_canvas_surface() is what a GtkDrawingArea draw
  * function paints.
  */
@@ -241,7 +241,7 @@ xa_surface_id xa_surface_create(int width, int height, int depth)
     return surf_new(cairo_image_surface_create(CAIRO_FORMAT_A8, width, height),
                     width, height, 1);
   }
-  // Colour surfaces are layers Xastir composes the frame from -- pixmap,
+  // Colour surfaces are layers Astir composes the frame from -- pixmap,
   // pixmap_alerts, pixmap_final -- and are copied to the canvas whole, so they
   // have to carry the same resolution or the copy throws it away again.
   return surf_new(canvas_surface_create(width, height), width, height, 0);
@@ -300,7 +300,7 @@ xa_surface_id xa_bitmap_from_data(const char *bits, int width, int height)
  * APPROXIMATE: the X11 backend reads .xbm, which is a C source fragment.
  * GdkPixbuf does not read it, so this parses the format directly -- it is a
  * width, a height and a comma-separated list of byte literals, and every file
- * Xastir ships is one.  Anything GdkPixbuf *can* read is tried first, so a PNG
+ * Astir ships is one.  Anything GdkPixbuf *can* read is tried first, so a PNG
  * works too, which the X11 backend cannot do.
  */
 xa_surface_id xa_bitmap_load(const char *path, int *width, int *height)
@@ -854,9 +854,9 @@ static cairo_t *begin(xa_surface_id dst, xa_pen pen)
 
   // APPROXIMATE.  X's GXxor is a bitwise operation on pixel *values*; Cairo has
   // no equivalent because it composites colours, not indices.  DIFFERENCE is
-  // the nearest thing and shares the property Xastir actually relies on --
+  // the nearest thing and shares the property Astir actually relies on --
   // drawing the same thing twice restores the original.  The intermediate
-  // colour is not the same.  Xastir uses XOR for rubber-band selection boxes
+  // colour is not the same.  Astir uses XOR for rubber-band selection boxes
   // and the CAD polygon in progress.
   cairo_set_operator(cr, (p->func == XA_FUNC_XOR)
                      ? CAIRO_OPERATOR_DIFFERENCE : CAIRO_OPERATOR_OVER);
@@ -1411,7 +1411,7 @@ static PangoFontMap *gtk4_fontmap(void)
 /*
  * Turn a font name into a Pango description.
  *
- * Xastir names fonts three ways and this has to take all of them:
+ * Astir names fonts three ways and this has to take all of them:
  *   an XLFD          -adobe-helvetica-medium-r-normal--12-*-*-*-*-*-iso8859-1
  *   a Cairo spec     "Helvetica:size=12"
  *   a Pango string   "Helvetica 12"

@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -20,8 +20,8 @@
  *
  * Look at the README for more information on the program.
  */
-#ifndef XASTIR_CAD_OBJECTS_H
-#define XASTIR_CAD_OBJECTS_H
+#ifndef ASTIR_CAD_OBJECTS_H
+#define ASTIR_CAD_OBJECTS_H
 
 
 extern void Draw_All_CAD_Objects(void);

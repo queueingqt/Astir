@@ -876,7 +876,7 @@ static void dopr_outch(char *buffer, size_t * currlen, size_t maxlen, char c)
   }
 }
 
-int xastir_vsnprintf(char *str, size_t count, const char *fmt, va_list args)
+int astir_vsnprintf(char *str, size_t count, const char *fmt, va_list args)
 {
   str[0] = 0;
   dopr(str, count, fmt, args);
@@ -886,9 +886,9 @@ int xastir_vsnprintf(char *str, size_t count, const char *fmt, va_list args)
 
 #ifndef HAVE_SNPRINTF
 #ifdef HAVE_STDARGS
-  int xastir_snprintf(char *str, size_t count, const char *fmt, ...)
+  int astir_snprintf(char *str, size_t count, const char *fmt, ...)
 #else // HAVE_STDARGS
-  int xastir_snprintf(va_alist) va_dcl
+  int astir_snprintf(va_alist) va_dcl
 #endif    // HAVE_STDARGS
 {
 #  ifndef HAVE_STDARGS
@@ -902,7 +902,7 @@ int xastir_vsnprintf(char *str, size_t count, const char *fmt, va_list args)
   VA_SHIFT(str, char *);
   VA_SHIFT(count, size_t);
   VA_SHIFT(fmt, char *);
-  (void) xastir_vsnprintf(str, count, fmt, ap);
+  (void) astir_vsnprintf(str, count, fmt, ap);
   VA_END;
   return (strlen(str));
 }

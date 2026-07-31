@@ -1,6 +1,6 @@
 HELP-INDEX>ME LIRE EN PREMIER - License
 
-                        ME LIRE EN PREMIER pour XASTIR
+                        ME LIRE EN PREMIER pour ASTIR
 
 Traduction Francaise par Google Translate.  KM5VY a essayé de les faire
 correspondre avec les traductions utilisée dans le logiciel soi-même,
@@ -11,7 +11,7 @@ Si vous n'aimez pas cette traduction, on sera ravis d'avoir vos
 corrections!
 
 Pour obtenir les informations les plus récentes, veuillez consulter le
-fichier README.md dans le répertoire Xastir.  Consultez également les
+fichier README.md dans le répertoire Astir.  Consultez également les
 fichiers LICENSE et COPYING pour plus d'informations.
 
 Ce programme est destiné à la communauté des radioamateurs. Aux
@@ -23,7 +23,7 @@ renseigner sur la réglementation en vigueur dans leur pays.
 
 LICENSE :
 
-XASTIR, Amateur Station Tracking and Information Reporting
+ASTIR, Amateur Station Tracking and Information Reporting
 Copyright (C) 1999  Frank Giannandrea
 Copyright (C) 2000-2026 The Xastir Group
 
@@ -45,13 +45,13 @@ Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 
 Vous trouverez plus d'informations sur le programme à l'adresse suivante :
 
-https://github.com/Xastir/Xastir
-https://github.com/Xastir/Xastir/wiki
+https://github.com/Astir/Astir
+https://github.com/Astir/Astir/wiki
 https://www.xastir.org
 
-Des listes de diffusion spécifiques à Xastir sont disponibles.
+Des listes de diffusion spécifiques à Astir sont disponibles.
 Veuillez vous abonner à l'une ou aux deux pour obtenir les dernières
-informations sur Xastir. Consultez https://www.xastir.org pour vous
+informations sur Astir. Consultez https://www.xastir.org pour vous
 abonner.
 
 Pour plus d'informations sur la licence GNU, consultez :
@@ -62,10 +62,10 @@ HELP-INDEX>Bienvenue! Et notes de l'auteur.
 
                       Bienvenue ! et Notes des auteurs
 
-XASTIR, ou X Amateur Station Tracking and Information Reporting (Suivi
+ASTIR, ou X Amateur Station Tracking and Information Reporting (Suivi
 et rapport d'informations des stations radioamateurs X).
 
-Xastir est un programme APRS(tm) open source, gratuit et librement
+Astir est un programme APRS(tm) open source, gratuit et librement
 distribuable. Actuellement en développement, ce programme ne doit pas
 être considéré comme un produit fini ! Votre aide est précieuse pour
 l'améliorer. Si vous avez des compétences en programmation et/ou en
@@ -84,54 +84,54 @@ jour sur APRS.
 Une copie historique du site web original d'APRS de Bob Bruninga est
 disponible à l'adresse https://aprs.org/.
 
-HELP-INDEX>Nouveautés de Xastir
+HELP-INDEX>Nouveautés de Astir
 
 La section « Nouveautés » de ce fichier d'aide a été longtemps
 négligée et n'a pas été mise à jour à chaque version. À partir de la
 version 2.2.4, nous avons supprimé toutes les anciennes entrées et ne
 la mettrons plus à jour.
 
-Pour connaître les nouveautés de chaque version de Xastir, le mieux
+Pour connaître les nouveautés de chaque version de Astir, le mieux
 est de consulter les notes de version que nous publions sur
 GitHub. Vous pouvez les consulter à l'adresse suivante :
-https://github.com/Xastir/Xastir/releases.
+https://github.com/Astir/Astir/releases.
 
 HELP-INDEX>Débuter
                                Débuter
 
-Lors du premier lancement de Xastir, il est recommandé de le démarrer
+Lors du premier lancement de Astir, il est recommandé de le démarrer
 depuis une fenêtre de terminal afin de visualiser les éventuels
 messages d'avertissement ou d'erreur. Sur la plupart des systèmes, un
 chemin d'accès est configuré pour exécuter les programmes dans
-/usr/local/bin ; il vous suffit alors de taper « xastir & » à l'invite
+/usr/local/bin ; il vous suffit alors de taper « astir & » à l'invite
 de commande. Sur les systèmes où ce chemin n'est pas configuré, tapez
-« /usr/local/bin/xastir & » pour démarrer le programme. Le caractère «
-& » permet de lancer Xastir en arrière-plan, libérant ainsi la fenêtre
+« /usr/local/bin/astir & » pour démarrer le programme. Le caractère «
+& » permet de lancer Astir en arrière-plan, libérant ainsi la fenêtre
 du terminal pour d'autres utilisations.
 
 Vous pouvez également choisir la langue à ce moment-là. Pour définir
-la langue ou modifier la langue actuelle, lancez Xastir avec l'option
+la langue ou modifier la langue actuelle, lancez Astir avec l'option
 « -l » :
 
-    xastir -lEnglish
+    astir -lEnglish
 
 Options de langue disponibles :
-    xastir -l Dutch
-    xastir -l English
-    xastir -l French
-    xastir -l German
-    xastir -l Italian
-    xastir -l Portuguese
-    xastir -l Spanish
-    xastir -l ElmerFudd
-    xastir -l MuppetsSwedishChef
-    xastir -l OldeEnglish
-    xastir -l PigLatin
-    xastir -l PirateEnglish
+    astir -l Dutch
+    astir -l English
+    astir -l French
+    astir -l German
+    astir -l Italian
+    astir -l Portuguese
+    astir -l Spanish
+    astir -l ElmerFudd
+    astir -l MuppetsSwedishChef
+    astir -l OldeEnglish
+    astir -l PigLatin
+    astir -l PirateEnglish
 
 La langue choisie sera enregistrée dans votre fichier de configuration
-et conservée pour les lancements ultérieurs de Xastir. Lors d'une
-nouvelle installation, Xastir utilise l'anglais par défaut jusqu'à ce
+et conservée pour les lancements ultérieurs de Astir. Lors d'une
+nouvelle installation, Astir utilise l'anglais par défaut jusqu'à ce
 que vous modifiiez la langue à l'aide de cette option de ligne de
 commande.
 
@@ -139,7 +139,7 @@ Les menus supérieurs sont accessibles à la souris ou à l'aide de
 raccourcis clavier. Les raccourcis clavier peuvent ne pas fonctionner
 correctement si le verrouillage numérique est activé.
 
-Vous devrez configurer les interfaces pour pouvoir utiliser Xastir. La
+Vous devrez configurer les interfaces pour pouvoir utiliser Astir. La
 configuration des interfaces est détaillée dans la rubrique d'aide «
 Configuration des interfaces » et ses sous-rubriques.
 
@@ -158,11 +158,11 @@ Cliquez sur Fichier, puis sur Configurer, puis sur Station.
 
 Saisissez l'indicatif d'appel de votre station radioamateur.
 
-Saisissez la position de votre station si vous n'utilisez pas Xastir
+Saisissez la position de votre station si vous n'utilisez pas Astir
 avec un récepteur GPS. Vous pouvez localiser votre position
-approximative sur la carte avec Xastir et utiliser la position
+approximative sur la carte avec Astir et utiliser la position
 indiquée par le curseur sur la carte. Cette position sera visible dans
-la zone située en bas de l'écran Xastir, à la deuxième position à
+la zone située en bas de l'écran Astir, à la deuxième position à
 partir de la gauche, lorsque la souris survole la zone de dessin. Vous
 pouvez également sélectionner « Déplacer ma station ici » dans le menu
 contextuel (clic droit) lorsque votre souris se trouve sur votre
@@ -198,7 +198,7 @@ dans la table des symboles secondaires et saisir le caractère de
 superposition à afficher dans le champ groupe/superposition. Seuls les
 chiffres et les majuscules sont autorisés comme caractères de
 superposition. Conformément à la spécification APRS(tm), tous les
-symboles ne peuvent pas être superposés. Xastir n'applique pas cette
+symboles ne peuvent pas être superposés. Astir n'applique pas cette
 restriction, mais certains autres programmes peuvent le
 faire. Veuillez noter que tous les symboles n'ont pas encore été
 implémentés dans le sélecteur graphique, et certains ne sont pas
@@ -270,7 +270,7 @@ reçues via Internet et transmises par radio. Vous devrez également
 choisir une option IGate pour chaque interface afin que la passerelle
 IGate fonctionne.  Si vous souhaitez que votre passerelle IGate
 transmette les alertes météorologiques du NWS par radio, vous devez
-créer un fichier ~/.xastir/data/nws-stations.txt listant chaque
+créer un fichier ~/.astir/data/nws-stations.txt listant chaque
 indicatif ou station NWS (comme « PHISVR ») que vous souhaitez
 transmettre par radio. Cette fonctionnalité permet également de
 transmettre des indicatifs spécifiques par radio.
@@ -294,10 +294,10 @@ les bulletins sans position connue ni d'afficher de fenêtres
 contextuelles.
 
 L'option « Alerter si clés modificatrices (Verr.Num.) »
-affichera un avertissement si vous tentez d'utiliser Xastir alors que
+affichera un avertissement si vous tentez d'utiliser Astir alors que
 les touches Verr. Num, Arrêt défil. ou Verr. Maj sont
 activées. Certains utilisateurs signalent un écran noir et des
-problèmes similaires lorsqu'ils tentent d'utiliser Xastir avec l'une
+problèmes similaires lorsqu'ils tentent d'utiliser Astir avec l'une
 de ces touches de modification activée.
 
 Vous pouvez également sélectionner « Activer réseau alterne ? » et
@@ -334,7 +334,7 @@ predefined_SAR.sys et predefined_EVENT.sys pour plus de détails sur la
 manière de définir des objets pour un menu d'objets prédéfinis
 personnalisé. Si l'option « Charger les objets prédéfinis à partir d'un
 fichier » est sélectionnée et qu'un fichier existant dans le
-répertoire xastir/config/ est sélectionné, les objets définis dans ce
+répertoire astir/config/ est sélectionné, les objets définis dans ce
 fichier s'afficheront dans le menu Objets prédéfinis. Le fichier
 predefined_SAR.sys non modifié définit les mêmes objets que le menu
 par défaut.
@@ -393,7 +393,7 @@ moment où une station sera supprimée de l'écran.
 
 Délai de suppression d'une station (Station Delete Time) spécifie le
 nombre de jours complets avant que les données d'une station ne soient
-entièrement supprimées de la base de données Xastir.
+entièrement supprimées de la base de données Astir.
 
 Délai inter-caractères port série (Serial Inter-Char Delay) spécifie
 un temps d'attente en millisecondes entre chaque caractère envoyé à un
@@ -438,7 +438,7 @@ Les options disponibles sont les suivantes :
   météo.
 
 Un ensemble de sons standard est disponible dans la plupart des
-endroits où Xastir peut être téléchargé. Veuillez consulter le fichier
+endroits où Astir peut être téléchargé. Veuillez consulter le fichier
 INSTALL.md pour plus d'informations.
 
 HELP-INDEX>Configuration de la synthèse vocale
@@ -447,12 +447,12 @@ HELP-INDEX>Configuration de la synthèse vocale
 
 Pour utiliser cette option, vous devez disposer d'une carte son et du
 logiciel de synthèse vocale « Festival » installé. Installez Festival
-et lancez-le en mode « serveur » avant de démarrer XASTIR. La commande
+et lancez-le en mode « serveur » avant de démarrer ASTIR. La commande
 habituelle est « festival_server & ». Si vous utilisez l'option «
 festival --server » (ancienne méthode), vous risquez de rencontrer des
 problèmes de connexion refusée par le serveur.
 
-Une fois Festival installé, Xastir pourra utiliser la synthèse vocale
+Une fois Festival installé, Astir pourra utiliser la synthèse vocale
 avec les options suivantes :
 
 Nouvelle station : Annonce l'indicatif d'une nouvelle station.
@@ -480,7 +480,7 @@ HELP-INDEX>Configuration de Smart Beaconing
 Cliquez sur Fichier, puis sur Configurer, puis sur Smart Beaconing.
 
 L'option principale « Balise intelligente (Smart Beaconing) » permet à
-Xastir de transmettre les positions à différentes fréquences et à
+Astir de transmettre les positions à différentes fréquences et à
 différents endroits en fonction des déplacements de la station. Elle
 génèredes tracés plus réalistes et améliore considérablement la
 précision de la navigation à l'estime. Cette option n'est utile que
@@ -542,7 +542,7 @@ HELP-INDEX>Sauvegarder la configuration maintenant !
            Sauvegarder la configuration maintenant !
 
 Ce bouton enregistre toute la configuration actuelle dans le fichier
-de configuration.  Notez que lorsque Xastir est fermé, il enregistre
+de configuration.  Notez que lorsque Astir est fermé, il enregistre
 également la configuration dans le fichier de configuration.
 
 HELP-INDEX>Barre d'état inférieure
@@ -652,7 +652,7 @@ du pointeur de la souris, ses données s'afficheront
 immédiatement. Pour les stations mobiles disposant de nombreuses
 données de suivi, cette opération peut prendre un certain temps sur
 les ordinateurs lents. Notez que les données des stations expirées
-sont toujours stockées dans la base de données Xastir, et si vous
+sont toujours stockées dans la base de données Astir, et si vous
 connaissez l'ancien emplacement d'une station, vous pouvez toujours
 consulter ses informations de cette manière. Utilisez l'option «
 Inclure donnèes périmées » pour afficher certaines données qui
@@ -707,8 +707,8 @@ l'intervalle maximal spécifié dans
 Fichier|Configurer|Synchronisation. Les objets/articles « supprimés »
 sont également retransmis de cette manière jusqu'à ce qu'ils soient
 retirés de la file d'attente (actuellement 20 transmissions).  Les
-objets/articles sont conservés entre les sessions Xastir et sont
-stockés dans ~/.xastir/config/object.log.  Ce fichier peut être vidé
+objets/articles sont conservés entre les sessions Astir et sont
+stockés dans ~/.astir/config/object.log.  Ce fichier peut être vidé
 en sélectionnant « Effacer histoire des objets/articles » dans le
 menu Stations.
 
@@ -758,7 +758,7 @@ Description des entrées dans la boîte de dialogue d'objet :
 
 = Panneau =
 Ceci fait de l'objet un panneau. Ces panneaux peuvent contenir un à
-trois caractères et apparaissent actuellement dans Xastir comme un
+trois caractères et apparaissent actuellement dans Astir comme un
 panneau vide. Les informations de la station affichent la valeur
 contenue sur le panneau.
 
@@ -819,7 +819,7 @@ de direction, auquel cas les champs sont grisés.
 
 = Texte du panneau =
 Si l'objet est un panneau, vous pouvez spécifier le numéro à 1 à 3
-chiffres qui apparaît sur le panneau ici. Notez que Xastir n'affiche
+chiffres qui apparaît sur le panneau ici. Notez que Astir n'affiche
 pas encore correctement les objets de panneau.
 
 = Objet polygonal =
@@ -879,7 +879,7 @@ préliminaire. Les fonctionnalités et l'interface utilisateur sont
 susceptibles d'être modifiées.
 
 Les objets CAD sont des formes arbitraires que vous pouvez dessiner
-sur les cartes dans Xastir, mais qui ne peuvent pas être transmises
+sur les cartes dans Astir, mais qui ne peuvent pas être transmises
 par APRS.
 
 Les objets CAD actuellement pris en charge sont : Polygones : Zones
@@ -921,7 +921,7 @@ HELP-INDEX>Menu Examiner
            Options du menu Examiner
 
 Le menu Examiner présente différentes façons de visualiser les
-données dans Xastir.
+données dans Astir.
 
 Bulletins
 
@@ -933,7 +933,7 @@ définir le champ de portée à quelques centaines de kilomètres afin
 d'ignorer les messages provenant d'autres régions du monde. « 0 » dans
 le champ de portée signifie le monde entier. Cliquez sur le bouton «
 Modifier la portée » pour appliquer les modifications apportées à ce
-champ. Xastir ne prend pas encore en charge l'envoi de bulletins. Les
+champ. Astir ne prend pas encore en charge l'envoi de bulletins. Les
 bulletins entrants ouvriront automatiquement cette boîte de dialogue
 si vous sélectionnez « Afficher les nouveaux bulletins » dans la boîte
 de dialogue Configurer | Paramètres par défaut. Le bouton « Afficher
@@ -1003,7 +1003,7 @@ des dernières 24 heures.
 Mes données météo
 
 Affiche vos données météorologiques si vous possédez une station
-météorologique et que vous avez configuré Xastir pour y accéder.
+météorologique et que vous avez configuré Astir pour y accéder.
 
 Alertes météo
 Affiche les alertes météorologiques reçues, y compris les indicateurs
@@ -1027,7 +1027,7 @@ Affiche l'état de votre récepteur GPS, y compris le type de
 positionnement et le nombre de satellites acquis.
 
 Durée de fonctionnement du logiciel
-Affiche la durée écoulée depuis le démarrage de Xastir.
+Affiche la durée écoulée depuis le démarrage de Astir.
 
 HELP-INDEX>Menu des cartes et sélecteur de cartes
 
@@ -1085,8 +1085,8 @@ Cette option affiche une boîte de dialogue de recherche permettant de
 rechercher des étiquettes dans un fichier GNIS afin de trouver un
 emplacement spécifique. La carte sera centrée sur le nouvel
 emplacement s'il est trouvé. L'entrée « Fichier GNIS : » est
-enregistrée entre les appels et entre les exécutions de Xastir. Vous
-devez placer les fichiers GNIS dans le répertoire xastir/GNIS pour
+enregistrée entre les appels et entre les exécutions de Astir. Vous
+devez placer les fichiers GNIS dans le répertoire astir/GNIS pour
 utiliser cette fonctionnalité.
 
 Rechercher un emplacement
@@ -1221,14 +1221,14 @@ Cette option active l'affichage des cartes des zones d'alerte par
 comté pour les conditions météorologiques extrêmes. Ces cartes peuvent
 être obtenues et installées conformément aux instructions disponibles
 à l'adresse
-https://github.com/Xastir/Xastir/wiki/Xastir-Mapping-Overview et ses
+https://github.com/Astir/Astir/wiki/Astir-Mapping-Overview et ses
 différents liens. Elles s'affichent à l'écran lors de la réception de
 messages d'alerte météorologique et expirent après un certain temps ou
 peuvent être annulées à distance.  Le texte des alertes
 météorologiques est accessible via Affichage | Alertes
-météorologiques. Le répertoire xastir/Counties doit contenir les
+météorologiques. Le répertoire astir/Counties doit contenir les
 fichiers appropriés de la NOAA et la prise en charge de Shapelib doit
-être compilée dans Xastir pour activer cette fonctionnalité.
+être compilée dans Astir pour activer cette fonctionnalité.
 
 Index: nouvelles cartes au démarrage
 Cette option contrôle la création du fichier d'index des cartes au
@@ -1253,12 +1253,12 @@ Menu souris
 Cette option affiche le menu d'options normalement accessible par un
 clic droit.   Remarque concernant les cartes : La plupart des cartes
 vectorielles historiques pour les États-Unis ont été
-créées avec le système de référence NAD 1927, tandis que Xastir et
+créées avec le système de référence NAD 1927, tandis que Astir et
 d'autres programmes APRS(tm) utilisent le système de référence WGS
 1984. En cas de zoom sur une petite zone de la carte, le décalage de
 système de référence peut être très perceptible. Les cartes
 topographiques de l'USGS voient leur système de référence corrigé par
-Xastir lors de l'affichage ; les positions seront donc généralement
+Astir lors de l'affichage ; les positions seront donc généralement
 plus précises avec ces cartes topographiques.
 
 HELP-INDEX>Fichiers cartographiques et comtés météo
@@ -1266,33 +1266,33 @@ HELP-INDEX>Fichiers cartographiques et comtés météo
 Fichiers cartographiques et comtés météo
 
 Types de cartes
-Xastir fonctionne avec différents types de fichiers cartographiques. Tous les fichiers cartographiques DosAPRS et Windows/Mac APRS(tm) sont pris en charge sans qu'aucune bibliothèque externe supplémentaire ne soit nécessaire.
-Xastir peut également être
+Astir fonctionne avec différents types de fichiers cartographiques. Tous les fichiers cartographiques DosAPRS et Windows/Mac APRS(tm) sont pris en charge sans qu'aucune bibliothèque externe supplémentaire ne soit nécessaire.
+Astir peut également être
 compilé pour utiliser des bibliothèques externes afin de prendre en charge les images XPixmap (XPM), les cartes topographiques GeoTIFF
 et les cartes au format Shapefile ESRI. La capacité de gestion graphique
-de Xastir peut être considérablement étendue en compilant avec la prise en charge de GraphicsMagick,
-ce qui permet de prendre en charge de nombreux formats graphiques comme cartes. Xastir prend en charge les cartes d'alertes météorologiques au format Shapefile ESRI, disponibles auprès de la NOAA. Consultez la page wiki Github
-https://github.com/Xastir/Xastir/wiki/Installing-Xastir pour plus de détails.
+de Astir peut être considérablement étendue en compilant avec la prise en charge de GraphicsMagick,
+ce qui permet de prendre en charge de nombreux formats graphiques comme cartes. Astir prend en charge les cartes d'alertes météorologiques au format Shapefile ESRI, disponibles auprès de la NOAA. Consultez la page wiki Github
+https://github.com/Astir/Astir/wiki/Installing-Astir pour plus de détails.
 
 Des informations détaillées sur les emplacements où obtenir la plupart des types de cartes mentionnés ci-dessus se trouvent dans
-le fichier https://github.com/Xastir/Xastir/wiki/Xastir-Mapping-Overview et
+le fichier https://github.com/Astir/Astir/wiki/Astir-Mapping-Overview et
 les liens ci-dessous.
 
 Emplacements des cartes
-Tout fichier cartographique doit être stocké dans le répertoire /usr/local/share/xastir/maps
+Tout fichier cartographique doit être stocké dans le répertoire /usr/local/share/astir/maps
 sur votre ordinateur. Cet emplacement peut être différent sur certains systèmes, selon
-la manière dont Xastir a été compilé/installé. Vous pouvez créer autant de répertoires que vous le souhaitez
+la manière dont Astir a été compilé/installé. Vous pouvez créer autant de répertoires que vous le souhaitez
 sous ce répertoire pour organiser et séparer vos données. Les cartes seront
 chargées par ordre alphanumérique, sauf si une superposition est spécifiée.
 
-Des conseils sur l'installation et l'organisation des cartes se trouvent sur le wiki Github de Xastir
-à l'adresse https://github.com/Xastir/Xastir/wiki/Xastir-Mapping-Overview.
+Des conseils sur l'installation et l'organisation des cartes se trouvent sur le wiki Github de Astir
+à l'adresse https://github.com/Astir/Astir/wiki/Astir-Mapping-Overview.
 Les cartes au format graphique pixelisé nécessitent en réalité une combinaison de deux fichiers :
 un fichier de données avec une image bitmap (.xpm) (ou un autre format si vous avez compilé
 avec GraphicsMagick) et un fichier de calibration (.geo). Le fichier .xpm est le
 format graphique standard, disponible sans bibliothèques supplémentaires. Si vous
 souhaitez économiser de l'espace de stockage, vous pouvez utiliser gzip pour compresser ces fichiers
-(« gzip map.xpm » créera « map.xpm.gz »). Xastir détecte cela
+(« gzip map.xpm » créera « map.xpm.gz »). Astir détecte cela
 automatiquement lors du chargement des cartes. Vous pouvez utiliser XView/Gimp/GraphicsMagick et
 d'autres programmes pour convertir les images gif, jpg et tif dans ce format si
 vous ne disposez pas de la prise en charge de nombreux types d'images (GraphicsMagick). Si
@@ -1371,9 +1371,9 @@ Ce sont des pourcentages, 100,100,100 est la valeur par défaut.
 REFRESH <seconds>
 Exemple : REFRESH 900
 Cette balise est utilisée pour les URL dynamiques telles que les radars météorologiques, où vous
-souhaitez que Xastir redessine automatiquement la carte à un intervalle spécifié. En
+souhaitez que Astir redessine automatiquement la carte à un intervalle spécifié. En
 ajoutant cette balise aux fichiers .geos des radars météorologiques, vous pouvez observer le déplacement des
-phénomènes météorologiques sur votre écran. Xastir ne contient qu'un seul compteur d'intervalle,
+phénomènes météorologiques sur votre écran. Astir ne contient qu'un seul compteur d'intervalle,
 donc le plus petit intervalle REFRESH chargé prend effet pour toutes les cartes sélectionnées.
 
 TRANSPARENT
@@ -1411,7 +1411,7 @@ balises de géoréférencement supplémentaires intégrées. Celles
 utilisées aux États-Unis sont généralement fournies avec deux fichiers
 : un fichier .tif et un fichier .fgd. Le fichier .tif contient les
 données de la carte. Le fichier .fgd est un fichier de métadonnées
-conforme à une norme fédérale, mais pour les besoins de Xastir, il ne
+conforme à une norme fédérale, mais pour les besoins de Astir, il ne
 doit contenir que quatre lignes comme celles-ci (il peut cependant en
 contenir beaucoup d'autres) :
 
@@ -1420,7 +1420,7 @@ contenir beaucoup d'autres) :
 1.5.1.3   COORDONNÉE NORD :  48.000000
 1.5.1.4   COORDONNÉE SUD :  47.000000
 
-Xastir utilise uniquement ces quatre lignes dans ses calculs pour
+Astir utilise uniquement ces quatre lignes dans ses calculs pour
 déterminer les points d'angle d'une carte, afin de vérifier si la
 carte s'affiche correctement dans la zone d'affichage (et ainsi
 décider de l'afficher ou non). Si vos données cartographiques
@@ -1429,12 +1429,12 @@ proviennent de cartes topographiques USGS, le fichier .fgd devrait
 mapfgd.pl peut le créer pour vous. Si vous ne disposez pas de fichier
 .fgd, la carte se chargera correctement, mais les bordures blanches ne
 seront pas recadrées et la taille et la rotation peuvent être
-légèrement incorrectes. Une fonctionnalité supplémentaire de Xastir
+légèrement incorrectes. Une fonctionnalité supplémentaire de Astir
 est la possibilité d'effectuer des translations de datum du NAD 1927
 au WGS 84, ce qui rend les cartes topographiques USGS beaucoup plus
-précises sur l'écran de Xastir.
+précises sur l'écran de Astir.
 
-Xastir peut utiliser les cartes topographiques GeoTIFF USGS
+Astir peut utiliser les cartes topographiques GeoTIFF USGS
 directement depuis le lecteur CD.  Montez manuellement le disque ou
 utilisez un outil de montage automatique, et assurez-vous d'avoir créé
 un lien symbolique dans votre répertoire de cartes pointant vers
@@ -1445,15 +1445,15 @@ plusieurs fichiers : un fichier .shp, un fichier .dbf et un fichier
 .shx. Il vous suffit de sélectionner le fichier .shp pour charger la
 carte, mais les autres fichiers doivent être présents pour que la
 carte se charge correctement.  De plus, à moins que votre ensemble de
-fichiers Shapefile corresponde à ceux pour lesquels Xastir dispose
+fichiers Shapefile corresponde à ceux pour lesquels Astir dispose
 déjà de règles de rendu, vous devrez créer un fichier « dbfawk » pour
-que Xastir puisse les afficher correctement. Cartes du comté WX
+que Astir puisse les afficher correctement. Cartes du comté WX
 
 Toutes les cartes du comté WX doivent être stockées dans le répertoire
-/usr/local/share/xastir/Counties. Xastir prend uniquement en charge le
+/usr/local/share/astir/Counties. Astir prend uniquement en charge le
 format ESRI Shapefile pour ces cartes. L'installation est expliquée
 sur
-https://github.com/Xastir/Xastir/wiki/Xastir-Mapping-Overview. Vous
+https://github.com/Astir/Astir/wiki/Astir-Mapping-Overview. Vous
 devez avoir compilé Shapelib.
 
 À la réception des messages du NWS, différentes zones sont colorées
@@ -1502,7 +1502,7 @@ dans des fichiers [ou des bases de données].
 
    Exporter vers fichier KML
      Enregistre toutes les stations et leurs traces dans un fichier
-     Keyhole Markup Language dans ~/.xastir/tracklogs. Le nom du
+     Keyhole Markup Language dans ~/.astir/tracklogs. Le nom du
      fichier sera la date et l'heure actuelles avec l'extension .kml,
      par exemple 20080125-033045.kml Des fichiers KML peuvent
      également être créés régulièrement à l'aide des instantanés KML
@@ -1543,7 +1543,7 @@ Ce sous-menu permet de filtrer les symboles affichés :
     via Internet.
 
   Inclure données périmées
-    Permet à Xastir de continuer à afficher les données de station qui
+    Permet à Astir de continuer à afficher les données de station qui
     disparaissent normalement lorsque le symbole est masqué. Le délai
     d'expiration peut être ajusté dans le menu
     Fichier|Configurer|Paramètres par défaut.
@@ -1564,7 +1564,7 @@ Ce sous-menu permet de filtrer les symboles affichés :
         Stations météo CWOP
         Cette option inclut l'affichage des données météorologiques
         des stations citoyennes (non radioamateurs).  Actuellement,
-        Xastir reconnaît comme stations CWOP toute station commençant
+        Astir reconnaît comme stations CWOP toute station commençant
         par les lettres C à G, dont la deuxième lettre est « W », et
         suivie de quatre chiffres.
 
@@ -1706,12 +1706,12 @@ Ce sous-menu permet de filtrer les données affichées :
   dernier contact avec la station.
 
 Recharger histoire des objets/articles Cette option recharge le
-fichier ~/.xastir/config/objects.log utilisé pour la persistance des
+fichier ~/.astir/config/objects.log utilisé pour la persistance des
 objets et des éléments.  Cette opération est nécessaire si vous
-modifiez le fichier pendant que Xastir est en cours d'exécution.
+modifiez le fichier pendant que Astir est en cours d'exécution.
 
 Effacer histoire des objets/articles : Cette option effacera le
-fichier ~/.xastir/config/objects.log utilisé pour la persistance des
+fichier ~/.astir/config/objects.log utilisé pour la persistance des
 objets et des éléments. Il est recommandé de sélectionner et de
 supprimer manuellement tous les objets et éléments que vous possédez
 avant d'effectuer cette opération, sinon ils risquent de rester
@@ -1727,7 +1727,7 @@ vous les avez publiés via un message à « TACTICAL » (voir l'aide pour
 Effacer historique des indicatifs tactiques : Cette option supprime
 le fichier d'historique des indicatifs tactiques, ce qui signifie que
 les indicatifs tactiques attribués ne seront pas conservés entre les
-redémarrages de Xastir. Notez que cela n'effacera PAS les indicatifs
+redémarrages de Astir. Notez que cela n'effacera PAS les indicatifs
 tactiques sur les écrans des autres utilisateurs si vous les avez
 publiés via un message à « TACTICAL » (voir l'aide pour « Envoyer un
 message »).
@@ -1758,7 +1758,7 @@ généraux : vous pouvez recevoir tous les messages destinés au groupe
 et envoyer vos messages à ce groupe. Le code des messages de groupe
 n'est pas encore entièrement implémenté et divers problèmes restent à
 résoudre. Le fichier « groups » est recherché dans
-~/.xastir/config. C'est là que sont stockés les groupes dont vous êtes
+~/.astir/config. C'est là que sont stockés les groupes dont vous êtes
 membre. Comme mentionné précédemment, la fonctionnalité « groupes »
 n'est peut-être pas encore complète.
 
@@ -1796,7 +1796,7 @@ bouton « Annuler messages en suspens » annulera tous les messages
 en file d'attente de transmission qui n'ont pas encore été confirmés
 par la station distante. Après avoir annulé les messages en attente ou
 reçu un accusé de réception de la station distante, vous pouvez
-envoyer de nouveaux messages à cette station. Xastir vous permet de
+envoyer de nouveaux messages à cette station. Astir vous permet de
 saisir du texte à l'avance ; vous pouvez donc continuer à taper sans
 attendre les accusés de réception.
 
@@ -1813,7 +1813,7 @@ confirmé par la station distante. S'il expire ou si vous annulez les
 messages en attente, ces messages resteront mis en évidence, sauf si
 vous effacez l'historique des messages.
 
-Pour publier des indicatifs tactiques vers d'autres stations Xastir et
+Pour publier des indicatifs tactiques vers d'autres stations Astir et
 APRS+SA, et les attribuer localement : Envoyez un message à « TACTICAL
 » dont le corps contient des lignes similaires à :
 
@@ -1882,41 +1882,41 @@ Activer le port serveur
 Cette option active/désactive les sockets d'écoute TCP et UDP sur le
 port 2023. Vous pouvez connecter d'autres clients APRS(tm) au port TCP
 afin d'envoyer/recevoir des données APRS(tm). Une fois authentifiés,
-ils pourront envoyer des données à Xastir. Sans authentification, ils
-pourront recevoir toutes les données TNC et INET que Xastir
+ils pourront envoyer des données à Astir. Sans authentification, ils
+pourront recevoir toutes les données TNC et INET que Astir
 reçoit. Notez que TOUT utilisateur disposant des identifiants
 appropriés peut se connecter aux ports TCP ou UDP s'ils sont
 activés. Actuellement, seul le port serveur UDP peut transmettre des
 données par radiofréquence. Le port TCP ne le peut pas.
 
-« user WE7U-13 pass XXXX vers XASTIR 1.3.3 »
+« user WE7U-13 pass XXXX vers ASTIR 1.3.3 »
 
 Connectez un autre client APRS(tm) à ce port ; il devrait s'authentifier et
-pouvoir envoyer des données à tous les serveurs auxquels Xastir est connecté,
-ainsi que recevoir des paquets de tous les ports/serveurs auxquels Xastir est
+pouvoir envoyer des données à tous les serveurs auxquels Astir est connecté,
+ainsi que recevoir des paquets de tous les ports/serveurs auxquels Astir est
 connecté.
 
 Vous devriez également disposer d'un exécutable appelé «
-xastir_udp_client » qui peut envoyer des paquets au port d'écoute
+astir_udp_client » qui peut envoyer des paquets au port d'écoute
 UDP. Exécutez-le comme suit:
 
-     xastir_udp_client localhost 2023 <indicatif> <mot de passe> "Paquet APRS ici"
+     astir_udp_client localhost 2023 <indicatif> <mot de passe> "Paquet APRS ici"
 
 Actuellement, cela injectera le paquet dans les routines de décodage
-de Xastir et l'enverra à tous les clients connectés en TCP. Il
+de Astir et l'enverra à tous les clients connectés en TCP. Il
 l'enverra également à l'INET si la fonction d'envoi à l'INET est
 activée. Il enverra le paquet via les ports RF en tant que paquet
 tiers uniquement si vous ajoutez l'option « -to_rf » après le mot de
 passe, comme ceci :
 
-     xastir_udp_client localhost 2023 <indicatif> <mot de passe> -to_rf "Paquet APRS"
+     astir_udp_client localhost 2023 <indicatif> <mot de passe> -to_rf "Paquet APRS"
 
 Le client UDP est utile pour générer et injecter des paquets APRS à
 partir de scripts externes. Il peut également être utilisé pour
-récupérer l'indicatif du serveur Xastir distant en utilisant l'option
+récupérer l'indicatif du serveur Astir distant en utilisant l'option
 « -identify » :
 
-     xastir_udp_client localhost 2023 <indicatif> <mot de passe> -identify
+     astir_udp_client localhost 2023 <indicatif> <mot de passe> -identify
 
 Transmettre maintenant!
 Cette option permet à toutes les interfaces pour lesquelles la
@@ -1945,7 +1945,7 @@ HELP-INDEX>Boîte d'informations de station - Recherche FCC et RAC
 
            Boîte d'informations de station - Recherche FCC et RAC
 
-Les informations de station affichent les données décodées par Xastir.
+Les informations de station affichent les données décodées par Astir.
 
 Vous pouvez attribuer des indicatifs tactiques (locaux uniquement) aux
 stations à partir d'ici en cliquant sur le bouton « Assigner un
@@ -1954,11 +1954,11 @@ indicatif tactique au lieu de son indicatif d'appel. Attribuer un
 indicatif tactique vide désactive cette fonction, qui peut également
 être désactivée pour toutes les stations dans le menu Stations. Cette
 fonction attribue des indicatifs tactiques uniquement à la station
-Xastir locale, mais consultez la section ci-dessous pour les partager
+Astir locale, mais consultez la section ci-dessous pour les partager
 avec d'autres stations.
 
 Pour partager les indicatifs tactiques par radio avec d'autres
-stations Xastir et APRS+SA (en plus de les attribuer localement),
+stations Astir et APRS+SA (en plus de les attribuer localement),
 consultez la section d'aide « Composer un message ».
 
 L'option « Activer actualisation automatiques » actualise
@@ -2019,7 +2019,7 @@ dans les versions futures. Il n'est actuellement pas possible de
 relire ces données de tracé, mais cette fonctionnalité est prévue.
 L'objectif est également de lire et d'afficher les journaux de suivi
 GPS de manière similaire. Ces fichiers de journal de suivi seront
-placés dans le répertoire ~/.xastir/tracklogs avec un nom
+placés dans le répertoire ~/.astir/tracklogs avec un nom
 correspondant à l'indicatif d'appel de la station et l'extension «
 .trk ».
 
@@ -2046,22 +2046,22 @@ est installée et que l'indicatif d'appel semble être un indicatif
 canadien ou américain, le bouton « Chercher dans la base FCC/RAC »
 devient actif ; sinon, il reste inactif. Les fichiers FCC et 
 RAC doivent être placés dans le répertoire
-/usr/local/share/xastir/fcc, et la casse est importante ! Cliquer sur
+/usr/local/share/astir/fcc, et la casse est importante ! Cliquer sur
 ce bouton ajoute le nom et l'adresse de la station dans le champ «
 Informations sur la station ». Les instructions d'installation de ces
 bases de données se trouvent sur la page « Scripts d'aide » du wiki : 
-https://github.com/Xastir/Xastir/wiki/Helper-Scripts
+https://github.com/Astir/Astir/wiki/Helper-Scripts
 
-Xastir crée des fichiers d'index pour chaque fichier de base de
+Astir crée des fichiers d'index pour chaque fichier de base de
 données au démarrage. Si un fichier d'indicatifs d'appel plus récent
-est placé dans ce répertoire pendant que Xastir est en cours
+est placé dans ce répertoire pendant que Astir est en cours
 d'exécution, l'index sera créé ou mis à jour lors de la prochaine
 recherche. Les préfixes spéciaux ne sont PAS pris en charge.
 
 HELP-INDEX>Création d'un journal
            Création d'un journal
 
-Xastir peut enregistrer les données provenant d'Internet ou d'un TNC
+Astir peut enregistrer les données provenant d'Internet ou d'un TNC
 pour une lecture ultérieure ou à des fins de débogage. ATTENTION :
 L'enregistrement des données peut saturer votre disque dur ; utilisez
 cette fonction avec précaution ou configurez la rotation automatique
@@ -2103,7 +2103,7 @@ n'importe quel fichier contenant des données TNC brutes, comme ceux
 créés par les options d'enregistrement TNC et réseau. Votre station
 continuera de fonctionner normalement, en réception et en
 transmission. Si vous enregistriez des données, l'emplacement habituel
-de ces fichiers est ~/.xastir/logs/
+de ces fichiers est ~/.astir/logs/
 
 REMARQUE : Cette fonction ne lit pas les journaux de suivi de station
 enregistrés.
@@ -2184,7 +2184,7 @@ Remarque : L'impression n'est pas configurée sous Windows/Cygwin. Ces
 instructions sont destinées aux systèmes d'exploitation Unix et
 similaires.
 
-Xastir peut imprimer la zone de dessin en noir et blanc ou en couleur.
+Astir peut imprimer la zone de dessin en noir et blanc ou en couleur.
 Pour ce faire, il enregistre d'abord l'image dans un fichier XPixmap
 sur le disque, puis utilise des outils externes pour la convertir au
 format PostScript, la redimensionner, la faire pivoter, l'afficher en
@@ -2195,7 +2195,7 @@ des gestionnaires d'impression lp ou lpr). Vous devez également
 installer les outils suivants : les outils GraphicsMagick (en
 particulier « convert »), Ghostscript, les polices Ghostscript et « gv
 ». Une fois tous ces paquets installés et fonctionnels, une fenêtre «
-gv » devrait s'afficher peu après que vous ayez demandé à Xastir de
+gv » devrait s'afficher peu après que vous ayez demandé à Astir de
 créer un fichier d'impression. Vous pourrez alors visualiser l'image
 imprimée et, si elle vous convient, demander à « gv » de
 l'imprimer. Notez qu'il est parfois recommandé de choisir un fond
@@ -2206,12 +2206,12 @@ HELP-INDEX>Création d'instantanés
 
           Création d'instantanés automatiques
 
-Xastir peut créer automatiquement des instantanés de l'écran de la
+Astir peut créer automatiquement des instantanés de l'écran de la
 carte à intervalles réguliers. La période par défaut est de cinq
 minutes. Si vous avez installé l'outil « convert » de GraphicsMagick,
-Xastir créera un fichier au format XPM dans ~/.xastir/tmp/, puis le
-convertira en fichier PNG ~/.xastir/tmp/snapshot.png. Ce fichier est
-utile pour afficher une image « en direct » de votre écran Xastir sur
+Astir créera un fichier au format XPM dans ~/.astir/tmp/, puis le
+convertira en fichier PNG ~/.astir/tmp/snapshot.png. Ce fichier est
+utile pour afficher une image « en direct » de votre écran Astir sur
 une page web. Activez cette fonctionnalité via le bouton bascule «
 Fichier->Active copie d'écran PNG ». La fréquence est d'une fois toutes les
 cinq minutes (configurable dans la boîte de dialogue Configuration des
@@ -2227,13 +2227,13 @@ snapshot.kml afin de produire un flux KML à partir des instantanés.
 
 Création d'instantanés KML automatiques
 
-Xastir peut enregistrer toutes les stations et traces actuelles dans
+Astir peut enregistrer toutes les stations et traces actuelles dans
 un fichier KML à intervalles réguliers. Activez cette fonctionnalité
 via le bouton bascule « Fichier->Instantanés KML ». La fréquence de
 génération de ces instantanés est la même que celle des instantanés
 PNG, configurée dans « Fichier->Configurer->Temporisations » en
 définissant l'intervalle de temps des instantanés. Chaque instantané
-est enregistré dans un fichier .kml dans ~/.xastir/tracklogs, avec un
+est enregistré dans un fichier .kml dans ~/.astir/tracklogs, avec un
 nom de fichier basé sur la date et l'heure de l'instantané, par
 exemple 20080206-000720.kml. Ce comportement pourrait être modifié
 pour que les instantanés KML soient enregistrés dans un seul fichier,
@@ -2243,7 +2243,7 @@ HELP-INDEX>Scripts inclus
 
             Scripts inclus
 
-Xastir inclut plusieurs scripts Perl et un script shell qui peuvent
+Astir inclut plusieurs scripts Perl et un script shell qui peuvent
 être utiles : 
 
 get-fcc-rac.pl
@@ -2253,7 +2253,7 @@ bases de données sont très volumineuses !
 
 icontable.pl
 Ce script génère une image bitmap xpm de tous les symboles primaires
-et secondaires de Xastir à partir du fichier symbols.dat. Les
+et secondaires de Astir à partir du fichier symbols.dat. Les
 superpositions et les symboles spéciaux sont ignorés. La sortie est
 envoyée vers STDOUT ; un appel typique serait donc « icontable.pl >
 symbols.xpm ».
@@ -2270,7 +2270,7 @@ KISS d'un TNC.
 mapfgd.pl
 Ce script crée des fichiers .fgd minimaux pour les images GeoTIFF qui
 en sont dépourvues, en se basant sur les informations trouvées dans le
-fichier GeoTIFF. Les fichiers créés permettent à Xastir de recadrer
+fichier GeoTIFF. Les fichiers créés permettent à Astir de recadrer
 les bordures blanches et de faire pivoter/redimensionner la carte
 correctement. L'utilisation typique serait « mapfgd.pl mapdir » où
 mapdir est le répertoire contenant les images GeoTIFF.
@@ -2295,7 +2295,7 @@ track-get.pl
 Ce script télécharge le journal de suivi d'un objet spécifié à partir
 d'un GPS Garmin. Il nécessite le module GPS::Garmin. Il demande le nom
 de l'objet et écrit le journal de suivi dans le répertoire
-~/.xastir/logs.
+~/.astir/logs.
 
 update_langfile.pl
 Ce script est destiné aux développeurs. Il reconstruit un fichier de
@@ -2310,7 +2310,7 @@ principal est codé en dur, mais facilement modifiable.
 
 waypoint-get.pl
 Ce script similaire télécharge les points de passage d'un GPS Garmin et crée un
-fichier journal dans le répertoire ~/.xastir/logs contenant les points
+fichier journal dans le répertoire ~/.astir/logs contenant les points
 de passage sous forme d'objets. Il nécessite également le module GPS::Garmin.
 
 db_gis_mysql.sql  db_gis_postgis.sql
@@ -2329,7 +2329,7 @@ Cliquez sur Interfaces, puis sur Contrôle de l'interface.
 Une fenêtre « Interfaces installées » devrait apparaître. Cette
 fenêtre vous permettra d'ajouter, de supprimer et de modifier les
 propriétés des différents périphériques que vous souhaitez utiliser
-avec Xastir.
+avec Astir.
 
 Types d'interfaces pris en charge :
 TNC port série
@@ -2384,15 +2384,15 @@ paramètres de communication. Généralement 4800 bps, 8 bits de données,
 pas de parité et 1 bit d'arrêt.
 
 Options du port TNC :
-Sélectionner « Activer au démarrage » indique à Xastir de rechercher
+Sélectionner « Activer au démarrage » indique à Astir de rechercher
 ce périphérique et d'établir la communication avec celui-ci au premier
 démarrage du programme.
 
-Sélectionner « Permettre transmission » indique à Xastir que toutes
+Sélectionner « Permettre transmission » indique à Astir que toutes
 les données RF sortantes peuvent être envoyées à ce périphérique pour
 diffusion.
 
-Sélectionner « Ajouter un délai » indique à Xastir d'insérer un délai
+Sélectionner « Ajouter un délai » indique à Astir d'insérer un délai
 d'une seconde entre l'envoi de la commande de passage en mode «
 Conversation » et l'envoi effectif des données. Cette option est
 uniquement destinée à gérer le TNC Kantronics KAM, qui ne parvient
@@ -2420,10 +2420,10 @@ périphérique. Vous pouvez avoir plusieurs périphériques TNC, et cette
 option peut être différente pour chaque périphérique. Si vous
 n'utilisez pas d'iGate, laissez l'option par défaut « Désactiver ».
 
-Saisissez jusqu'à trois chemins UNPROTO. Xastir ajoutera
+Saisissez jusqu'à trois chemins UNPROTO. Astir ajoutera
 automatiquement la partie XX VIA du chemin UNPROTO. Trois chemins sont
 autorisés afin que votre signal soit reçu même dans de mauvaises
-conditions. Xastir utilisera successivement chaque chemin renseigné,
+conditions. Astir utilisera successivement chaque chemin renseigné,
 un par transmission. Si vous êtes proche d'un digipeater, WIDE2-2 peut
 être un bon choix. Si vous utilisez une faible puissance et/ou êtes
 éloigné d'un digipeater, WIDE1-1, WIDE2-2 peut être plus efficace. Si
@@ -2443,7 +2443,7 @@ sera utilisé.
 
 Nom du fichier de démarrage et d'arrêt du TNC. Ces champs spécifient un nom
 de fichier situé dans le répertoire
-/usr/local/share/xastir/config. Chaque fichier est un fichier texte
+/usr/local/share/astir/config. Chaque fichier est un fichier texte
 standard contenant les commandes que vous souhaitez envoyer à votre
 TNC lors de l'activation (fichier de démarrage) ou de l'arrêt
 de l'appareil.
@@ -2459,11 +2459,11 @@ de ces appareils.
 
 « Envoyer Ctrl+E pour obtenir les données GPS? »
 
-Cette case à cocher détermine si Xastir envoie un caractère Ctrl+E au
+Cette case à cocher détermine si Astir envoie un caractère Ctrl+E au
 TNC chaque fois qu'il a besoin des données GPS.
 
 Certains TNC prenant en charge un GPS sur un port auxiliaire
-nécessitent que Xastir envoie un caractère Ctrl+E au TNC pour obtenir
+nécessitent que Astir envoie un caractère Ctrl+E au TNC pour obtenir
 les données GPS à chaque fois que cela est nécessaire. Parmi ces
 appareils, on trouve le Kantronics KPC-3+.
 
@@ -2474,7 +2474,7 @@ peut même perturber leur bon fonctionnement.
 Comme l'envoi de Ctrl+E était requis par la plupart des TNC courants
 disposant d'un port auxiliaire pour le GPS au moment de la création de
 ce type d'interface, il s'agit du comportement par défaut de
-Xastir. Si vous utilisez une radio Kenwood dans ce mode, vous devez
+Astir. Si vous utilisez une radio Kenwood dans ce mode, vous devez
 DÉSÉLECTIONNER la case à cocher « Envoyer Ctrl+E pour obtenir les
 données GPS ? » dans la boîte de dialogue de configuration de ce type
 d'interface.
@@ -2492,24 +2492,24 @@ d'utiliser des TNC purement KISS, comme celui décrit dans le numéro de
 novembre 2000 de QST, sans programme ni module noyau séparé.
 
 Options
-Sélectionner « Activer au démarrage » indique à Xastir de rechercher
+Sélectionner « Activer au démarrage » indique à Astir de rechercher
 ce périphérique et d'établir la communication avec lui au démarrage du
 programme.
 
-Sélectionner « Permettre transmission » indique à Xastir que toutes
+Sélectionner « Permettre transmission » indique à Astir que toutes
 les données RF sortantes peuvent être envoyées à ce périphérique pour
 diffusion.
 
-Sélectionner « Digipeat ? » indique à Xastir de répéter le
+Sélectionner « Digipeat ? » indique à Astir de répéter le
 trafic. Il le fera si l'indicatif du premier répéteur non utilisé dans
 le chemin correspond à votre indicatif ou à un indicatif répertorié
-dans votre fichier de configuration Xastir (ligne «
+dans votre fichier de configuration Astir (ligne «
 RELAY_DIGIPEAT_CALLS », par défaut « WIDE1-1 »). Cette option est
 recommandée uniquement pour les stations de base dans les régions où
 il y a peu d'autres répéteurs de remplissage. Consultez un groupe
 local pour connaître le meilleur réglage pour votre région. Vous
-pouvez modifier manuellement le fichier de configuration Xastir
-lorsque Xastir n'est pas en cours d'exécution afin de modifier cette
+pouvez modifier manuellement le fichier de configuration Astir
+lorsque Astir n'est pas en cours d'exécution afin de modifier cette
 chaîne pour qu'elle corresponde aux recommandations locales. Aux
 États-Unis, « WIDE1-1 » est le paramètre recommandé.
 
@@ -2527,9 +2527,9 @@ périphérique. Vous pouvez avoir plusieurs périphériques TNC, et cette
 option peut être différente pour chaque périphérique. Si vous
 n'utilisez pas d'IGate, laissez l'option par défaut « Désactiver ».
 
-Saisissez jusqu'à trois chemins UNPROTO. Xastir prendra en compte la
+Saisissez jusqu'à trois chemins UNPROTO. Astir prendra en compte la
 partie XX VIA du chemin UNPROTO. Trois chemins sont autorisés pour que
-votre signal soit entendu même dans de mauvaises conditions. Xastir
+votre signal soit entendu même dans de mauvaises conditions. Astir
 alternera entre chaque chemin configuré, à raison d'un par
 transmission. Si vous êtes proche d'un digipeater, un simple WIDE2-2
 peut être un bon choix. Si vous utilisez une faible puissance et/ou
@@ -2570,20 +2570,20 @@ AX.25. Les périphériques AX.25 peuvent être n'importe quel
 périphérique utilisant les pilotes Linux AX.25. Il s'agit d'un pilote
 de niveau noyau, et des périphériques tels qu'un Baycom ou un modem
 audio peuvent être utilisés comme TNC.  Ces périphériques doivent être
-configurés et opérationnels avant que Xastir puisse les utiliser.
+configurés et opérationnels avant que Astir puisse les utiliser.
 
-Sélectionner « Activer au démarrage » indiquera à Xastir de rechercher
+Sélectionner « Activer au démarrage » indiquera à Astir de rechercher
 ce périphérique et d'établir la communication avec lui au démarrage du
 programme.
 
-Sélectionner « Permettre transmission » indiquera à Xastir que
+Sélectionner « Permettre transmission » indiquera à Astir que
 toutes les données RF sortantes peuvent être envoyées à ce
 périphérique pour diffusion.
 
-Sélectionner « Digipeat ? » indiquera à Xastir de relayer le
+Sélectionner « Digipeat ? » indiquera à Astir de relayer le
 trafic. Il le fera si l'indicatif du premier répéteur numérique
 inutilisé sur le chemin correspond à votre indicatif ou à un indicatif
-répertorié dans votre fichier de configuration Xastir (ligne «
+répertorié dans votre fichier de configuration Astir (ligne «
 RELAY_DIGIPEAT_CALLS », la valeur par défaut est « WIDE1-1 »). Cette
 option est recommandée uniquement pour les stations de base dans les
 régions où il y a peu d'autres stations de répéteurs numériques.
@@ -2591,7 +2591,7 @@ Consultez un groupe local pour connaître le meilleur réglage pour
 votre région. Cette option est nécessaire uniquement si vous
 n'utilisez pas d'autre logiciel effectuant cette fonction, tel que
 aprsdigi ou DIGI_NED. Vous pouvez modifier manuellement le fichier de
-configuration Xastir lorsque Xastir n'est pas en cours d'exécution
+configuration Astir lorsque Astir n'est pas en cours d'exécution
 afin de modifier cette chaîne pour qu'elle corresponde à vos
 recommandations locales. Aux États-Unis, « WIDE1-1 » est le paramètre
 recommandé.
@@ -2607,9 +2607,9 @@ périphérique. Vous pouvez avoir plusieurs périphériques TNC et cette
 option peut être différente pour chaque périphérique. Si vous
 n'utilisez pas d'IGate, laissez l'option par défaut « Désactiver ».
 
-Saisissez jusqu'à trois chemins UNPROTO. Xastir prendra en compte la
+Saisissez jusqu'à trois chemins UNPROTO. Astir prendra en compte la
 partie XX VIA du chemin UNPROTO. Trois chemins sont autorisés afin que
-votre signal soit entendu même dans de mauvaises conditions. Xastir
+votre signal soit entendu même dans de mauvaises conditions. Astir
 parcourra successivement chaque chemin configuré, à raison d'un par
 transmission. Si vous êtes proche d'un relais numérique (digipeater),
 un simple WIDE2-2 peut être un bon choix. Si vous utilisez une faible
@@ -2629,12 +2629,12 @@ envoyez en RF. Si vous laissez ce champ vide, les chemins UNPROTO
 mentionnés ci-dessus seront utilisés. Si les chemins UNPROTO sont
 également vides, WIDE2-2 sera utilisé.
 
-REMARQUE : Pour utiliser les périphériques AX.25 avec Xastir, vous
+REMARQUE : Pour utiliser les périphériques AX.25 avec Astir, vous
 devez exécuter le programme en tant que « root ». Si vous souhaitez
-exécuter Xastir avec un autre utilisateur, vous pouvez définir le bit
-SUID sur le fichier exécutable de Xastir. Veuillez consulter le
+exécuter Astir avec un autre utilisateur, vous pouvez définir le bit
+SUID sur le fichier exécutable de Astir. Veuillez consulter le
 fichier INSTALL pour plus d'informations ; la version actuelle de
-Xastir abandonne les privilèges supplémentaires, mais n'a pas fait
+Astir abandonne les privilèges supplémentaires, mais n'a pas fait
 l'objet d'un audit de sécurité. L'utilisation de cette manière dans un
 environnement multi-utilisateur se fait à vos propres risques !
 
@@ -2648,11 +2648,11 @@ sont /dev/ttyS0 (COM1) ou /dev/ttyS1 (COM2).
 Le champ « Commentaire » vous permet d'attribuer un nom ou un
 commentaire au port.
 
-L'option « Activer au démarrage » indique à Xastir de rechercher cet
+L'option « Activer au démarrage » indique à Astir de rechercher cet
 appareil et d'établir la communication avec lui au lancement du
 programme.
 
-L'option « Régler l'horloge system sur celle du GPS » indique à Xastir
+L'option « Régler l'horloge system sur celle du GPS » indique à Astir
 de tenter de synchroniser l'horloge du système avec le signal horaire
 de haute précision du récepteur GPS.  Cette opération nécessite les
 privilèges d'administrateur sur la plupart des systèmes.
@@ -2670,7 +2670,7 @@ HELP-INDEX>Configuration des appareils GPS en réseau
            Configuration des appareils GPS en réseau
 
 Si vous devez partager les données GPS avec différents programmes ou
-machines, cette option est la plus appropriée. Xastir fonctionne avec
+machines, cette option est la plus appropriée. Astir fonctionne avec
 gpsd, ce qui permet à plusieurs connexions de partager vos données
 GPS.
 
@@ -2680,15 +2680,15 @@ l'hôte gpsd sur votre réseau.
 Le champ « Commentaire » vous permet d'attribuer un nom convivial ou
 un commentaire au port.
 
-L'option « Activer au démarrage » indique à Xastir de rechercher cet
+L'option « Activer au démarrage » indique à Astir de rechercher cet
 appareil et d'établir la communication avec lui au lancement du
 programme.
 
-L'option « Reconnexion sur erreur réseau? » indique à Xastir de tenter de se
+L'option « Reconnexion sur erreur réseau? » indique à Astir de tenter de se
 reconnecter en cas d'interruption du flux de données.
 
 L'option « Régler l'horloge système sur celle du GPS ? » indique à
-Xastir de synchroniser l'horloge du système avec le signal horaire de
+Astir de synchroniser l'horloge du système avec le signal horaire de
 haute précision du récepteur GPS. Cette opération nécessite les
 privilèges administrateur sur la plupart des systèmes.
 
@@ -2699,11 +2699,11 @@ HELP-INDEX>Configuration du serveur Internet
 Les serveurs Internet vous permettent d'envoyer et de recevoir des
 données dans le monde entier.
 
-Sélectionner « Activer au démarrage » indique à Xastir de rechercher
+Sélectionner « Activer au démarrage » indique à Astir de rechercher
 cet appareil et d'établir la communication avec lui au lancement du
 programme.
 
-Sélectionner « Permettre transmission » indique à Xastir que toutes
+Sélectionner « Permettre transmission » indique à Astir que toutes
 les données Internet sortantes peuvent être envoyées à cet appareil.
 
 Saisissez le nom d'hôte (ou l'adresse IP) et le numéro de port du
@@ -2724,7 +2724,7 @@ veuillez consulter APRSSIG pour plus d'informations.
 Le champ « Commentaire » vous permet de définir un nom ou un
 commentaire pour le port.
 
-Sélectionner « Reconnexion sur erreur réseau? » indique à Xastir de
+Sélectionner « Reconnexion sur erreur réseau? » indique à Astir de
 tenter de se reconnecter lorsque le flux de données est interrompu.
 
 HELP-INDEX>Configuration d'une station météo série
@@ -2738,7 +2738,7 @@ utilisées.
 Le champ « Commentaire » vous permet de définir un nom ou un
 commentaire pour le port.
 
-En sélectionnant « Activer au démarrage », Xastir recherchera ce
+En sélectionnant « Activer au démarrage », Astir recherchera ce
 périphérique et établira la communication avec celui-ci au lancement
 du programme.
 
@@ -2752,10 +2752,10 @@ de données » vous permet de spécifier le type de données série que le
 programme recherchera. La fonction de détection automatique recherche
 d'abord les données météorologiques au format binaire, comme celles
 utilisées par la station Radio Shack WX-200. Si aucune donnée binaire
-n'est trouvée dans le flux, Xastir recherchera une station météo de
+n'est trouvée dans le flux, Astir recherchera une station météo de
 type ASCII (comme Peet Bros.).
 
-Définissez maintenant le facteur de correction du pluviomètre. Xastir
+Définissez maintenant le facteur de correction du pluviomètre. Astir
 exige que le pluviomètre fournisse des données par incréments de 0,01
 pouce. Si l'unité fournit des données par incréments de 0,1 pouce ou
 0,1 millimètre, une correction doit être spécifiée pour obtenir des
@@ -2765,7 +2765,7 @@ HELP-INDEX>Configurer une station météo en réseau
 
            Configurer une station météo en réseau
 
-Xastir peut utiliser des serveurs de données météorologiques tels que
+Astir peut utiliser des serveurs de données météorologiques tels que
 wx200d.  wx200d permet plusieurs connexions réseau, partageant ainsi
 les données météorologiques avec plusieurs programmes ou ordinateurs.
 
@@ -2775,17 +2775,17 @@ serveur de données météorologiques que vous souhaitez contacter.
 Le champ « Commentaire » vous permet d'attribuer un nom convivial ou
 un commentaire au port.
 
-L'option « Activer au démarrage » indique à Xastir de rechercher cet
+L'option « Activer au démarrage » indique à Astir de rechercher cet
 appareil et d'établir la communication avec lui au lancement du
 programme.
 
-L'option « Reconnexion sur erreur réseau? » indique à Xastir de tenter de se
+L'option « Reconnexion sur erreur réseau? » indique à Astir de tenter de se
 reconnecter si le flux de données est interrompu.
 
 Comme précédemment, le type de données remplace la détection
 automatique.
 
-Définissez maintenant le facteur de correction du pluviomètre. Xastir
+Définissez maintenant le facteur de correction du pluviomètre. Astir
 exige que le pluviomètre affiche les précipitations par incréments de
 0,01 pouce. Si l'appareil affiche les précipitations par incréments de
 0,1 pouce ou de 0,1 millimètre, une correction doit être spécifiée
@@ -2795,7 +2795,7 @@ HELP-INDEX>Configuration d'une connexion AGWPE
 
            Configuration d'une connexion AGWPE
 
-Xastir peut utiliser une interface réseau AGWPE fonctionnant sous
+Astir peut utiliser une interface réseau AGWPE fonctionnant sous
 Windows comme interface TNC. Il prend également en charge la sécurité
 par identifiant et mot de passe intégrée à AGWPE, mais vous devez
 configurer le compte dans l'application AGWPE en utilisant votre
@@ -2810,24 +2810,24 @@ HELP-INDEX>Configurer une connexion à une base de données SQL
            Configurer une connexion à une base de données SQL
            [Expérimental]
 
-Xastir peut, à titre expérimental, stocker et récupérer les données
+Astir peut, à titre expérimental, stocker et récupérer les données
 des stations à partir d'une base de données MySQL ou d'une base de
 données PostgreSQL + PostGIS. Consultez la section « OPTIONNEL :
 Expérimental. Ajouter la prise en charge des bases de données SIG »
 dans le fichier INSTALL pour plus d'informations. Les données des
 stations et des objets sont stockées sous forme de données spatiales
 et peuvent être récupérées par d'autres applications SIG. Par exemple,
-Xastir peut écrire les emplacements des stations dans une base de
+Astir peut écrire les emplacements des stations dans une base de
 données PostGIS, à partir de laquelle elles peuvent également être
 visualisées à l'aide de QGIS. Les connexions aux bases de données SQL
 permettent également la persistance des données entre les sessions
-Xastir. Tous les aspects de la prise en charge des bases de données
+Astir. Tous les aspects de la prise en charge des bases de données
 spatiales, y compris les structures de base de données, sont
 actuellement expérimentaux et peuvent être modifiés à tout
 moment. Vous pouvez configurer plusieurs connexions à des bases de
 données SQL, mais une seule doit être active à la fois.
 
-Avant de créer une connexion à une base de données dans Xastir, vous
+Avant de créer une connexion à une base de données dans Astir, vous
 devrez créer une base de données à laquelle vous connecter, créer un
 ensemble de tables appropriées (voir les scripts db_gis_xxxxx.sql dans
 le répertoire scripts) et ajouter un utilisateur avec un mot de passe
@@ -2841,7 +2841,7 @@ données SQL incluent :
 Base de données : MySQL (lat/long) pour les très anciennes bases de données MySQL,
 PostGIS pour PostgreSQL + PostGIS, et
 MySQL (Spatial) pour les bases de données MySQL actuelles.
-Avec les tables pour : Actuellement, seul Xastir est pris en charge. Avant de créer une connexion à une base de données dans Xastir, vous devrez créer une
+Avec les tables pour : Actuellement, seul Astir est pris en charge. Avant de créer une connexion à une base de données dans Astir, vous devrez créer une
 base de données à laquelle vous connecter, créer un ensemble de tables approprié
 (voir les scripts db_gis_xxxxx.sql dans le répertoire scripts) et ajouter un utilisateur
 avec un mot de passe et les droits d'accès à la base de données. Pour les bases de données PostGIS,
@@ -2852,15 +2852,15 @@ données SQL incluent :
 Base de données : MySQL (lat/long) pour les très anciennes bases de données MySQL,
 PostGIS pour PostgreSQL + PostGIS, et
 MySQL (Spatial) pour les bases de données MySQL actuelles.
-Avec les tables pour : Actuellement, seul le schéma simple de Xastir est pris en charge - une table plate très basique
+Avec les tables pour : Actuellement, seul le schéma simple de Astir est pris en charge - une table plate très basique
 contenant des informations minimales sur les stations.
 Hôte : Adresse IP ou nom d'hôte du serveur de base de données, la valeur par défaut est localhost.
 Port : La valeur par défaut est 3306 pour MySQL et 5432 pour PostgreSQL. La base de données peut
 être sur un serveur distant, mais le port approprié devra être
 ouvert dans les pare-feu.
-Nom d'utilisateur : Peut être unique à votre base de données, par exemple xastir_user
+Nom d'utilisateur : Peut être unique à votre base de données, par exemple astir_user
 Mot de passe : Unique à votre base de données.
-Nom du schéma : Nom de votre base de données. par exemple xastir
+Nom du schéma : Nom de votre base de données. par exemple astir
 Socket MySQL : vérifiez my.cnf ou mysql --help | grep socket
 Laissez vide pour les bases de données PostGIS.
 Reconnexion en cas de panne réseau : [Non encore implémenté]
@@ -2870,20 +2870,20 @@ Les valeurs par défaut de MySQL et PostGIS fournies par les boutons peuvent
 Trois options contrôlent le comportement de l'interface de la base de
 données SQL : Activer au démarrage : Tente de se connecter à cette
 base de données et de commencer à stocker les données des stations dès
-le démarrage de Xastir (si l'option « Stocker les données entrantes »
+le démarrage de Astir (si l'option « Stocker les données entrantes »
 est également sélectionnée).
 
 Stocker les données entrantes : Stocke chaque rapport de station (y
 compris les objets et les éléments) sous forme d'enregistrement dans
 la base de données. Toutes les stations entendues sur toutes les
 interfaces seront stockées dans la base de données - si vous êtes
-connecté à des flux Internet et que vous laissez Xastir en
+connecté à des flux Internet et que vous laissez Astir en
 fonctionnement, cela peut facilement représenter un million
 d'enregistrements par jour.
 
 Charger les données au démarrage : Récupère toutes les données des
 stations de la base de données lors du redémarrage de
-Xastir. Actuellement, c'est le seul moyen de récupérer des données
+Astir. Actuellement, c'est le seul moyen de récupérer des données
 persistantes à partir d'une base de données. Tentera de se connecter à
 la base de données et de récupérer les données indépendamment des
 paramètres « Activer au démarrage » ou « Stocker les données entrantes
@@ -2891,17 +2891,17 @@ paramètres « Activer au démarrage » ou « Stocker les données entrantes
 mobiles peuvent se déplacer légèrement.
 
 La zone « Dernière erreur » peut contenir ou non un message d'erreur
-permettant d'identifier les problèmes de connexion. Lorsque Xastir ne
+permettant d'identifier les problèmes de connexion. Lorsque Astir ne
 parvient pas à se connecter à une base de données, l'interface affiche
 « ERREUR » dans la liste des interfaces, et la dernière erreur peut
-être affichée ici. L'exécution de Xastir depuis la console et
+être affichée ici. L'exécution de Astir depuis la console et
 l'observation des messages d'erreur qui y apparaissent, ou l'exécution
-de Xastir depuis la console avec l'option `xastir -v1`, peuvent aider
+de Astir depuis la console avec l'option `astir -v1`, peuvent aider
 à identifier la cause des problèmes de connexion, tout comme l'examen
 des journaux d'erreurs de la base de données.
 
 Vous ne pourrez configurer une interface de base de données SQL que si
-vous avez compilé Xastir avec la prise en charge du SGBD correspondant
+vous avez compilé Astir avec la prise en charge du SGBD correspondant
 (--with-mysql ou --with-postgis).
 
 HELP-INDEX>Table des symboles

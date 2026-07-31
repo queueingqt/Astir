@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -54,15 +54,15 @@
   #undef PACKAGE
   #undef VERSION
   /* JMT - stupid ImageMagick */
-  #define XASTIR_PACKAGE_BUGREPORT PACKAGE_BUGREPORT
+  #define ASTIR_PACKAGE_BUGREPORT PACKAGE_BUGREPORT
   #undef PACKAGE_BUGREPORT
-  #define XASTIR_PACKAGE_NAME PACKAGE_NAME
+  #define ASTIR_PACKAGE_NAME PACKAGE_NAME
   #undef PACKAGE_NAME
-  #define XASTIR_PACKAGE_STRING PACKAGE_STRING
+  #define ASTIR_PACKAGE_STRING PACKAGE_STRING
   #undef PACKAGE_STRING
-  #define XASTIR_PACKAGE_TARNAME PACKAGE_TARNAME
+  #define ASTIR_PACKAGE_TARNAME PACKAGE_TARNAME
   #undef PACKAGE_TARNAME
-  #define XASTIR_PACKAGE_VERSION PACKAGE_VERSION
+  #define ASTIR_PACKAGE_VERSION PACKAGE_VERSION
   #undef PACKAGE_VERSION
   #ifdef HAVE_MAGICK
     #ifdef HAVE_MAGICKCORE_MAGICKCORE_H
@@ -74,20 +74,20 @@
     #endif //HAVE_MAGICKCORE_MAGICKCORE_H
   #endif //HAVE_MAGICK
   #undef PACKAGE_BUGREPORT
-  #define PACKAGE_BUGREPORT XASTIR_PACKAGE_BUGREPORT
-  #undef XASTIR_PACKAGE_BUGREPORT
+  #define PACKAGE_BUGREPORT ASTIR_PACKAGE_BUGREPORT
+  #undef ASTIR_PACKAGE_BUGREPORT
   #undef PACKAGE_NAME
-  #define PACKAGE_NAME XASTIR_PACKAGE_NAME
-  #undef XASTIR_PACKAGE_NAME
+  #define PACKAGE_NAME ASTIR_PACKAGE_NAME
+  #undef ASTIR_PACKAGE_NAME
   #undef PACKAGE_STRING
-  #define PACKAGE_STRING XASTIR_PACKAGE_STRING
-  #undef XASTIR_PACKAGE_STRING
+  #define PACKAGE_STRING ASTIR_PACKAGE_STRING
+  #undef ASTIR_PACKAGE_STRING
   #undef PACKAGE_TARNAME
-  #define PACKAGE_TARNAME XASTIR_PACKAGE_TARNAME
-  #undef XASTIR_PACKAGE_TARNAME
+  #define PACKAGE_TARNAME ASTIR_PACKAGE_TARNAME
+  #undef ASTIR_PACKAGE_TARNAME
   #undef PACKAGE_VERSION
-  #define PACKAGE_VERSION XASTIR_PACKAGE_VERSION
-  #undef XASTIR_PACKAGE_VERSION
+  #define PACKAGE_VERSION ASTIR_PACKAGE_VERSION
+  #undef ASTIR_PACKAGE_VERSION
 #endif // HAVE_MAGICK
 
 #include <dirent.h>
@@ -109,7 +109,7 @@
 
 #include <math.h>
 
-#include "core/xastir.h"
+#include "core/astir.h"
 #include "core/globals.h"
 #include "core/map/maps.h"
 #include "core/util/xa_perf.h"
@@ -165,8 +165,8 @@ int outline_border_labels_color = 0x20;
 // Printing and snapshots live in maps_gui.c.  Only the two locks stay here,
 // because maps_init() initialises them and does several other things besides, so
 // it did not come across.  They are plain mutexes, not a toolkit type.
-xastir_mutex print_properties_dialog_lock;
-xastir_mutex print_postscript_dialog_lock;
+astir_mutex print_properties_dialog_lock;
+astir_mutex print_postscript_dialog_lock;
 
 time_t last_kmlsnapshot = 0;            // Used to determine when to take next kml snapshot
 
@@ -437,7 +437,7 @@ void maps_init(void)
 
 /*
  *  Calculate NS distance scale at a given location
- *  in meters per Xastir unit
+ *  in meters per Astir unit
  */
 double calc_dscale_y(long UNUSED(x), long UNUSED(y) )
 {
@@ -454,7 +454,7 @@ double calc_dscale_y(long UNUSED(x), long UNUSED(y) )
 
 /*
  *  Calculate EW distance scale at a given location
- *  in meters per Xastir unit
+ *  in meters per Astir unit
  */
 double calc_dscale_x(long x, long y)
 {
@@ -479,7 +479,7 @@ long get_x_scale(long x, long y, long ysc)
   double sc_x;
   double sc_y;
 
-  sc_x = calc_dscale_x(x,y);          // meter per Xastir unit
+  sc_x = calc_dscale_x(x,y);          // meter per Astir unit
   sc_y = calc_dscale_y(x,y);
   if (sc_x < 0.01 || ysc > 50000)
     // keep it near the poles (>88 deg) or if big parts of world seen
@@ -662,7 +662,7 @@ int clip2d(float *x0, float *y0, float *x1, float *y1)
 // line-clipping algorithm by Liang, Barsky, and Slater published in
 // the paper: "Some Improvements to a Parametric Line Clipping
 // Algorithm", 1992.  Called by clip2d_long() function below.  This
-// function is set up for Xastir coordinate values (unsigned longs).
+// function is set up for Astir coordinate values (unsigned longs).
 // See the clipt() and clipt_int() functions for use with other
 // types of values.
 //
@@ -743,11 +743,11 @@ int clipt_long(long p, long q, float *t0, float *t1)
 // Clip 2D line segment with endpoints (x0,y0) and (x1,y1).  The clip
 // window is x_left <= x <= x_right and y_bottom <= y <= y_top.
 //
-// This function uses the Xastir coordinate system.  We had to flip
+// This function uses the Astir coordinate system.  We had to flip
 // y_bottom/y_top below due to the coordinate system being
 // upside-down.
 //
-// This function is set up for Xastir coordinate values (unsigned
+// This function is set up for Astir coordinate values (unsigned
 // longs).  See the clip2d() or clip2d_screen() functions for use
 // with other types of values.
 //
@@ -758,7 +758,7 @@ int clip2d_long(unsigned long *x0, unsigned long *y0, unsigned long *x1, unsigne
   int visible = False;
   unsigned long x_left   = NW_corner_longitude;
   unsigned long x_right = SE_corner_longitude;
-  // Reverse the following two as our Xastir coordinate system is
+  // Reverse the following two as our Astir coordinate system is
   // upside down.  The algorithm requires this order.
   unsigned long y_top = SE_corner_latitude;
   unsigned long y_bottom = NW_corner_latitude;
@@ -1015,7 +1015,7 @@ int clip2d_screen(unsigned int *x0, unsigned int *y0, unsigned int *x1, unsigned
 // etc.  If the bounding box containing the point doesn't intersect
 // with the current view, the point isn't drawn.
 //
-// Input point is in the Xastir coordinate system.
+// Input point is in the Astir coordinate system.
 //
 void draw_point(
                 unsigned long x1,
@@ -1048,7 +1048,7 @@ void draw_point(
     return;
   }
 
-  convert_xastir_to_screen_coordinates(x1, y1, &x1i, &y1i);
+  convert_astir_to_screen_coordinates(x1, y1, &x1i, &y1i);
 
   if (skip_duplicates)
   {
@@ -1094,8 +1094,8 @@ void draw_point_ll(float y1,   // lat1
 // this routine so that we don't go through the comparisons again
 // there.
 //
-  // Convert the point to the Xastir coordinate system.
-  convert_to_xastir_coordinates(&x1L,
+  // Convert the point to the Astir coordinate system.
+  convert_to_astir_coordinates(&x1L,
                                 &y1L,
                                 x1,
                                 y1);
@@ -1113,7 +1113,7 @@ void draw_point_ll(float y1,   // lat1
 // etc.  If the bounding box containing the vector doesn't intersect
 // with the current view, the line isn't drawn.
 //
-// Input points are in the Xastir coordinate system.
+// Input points are in the Astir coordinate system.
 //
 void draw_vector(
                  unsigned long x1,
@@ -1139,8 +1139,8 @@ void draw_vector(
   }
   //fprintf(stderr,"%ld,%ld  %ld,%ld\n",x1,y1,x2,y2);
 
-  convert_xastir_to_screen_coordinates(x1, y1, &x1i, &y1i);
-  convert_xastir_to_screen_coordinates(x2, y2, &x2i, &y2i);
+  convert_astir_to_screen_coordinates(x1, y1, &x1i, &y1i);
+  convert_astir_to_screen_coordinates(x2, y2, &x2i, &y2i);
 
   if (skip_duplicates)
   {
@@ -1200,21 +1200,21 @@ void draw_vector_ll(
   }
 //fprintf(stderr,"%lf,%lf  %lf,%lf\n",x1,y1,x2,y2);
 
-  // Convert the points to the Xastir coordinate system.
-  convert_to_xastir_coordinates(&x1L,
+  // Convert the points to the Astir coordinate system.
+  convert_to_astir_coordinates(&x1L,
                                 &y1L,
                                 x1,
                                 y1);
 
-  convert_to_xastir_coordinates(&x2L,
+  convert_to_astir_coordinates(&x2L,
                                 &y2L,
                                 x2,
                                 y2);
 
 //fprintf(stderr,"%ld,%ld  %ld,%ld\n",x1L,y1L,x2L,y2L);
 
-  convert_xastir_to_screen_coordinates(x1L, y1L, &x1i, &y1i);
-  convert_xastir_to_screen_coordinates(x2L, y2L, &x2i, &y2i);
+  convert_astir_to_screen_coordinates(x1L, y1L, &x1i, &y1i);
+  convert_astir_to_screen_coordinates(x2L, y2L, &x2i, &y2i);
 
   if (skip_duplicates)
   {
@@ -1335,7 +1335,7 @@ int get_border_width(void)
 void get_horizontal_datum(char *datum, int sizeof_datum)
 {
   char metadata_datum[6] = "WGS84";  // datum to display in metadata on top border
-  xastir_snprintf(datum, sizeof_datum, "%s", metadata_datum);
+  astir_snprintf(datum, sizeof_datum, "%s", metadata_datum);
   if (sizeof_datum<6)
   {
     fprintf(stderr,"Datum [%s] truncated to [%s]\n",metadata_datum,datum);
@@ -1360,8 +1360,8 @@ void draw_complete_lat_lon_grid(void)
   unsigned int stepsy;         // spacing of grid lines
   int coordinate_format;      // Format to use for coordinates on border (e.g. decimal degrees).
   char grid_label[25];        // String to draw labels on grid lines
-  int screen_width_xastir;  // screen width in xastir units (1/100 of a second)
-//  int screen_height_xastir; // screen height in xastir units (1/100 of a second)
+  int screen_width_astir;  // screen width in astir units (1/100 of a second)
+//  int screen_height_astir; // screen height in astir units (1/100 of a second)
   int border_width;          // the width of the labeled border in pixels.
   int string_width_pixels = 0;// Width of a grid label string in pixels.
   float screen_width_degrees;   // Width of the screen in degrees
@@ -1393,22 +1393,22 @@ void draw_complete_lat_lon_grid(void)
     coordinate_format = CONVERT_HP_NORMAL_FORMATED;
   }
   border_width = get_border_width();
-  // Find xastir coordinates of upper left and lower right corners.
+  // Find astir coordinates of upper left and lower right corners.
   xx = NW_corner_longitude  + (border_width * scale_x);
   yy = NW_corner_latitude   + (border_width * scale_y);
   xx2 = NW_corner_longitude  + ((screen_width - border_width) * scale_x);
   yy2 = NW_corner_latitude   + ((screen_height - border_width) * scale_y);
-  screen_width_xastir = xx2 - xx;
-//  screen_height_xastir = yy2 - yy;
+  screen_width_astir = xx2 - xx;
+//  screen_height_astir = yy2 - yy;
   // Determine some parameters used in drawing the border.
   string_width_pixels = get_standard_border_string_width_pixels(7);
-  // 1 xastir coordinate = 1/100 of a second
-  // 100*60*60 xastir coordinates (=360000 xastir coordinates) = 1 degree
-  // 64800000 xastir coordinates = 180 degrees
-  // 360000   xastir coordinates = 1 degree
-  // scale_x * (screen_width/10) = one tenth of the screen width in xastir coordinates
-  // scale_x number of xastir coordinates per pixel
-  screen_width_degrees = (float)(screen_width_xastir / (float)360000);
+  // 1 astir coordinate = 1/100 of a second
+  // 100*60*60 astir coordinates (=360000 astir coordinates) = 1 degree
+  // 64800000 astir coordinates = 180 degrees
+  // 360000   astir coordinates = 1 degree
+  // scale_x * (screen_width/10) = one tenth of the screen width in astir coordinates
+  // scale_x number of astir coordinates per pixel
+  screen_width_degrees = (float)(screen_width_astir / (float)360000);
   log_screen_width_degrees = log10(screen_width_degrees);
 
 
@@ -1431,8 +1431,8 @@ void draw_complete_lat_lon_grid(void)
     // find location of lower right corner of map, convert to Lat/Long
     convert_lon_l2s(xx2, grid_label1, sizeof(grid_label1), coordinate_format);
     convert_lat_l2s(yy2, grid_label2, sizeof(grid_label2), coordinate_format);
-    //"XASTIR Map of %s (upper left) to %s %s (lower right).  Lat/Long grid, %s datum. ",
-    xastir_snprintf(top_label,
+    //"ASTIR Map of %s (upper left) to %s %s (lower right).  Lat/Long grid, %s datum. ",
+    astir_snprintf(top_label,
                     sizeof(top_label),
                     langcode("MDATA002"),
                     grid_label,grid_label1,grid_label2,metadata_datum);
@@ -1950,19 +1950,19 @@ void draw_major_utm_mgrs_grid(void)
     // find location of upper left corner of map, convert to UTM
     xx2 = NW_corner_longitude  + (border_width * scale_x);
     yy2 = NW_corner_latitude   + (border_width * scale_y);
-    convert_xastir_to_UTM(&easting, &northing, zone_str, sizeof(zone_str),
+    convert_astir_to_UTM(&easting, &northing, zone_str, sizeof(zone_str),
                           xx2, yy2);
     if (coordinate_system == USE_MGRS)
     {
-      convert_xastir_to_MGRS_str_components(mgrs_zone, strlen(mgrs_zone),
+      convert_astir_to_MGRS_str_components(mgrs_zone, strlen(mgrs_zone),
                                             mgrs_eastingL,   sizeof(mgrs_eastingL),
                                             mgrs_northingL,  sizeof(mgrs_northingL),
                                             &int_utmEasting, &int_utmNorthing,
                                             xx2, yy2,
                                             0, mgrs_space_string, strlen(mgrs_space_string));
-      xastir_snprintf(mgrs_ul_digraph, sizeof(mgrs_ul_digraph),
+      astir_snprintf(mgrs_ul_digraph, sizeof(mgrs_ul_digraph),
                       "%c%c", mgrs_eastingL[0], mgrs_northingL[0]);
-      xastir_snprintf(grid_label,
+      astir_snprintf(grid_label,
                       sizeof(grid_label),
                       "%s %s %05.0f %05.0f",
                       mgrs_zone,mgrs_ul_digraph,(float)int_utmEasting,(float)int_utmNorthing);
@@ -1972,8 +1972,8 @@ void draw_major_utm_mgrs_grid(void)
       char easting_str[10];
       char northing_str[10];
 
-      xastir_snprintf(easting_str, sizeof(easting_str), " %07.0f", easting);
-      xastir_snprintf(northing_str, sizeof(northing_str), " %07.0f", northing);
+      astir_snprintf(easting_str, sizeof(easting_str), " %07.0f", easting);
+      astir_snprintf(northing_str, sizeof(northing_str), " %07.0f", northing);
       strcpy(grid_label, zone_str);
       grid_label[sizeof(grid_label)-1] = '\0';  // Terminate string
       strcat(grid_label, easting_str);
@@ -1984,19 +1984,19 @@ void draw_major_utm_mgrs_grid(void)
     // find location of lower right corner of map, convert to UTM
     xx2 = NW_corner_longitude  + ((screen_width - border_width) * scale_x);
     yy2 = NW_corner_latitude   + ((screen_height - border_width) * scale_y);
-    convert_xastir_to_UTM(&easting, &northing, zone_str, sizeof(zone_str),
+    convert_astir_to_UTM(&easting, &northing, zone_str, sizeof(zone_str),
                           xx2, yy2);
     if (coordinate_system == USE_MGRS)
     {
-      convert_xastir_to_MGRS_str_components(mgrs_zone, strlen(mgrs_zone),
+      convert_astir_to_MGRS_str_components(mgrs_zone, strlen(mgrs_zone),
                                             mgrs_eastingL,   sizeof(mgrs_eastingL),
                                             mgrs_northingL,  sizeof(mgrs_northingL),
                                             &int_utmEasting, &int_utmNorthing,
                                             xx2, yy2,
                                             0, mgrs_space_string, strlen(mgrs_space_string));
-      xastir_snprintf(mgrs_lr_digraph, sizeof(mgrs_lr_digraph),
+      astir_snprintf(mgrs_lr_digraph, sizeof(mgrs_lr_digraph),
                       "%c%c", mgrs_eastingL[0], mgrs_northingL[0]);
-      xastir_snprintf(grid_label1,
+      astir_snprintf(grid_label1,
                       sizeof(grid_label1),
                       "%s %s %05.0f %05.0f",
                       mgrs_zone,mgrs_lr_digraph,(float)int_utmEasting,(float)int_utmNorthing);
@@ -2014,8 +2014,8 @@ void draw_major_utm_mgrs_grid(void)
       char easting_str[10];
       char northing_str[10];
 
-      xastir_snprintf(easting_str, sizeof(easting_str), " %07.0f", easting);
-      xastir_snprintf(northing_str, sizeof(northing_str), " %07.0f", northing);
+      astir_snprintf(easting_str, sizeof(easting_str), " %07.0f", easting);
+      astir_snprintf(northing_str, sizeof(northing_str), " %07.0f", northing);
       strcpy(grid_label1, zone_str);
       grid_label1[sizeof(grid_label1)-1] = '\0';  // Terminate string
       strcat(grid_label1, easting_str);
@@ -2024,8 +2024,8 @@ void draw_major_utm_mgrs_grid(void)
       grid_label1[sizeof(grid_label1)-1] = '\0';  // Terminate string
     }
     // Write metadata on upper border of map.
-    //"XASTIR Map of %s (upper left) to %s (lower right).  UTM zones, %s datum. ",
-    xastir_snprintf(top_label,
+    //"ASTIR Map of %s (upper left) to %s (lower right).  UTM zones, %s datum. ",
+    astir_snprintf(top_label,
                     sizeof(top_label),
                     langcode("MDATA003"),
                     grid_label,grid_label1,metadata_datum);
@@ -2037,14 +2037,14 @@ void draw_major_utm_mgrs_grid(void)
                                        outline_border_labels, colors[outline_border_labels_color]);
     // Crudely identify zone boundaries by
     // iterating across bottom border.
-    xastir_snprintf(zone_str2,
+    astir_snprintf(zone_str2,
                     sizeof(zone_str2),
                     "%s"," ");
     for (x=1; x<(screen_width - border_width); x++)
     {
       xx2 = NW_corner_longitude  + (x * scale_x);
       yy2 = NW_corner_latitude   + ((screen_height - border_width) * scale_y);
-      convert_xastir_to_UTM(&easting, &northing, zone_str, sizeof(zone_str),
+      convert_astir_to_UTM(&easting, &northing, zone_str, sizeof(zone_str),
                             xx2, yy2);
       zone_str[strlen(zone_str)-1] = '\0';
       if (strcmp(zone_str,zone_str2) !=0)
@@ -2056,7 +2056,7 @@ void draw_major_utm_mgrs_grid(void)
                                            pixmap_final,
                                            outline_border_labels, colors[outline_border_labels_color]);
       }
-      xastir_snprintf(zone_str2,
+      astir_snprintf(zone_str2,
                       sizeof(zone_str2),
                       "%s",zone_str);
     }
@@ -2065,7 +2065,7 @@ void draw_major_utm_mgrs_grid(void)
     {
       xx2 = NW_corner_longitude   + (border_width * scale_x);
       yy2 = NW_corner_latitude   + (y * scale_y);
-      convert_xastir_to_UTM(&easting, &northing, zone_str, sizeof(zone_str),
+      convert_astir_to_UTM(&easting, &northing, zone_str, sizeof(zone_str),
                             xx2, yy2);
       zone_str[0] = zone_str[strlen(zone_str)-1];
       zone_str[1] = '\0';
@@ -2078,7 +2078,7 @@ void draw_major_utm_mgrs_grid(void)
                                            pixmap_final,
                                            outline_border_labels, colors[outline_border_labels_color]);
       }
-      xastir_snprintf(zone_str2,
+      astir_snprintf(zone_str2,
                       sizeof(zone_str2),
                       "%s",zone_str);
     }
@@ -2251,12 +2251,12 @@ void actually_draw_utm_minor_grid(void)
           // if not, label the upper left corner
           xx = (border_width * scale_x) + NW_corner_longitude;
           yy = ((screen_height - border_width) * scale_y) + NW_corner_latitude;
-          convert_xastir_to_UTM(&easting, &northing, zone_str, sizeof(zone_str), xx, yy);
+          convert_astir_to_UTM(&easting, &northing, zone_str, sizeof(zone_str), xx, yy);
           yy = (border_width * scale_y) + NW_corner_latitude;
-          convert_xastir_to_UTM(&easting, &northing, zone_str2, sizeof(zone_str2), xx, yy);
+          convert_astir_to_UTM(&easting, &northing, zone_str2, sizeof(zone_str2), xx, yy);
           if (strcmp(zone_str,zone_str2)!=0)
           {
-            xastir_snprintf(grid_label,
+            astir_snprintf(grid_label,
                             sizeof(grid_label),
                             "%s",
                             zone_str2);
@@ -2274,7 +2274,7 @@ void actually_draw_utm_minor_grid(void)
           }
           if (strcmp(zone_str,zone_str2)!=0)
           {
-            xastir_snprintf(grid_label,
+            astir_snprintf(grid_label,
                             sizeof(grid_label),
                             "%s",
                             zone_str);
@@ -2289,12 +2289,12 @@ void actually_draw_utm_minor_grid(void)
           // likewise for upper and lower right corners
           xx = ((screen_width - border_width) * scale_x) + NW_corner_longitude;
           yy = ((screen_height - border_width) * scale_y) + NW_corner_latitude;
-          convert_xastir_to_UTM(&easting, &northing, zone_str, sizeof(zone_str), xx, yy);
+          convert_astir_to_UTM(&easting, &northing, zone_str, sizeof(zone_str), xx, yy);
           yy = (border_width * scale_y) + NW_corner_latitude;
-          convert_xastir_to_UTM(&easting, &northing, zone_str2, sizeof(zone_str2), xx, yy);
+          convert_astir_to_UTM(&easting, &northing, zone_str2, sizeof(zone_str2), xx, yy);
           if (strcmp(zone_str,zone_str2)!=0)
           {
-            xastir_snprintf(grid_label,
+            astir_snprintf(grid_label,
                             sizeof(grid_label),
                             "%s",
                             zone_str2);
@@ -2312,7 +2312,7 @@ void actually_draw_utm_minor_grid(void)
           }
           if (strcmp(zone_str,zone_str2)!=0)
           {
-            xastir_snprintf(grid_label,
+            astir_snprintf(grid_label,
                             sizeof(grid_label),
                             "%s",
                             zone_str);
@@ -2328,8 +2328,8 @@ void actually_draw_utm_minor_grid(void)
           // if so, we need to place the northing labels on the left side
           xx = (utm_grid.zone[Zone].col[0].points[0].x * scale_x) + NW_corner_longitude;
           yy = (utm_grid.zone[Zone].col[0].points[0].y * scale_y) + NW_corner_latitude;
-          convert_xastir_to_UTM(&easting, &northing, zone_str, sizeof(zone_str), xx, yy);
-          convert_xastir_to_UTM(&easting, &northing, zone_str2, sizeof(zone_str2), NW_corner_longitude, NW_corner_latitude);
+          convert_astir_to_UTM(&easting, &northing, zone_str, sizeof(zone_str), xx, yy);
+          convert_astir_to_UTM(&easting, &northing, zone_str2, sizeof(zone_str2), NW_corner_longitude, NW_corner_latitude);
           if (strcmp(zone_str,zone_str2)==0)
           {
             northing_color = 0x08;  // 0x08 = black, same as lower left easting
@@ -2339,7 +2339,7 @@ void actually_draw_utm_minor_grid(void)
         }
         // check to see if there is a horizontal boundary
         // compare xone of upper left and lower left corners
-        convert_xastir_to_UTM(&easting, &northing, zone_str, sizeof(zone_str), NW_corner_longitude, NW_corner_latitude);
+        convert_astir_to_UTM(&easting, &northing, zone_str, sizeof(zone_str), NW_corner_longitude, NW_corner_latitude);
 
         // Overwrite defaults as appropriate and
         // label zones differently if more than one appears on the screen.
@@ -2354,8 +2354,8 @@ void actually_draw_utm_minor_grid(void)
           xx = (xx2 * scale_x) + NW_corner_longitude;
           yy2 = utm_grid.zone[Zone].col[0].points[utm_grid.zone[Zone].col[0].npoints-1].y;
           yy = (yy2 * scale_y) +  NW_corner_latitude;
-          convert_xastir_to_UTM(&easting, &northing, zone_str, sizeof(zone_str), xx,yy);
-          xastir_snprintf(grid_label,
+          convert_astir_to_UTM(&easting, &northing, zone_str, sizeof(zone_str), xx,yy);
+          astir_snprintf(grid_label,
                           sizeof(grid_label),
                           "%s",
                           zone_str);
@@ -2377,8 +2377,8 @@ void actually_draw_utm_minor_grid(void)
           // write the zone of the lower left corner of the map
           xx = (border_width * scale_x) + NW_corner_longitude;
           yy = ((screen_height - border_width) * scale_y) +  NW_corner_latitude;
-          convert_xastir_to_UTM(&easting, &northing, zone_str, sizeof(zone_str), xx, yy);
-          xastir_snprintf(grid_label,
+          convert_astir_to_UTM(&easting, &northing, zone_str, sizeof(zone_str), xx, yy);
+          astir_snprintf(grid_label,
                           sizeof(grid_label),
                           "%s",
                           zone_str);
@@ -2398,19 +2398,19 @@ void actually_draw_utm_minor_grid(void)
         // find location of upper left corner of map, convert to UTM
         xx2 = NW_corner_longitude  + (border_width * scale_x);
         yy2 = NW_corner_latitude   + (border_width * scale_y);
-        convert_xastir_to_UTM(&easting, &northing, zone_str, sizeof(zone_str),
+        convert_astir_to_UTM(&easting, &northing, zone_str, sizeof(zone_str),
                               xx2, yy2);
         if (coordinate_system == USE_MGRS)
         {
-          convert_xastir_to_MGRS_str_components(mgrs_zone, strlen(mgrs_zone),
+          convert_astir_to_MGRS_str_components(mgrs_zone, strlen(mgrs_zone),
                                                 mgrs_eastingL,   sizeof(mgrs_eastingL),
                                                 mgrs_northingL,  sizeof(mgrs_northingL),
                                                 &int_utmEasting, &int_utmNorthing,
                                                 xx2, yy2,
                                                 0, mgrs_space_string, strlen(mgrs_space_string));
-          xastir_snprintf(mgrs_ul_digraph, sizeof(mgrs_ul_digraph),
+          astir_snprintf(mgrs_ul_digraph, sizeof(mgrs_ul_digraph),
                           "%c%c", mgrs_eastingL[0], mgrs_northingL[0]);
-          xastir_snprintf(grid_label,
+          astir_snprintf(grid_label,
                           sizeof(grid_label),
                           "%s %s %05.0f %05.0f",
                           mgrs_zone,mgrs_ul_digraph,(float)int_utmEasting,(float)int_utmNorthing);
@@ -2420,8 +2420,8 @@ void actually_draw_utm_minor_grid(void)
           char easting_str[10];
           char northing_str[10];
 
-          xastir_snprintf(easting_str, sizeof(easting_str), " %07.0f", easting);
-          xastir_snprintf(northing_str, sizeof(northing_str), " %07.0f", northing);
+          astir_snprintf(easting_str, sizeof(easting_str), " %07.0f", easting);
+          astir_snprintf(northing_str, sizeof(northing_str), " %07.0f", northing);
           strcpy(grid_label, zone_str);
           grid_label[sizeof(grid_label)-1] = '\0';  // Terminate string
           strcat(grid_label, easting_str);
@@ -2432,19 +2432,19 @@ void actually_draw_utm_minor_grid(void)
         // find location of lower right corner of map, convert to UTM
         xx2 = NW_corner_longitude  + ((screen_width - border_width) * scale_x);
         yy2 = NW_corner_latitude   + ((screen_height - border_width) * scale_y);
-        convert_xastir_to_UTM(&easting, &northing, zone_str, sizeof(zone_str),
+        convert_astir_to_UTM(&easting, &northing, zone_str, sizeof(zone_str),
                               xx2, yy2);
         if (coordinate_system == USE_MGRS)
         {
-          convert_xastir_to_MGRS_str_components(mgrs_zone, strlen(mgrs_zone),
+          convert_astir_to_MGRS_str_components(mgrs_zone, strlen(mgrs_zone),
                                                 mgrs_eastingL,   sizeof(mgrs_eastingL),
                                                 mgrs_northingL,  sizeof(mgrs_northingL),
                                                 &int_utmEasting, &int_utmNorthing,
                                                 xx2, yy2,
                                                 0, mgrs_space_string, strlen(mgrs_space_string));
-          xastir_snprintf(mgrs_lr_digraph, sizeof(mgrs_lr_digraph),
+          astir_snprintf(mgrs_lr_digraph, sizeof(mgrs_lr_digraph),
                           "%c%c", mgrs_eastingL[0], mgrs_northingL[0]);
-          xastir_snprintf(grid_label1,
+          astir_snprintf(grid_label1,
                           sizeof(grid_label1),
                           "%s %s %05.0f %05.0f",
                           mgrs_zone,mgrs_lr_digraph,(float)int_utmEasting,(float)int_utmNorthing);
@@ -2462,8 +2462,8 @@ void actually_draw_utm_minor_grid(void)
           char easting_str[10];
           char northing_str[10];
 
-          xastir_snprintf(easting_str, sizeof(easting_str), " %07.0f", easting);
-          xastir_snprintf(northing_str, sizeof(northing_str), " %07.0f", northing);
+          astir_snprintf(easting_str, sizeof(easting_str), " %07.0f", easting);
+          astir_snprintf(northing_str, sizeof(northing_str), " %07.0f", northing);
           strcpy(grid_label1, zone_str);
           grid_label1[sizeof(grid_label1)-1] = '\0';  // Terminate string
           strcat(grid_label1, easting_str);
@@ -2471,8 +2471,8 @@ void actually_draw_utm_minor_grid(void)
           strcat(grid_label1, northing_str);
           grid_label1[sizeof(grid_label1)-1] = '\0';  // Terminate string
         }
-        //"XASTIR Map of %s (upper left) to %s (lower right).  UTM %d m grid, %s datum. ",
-        xastir_snprintf(top_label,
+        //"ASTIR Map of %s (upper left) to %s (lower right).  UTM %d m grid, %s datum. ",
+        astir_snprintf(top_label,
                         sizeof(top_label),
                         langcode("MDATA001"),
                         grid_label,grid_label1,utm_grid_spacing_m,metadata_datum);
@@ -2553,16 +2553,16 @@ void actually_draw_utm_minor_grid(void)
             {
               xx = (utm_grid.zone[Zone].col[ii].points[bottom_point].x * scale_x) + NW_corner_longitude;
               yy = (utm_grid.zone[Zone].col[ii].points[bottom_point].y * scale_y) + NW_corner_latitude;
-              convert_xastir_to_UTM(&easting, &northing, zone_str, sizeof(zone_str), xx, yy);
+              convert_astir_to_UTM(&easting, &northing, zone_str, sizeof(zone_str), xx, yy);
               // To display full precision to one meter, use:
-              //xastir_snprintf(grid_label,
+              //astir_snprintf(grid_label,
               //    sizeof(grid_label),
               //    "%06.0f0",
               //    (float)((utm_grid_spacing_m/10) * roundf(easting/(utm_grid_spacing_m))));
               //
               // Divide easting by utm_grid_spacing to make sure the line is labeled
               // correctly, and not a few meters off, and truncate to at least 100 m.
-              xastir_snprintf(grid_label,
+              astir_snprintf(grid_label,
                               sizeof(grid_label),
                               "%05.0f",
                               (float)((utm_grid_spacing_m/100) * roundf(easting/(utm_grid_spacing_m))));
@@ -2584,7 +2584,7 @@ void actually_draw_utm_minor_grid(void)
               }
               if (coordinate_system == USE_MGRS)
               {
-                convert_xastir_to_MGRS_str_components(mgrs_zone, strlen(mgrs_zone),
+                convert_astir_to_MGRS_str_components(mgrs_zone, strlen(mgrs_zone),
                                                       mgrs_eastingL,   sizeof(mgrs_eastingL),
                                                       mgrs_northingL,  sizeof(mgrs_northingL),
                                                       &int_utmEasting, &int_utmNorthing,
@@ -2645,16 +2645,16 @@ void actually_draw_utm_minor_grid(void)
                 xx = (utm_grid.zone[Zone].row[ii].points[utm_grid.zone[Zone].row[ii].npoints-1].x * scale_x) + NW_corner_longitude;
               }
               yy = (utm_grid.zone[Zone].row[ii].points[utm_grid.zone[Zone].row[ii].npoints-1].y * scale_y) +  NW_corner_latitude;
-              convert_xastir_to_UTM(&easting, &northing, zone_str, sizeof(zone_str), xx, yy);
+              convert_astir_to_UTM(&easting, &northing, zone_str, sizeof(zone_str), xx, yy);
               // To display to full 1 meter precision use:
-              //xastir_snprintf(grid_label,
+              //astir_snprintf(grid_label,
               //    sizeof(grid_label),
               //    "%06.0f0",
               //    (float)((utm_grid_spacing_m/10) * roundf(northing/(utm_grid_spacing_m))));
               //
               // Divide northing by utm grid spacing to make sure the line is labeled correctly
               // and displays zeroes in its least significant digits, and truncate to 100 m
-              xastir_snprintf(grid_label,
+              astir_snprintf(grid_label,
                               sizeof(grid_label),
                               "%05.0f",
                               (float)((utm_grid_spacing_m/100) * roundf(northing/(utm_grid_spacing_m))));
@@ -2675,7 +2675,7 @@ void actually_draw_utm_minor_grid(void)
               }
               if (coordinate_system == USE_MGRS)
               {
-                convert_xastir_to_MGRS_str_components(mgrs_zone, strlen(mgrs_zone),
+                convert_astir_to_MGRS_str_components(mgrs_zone, strlen(mgrs_zone),
                                                       mgrs_eastingL,   3,
                                                       mgrs_northingL,  3,
                                                       &int_utmEasting, &int_utmNorthing,
@@ -2855,7 +2855,7 @@ int draw_minor_utm_mgrs_grid(void)
   // UTM zones, not the UTM-Special/MGRS zones.  Force our
   // calculations to use the standard zones.
   coordinate_system = USE_UTM;
-  convert_xastir_to_UTM(&e[0], &n[0], place_str, sizeof(place_str), xx, yy);
+  convert_astir_to_UTM(&e[0], &n[0], place_str, sizeof(place_str), xx, yy);
   coordinate_system = coordinate_system_backup;
 
   n[0] += UTM_GRID_EQUATOR; // To work in southern hemisphere
@@ -2936,7 +2936,7 @@ int draw_minor_utm_mgrs_grid(void)
       // degree UTM zones, not the UTM-Special/MGRS zones.
       // Force our calculations to use the standard zones.
       coordinate_system = USE_UTM;
-      convert_xastir_to_UTM(&e[0], &n[0], place_str, sizeof(place_str), xx, yy);
+      convert_astir_to_UTM(&e[0], &n[0], place_str, sizeof(place_str), xx, yy);
       coordinate_system = coordinate_system_backup;
 
       n[0] += UTM_GRID_EQUATOR; // To work in southern hemisphere
@@ -2985,7 +2985,7 @@ int draw_minor_utm_mgrs_grid(void)
     // degree UTM zones, not the UTM-Special/MGRS zones.  Force
     // our calculations to use the standard zones.
     coordinate_system = USE_UTM;
-    convert_UTM_to_xastir(e[1], n[1]-UTM_GRID_EQUATOR, place_str, &xx, &yy);
+    convert_UTM_to_astir(e[1], n[1]-UTM_GRID_EQUATOR, place_str, &xx, &yy);
     coordinate_system = coordinate_system_backup;
 
     xx1 = xx; // Save
@@ -2995,7 +2995,7 @@ int draw_minor_utm_mgrs_grid(void)
     // degree UTM zones, not the UTM-Special/MGRS zones.  Force
     // our calculations to use the standard zones.
     coordinate_system = USE_UTM;
-    convert_xastir_to_UTM(&e[2], &n[2], zone_str, sizeof(zone_str), xx, yy);
+    convert_astir_to_UTM(&e[2], &n[2], zone_str, sizeof(zone_str), xx, yy);
     coordinate_system = coordinate_system_backup;
 
     n[2] += UTM_GRID_EQUATOR;
@@ -3144,7 +3144,7 @@ int draw_minor_utm_mgrs_grid(void)
       else
       {
 
-        // 360,000 Xastir units equals one degree.  This
+        // 360,000 Astir units equals one degree.  This
         // code appears to be adjusting xx1 to a major
         // zone edge.
         xx1 = (xx1 / (6 * 360000)) * 6 * 360000;
@@ -3577,7 +3577,7 @@ char *get_map_dir (char *fullpath)
  * Tests whether a particular path/filename is within our
  * current view.  We use this to decide whether to plot or
  * skip a particular image file (major speed-up!).
- * Input coordinates are in the Xastir coordinate system.
+ * Input coordinates are in the Astir coordinate system.
  *
  * Had to fix a bug here where the viewport glanced over the
  * edge of the earth, causing strange results like this.
@@ -3592,12 +3592,12 @@ char *get_map_dir (char *fullpath)
  * Right map boundary inside view
  * map_inside_view: 1  view_inside_map: 0  parallel_edges: 0
  * Map not within current view.
- * Skipping map: /usr/local/share/xastir/maps/tif/uk/425_0525_bng.tif
+ * Skipping map: /usr/local/share/astir/maps/tif/uk/425_0525_bng.tif
  *
  *
  * I had to check for out-of-bounds numbers for the viewport and
  * set them to min or max values so that this function always
- * works properly.  Here are the bounds of the earth (Xastir
+ * works properly.  Here are the bounds of the earth (Astir
  * Coordinate System):
  *
  *              0 (90 deg. or 90N)
@@ -4071,7 +4071,7 @@ void clean_string(char *input)
 
 // Test map visibility (on screen)
 //
-// Input parameters are in Xastir coordinate system (fastest for us)
+// Input parameters are in Astir coordinate system (fastest for us)
 // check_percentage:
 //      0 = don't check
 //      1 = check map size versus viewport scale.  Return 0 if map
@@ -4080,7 +4080,7 @@ void clean_string(char *input)
 // Returns: MAP_NOT_VIS if map is _not_ visible
 //          MAP_IS_VIS if map _is_ visible
 //
-// Xastir Coordinate System:
+// Astir Coordinate System:
 //
 //              0 (90 deg. or 90N)
 //
@@ -4429,7 +4429,7 @@ void draw_map (char *dir, char *filenm, alert_entry *alert,
   }
 
 
-  xastir_snprintf(file, sizeof(file), "%s/%s", dir, filenm);
+  astir_snprintf(file, sizeof(file), "%s/%s", dir, filenm);
 
   // Used for debugging.  If we get a segfault on a map, this is
   // often the only way of finding out which map file we can't
@@ -4530,7 +4530,7 @@ static void map_search (char *dir, alert_entry * alert, int *alert_count,int war
         case 'F':   // 'F' in 4th char means fire alert
           // Use fire alert file fz_??????
           //fprintf(stderr,"%c:Fire Alert file\n",alert->title[3]);
-          xastir_snprintf(alert->filename,
+          astir_snprintf(alert->filename,
                           sizeof(alert->filename),
                           "fz");
           break;
@@ -4538,14 +4538,14 @@ static void map_search (char *dir, alert_entry * alert, int *alert_count,int war
         case 'C':   // 'C' in 4th char means county
           // Use County file c_??????
           //fprintf(stderr,"%c:County file\n",alert->title[3]);
-          xastir_snprintf(alert->filename,
+          astir_snprintf(alert->filename,
                           sizeof(alert->filename),
                           "c_");
           break;
         case 'A':   // 'A' in 4th char means county warning area
           // Use County warning area w_?????
           //fprintf(stderr,"%c:County warning area file\n",alert->title[3]);
-          xastir_snprintf(alert->filename,
+          astir_snprintf(alert->filename,
                           sizeof(alert->filename),
                           "w_");
           break;
@@ -4557,7 +4557,7 @@ static void map_search (char *dir, alert_entry * alert, int *alert_count,int war
           if (strncasecmp(alert->title,"AM",2) == 0)
           {
             //fprintf(stderr,"%c:Coastal marine zone file\n",alert->title[3]);
-            xastir_snprintf(alert->filename,
+            astir_snprintf(alert->filename,
                             sizeof(alert->filename),
                             "mz");
           }
@@ -4574,14 +4574,14 @@ static void map_search (char *dir, alert_entry * alert, int *alert_count,int war
                        || (strncasecmp(&alert->title[3],"Z088",4) == 0) )
             {
               //fprintf(stderr,"%c:Offshore marine zone file\n",alert->title[3]);
-              xastir_snprintf(alert->filename,
+              astir_snprintf(alert->filename,
                               sizeof(alert->filename),
                               "oz");
             }
             else
             {
               //fprintf(stderr,"%c:Coastal marine zone file\n",alert->title[3]);
-              xastir_snprintf(alert->filename,
+              astir_snprintf(alert->filename,
                               sizeof(alert->filename),
                               "mz");
             }
@@ -4589,77 +4589,77 @@ static void map_search (char *dir, alert_entry * alert, int *alert_count,int war
           else if (strncasecmp(alert->title,"GM",2) == 0)
           {
             //fprintf(stderr,"%c:Coastal marine zone file\n",alert->title[3]);
-            xastir_snprintf(alert->filename,
+            astir_snprintf(alert->filename,
                             sizeof(alert->filename),
                             "mz");
           }
           else if (strncasecmp(alert->title,"LC",2) == 0)
           {
             //fprintf(stderr,"%c:Coastal marine zone file\n",alert->title[3]);
-            xastir_snprintf(alert->filename,
+            astir_snprintf(alert->filename,
                             sizeof(alert->filename),
                             "mz");
           }
           else if (strncasecmp(alert->title,"LE",2) == 0)
           {
             //fprintf(stderr,"%c:Coastal marine zone file\n",alert->title[3]);
-            xastir_snprintf(alert->filename,
+            astir_snprintf(alert->filename,
                             sizeof(alert->filename),
                             "mz");
           }
           else if (strncasecmp(alert->title,"LH",2) == 0)
           {
             //fprintf(stderr,"%c:Coastal marine zone file\n",alert->title[3]);
-            xastir_snprintf(alert->filename,
+            astir_snprintf(alert->filename,
                             sizeof(alert->filename),
                             "mz");
           }
           else if (strncasecmp(alert->title,"LM",2) == 0)
           {
             //fprintf(stderr,"%c:Coastal marine zone file\n",alert->title[3]);
-            xastir_snprintf(alert->filename,
+            astir_snprintf(alert->filename,
                             sizeof(alert->filename),
                             "mz");
           }
           else if (strncasecmp(alert->title,"LO",2) == 0)
           {
             //fprintf(stderr,"%c:Coastal marine zone file\n",alert->title[3]);
-            xastir_snprintf(alert->filename,
+            astir_snprintf(alert->filename,
                             sizeof(alert->filename),
                             "mz");
           }
           else if (strncasecmp(alert->title,"LS",2) == 0)
           {
             //fprintf(stderr,"%c:Coastal marine zone file\n",alert->title[3]);
-            xastir_snprintf(alert->filename,
+            astir_snprintf(alert->filename,
                             sizeof(alert->filename),
                             "mz");
           }
           else if (strncasecmp(alert->title,"PH",2) == 0)
           {
             //fprintf(stderr,"%c:Coastal marine zone file\n",alert->title[3]);
-            xastir_snprintf(alert->filename,
+            astir_snprintf(alert->filename,
                             sizeof(alert->filename),
                             "mz");
           }
           else if (strncasecmp(alert->title,"PK",2) == 0)
           {
             //fprintf(stderr,"%c:Coastal marine zone file\n",alert->title[3]);
-            xastir_snprintf(alert->filename,
+            astir_snprintf(alert->filename,
                             sizeof(alert->filename),
                             "mz");
           }
           else if (strncasecmp(alert->title,"PM",2) == 0)
           {
             //fprintf(stderr,"%c:Coastal marine zone file\n",alert->title[3]);
-            xastir_snprintf(alert->filename,
+            astir_snprintf(alert->filename,
                             sizeof(alert->filename),
                             "mz");
           }
           else if (strncasecmp(alert->title,"PS",2) == 0)
           {
             //fprintf(stderr,"%c:Coastal marine zone file\n",alert->title[3]);
-            xastir_snprintf(alert->filename,
+            astir_snprintf(alert->filename,
                             sizeof(alert->filename),
                             "mz");
           }
@@ -4673,14 +4673,14 @@ static void map_search (char *dir, alert_entry * alert, int *alert_count,int war
                        || (strncasecmp(&alert->title[3],"Z085",4) == 0) )
             {
               //fprintf(stderr,"%c:Offshore marine zone file\n",alert->title[3]);
-              xastir_snprintf(alert->filename,
+              astir_snprintf(alert->filename,
                               sizeof(alert->filename),
                               "oz");
             }
             else
             {
               //fprintf(stderr,"%c:Coastal marine zone file\n",alert->title[3]);
-              xastir_snprintf(alert->filename,
+              astir_snprintf(alert->filename,
                               sizeof(alert->filename),
                               "mz");
             }
@@ -4688,7 +4688,7 @@ static void map_search (char *dir, alert_entry * alert, int *alert_count,int war
           else if (strncasecmp(alert->title,"SL",2) == 0)
           {
             //fprintf(stderr,"%c:Coastal marine zone file\n",alert->title[3]);
-            xastir_snprintf(alert->filename,
+            astir_snprintf(alert->filename,
                             sizeof(alert->filename),
                             "mz");
           }
@@ -4697,7 +4697,7 @@ static void map_search (char *dir, alert_entry * alert, int *alert_count,int war
             // Must be regular zone file instead of coastal
             // marine zone or offshore marine zone.
             //fprintf(stderr,"%c:Zone file\n",alert->title[3]);
-            xastir_snprintf(alert->filename,
+            astir_snprintf(alert->filename,
                             sizeof(alert->filename),
                             "z_");
           }
@@ -4718,35 +4718,35 @@ static void map_search (char *dir, alert_entry * alert, int *alert_count,int war
           if ((strncasecmp(&alert->title[4],"MW",2) == 0) || (strncasecmp(&alert->title[3],"MW",2) == 0))
           {
             //fprintf(stderr,"%c:BOM Coastal Waters file\n",alert->title[4]);
-            xastir_snprintf(alert->filename,
+            astir_snprintf(alert->filename,
                             sizeof(alert->filename),
                             "gfe_coastal_waters.shp");
           }
           else if ((strncasecmp(&alert->title[4],"CW",2) == 0) || (strncasecmp(&alert->title[3],"CW",2) == 0))
           {
             //fprintf(stderr,"%c:BOM Coastal waters warning file\n",alert->title[3]);
-            xastir_snprintf(alert->filename,
+            astir_snprintf(alert->filename,
                             sizeof(alert->filename),
                             "gfe_coastal_waters_warnings.shp");
           }
           else if ((strncasecmp(&alert->title[4],"PW",2) == 0) || (strncasecmp(&alert->title[3],"PW",2) == 0))
           {
             //fprintf(stderr,"%c:BOM Public Weather file\n",alert->title[3]);
-            xastir_snprintf(alert->filename,
+            astir_snprintf(alert->filename,
                             sizeof(alert->filename),
                             "gfe_public_weather.shp");
           }
           else if ((strncasecmp(&alert->title[4],"FW",2) == 0) || (strncasecmp(&alert->title[3],"FW",2) == 0))
           {
             //fprintf(stderr,"%c:BOM Fire Weather file\n",alert->title[3]);
-            xastir_snprintf(alert->filename,
+            astir_snprintf(alert->filename,
                             sizeof(alert->filename),
                             "gfe_fire_weather.shp");
           }
           else if ((strncasecmp(&alert->title[4],"ME",2) == 0) || (strncasecmp(&alert->title[3],"ME",2) == 0))
           {
             //fprintf(stderr,"%c:BOM Metro Areas file\n",alert->title[3]);
-            xastir_snprintf(alert->filename,
+            astir_snprintf(alert->filename,
                             sizeof(alert->filename),
                             "gfe_metro_areas.shp");
           }
@@ -4783,7 +4783,7 @@ static void map_search (char *dir, alert_entry * alert, int *alert_count,int war
         dm = opendir (dir);
         if (!dm)    // Couldn't open directory
         {
-          xastir_snprintf(fullpath, sizeof(fullpath), "aprsmap %s", dir);
+          astir_snprintf(fullpath, sizeof(fullpath), "aprsmap %s", dir);
           // If local alert, warn the operator via the
           // console as well.
           if (warn)
@@ -4823,7 +4823,7 @@ static void map_search (char *dir, alert_entry * alert, int *alert_count,int war
               */
             }
 
-            xastir_snprintf(fullpath, sizeof(fullpath), "%s%s", dir, dl->d_name);
+            astir_snprintf(fullpath, sizeof(fullpath), "%s%s", dir, dl->d_name);
             /*fprintf(stderr,"FULL PATH %s\n",fullpath); */
             if (stat (fullpath, &nfile) == 0)
             {
@@ -4933,7 +4933,7 @@ static void map_search (char *dir, alert_entry * alert, int *alert_count,int war
     dm = opendir (dir);
     if (!dm)    // Couldn't open directory
     {
-      xastir_snprintf(fullpath, sizeof(fullpath), "aprsmap %s", dir);
+      astir_snprintf(fullpath, sizeof(fullpath), "aprsmap %s", dir);
       if (warn)
       {
         perror (fullpath);
@@ -4971,7 +4971,7 @@ static void map_search (char *dir, alert_entry * alert, int *alert_count,int war
           */
         }
 
-        xastir_snprintf(fullpath, sizeof(fullpath), "%s/%s", dir, dl->d_name);
+        astir_snprintf(fullpath, sizeof(fullpath), "%s/%s", dir, dl->d_name);
         //fprintf(stderr,"FULL PATH %s\n",fullpath);
         if (stat (fullpath, &nfile) == 0)
         {
@@ -4996,9 +4996,9 @@ static void map_search (char *dir, alert_entry * alert, int *alert_count,int war
                   // Drop off the base part of the
                   // path for the indexing,
                   // usually
-                  // "/usr/local/share/xastir/maps".
+                  // "/usr/local/share/astir/maps".
                   // Add a '/' to the end.
-                  xastir_snprintf(temp_dir,
+                  astir_snprintf(temp_dir,
                                   sizeof(temp_dir),
                                   "%s/",
                                   &fullpath[map_dir_length+1]);
@@ -5008,7 +5008,7 @@ static void map_search (char *dir, alert_entry * alert, int *alert_count,int war
                   index_update_directory(temp_dir);
                 }
 
-//                                xastir_snprintf(this_time,
+//                                astir_snprintf(this_time,
 //                                    sizeof(this_time),
 //                                    "%s",
 //                                    ctime(ftime));
@@ -5037,8 +5037,8 @@ static void map_search (char *dir, alert_entry * alert, int *alert_count,int war
 
                 // Drop off the base part of the
                 // path for the indexing, usually
-                // "/usr/local/share/xastir/maps".
-                xastir_snprintf(temp_dir,
+                // "/usr/local/share/astir/maps".
+                astir_snprintf(temp_dir,
                                 sizeof(temp_dir),
                                 "%s",
                                 &fullpath[map_dir_length+1]);
@@ -5405,8 +5405,8 @@ static void index_update_directory(char *directory)
 
   // Update the values.  By this point we have a struct to fill
   // in, whether it's a new or old struct doesn't matter.  Convert
-  // the values from lat/long to Xastir coordinate system.
-  xastir_snprintf(temp_record->filename,MAX_FILENAME,"%s",directory);
+  // the values from lat/long to Astir coordinate system.
+  astir_snprintf(temp_record->filename,MAX_FILENAME,"%s",directory);
 
   temp_record->bottom = 0;
   temp_record->top = 0;
@@ -5426,9 +5426,9 @@ static void index_update_directory(char *directory)
 
 // Function called by the various draw_* functions when in indexing
 // mode.  Causes an update of the index list in memory.  Input
-// parameters are in the Xastir coordinate system due to speed
+// parameters are in the Astir coordinate system due to speed
 // considerations.  Records are inserted in alphanumerical order.
-void index_update_xastir(char *filename,
+void index_update_astir(char *filename,
                          unsigned long bottom,
                          unsigned long top,
                          unsigned long left,
@@ -5448,7 +5448,7 @@ void index_update_xastir(char *filename,
        || (filename[0] == '\0')
        || (filename[strlen(filename) - 1] == '/') )
   {
-    fprintf(stderr,"index_update_xastir: Bad input: %s\n",filename);
+    fprintf(stderr,"index_update_astir: Bad input: %s\n",filename);
     return;
   }
   // Make sure there aren't any weird characters in the filename
@@ -5460,7 +5460,7 @@ void index_update_xastir(char *filename,
     if (filename[i] < 0x20)
     {
 
-      fprintf(stderr,"\nindex_update_xastir: Found control char 0x%02x in map file/map directory name:\n%s\n",
+      fprintf(stderr,"\nindex_update_astir: Found control char 0x%02x in map file/map directory name:\n%s\n",
               filename[i],
               filename);
 
@@ -5470,11 +5470,11 @@ void index_update_xastir(char *filename,
   // Check if the string is _now_ bogus
   if (filename[0] == '\0')
   {
-    fprintf(stderr,"index_update_xastir: Bad input: %s\n",filename);
+    fprintf(stderr,"index_update_astir: Bad input: %s\n",filename);
     return;
   }
 
-  //fprintf(stderr,"index_update_xastir: (%lu,%lu)\t(%lu,%lu)\t%s\n",
+  //fprintf(stderr,"index_update_astir: (%lu,%lu)\t(%lu,%lu)\t%s\n",
   //    bottom, top, left, right, filename );
 
   //if (map_index_head == NULL)
@@ -5655,8 +5655,8 @@ void index_update_xastir(char *filename,
 
   // Update the values.  By this point we have a struct to fill
   // in, whether it's a new or old struct doesn't matter.  Convert
-  // the values from lat/long to Xastir coordinate system.
-  xastir_snprintf(temp_record->filename,MAX_FILENAME,"%s",filename);
+  // the values from lat/long to Astir coordinate system.
+  astir_snprintf(temp_record->filename,MAX_FILENAME,"%s",filename);
 
   temp_record->bottom = bottom;
   temp_record->top = top;
@@ -5671,7 +5671,7 @@ void index_update_xastir(char *filename,
 
 // Function called by the various draw_* functions when in indexing
 // mode.  Causes an update of the index list in memory.  Input
-// parameters are in lat/long, which are converted to Xastir
+// parameters are in lat/long, which are converted to Astir
 // coordinates for storage due to speed considerations.  Records are
 // inserted in alphanumerical order.
 void index_update_ll(char *filename,
@@ -5907,13 +5907,13 @@ void index_update_ll(char *filename,
 
   // Update the values.  By this point we have a struct to fill
   // in, whether it's a new or old struct doesn't matter.  Convert
-  // the values from lat/long to Xastir coordinate system.
+  // the values from lat/long to Astir coordinate system.
 
   // In this case the struct uses MAX_FILENAME for the length of
   // the field, so the below statement is ok.
-  xastir_snprintf(temp_record->filename,MAX_FILENAME,"%s",filename);
+  astir_snprintf(temp_record->filename,MAX_FILENAME,"%s",filename);
 
-  ok = convert_to_xastir_coordinates( &temp_left,
+  ok = convert_to_astir_coordinates( &temp_left,
                                       &temp_top,
                                       (float)left,
                                       (float)top);
@@ -5922,7 +5922,7 @@ void index_update_ll(char *filename,
     fprintf(stderr,"%s\n\n",filename);
   }
 
-  ok = convert_to_xastir_coordinates( &temp_right,
+  ok = convert_to_astir_coordinates( &temp_right,
                                       &temp_bottom,
                                       (float)right,
                                       (float)bottom);
@@ -6026,7 +6026,7 @@ static void index_update_accessed(char *filename)
 //      1 if the map is listed in the index
 //      Four parameters listing the extents of the map
 //
-// The updated parameters are in the Xastir coordinate system for
+// The updated parameters are in the Astir coordinate system for
 // speed reasons.
 //
 // Note that the index retrieval could be made much faster by
@@ -6242,7 +6242,7 @@ void index_save_to_file(void)
 
       // Write each object out to the file as one
       // comma-delimited line
-      xastir_snprintf(out_string,
+      astir_snprintf(out_string,
                       sizeof(out_string),
                       "%010lu,%010lu,%010lu,%010lu,%05d,%01d,%01d,%01d,%05d,%05d,%s\n",
                       current->bottom,
@@ -6890,7 +6890,7 @@ void fill_in_new_alert_entries(void)
     fprintf(stderr,"fill_in_new_alert_entries start\n");
   }
 
-  xastir_snprintf(dir,
+  astir_snprintf(dir,
                   sizeof(dir),
                   "%s",
                   ALERT_MAP_DIR);
@@ -6899,7 +6899,7 @@ void fill_in_new_alert_entries(void)
 
   // Set up our path to the wx alert maps
   memset(alert_scan, 0, sizeof (alert_scan));    // Zero our alert_scan string
-  xastir_snprintf(alert_scan, // Fetch the base directory
+  astir_snprintf(alert_scan, // Fetch the base directory
                   sizeof(alert_scan),
                   "%s",
                   dir);
@@ -7206,7 +7206,7 @@ static void empty_map_sorted_list(void)
 // sorted list in the proper place.
 //
 // This function should be called when we're first starting up
-// Xastir and anytime that selected_maps.sys is changed.
+// Astir and anytime that selected_maps.sys is changed.
 //
 static void insert_map_sorted(char *filename)
 {
@@ -7244,7 +7244,7 @@ static void insert_map_sorted(char *filename)
     CHECKMALLOC(temp_record);
 
     // Fill in the values
-    xastir_snprintf(temp_record->filename,MAX_FILENAME,"%s",filename);
+    astir_snprintf(temp_record->filename,MAX_FILENAME,"%s",filename);
     temp_record->bottom = bottom;
     temp_record->top = top;
     temp_record->left = left;
@@ -7546,7 +7546,7 @@ void load_maps (void)
               int len;
 
               // Found a directory.  Save the name.
-              xastir_snprintf(selected_dir,
+              astir_snprintf(selected_dir,
                               sizeof(selected_dir),
                               "%s",
                               mapname);

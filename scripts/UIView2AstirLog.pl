@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 use warnings;
 #
-# Script to convert a UI-View log file to an Xastir log file.
+# Script to convert a UI-View log file to an Astir log file.
 #
 # Copyright (C) 2000-2026 The Xastir Group
 #
@@ -23,7 +23,7 @@ use warnings;
 # NOTE:  Run it against an input file and tell it where to put the
 # output:
 #
-#  ./UIView2XastirLog.pl  <input_file.log  >output_file.log
+#  ./UIView2AstirLog.pl  <input_file.log  >output_file.log
 #
 # No timestamp info is converted or saved by this script.
 

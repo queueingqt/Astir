@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 use warnings;
-# Update utility for XASTIR language files                  17.04.2001
+# Update utility for ASTIR language files                  17.04.2001
 #  Copyright (C) 2001 Rolf Bleher                  http://www.dk7in.de
 
 #  This program is free software; you can redistribute it and/or modify

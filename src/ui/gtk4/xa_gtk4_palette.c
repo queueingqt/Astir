@@ -1,5 +1,5 @@
 /*
- * xa_gtk4_palette.c -- Xastir's colour table, by name.
+ * xa_gtk4_palette.c -- Astir's colour table, by name.
  *
  * Generated from the 148 GetPixelByName() calls in main.c, because the values
  * are not cosmetic: core drawing code indexes colors[] by number -- colors[0xfd]

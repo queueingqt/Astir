@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -153,7 +153,7 @@ int decode_gps_rmc( char *data,
     return(0);
   }
 
-  xastir_snprintf(sampletime,
+  astir_snprintf(sampletime,
                   sizeof(sampletime),
                   "%s",
                   temp_ptr);
@@ -174,7 +174,7 @@ int decode_gps_rmc( char *data,
     *status = 0;
   }
 
-  xastir_snprintf(temp_data,
+  astir_snprintf(temp_data,
                   sizeof(temp_data),
                   "%s",
                   temp_ptr);
@@ -209,7 +209,7 @@ int decode_gps_rmc( char *data,
 // hoping it was a typo in the Starlink Invicta spec, as latitude
 // never requires three digits for degrees.
 
-  xastir_snprintf(lat_pos_y,
+  astir_snprintf(lat_pos_y,
                   sizeof(lat_pos_y),
                   "%s",
                   temp_ptr);
@@ -231,7 +231,7 @@ int decode_gps_rmc( char *data,
     return(0);
   }
 
-  xastir_snprintf(temp_data,
+  astir_snprintf(temp_data,
                   sizeof(temp_data),
                   "%s",
                   temp_ptr);
@@ -263,7 +263,7 @@ int decode_gps_rmc( char *data,
   }
 
 
-  xastir_snprintf(long_pos_x,
+  astir_snprintf(long_pos_x,
                   sizeof(long_pos_x),
                   "%s",
                   temp_ptr);
@@ -285,7 +285,7 @@ int decode_gps_rmc( char *data,
     return(0);
   }
 
-  xastir_snprintf(temp_data,
+  astir_snprintf(temp_data,
                   sizeof(temp_data),
                   "%s",
                   temp_ptr);
@@ -305,7 +305,7 @@ int decode_gps_rmc( char *data,
     return(0);
   }
 
-  xastir_snprintf(speed,
+  astir_snprintf(speed,
                   sizeof(speed),
                   "%s",
                   temp_ptr);
@@ -319,7 +319,7 @@ int decode_gps_rmc( char *data,
     return(0);
   }
 
-  xastir_snprintf(course,
+  astir_snprintf(course,
                   sizeof(course),
                   "%s",
                   temp_ptr);
@@ -332,7 +332,7 @@ int decode_gps_rmc( char *data,
     return(0);
   }
 
-  xastir_snprintf(sampledate,
+  astir_snprintf(sampledate,
                   sizeof(sampledate),
                   "%s",
                   temp_ptr);
@@ -340,11 +340,11 @@ int decode_gps_rmc( char *data,
 
 
   // Data is good
-  xastir_snprintf(long_pos, long_pos_length, "%s%c", long_pos_x,long_ew);
-  xastir_snprintf(lat_pos, lat_pos_length, "%s%c", lat_pos_y, lat_ns);
-  xastir_snprintf(spd, 10, "%s", speed);
-  xastir_snprintf(unit, unit_length, "%c", speed_unit);
-  xastir_snprintf(cse, 10, "%s", course);
+  astir_snprintf(long_pos, long_pos_length, "%s%c", long_pos_x,long_ew);
+  astir_snprintf(lat_pos, lat_pos_length, "%s%c", lat_pos_y, lat_ns);
+  astir_snprintf(spd, 10, "%s", speed);
+  astir_snprintf(unit, unit_length, "%c", speed_unit);
+  astir_snprintf(cse, 10, "%s", course);
 
 #ifdef HAVE_STRPTIME
   // Translate date/time into time_t GPS time is in UTC.  First,
@@ -355,13 +355,13 @@ int decode_gps_rmc( char *data,
   {
     tzp = "";
   }
-  xastir_snprintf(tzn,
+  astir_snprintf(tzn,
                   sizeof(tzn),
                   "TZ=%s",
                   tzp);
   putenv("TZ=UTC");
   tzset();
-  xastir_snprintf(sampledatime,
+  astir_snprintf(sampledatime,
                   sizeof(sampledatime),
                   "%s%s",
                   sampledate,
@@ -462,7 +462,7 @@ int decode_gps_gga( char *data,
     return(0);
   }
 
-  xastir_snprintf(lat_pos_y,
+  astir_snprintf(lat_pos_y,
                   sizeof(lat_pos_y),
                   "%s",
                   temp_ptr);
@@ -484,7 +484,7 @@ int decode_gps_gga( char *data,
     return(0);
   }
 
-  xastir_snprintf(temp_data,
+  astir_snprintf(temp_data,
                   sizeof(temp_data),
                   "%s",
                   temp_ptr);
@@ -504,7 +504,7 @@ int decode_gps_gga( char *data,
     return(0);
   }
 
-  xastir_snprintf(long_pos_x,
+  astir_snprintf(long_pos_x,
                   sizeof(long_pos_x),
                   "%s",
                   temp_ptr);
@@ -526,7 +526,7 @@ int decode_gps_gga( char *data,
     return(0);
   }
 
-  xastir_snprintf(temp_data,
+  astir_snprintf(temp_data,
                   sizeof(temp_data),
                   "%s",
                   temp_ptr);
@@ -546,7 +546,7 @@ int decode_gps_gga( char *data,
     return(0);
   }
 
-  xastir_snprintf(temp_data,
+  astir_snprintf(temp_data,
                   sizeof(temp_data),
                   "%s",
                   temp_ptr);
@@ -568,7 +568,7 @@ int decode_gps_gga( char *data,
     return(0);
   }
 
-  xastir_snprintf(sats_visible,
+  astir_snprintf(sats_visible,
                   sizeof(sats_visible),
                   "%s",
                   temp_ptr);
@@ -589,7 +589,7 @@ int decode_gps_gga( char *data,
   }
 
   // Get altitude
-  xastir_snprintf(altitude,
+  astir_snprintf(altitude,
                   sizeof(altitude),
                   "%s",
                   temp_ptr);
@@ -603,7 +603,7 @@ int decode_gps_gga( char *data,
   }
 
   // get UNIT
-  xastir_snprintf(temp_data,
+  astir_snprintf(temp_data,
                   sizeof(temp_data),
                   "%s",
                   temp_ptr);
@@ -612,11 +612,11 @@ int decode_gps_gga( char *data,
   alt_unit=temp_data[0];
 
   // Data is good
-  xastir_snprintf(long_pos, long_pos_length, "%s%c", long_pos_x, long_ew);
-  xastir_snprintf(lat_pos, lat_pos_length, "%s%c", lat_pos_y, lat_ns);
-  xastir_snprintf(sats, 4, "%s", sats_visible);
-  xastir_snprintf(alt, 8, "%s", altitude);
-  xastir_snprintf(aunit, 2, "%c", alt_unit);
+  astir_snprintf(long_pos, long_pos_length, "%s%c", long_pos_x, long_ew);
+  astir_snprintf(lat_pos, lat_pos_length, "%s%c", lat_pos_y, lat_ns);
+  astir_snprintf(sats, 4, "%s", sats_visible);
+  astir_snprintf(alt, 8, "%s", altitude);
+  astir_snprintf(aunit, 2, "%c", alt_unit);
 
   return(1);
 }
@@ -650,7 +650,7 @@ int gps_data_find(char *gps_line_data, int port)
     {
       char filtered_data[MAX_LINE_SIZE+1];
 
-      xastir_snprintf(filtered_data,
+      astir_snprintf(filtered_data,
                       sizeof(filtered_data),
                       "%s",
                       gps_line_data);
@@ -665,12 +665,12 @@ int gps_data_find(char *gps_line_data, int port)
       xa_ui_status(langcode("BBARSTA015"));
     }
 
-    xastir_snprintf(gps_gprmc,
+    astir_snprintf(gps_gprmc,
                     sizeof(gps_gprmc),
                     "%s",
                     gps_line_data);
 
-    xastir_snprintf(temp_str, sizeof(temp_str), "%s", gps_gprmc);
+    astir_snprintf(temp_str, sizeof(temp_str), "%s", gps_gprmc);
     // decode_gps_rmc is destructive to its first parameter
     if (decode_gps_rmc( temp_str,
                         long_pos,
@@ -749,7 +749,7 @@ int gps_data_find(char *gps_line_data, int port)
     {
       char filtered_data[MAX_LINE_SIZE+1];
 
-      xastir_snprintf(filtered_data,
+      astir_snprintf(filtered_data,
                       sizeof(filtered_data),
                       "%s",
                       gps_line_data);
@@ -764,12 +764,12 @@ int gps_data_find(char *gps_line_data, int port)
       xa_ui_status(langcode("BBARSTA016"));
     }
 
-    xastir_snprintf(gps_gpgga,
+    astir_snprintf(gps_gpgga,
                     sizeof(gps_gpgga),
                     "%s",
                     gps_line_data);
 
-    xastir_snprintf(temp_str, sizeof(temp_str), "%s", gps_gpgga);
+    astir_snprintf(temp_str, sizeof(temp_str), "%s", gps_gpgga);
 
     // decode_gps_gga is destructive to its first parameter
     if ( decode_gps_gga( temp_str,
@@ -869,7 +869,7 @@ char *nmea_checksum(char *nmea_sentence)
   right = sum % 16;
   left = (sum / 16) % 16;
 
-  xastir_snprintf(checksum, sizeof(checksum), "%c%c",
+  astir_snprintf(checksum, sizeof(checksum), "%c%c",
                   convert[left],
                   convert[right]);
 
@@ -960,7 +960,7 @@ void create_garmin_waypoint(long latitude,long longitude,char *call_sign)
 
   //fprintf(stderr,"Creating waypoint for %s:%s\n",call_sign,short_callsign);
 
-  xastir_snprintf(out_string, sizeof(out_string),
+  astir_snprintf(out_string, sizeof(out_string),
                   "$GPWPL,%s,%c,%s,%c,%s*",
                   lat_string,
                   lat_char,

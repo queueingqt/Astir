@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -21,8 +21,8 @@
  * Look at the README for more information on the program.
  */
 
-#ifndef XASTIR_OBJECTS_H
-#define XASTIR_OBJECTS_H
+#ifndef ASTIR_OBJECTS_H
+#define ASTIR_OBJECTS_H
 
 #include <stdint.h>
 
@@ -62,6 +62,6 @@ extern DataRow *construct_object_item_data_row(char *name,
                                         int killed);
 extern void destroy_object_item_data_row(DataRow *theDataRow);
 
-#endif /* XASTIR_OBJECTS_H */
+#endif /* ASTIR_OBJECTS_H */
 
 

@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -35,7 +35,7 @@
 #include <string.h>
 #include <signal.h>
 
-#include "core/xastir.h"
+#include "core/astir.h"
 #include "core/main.h"
 
 // Must be last include file
@@ -77,12 +77,12 @@ pid_t play_sound(char *sound_cmd, char *soundfile)
           // setprogname(2).
 #ifdef __linux__
           init_set_proc_title(my_argc, my_argv, my_envp);
-          set_proc_title("%s", "festival process (xastir)");
+          set_proc_title("%s", "festival process (astir)");
           //fprintf(stderr,"DEBUG: %s\n", Argv[0]);
 #endif  // __linux__
 
 
-          xastir_snprintf(command,
+          astir_snprintf(command,
                           sizeof(command),
                           "%s %s/%s",
                           sound_cmd,
@@ -90,7 +90,7 @@ pid_t play_sound(char *sound_cmd, char *soundfile)
                           soundfile);
 
           if (system(command) != 0) {}  // We don't care whether it succeeded
-          exit(0);    // Exits only this process, not Xastir itself
+          exit(0);    // Exits only this process, not Astir itself
         }
         else
         {

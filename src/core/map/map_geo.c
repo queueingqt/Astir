@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -57,7 +57,7 @@
 
 #include <math.h>
 
-#include "core/xastir.h"
+#include "core/astir.h"
 #include "core/globals.h"
 #include "core/map/maps.h"
 #include "core/map/map_cache.h"
@@ -101,15 +101,15 @@
   #undef PACKAGE
   #undef VERSION
   /* JMT - stupid ImageMagick */
-  #define XASTIR_PACKAGE_BUGREPORT PACKAGE_BUGREPORT
+  #define ASTIR_PACKAGE_BUGREPORT PACKAGE_BUGREPORT
   #undef PACKAGE_BUGREPORT
-  #define XASTIR_PACKAGE_NAME PACKAGE_NAME
+  #define ASTIR_PACKAGE_NAME PACKAGE_NAME
   #undef PACKAGE_NAME
-  #define XASTIR_PACKAGE_STRING PACKAGE_STRING
+  #define ASTIR_PACKAGE_STRING PACKAGE_STRING
   #undef PACKAGE_STRING
-  #define XASTIR_PACKAGE_TARNAME PACKAGE_TARNAME
+  #define ASTIR_PACKAGE_TARNAME PACKAGE_TARNAME
   #undef PACKAGE_TARNAME
-  #define XASTIR_PACKAGE_VERSION PACKAGE_VERSION
+  #define ASTIR_PACKAGE_VERSION PACKAGE_VERSION
   #undef PACKAGE_VERSION
   #ifdef HAVE_MAGICK
     #ifdef HAVE_MAGICKCORE_MAGICKCORE_H
@@ -121,20 +121,20 @@
     #endif //HAVE_MAGICKCORE_MAGICKCORE_H
   #endif //HAVE_MAGICK
   #undef PACKAGE_BUGREPORT
-  #define PACKAGE_BUGREPORT XASTIR_PACKAGE_BUGREPORT
-  #undef XASTIR_PACKAGE_BUGREPORT
+  #define PACKAGE_BUGREPORT ASTIR_PACKAGE_BUGREPORT
+  #undef ASTIR_PACKAGE_BUGREPORT
   #undef PACKAGE_NAME
-  #define PACKAGE_NAME XASTIR_PACKAGE_NAME
-  #undef XASTIR_PACKAGE_NAME
+  #define PACKAGE_NAME ASTIR_PACKAGE_NAME
+  #undef ASTIR_PACKAGE_NAME
   #undef PACKAGE_STRING
-  #define PACKAGE_STRING XASTIR_PACKAGE_STRING
-  #undef XASTIR_PACKAGE_STRING
+  #define PACKAGE_STRING ASTIR_PACKAGE_STRING
+  #undef ASTIR_PACKAGE_STRING
   #undef PACKAGE_TARNAME
-  #define PACKAGE_TARNAME XASTIR_PACKAGE_TARNAME
-  #undef XASTIR_PACKAGE_TARNAME
+  #define PACKAGE_TARNAME ASTIR_PACKAGE_TARNAME
+  #undef ASTIR_PACKAGE_TARNAME
   #undef PACKAGE_VERSION
-  #define PACKAGE_VERSION XASTIR_PACKAGE_VERSION
-  #undef XASTIR_PACKAGE_VERSION
+  #define PACKAGE_VERSION ASTIR_PACKAGE_VERSION
+  #undef ASTIR_PACKAGE_VERSION
 #endif // HAVE_MAGICK
 
 #include "draw/xa_draw.h"
@@ -340,7 +340,7 @@ void draw_toporama_map (char * UNUSED(dir),
     // We're indexing only.  Save the extents in the index.
     // Force the extents to the edges of the earth for the index
     // file.
-    index_update_xastir(filenm, // Filename only
+    index_update_astir(filenm, // Filename only
                         64800000l,      // Bottom
                         0l,             // Top
                         0l,             // Left
@@ -348,7 +348,7 @@ void draw_toporama_map (char * UNUSED(dir),
                         0);             // Default Map Level
 
     // Update statusline
-    xastir_snprintf(map_it,
+    astir_snprintf(map_it,
                     sizeof(map_it),
                     langcode ("BBARSTA039"),
                     short_filenm);
@@ -392,7 +392,7 @@ void draw_toporama_map (char * UNUSED(dir),
 
   // A test URL that works, just to get things going.  This URL
   // requests 1:50k scale maps ("set=50").
-  //xastir_snprintf(fileimg, sizeof(fileimg),
+  //astir_snprintf(fileimg, sizeof(fileimg),
   //    "\"http://mm.aprs.net/toporama.cgi?set=50|lat=44.59333|lon=-75.72933|width=800|height=600|zoom=1\"");
 
   // Compute our custom URL based on our map view and the
@@ -428,7 +428,7 @@ void draw_toporama_map (char * UNUSED(dir),
     my_zoom = 0.02;
   }
 
-  xastir_snprintf(fileimg, sizeof(fileimg),
+  astir_snprintf(fileimg, sizeof(fileimg),
                   "http://mm.aprs.net/toporama.cgi?set=%d|lat=%f|lon=%f|width=%d|height=%d|zoom=%0.3f",
                   //        "http://www2.findu.com/toporama.cgi?set=%d|lat=%f|lon=%f|width=%d|height=%d|zoom=%0.3f",
                   toporama_flag,  // Scale, 50 or 250
@@ -441,7 +441,7 @@ void draw_toporama_map (char * UNUSED(dir),
   //fprintf(stderr,"%s\n", fileimg);
 
   // Create a local filename that we'll save to.
-  xastir_snprintf(local_filename,
+  astir_snprintf(local_filename,
                   sizeof(local_filename),
                   "%s/map.geo",
                   get_user_base_dir("tmp", temp_file_path, sizeof(temp_file_path)));
@@ -471,18 +471,18 @@ void draw_toporama_map (char * UNUSED(dir),
   //name of the map file now instead of the .geo file.
 
   // Tell ImageMagick where to find it
-  xastir_snprintf(file,sizeof(file),"%s",local_filename);
+  astir_snprintf(file,sizeof(file),"%s",local_filename);
 
 
 
-  // Check whether we got a reasonable ~/.xastir/tmp/map.geo file from
+  // Check whether we got a reasonable ~/.astir/tmp/map.geo file from
   // the fetch.  If so, pass it off to the routine which can draw it.
 
   // We also need to write a valid IMAGESIZE line into the .geo
   // file.  We know these parameters because they should match
   // screen_width/screen_height.
   //
-  xastir_snprintf(map_it,
+  astir_snprintf(map_it,
                   sizeof(map_it),
                   "IMAGESIZE\t%d\t%d\n",
                   my_screen_width,
@@ -575,8 +575,8 @@ void draw_geo_image_map (char *dir,
 
   unsigned long c_x_min,  c_y_min;// top left coordinates of map inside screen
   //  unsigned long c_y_max;          // bottom right coordinates of map inside screen
-  double c_x;                     // Xastir coordinates 1/100 sec, 0 = 180°W
-  double c_y;                     // Xastir coordinates 1/100 sec, 0 =  90°N
+  double c_x;                     // Astir coordinates 1/100 sec, 0 = 180°W
+  double c_y;                     // Astir coordinates 1/100 sec, 0 =  90°N
   double c_y_a;                   // coordinates correction for Transverse Mercator
 
   long map_y_0;                   // map pixel pointer prior to TM adjustment
@@ -605,7 +605,7 @@ void draw_geo_image_map (char *dir,
   double ew_ofs;                  // distance from map center in nm
 
   long scale_xa;                  // adjusted for topo maps
-  double scale_x_nm;              // nm per Xastir coordinate unit
+  double scale_x_nm;              // nm per Astir coordinate unit
   long scale_x0;                  // at widest map area
 
 #ifdef HAVE_MAGICK
@@ -689,7 +689,7 @@ void draw_geo_image_map (char *dir,
 
   KeySym OSM_key = 0;
 
-  xastir_snprintf(file, sizeof(file), "%s/%s", dir, filenm);
+  astir_snprintf(file, sizeof(file), "%s/%s", dir, filenm);
 
   // Create a shorter filename for display
   short_filename_for_status(filenm, short_filenm, sizeof(short_filenm));
@@ -729,7 +729,7 @@ void draw_geo_image_map (char *dir,
             strncat(temp,
                     fileimg,
                     sizeof(temp) - 1 - strlen(temp));
-          xastir_snprintf(fileimg,sizeof(fileimg),"%s",temp);
+          astir_snprintf(fileimg,sizeof(fileimg),"%s",temp);
         }
       }
       if (strncasecmp (line, "URL", 3) == 0)
@@ -750,7 +750,7 @@ void draw_geo_image_map (char *dir,
           {
             fprintf(stderr,"draw_geo_image_map:sscanf parsing error\n");
           }
-          // Convert tiepoints from lat/lon to Xastir coordinates
+          // Convert tiepoints from lat/lon to Astir coordinates
           tp[n_tp].x_long = 64800000l + (360000.0 * temp_long);
           tp[n_tp].y_lat  = 32400000l + (360000.0 * (-temp_lat));
           n_tp++;
@@ -792,7 +792,7 @@ void draw_geo_image_map (char *dir,
         // intensity variable comes into play.
 #ifdef HAVE_MAGICK
         // This one causes problems now.  Not sure why.
-        //                xastir_snprintf(imagemagick_options.modulate,32,"100 100 100");
+        //                astir_snprintf(imagemagick_options.modulate,32,"100 100 100");
 #endif  // HAVE_MAGICK
         terraserver_flag = 2;
       }
@@ -1124,14 +1124,14 @@ void draw_geo_image_map (char *dir,
       }
       if (strncasecmp(line, "LEVEL", 5) == 0)
       {
-        xastir_snprintf(imagemagick_options.level,
+        astir_snprintf(imagemagick_options.level,
                         sizeof(imagemagick_options.level),
                         "%s",
                         line+6);
       }
       if (strncasecmp(line, "MODULATE", 8) == 0)
       {
-        xastir_snprintf(imagemagick_options.modulate,
+        astir_snprintf(imagemagick_options.modulate,
                         sizeof(imagemagick_options.modulate),
                         "%s",
                         line+9);
@@ -1244,7 +1244,7 @@ void draw_geo_image_map (char *dir,
 
   if (geo_projection[0] == '\0')
     // default
-    xastir_snprintf(geo_projection,
+    astir_snprintf(geo_projection,
                     sizeof(geo_projection),
                     "LatLon");
   //fprintf(stderr,"Map Projection: %s\n",geo_projection);
@@ -1440,7 +1440,7 @@ void draw_geo_image_map (char *dir,
     url_e = (int)(left_e / t_scale); // N/E of the map corner
 
 
-    xastir_snprintf(fileimg, sizeof(fileimg),
+    astir_snprintf(fileimg, sizeof(fileimg),
                     "http://terraservice.net/download.ashx?t=%d\046s=%d\046x=%d\046y=%d\046z=%d\046w=%d\046h=%d",
                     //            "http://terraserver-usa.net/download.ashx?t=%d\046s=%d\046x=%d\046y=%d\046z=%d\046w=%d\046h=%d",
                     terraserver_flag,   // 1, 2, 3, or 4
@@ -1466,7 +1466,7 @@ void draw_geo_image_map (char *dir,
   //   and it's wrong if the '\n' is missing at the end...
 
   /*
-   * Here are the corners of our viewport, using the Xastir
+   * Here are the corners of our viewport, using the Astir
    * coordinate system.  Notice that Y is upside down:
    *
    *   left edge of view = NW_corner_longitude
@@ -1477,7 +1477,7 @@ void draw_geo_image_map (char *dir,
    * The corners of our map will soon be (after translating the
    * tiepoints to the corners if they're not already there):
    *
-   *   left edge of map = tp[0].x_long   in Xastir format
+   *   left edge of map = tp[0].x_long   in Astir format
    *  right edge of map = tp[1].x_long
    *    top edge of map = tp[0].y_lat
    * bottom edge of map = tp[1].y_lat
@@ -1561,7 +1561,7 @@ void draw_geo_image_map (char *dir,
 #ifdef HAVE_MAGICK
       GetExceptionInfo(&exception);
       image_info=CloneImageInfo((ImageInfo *) NULL);
-      xastir_snprintf(image_info->filename,
+      astir_snprintf(image_info->filename,
                       sizeof(image_info->filename),
                       "%s",
                       fileimg);
@@ -1574,7 +1574,7 @@ void draw_geo_image_map (char *dir,
       }
 
       // We do a test read first to see if the file exists, so we
-      // don't kill Xastir in the ReadImage routine.
+      // don't kill Astir in the ReadImage routine.
       f = fopen (image_info->filename, "r");
       if (f == NULL)
       {
@@ -1689,7 +1689,7 @@ void draw_geo_image_map (char *dir,
     {
       // Force the extents to the edges of the earth for the
       // index file.
-      index_update_xastir(filenm, // Filename only
+      index_update_astir(filenm, // Filename only
                           64800000l,      // Bottom
                           0l,             // Top
                           0l,             // Left
@@ -1698,7 +1698,7 @@ void draw_geo_image_map (char *dir,
     }
     else
     {
-      index_update_xastir(filenm, // Filename only
+      index_update_astir(filenm, // Filename only
                           tp[1].y_lat,    // Bottom
                           tp[0].y_lat,    // Top
                           tp[0].x_long,   // Left
@@ -1707,7 +1707,7 @@ void draw_geo_image_map (char *dir,
     }
 
     // Update statusline
-    xastir_snprintf(map_it,
+    astir_snprintf(map_it,
                     sizeof(map_it),
                     langcode ("BBARSTA039"),
                     short_filenm);
@@ -1767,7 +1767,7 @@ void draw_geo_image_map (char *dir,
   }
 
   // Update statusline
-  xastir_snprintf(map_it,
+  astir_snprintf(map_it,
                   sizeof(map_it),
                   langcode ("BBARSTA028"),
                   short_filenm);
@@ -1785,8 +1785,8 @@ void draw_geo_image_map (char *dir,
   // (to keep the filename distinct for different users), and to check
   // the timestamp on the map file.  If it's older than xx minutes, go
   // get another one.  Make sure to delete the temp files when closing
-  // Xastir.  It'd probably be good to check for old files and delete
-  // them when starting Xastir as well.
+  // Astir.  It'd probably be good to check for old files and delete
+  // them when starting Astir as well.
 
   // Check to see if we have to use "wget" to go get an internet map
   if ( (strncasecmp ("http", fileimg, 4) == 0)
@@ -1858,7 +1858,7 @@ void draw_geo_image_map (char *dir,
 
       if (nocache)
       {
-        xastir_snprintf(local_filename,
+        astir_snprintf(local_filename,
                         sizeof(local_filename),
                         "%s/map.%s",
                         get_user_base_dir("tmp", temp_file_path, sizeof(temp_file_path)),ext);
@@ -1866,7 +1866,7 @@ void draw_geo_image_map (char *dir,
       else
       {
         cache_file_id = map_cache_fileid();
-        xastir_snprintf(local_filename,
+        astir_snprintf(local_filename,
                         sizeof(local_filename),
                         "%s/map_%s.%s",
                         get_user_base_dir("map_cache", temp_file_path, sizeof(temp_file_path)),
@@ -1877,7 +1877,7 @@ void draw_geo_image_map (char *dir,
 
 #else   // USE_MAP_CACHE
 
-    xastir_snprintf(local_filename,
+    astir_snprintf(local_filename,
                     sizeof(local_filename),
                     "%s/map.%s",
                     get_user_base_dir("tmp", temp_file_path, sizeof(temp_file_path)),ext);
@@ -1920,7 +1920,7 @@ void draw_geo_image_map (char *dir,
     // We now re-use the "file" variable.  It'll hold the
     //name of the map file now instead of the .geo file.
     // Tell ImageMagick where to find it
-    xastir_snprintf(file, sizeof(file), "%s", local_filename);
+    astir_snprintf(file, sizeof(file), "%s", local_filename);
 #endif  // HAVE_MAGICK
 
   }
@@ -1930,7 +1930,7 @@ void draw_geo_image_map (char *dir,
 
     // We now re-use the "file" variable.  It'll hold the
     //name of the map file now instead of the .geo file.
-    xastir_snprintf(file, sizeof(file), "%s", fileimg);
+    astir_snprintf(file, sizeof(file), "%s", fileimg);
   }
 
   //fprintf(stderr,"File = %s\n",file);
@@ -1949,7 +1949,7 @@ void draw_geo_image_map (char *dir,
 #ifdef HAVE_MAGICK
   GetExceptionInfo(&exception);
   image_info=CloneImageInfo((ImageInfo *) NULL);
-  xastir_snprintf(image_info->filename,
+  astir_snprintf(image_info->filename,
                   sizeof(image_info->filename),
                   "%s",
                   file);
@@ -1962,7 +1962,7 @@ void draw_geo_image_map (char *dir,
   }
 
   // We do a test read first to see if the file exists, so we
-  // don't kill Xastir in the ReadImage routine.
+  // don't kill Astir in the ReadImage routine.
   f = fopen (image_info->filename, "r");
   if (f == NULL)
   {
@@ -2051,7 +2051,7 @@ void draw_geo_image_map (char *dir,
       imagemagick_options.r_gamma = 0.1;  // 0.0 is black and negative is really wacky
     }
 
-    xastir_snprintf(gamma, sizeof(gamma), "%.1f", imagemagick_options.r_gamma);
+    astir_snprintf(gamma, sizeof(gamma), "%.1f", imagemagick_options.r_gamma);
   }
   else if (imagemagick_options.gamma_flag == 3)
   {
@@ -2061,7 +2061,7 @@ void draw_geo_image_map (char *dir,
     imagemagick_options.r_gamma += imagemagick_gamma_adjust;
     imagemagick_options.g_gamma += imagemagick_gamma_adjust;
     imagemagick_options.b_gamma += imagemagick_gamma_adjust;
-    xastir_snprintf(gamma, sizeof(gamma), "%.1f,%.1f,%.1f",
+    astir_snprintf(gamma, sizeof(gamma), "%.1f,%.1f,%.1f",
                     imagemagick_options.r_gamma,
                     imagemagick_options.g_gamma,
                     imagemagick_options.b_gamma);
@@ -2176,7 +2176,7 @@ void draw_geo_image_map (char *dir,
 
   temp_i = (int)(raster_map_intensity * 100.0);
 
-  xastir_snprintf(tempstr,
+  astir_snprintf(tempstr,
   sizeof(tempstr),
   "%d, 100, 100",
   temp_i);
@@ -2505,7 +2505,7 @@ void draw_geo_image_map (char *dir,
   width  = xpm_width;
   height = xpm_height;
 #else // NO_XPM
-  fprintf(stderr,"Xastir was configured with neither XPM library nor (Image/Graphics)Magick, cannot display map %s\n",filenm);
+  fprintf(stderr,"Astir was configured with neither XPM library nor (Image/Graphics)Magick, cannot display map %s\n",filenm);
 #endif // NO_XPM
 #endif  // HAVE_MAGICK
 
@@ -2662,7 +2662,7 @@ void draw_geo_image_map (char *dir,
       scr_xp = -1;
       // loop over map pixel columns
       map_act = 0;
-      scale_x_nm = calc_dscale_x(0,(long)c_y) / 1852.0;  // nm per Xastir coordinate
+      scale_x_nm = calc_dscale_x(0,(long)c_y) / 1852.0;  // nm per Astir coordinate
       for (map_x = map_x_min, c_x = (double)c_x_min; map_x <= map_x_max; map_x++, c_x += c_dx)
       {
         scr_x = (c_x - NW_corner_longitude) / scale_x;
@@ -2679,7 +2679,7 @@ void draw_geo_image_map (char *dir,
             //corrfact = fabs(ew_ofs/dist)*3.0;
             //corrfact = 1.0-1.0*(0.5*map_y_0 / map_y_ctr);
             corrfact = 1.0;
-            c_y_a = (fabs(dist) - sqrt((double)(dist*dist - ew_ofs*ew_ofs)))*6000.0; // in Xastir units
+            c_y_a = (fabs(dist) - sqrt((double)(dist*dist - ew_ofs*ew_ofs)))*6000.0; // in Astir units
             if (dist < 0)           // S
             {
               map_y = map_y_0 + (long)(corrfact*c_y_a / map_c_dy);  // coord per pixel

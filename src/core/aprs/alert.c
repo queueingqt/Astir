@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -51,7 +51,7 @@
 //     Unset            ?
 //
 //
-// Here's how Xastir breaks down an alert into an alert struct:
+// Here's how Astir breaks down an alert into an alert struct:
 //
 // SFONPW>APRS::NWS-ADVIS:191700z,WIND,CA_Z007,CA_Z065, ALAMEDA AND CON & NAPA COUNTY {JDIAA
 // |----|       |-------| |-----| |--| |-----| |-----|                                 |-|
@@ -212,7 +212,7 @@
 // didn't want. Even though the NWS sends "AZZ148" just as if it
 // were to be found in the z_mmddyy.dbf (warning zone) type file,
 // wxsvr knows it is coming out of a "Fire Weather" type product and
-// can substitute "AZF148" .  Client software (read xastir &
+// can substitute "AZF148" .  Client software (read astir &
 // Ui-view) would know to look in the fireweather shapefile.  If
 // someone doesn't have the fire shapefile loaded, it would just be
 // ignored (I think)."
@@ -299,7 +299,7 @@
 // removed: #include <Xm/XmAll.h>   (this file names no X type;
 //          what it actually needed from it was the C library headers below)
 
-#include "core/xastir.h"
+#include "core/astir.h"
 #include "core/globals.h"
 #include "core/aprs/alert.h"
 #include "core/util/util.h"
@@ -354,7 +354,7 @@ int alert_redraw_on_update = 0;
 //
 void alert_fill_unique_string(alert_entry *alert)
 {
-  xastir_snprintf(alert->unique_string,
+  astir_snprintf(alert->unique_string,
                   sizeof(alert->unique_string),
                   "%s%s%c%c%c%c",
                   alert->from,
@@ -570,7 +570,7 @@ void add_wx_alert_to_hash(char *unique_string, alert_entry *alert_record)
   new_record = (alert_entry*)malloc(sizeof(alert_entry));
   CHECKMALLOC(new_record);
 
-  xastir_snprintf(new_unique_str, 50, "%s", unique_string);
+  astir_snprintf(new_unique_str, 50, "%s", unique_string);
 
   memcpy(new_record, alert_record, sizeof(alert_entry));
 
@@ -1072,7 +1072,7 @@ int alert_on_screen(void)
 // Called from alert_data_add() function.
 //
 //
-// Here's how Xastir breaks down an alert into an alert struct:
+// Here's how Astir breaks down an alert into an alert struct:
 //
 // SFONPW>APRS::NWS-ADVIS:191700z,WIND,CA_Z007,CA_Z065, ALAMEDA AND CON & NAPA COUNTY {JDIAA
 // |----|       |-------| |-----| |--| |-----| |-----|                                 |-|
@@ -1427,7 +1427,7 @@ void alert_build_list(Message *fill)
 
 
         // Snag the ALPHA portion
-        xastir_snprintf(prefix,
+        astir_snprintf(prefix,
                         sizeof(prefix),
                         "%s",
                         ptr);
@@ -1442,7 +1442,7 @@ void alert_build_list(Message *fill)
         // Snag the NUMERIC portion.  Note that the field
         // width can vary between 1 and 3.  The leading
         // zeroes have been removed.
-        xastir_snprintf(temp_suffix,
+        astir_snprintf(temp_suffix,
                         sizeof(temp_suffix),
                         "%s",
                         ptr);
@@ -1467,7 +1467,7 @@ void alert_build_list(Message *fill)
         // temp_suffix should now contain something like
         // "039" or "45" or "2".  Add leading zeroes to give
         // "suffix" a length of 3.
-        xastir_snprintf(suffix,
+        astir_snprintf(suffix,
                         sizeof(suffix),
                         "000");
         switch (strlen(temp_suffix))
@@ -1480,7 +1480,7 @@ void alert_build_list(Message *fill)
             suffix[2] = temp_suffix[1];
             break;
           case 3: // Copy all three chars across
-            xastir_snprintf(suffix,
+            astir_snprintf(suffix,
                             sizeof(suffix),
                             "%s",
                             temp_suffix);
@@ -1528,7 +1528,7 @@ void alert_build_list(Message *fill)
 
           // Break out of this loop if we don't find an
           // alpha character fairly quickly.  That way the
-          // Xastir main thread can't hang in this loop
+          // Astir main thread can't hang in this loop
           // forever if the input string is malformed.
           if (iterations > 30)
           {
@@ -1551,7 +1551,7 @@ void alert_build_list(Message *fill)
 
             // Snag the NUMERIC portion.  May be between
             // 1 and three digits long.
-            xastir_snprintf(ending,
+            astir_snprintf(ending,
                             sizeof(ending),
                             "%s",
                             ptr);
@@ -1592,7 +1592,7 @@ void alert_build_list(Message *fill)
             end_number = (int)atoi(ending);
             for ( kk=start_number+1; kk<=end_number; kk++)
             {
-              xastir_snprintf(suffix,4,"%03d",kk);
+              astir_snprintf(suffix,4,"%03d",kk);
 
               if (debug_level & 2)
               {
@@ -1635,7 +1635,7 @@ void alert_build_list(Message *fill)
               // Snag the NUMERIC portion.  Note that the field
               // width can vary between 1 and 3.  The leading
               // zeroes have been removed.
-              xastir_snprintf(temp_suffix,
+              astir_snprintf(temp_suffix,
                               sizeof(temp_suffix),
                               "%s",
                               ptr);
@@ -1668,7 +1668,7 @@ void alert_build_list(Message *fill)
               // temp_suffix should now contain something like
               // "039" or "45" or "2".  Add leading zeroes to give
               // "suffix" a length of 3.
-              xastir_snprintf(suffix,
+              astir_snprintf(suffix,
                               sizeof(suffix),
                               "000");
               switch (strlen(temp_suffix))
@@ -1681,7 +1681,7 @@ void alert_build_list(Message *fill)
                   suffix[2] = temp_suffix[1];
                   break;
                 case 3: // Copy all three chars across
-                  xastir_snprintf(suffix,
+                  astir_snprintf(suffix,
                                   sizeof(suffix),
                                   "%s",
                                   temp_suffix);
@@ -1810,7 +1810,7 @@ void alert_build_list(Message *fill)
 
 
         // Snag the ALPHA portion
-        xastir_snprintf(prefix,
+        astir_snprintf(prefix,
                         sizeof(prefix),
                         "%s",
                         ptr);
@@ -1835,7 +1835,7 @@ void alert_build_list(Message *fill)
         // Snag the NUMERIC portion.  Note that the field
         // width can vary between 1 and 3.  The leading
         // zeroes have been removed.
-        xastir_snprintf(temp_suffix,
+        astir_snprintf(temp_suffix,
                         sizeof(temp_suffix),
                         "%s",
                         ptr);
@@ -1860,7 +1860,7 @@ void alert_build_list(Message *fill)
         // temp_suffix should now contain something like
         // "039" or "45" or "2".  Add leading zeroes to give
         // "suffix" a length of 3.
-        xastir_snprintf(suffix,
+        astir_snprintf(suffix,
                         sizeof(suffix),
                         "000");
         switch (strlen(temp_suffix))
@@ -1873,7 +1873,7 @@ void alert_build_list(Message *fill)
             suffix[2] = temp_suffix[1];
             break;
           case 3: // Copy all three chars across
-            xastir_snprintf(suffix,
+            astir_snprintf(suffix,
                             sizeof(suffix),
                             "%s",
                             temp_suffix);
@@ -1921,7 +1921,7 @@ void alert_build_list(Message *fill)
 
           // Break out of this loop if we don't find an
           // alpha character fairly quickly.  That way the
-          // Xastir main thread can't hang in this loop
+          // Astir main thread can't hang in this loop
           // forever if the input string is malformed.
           if (iterations > 30)
           {
@@ -1944,7 +1944,7 @@ void alert_build_list(Message *fill)
 
             // Snag the NUMERIC portion.  May be between
             // 1 and three digits long.
-            xastir_snprintf(ending,
+            astir_snprintf(ending,
                             sizeof(ending),
                             "%s",
                             ptr);
@@ -1985,7 +1985,7 @@ void alert_build_list(Message *fill)
             end_number = (int)atoi(ending);
             for ( kk=start_number+1; kk<=end_number; kk++)
             {
-              xastir_snprintf(suffix,4,"%03d",kk);
+              astir_snprintf(suffix,4,"%03d",kk);
 
               if (debug_level & 2)
               {
@@ -2028,7 +2028,7 @@ void alert_build_list(Message *fill)
               // Snag the NUMERIC portion.  Note that the field
               // width can vary between 1 and 3.  The leading
               // zeroes have been removed.
-              xastir_snprintf(temp_suffix,
+              astir_snprintf(temp_suffix,
                               sizeof(temp_suffix),
                               "%s",
                               ptr);
@@ -2061,7 +2061,7 @@ void alert_build_list(Message *fill)
               // temp_suffix should now contain something like
               // "039" or "45" or "2".  Add leading zeroes to give
               // "suffix" a length of 3.
-              xastir_snprintf(suffix,
+              astir_snprintf(suffix,
                               sizeof(suffix),
                               "000");
               switch (strlen(temp_suffix))
@@ -2074,7 +2074,7 @@ void alert_build_list(Message *fill)
                   suffix[2] = temp_suffix[1];
                   break;
                 case 3: // Copy all three chars across
-                  xastir_snprintf(suffix,
+                  astir_snprintf(suffix,
                                   sizeof(suffix),
                                   "%s",
                                   temp_suffix);
@@ -2157,18 +2157,18 @@ void alert_build_list(Message *fill)
       // the strings.
       for (jj = 4; jj > 0; jj--)
       {
-        xastir_snprintf(&title[jj][0],
+        astir_snprintf(&title[jj][0],
                         TITLE_SIZE,
                         "%s",
                         &title[jj-1][0]);
       }
 
-      xastir_snprintf(&title[0][0],
+      astir_snprintf(&title[0][0],
                       TITLE_SIZE,
                       "%s",
                       entry.alert_tag);
 
-      xastir_snprintf(entry.alert_tag,
+      astir_snprintf(entry.alert_tag,
                       sizeof(entry.alert_tag),
                       "%s",
                       entry.activity);
@@ -2176,7 +2176,7 @@ void alert_build_list(Message *fill)
 
       // Shouldn't we clear out entry.activity in this
       // case???  We've determined it's not a date/time value.
-      xastir_snprintf(entry.activity,sizeof(entry.activity),"------z");
+      astir_snprintf(entry.activity,sizeof(entry.activity),"------z");
       entry.expiration = sec_now() + (24 * 60 * 60);   // Add a day
     }
     else
@@ -2235,7 +2235,7 @@ void alert_build_list(Message *fill)
           // Found upper-case letter
           // Need to take ord(c) - 55 to get the number
           char temp_string[5];
-          xastir_snprintf(temp_string, sizeof(temp_string), "%02d", (int)c - 55);
+          astir_snprintf(temp_string, sizeof(temp_string), "%02d", (int)c - 55);
           memcpy(temp, temp_string, 2);
           temp[2] = '\0'; // Terminate the string
         }
@@ -2245,7 +2245,7 @@ void alert_build_list(Message *fill)
           // Found lower-case letter
           // Need to take ord(c) - 61 to get the number
           char temp_string[5];
-          xastir_snprintf(temp_string, sizeof(temp_string), "%02d", (int)c - 61);
+          astir_snprintf(temp_string, sizeof(temp_string), "%02d", (int)c - 61);
           memcpy(temp, temp_string, 2);
           temp[2] = '\0'; // Terminate the string
         }
@@ -2259,7 +2259,7 @@ void alert_build_list(Message *fill)
         fprintf(stderr,"Seq: %s,\tIssue_time: %s\n",fill->seq,date_time);
       }
 
-      xastir_snprintf(entry.issue_date_time,
+      astir_snprintf(entry.issue_date_time,
                       sizeof(entry.issue_date_time),
                       "%s",
                       date_time);
@@ -2267,7 +2267,7 @@ void alert_build_list(Message *fill)
     }
     else
     {
-      xastir_snprintf(entry.issue_date_time,
+      astir_snprintf(entry.issue_date_time,
                       sizeof(entry.issue_date_time),
                       "%s",
                       "312359z");
@@ -2330,7 +2330,7 @@ void alert_build_list(Message *fill)
     {
 
       // Copy into our entry.title variable
-      xastir_snprintf(entry.title,
+      astir_snprintf(entry.title,
                       sizeof(entry.title),
                       "%s",
                       title_ptr[ii]);
@@ -2381,11 +2381,11 @@ void alert_build_list(Message *fill)
         continue;
       }
 
-      xastir_snprintf(entry.from,
+      astir_snprintf(entry.from,
                       sizeof(entry.from),
                       "%s",
                       fill->from_call_sign);
-      xastir_snprintf(entry.to,
+      astir_snprintf(entry.to,
                       sizeof(entry.to),
                       "%s",
                       fill->call_sign);
@@ -2477,28 +2477,28 @@ void alert_build_list(Message *fill)
         {
           // Or new one _is_ a CANCEL
           list_ptr->expiration = entry.expiration;
-          xastir_snprintf(list_ptr->activity,
+          astir_snprintf(list_ptr->activity,
                           sizeof(list_ptr->activity),
                           "%s",
                           entry.activity);
-          xastir_snprintf(list_ptr->alert_tag,
+          astir_snprintf(list_ptr->alert_tag,
                           sizeof(list_ptr->alert_tag),
                           "%s",
                           entry.alert_tag);
           list_ptr->alert_level = entry.alert_level;
-          xastir_snprintf(list_ptr->seq,
+          astir_snprintf(list_ptr->seq,
                           sizeof(list_ptr->seq),
                           "%s",
                           entry.seq);
-          xastir_snprintf(list_ptr->from,
+          astir_snprintf(list_ptr->from,
                           sizeof(list_ptr->from),
                           "%s",
                           entry.from);
-          xastir_snprintf(list_ptr->to,
+          astir_snprintf(list_ptr->to,
                           sizeof(list_ptr->to),
                           "%s",
                           entry.to);
-          xastir_snprintf(list_ptr->issue_date_time,
+          astir_snprintf(list_ptr->issue_date_time,
                           sizeof(list_ptr->issue_date_time),
                           "%s",
                           entry.issue_date_time);

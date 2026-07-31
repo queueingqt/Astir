@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -51,8 +51,8 @@
 #include <X11/Xatom.h>
 #include <X11/Shell.h>
 
-#include "core/xastir.h"
-#include "ui/motif/xastir_gui.h"
+#include "core/astir.h"
+#include "ui/motif/astir_gui.h"
 #include "ui/motif/wx_gui.h"
 #include "ui/motif/main_gui.h"
 #include "ui/motif/draw_symbols_gui.h"
@@ -76,7 +76,7 @@ Widget Display_bulletins_text = NULL;
 Widget dist_data = NULL;
 Widget zero_bulletin_data = NULL;
 
-static xastir_mutex display_bulletins_dialog_lock;
+static astir_mutex display_bulletins_dialog_lock;
 
 int new_bulletin_flag = 0;
 int new_bulletin_count = 0;
@@ -145,7 +145,7 @@ void bulletin_message(char *call_sign, char *tag, char *packet_message, time_t s
   (void)strftime(time_str,sizeof(time_str),"%b %d %H:%M",tmp);
 
   distance = distance_from_my_station(call_sign,temp_my_course, english_units);
-  xastir_snprintf(temp, sizeof(temp), "%-9s:%-4s (%s %6.1f %s) %s\n",
+  astir_snprintf(temp, sizeof(temp), "%-9s:%-4s (%s %6.1f %s) %s\n",
                   call_sign, &tag[3], time_str, distance,
                   english_units ? langcode("UNIOP00004"): langcode("UNIOP00005"),
                   packet_message);
@@ -864,7 +864,7 @@ void Bulletins(Widget UNUSED(w), XtPointer UNUSED(clientData), XtPointer UNUSED(
     delw = XmInternAtom(XtDisplay(Display_bulletins_dialog),"WM_DELETE_WINDOW", FALSE);
     XmAddWMProtocolCallback(Display_bulletins_dialog, delw, Display_bulletins_destroy_shell, (XtPointer)Display_bulletins_dialog);
 
-    xastir_snprintf(temp, sizeof(temp), "%d", bulletin_range);
+    astir_snprintf(temp, sizeof(temp), "%d", bulletin_range);
     XmTextFieldSetString(dist_data, temp);
 
     XtManageChild(form);

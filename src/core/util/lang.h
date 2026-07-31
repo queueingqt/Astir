@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -21,8 +21,8 @@
  * Look at the README for more information on the program.
  */
 
-#ifndef XASTIR_LANG_H
-#define XASTIR_LANG_H
+#ifndef ASTIR_LANG_H
+#define ASTIR_LANG_H
 
 #include "core/util/encoding.h"
 
@@ -37,4 +37,4 @@ extern char langcode_hotkey(char *code);
 
 
 
-#endif  /* XASTIR_LANG_H */
+#endif  /* ASTIR_LANG_H */

@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -56,7 +56,7 @@
 // and it goes through the msg_window_* callbacks in xa_ui.h now.  Every
 // remaining Xm* name in this file is inside a comment.
 
-#include "core/xastir.h"
+#include "core/astir.h"
 #include "core/globals.h"
 #include "core/main.h"
 #include "core/render/draw_symbols.h"
@@ -176,7 +176,7 @@ float emergency_range = 280.0;  // Default is 4hrs @ 70mph distance
 CADRow *CAD_list_head = NULL;   // pointer to first element in CAD objects list
 
 void draw_trail(DataRow *fill, int solid);
-void export_trail(DataRow *p_station);          // export trail of one or all stations to xastir export file
+void export_trail(DataRow *p_station);          // export trail of one or all stations to astir export file
 //void export_trail_as_kml(DataRow *p_station);   // export trail of one or all stations to kml file
 
 int fcc_lookup_pushed = 0;
@@ -505,14 +505,14 @@ void store_most_recent_ack(char *callsign, char *ack)
   char call[MAX_CALLSIGN+1];
   char new_ack[5+1];
 
-  xastir_snprintf(call,
+  astir_snprintf(call,
                   sizeof(call),
                   "%s",
                   callsign);
   remove_trailing_spaces(call);
 
   // Get a copy of "ack".  We might need to change it.
-  xastir_snprintf(new_ack,
+  astir_snprintf(new_ack,
                   sizeof(new_ack),
                   "%s",
                   ack);
@@ -547,7 +547,7 @@ void store_most_recent_ack(char *callsign, char *ack)
   if (done)   // Found it.  Update the ack field.
   {
     //fprintf(stderr,"Found callsign %s on recent ack list, Old:%s, New:%s\n",call,p->ack,new_ack);
-    xastir_snprintf(p->ack,sizeof(p->ack),"%s",new_ack);
+    astir_snprintf(p->ack,sizeof(p->ack),"%s",new_ack);
   }
   else    // Not found.  Add a new record to the beginning of the
   {
@@ -556,8 +556,8 @@ void store_most_recent_ack(char *callsign, char *ack)
     p = (ack_record *)malloc(sizeof(ack_record));
     CHECKMALLOC(p);
 
-    xastir_snprintf(p->callsign,sizeof(p->callsign),"%s",call);
-    xastir_snprintf(p->ack,sizeof(p->ack),"%s",new_ack);
+    astir_snprintf(p->callsign,sizeof(p->callsign),"%s",call);
+    astir_snprintf(p->ack,sizeof(p->ack),"%s",new_ack);
     p->next = ack_list_head;
     ack_list_head = p;
   }
@@ -574,7 +574,7 @@ char *get_most_recent_ack(char *callsign)
   int done = 0;
   char call[MAX_CALLSIGN+1];
 
-  xastir_snprintf(call,
+  astir_snprintf(call,
                   sizeof(call),
                   "%s",
                   callsign);
@@ -683,11 +683,11 @@ int msg_comp_active(const void *a, const void *b)
   char temp_a[MAX_CALLSIGN+MAX_CALLSIGN+MAX_MESSAGE_ORDER+2];
   char temp_b[MAX_CALLSIGN+MAX_CALLSIGN+MAX_MESSAGE_ORDER+2];
 
-  xastir_snprintf(temp_a, sizeof(temp_a), "%c%s%s%s",
+  astir_snprintf(temp_a, sizeof(temp_a), "%c%s%s%s",
                   ((Message*)a)->active, ((Message*)a)->call_sign,
                   ((Message*)a)->from_call_sign,
                   ((Message*)a)->seq);
-  xastir_snprintf(temp_b, sizeof(temp_b), "%c%s%s%s",
+  astir_snprintf(temp_b, sizeof(temp_b), "%c%s%s%s",
                   ((Message*)b)->active, ((Message*)b)->call_sign,
                   ((Message*)b)->from_call_sign,
                   ((Message*)b)->seq);
@@ -704,10 +704,10 @@ int msg_comp_data(const void *a, const void *b)
   char temp_a[MAX_CALLSIGN+MAX_CALLSIGN+MAX_MESSAGE_ORDER+1];
   char temp_b[MAX_CALLSIGN+MAX_CALLSIGN+MAX_MESSAGE_ORDER+1];
 
-  xastir_snprintf(temp_a, sizeof(temp_a), "%s%s%s",
+  astir_snprintf(temp_a, sizeof(temp_a), "%s%s%s",
                   msg_data[*(long*)a].call_sign, msg_data[*(long *)a].from_call_sign,
                   msg_data[*(long *)a].seq);
-  xastir_snprintf(temp_b, sizeof(temp_b), "%s%s%s", msg_data[*(long*)b].call_sign,
+  astir_snprintf(temp_b, sizeof(temp_b), "%s%s%s", msg_data[*(long*)b].call_sign,
                   msg_data[*(long *)b].from_call_sign, msg_data[*(long *)b].seq);
 
   return(strcmp(temp_a, temp_b));
@@ -816,7 +816,7 @@ long msg_find_data(Message *m_fill)
   char tempfill[MAX_CALLSIGN+MAX_CALLSIGN+MAX_MESSAGE_ORDER+1];
 
 
-  xastir_snprintf(tempfill, sizeof(tempfill), "%s%s%s",
+  astir_snprintf(tempfill, sizeof(tempfill), "%s%s%s",
                   m_fill->call_sign,
                   m_fill->from_call_sign,
                   m_fill->seq);
@@ -834,7 +834,7 @@ long msg_find_data(Message *m_fill)
     {
 
       /* get data for record start */
-      xastir_snprintf(tempfile, sizeof(tempfile), "%s%s%s",
+      astir_snprintf(tempfile, sizeof(tempfile), "%s%s%s",
                       msg_data[msg_index[record_start]].call_sign,
                       msg_data[msg_index[record_start]].from_call_sign,
                       msg_data[msg_index[record_start]].seq);
@@ -849,7 +849,7 @@ long msg_find_data(Message *m_fill)
       else   /* get data for record end */
       {
 
-        xastir_snprintf(tempfile, sizeof(tempfile), "%s%s%s",
+        astir_snprintf(tempfile, sizeof(tempfile), "%s%s%s",
                         msg_data[msg_index[record_end]].call_sign,
                         msg_data[msg_index[record_end]].from_call_sign,
                         msg_data[msg_index[record_end]].seq);
@@ -869,7 +869,7 @@ long msg_find_data(Message *m_fill)
         {
           /* no mid for compare check to see if in the middle */
           done=1;
-          xastir_snprintf(tempfile, sizeof(tempfile), "%s%s%s",
+          astir_snprintf(tempfile, sizeof(tempfile), "%s%s%s",
                           msg_data[msg_index[record_mid]].call_sign,
                           msg_data[msg_index[record_mid]].from_call_sign,
                           msg_data[msg_index[record_mid]].seq);
@@ -882,7 +882,7 @@ long msg_find_data(Message *m_fill)
       }
       if (!done)   /* get data for record mid */
       {
-        xastir_snprintf(tempfile, sizeof(tempfile), "%s%s%s",
+        astir_snprintf(tempfile, sizeof(tempfile), "%s%s%s",
                         msg_data[msg_index[record_mid]].call_sign,
                         msg_data[msg_index[record_mid]].from_call_sign,
                         msg_data[msg_index[record_mid]].seq);
@@ -1483,7 +1483,7 @@ time_t msg_data_add(char *call_sign, char *from_call, char *data,
   (void)remove_leading_spaces(m_fill.seq);
 
   // Create a timestamp from the current time
-  xastir_snprintf(m_fill.packet_time,
+  astir_snprintf(m_fill.packet_time,
                   sizeof(m_fill.packet_time),
                   "%s",
                   get_time(time_data));
@@ -1580,7 +1580,7 @@ void alert_data_add(char *call_sign, char *from_call, char *data,
 
     // Attempt to reconstruct the original weather alert packet
     // here, minus the path.
-    xastir_snprintf(temp_msg,
+    astir_snprintf(temp_msg,
                     sizeof(temp_msg),
                     "%s>APRS::%-9s:%s{%s",
                     from_call,
@@ -1638,7 +1638,7 @@ void alert_data_add(char *call_sign, char *from_call, char *data,
   (void)remove_leading_spaces(m_fill.seq);
 
   // Create a timestamp from the current time
-  xastir_snprintf(m_fill.packet_time,
+  astir_snprintf(m_fill.packet_time,
                   sizeof(m_fill.packet_time),
                   "%s",
                   get_time(time_data));
@@ -1858,7 +1858,7 @@ void update_messages(int force)
                 //fprintf(stderr,"acked: %d\n",msg_data[msg_index[j]].acked);
 
                 // Message matches so snag the important pieces into a string
-                xastir_snprintf(stemp, sizeof(stemp),
+                astir_snprintf(stemp, sizeof(stemp),
                                 "%c%c/%c%c %c%c:%c%c",
                                 msg_data[msg_index[j]].packet_time[0],
                                 msg_data[msg_index[j]].packet_time[1],
@@ -1880,21 +1880,21 @@ void update_messages(int force)
                 // If acked = 3 a cancel has occurred
                 if (msg_data[msg_index[j]].acked == 2)
                 {
-                  xastir_snprintf(prefix,
+                  astir_snprintf(prefix,
                                   sizeof(prefix),
                                   "%s ",
                                   langcode("WPUPMSB016") ); // "*TIMEOUT*"
                 }
                 else if (msg_data[msg_index[j]].acked == 3)
                 {
-                  xastir_snprintf(prefix,
+                  astir_snprintf(prefix,
                                   sizeof(prefix),
                                   "%s ",
                                   langcode("WPUPMSB017") ); // "*CANCELLED*"
                 }
                 else if (msg_data[msg_index[j]].acked == 4)
                 {
-                  xastir_snprintf(prefix,
+                  astir_snprintf(prefix,
                                   sizeof(prefix),
                                   "%s ",
                                   langcode("WPUPMSB018") ); // "*REJECTED*"
@@ -1906,7 +1906,7 @@ void update_messages(int force)
 
                 if (msg_data[msg_index[j]].interval)
                 {
-                  xastir_snprintf(interval_str,
+                  astir_snprintf(interval_str,
                                   sizeof(interval_str),
                                   ">%d/%lds",
                                   msg_data[msg_index[j]].tries + 1,
@@ -1924,7 +1924,7 @@ void update_messages(int force)
                 {
                   char display_message[MAX_MESSAGE_LENGTH+1];
 
-                  xastir_snprintf(display_message,
+                  astir_snprintf(display_message,
                                   sizeof(display_message),
                                   "%s",
                                   msg_data[msg_index[j]].message_line);
@@ -1933,7 +1933,7 @@ void update_messages(int force)
                     utf8_to_latin1_inplace(display_message);
                   }
 
-                  xastir_snprintf(temp2, sizeof(temp2),
+                  astir_snprintf(temp2, sizeof(temp2),
                                 "%s %-9s%s>%s%s\n",
                                 // Debug code.  Trying to find sorting error
                                 //"%ld  %s  %-9s>%s\n",
@@ -2496,7 +2496,7 @@ void  clear_sort_file(char *filename)
 {
   char ptr_filename[400];
 
-  xastir_snprintf(ptr_filename, sizeof(ptr_filename), "%s-ptr", filename);
+  astir_snprintf(ptr_filename, sizeof(ptr_filename), "%s-ptr", filename);
   (void)unlink(filename);
   (void)unlink(ptr_filename);
 }
@@ -2567,7 +2567,7 @@ long sort_input_database(char *filename, char *fill, int size)
   int done;
 
   ptr_size=(int)sizeof(new_data_ptr);
-  xastir_snprintf(ptr_filename, sizeof(ptr_filename), "%s-ptr", filename);
+  astir_snprintf(ptr_filename, sizeof(ptr_filename), "%s-ptr", filename);
 
   /* get first string to sort on */
   if (1 != sscanf(fill,"%1999s",tempfill))
@@ -2784,7 +2784,7 @@ int is_altnet(DataRow *p_station)
   }
 
   // Save for later
-  xastir_snprintf(temp2,
+  astir_snprintf(temp2,
                   sizeof(temp2),
                   "%s",
                   temp_altnet_call);
@@ -3433,7 +3433,7 @@ int extract_weather(DataRow *p_station, char *data, int compr)
     // if necessary.
     if (in_knots)
     {
-      xastir_snprintf(weather->wx_speed,
+      astir_snprintf(weather->wx_speed,
                       sizeof(weather->wx_speed),
                       "%03.0f",
                       atoi(speed) * 1.1508);  // Convert knots to mph
@@ -3441,13 +3441,13 @@ int extract_weather(DataRow *p_station, char *data, int compr)
     else
     {
       // Already in mph.  Copy w/no conversion.
-      xastir_snprintf(weather->wx_speed,
+      astir_snprintf(weather->wx_speed,
                       sizeof(weather->wx_speed),
                       "%s",
                       speed);
     }
 
-    xastir_snprintf(weather->wx_course,
+    astir_snprintf(weather->wx_course,
                     sizeof(weather->wx_course),
                     "%s",
                     course);
@@ -3473,11 +3473,11 @@ int extract_weather(DataRow *p_station, char *data, int compr)
 
     if (extract_weather_item(data,'h',2,weather->wx_hum))         // humidity (in %, 00 = 100%)
     {
-      xastir_snprintf(weather->wx_hum, sizeof(weather->wx_hum), "%03d",(atoi(weather->wx_hum)+99)%100+1);
+      astir_snprintf(weather->wx_hum, sizeof(weather->wx_hum), "%03d",(atoi(weather->wx_hum)+99)%100+1);
     }
 
     if (extract_weather_item(data,'b',5,weather->wx_baro))  // barometric pressure (1/10 mbar / 1/10 hPascal)
-      xastir_snprintf(weather->wx_baro,
+      astir_snprintf(weather->wx_baro,
                       sizeof(weather->wx_baro),
                       "%0.1f",
                       (float)(atoi(weather->wx_baro)/10.0));
@@ -3499,7 +3499,7 @@ int extract_weather(DataRow *p_station, char *data, int compr)
     (void)extract_weather_item(data,'F',3,weather->wx_fuel_temp); // Fuel Temperature in °F (RAWS)
 
     if (extract_weather_item(data,'f',2,weather->wx_fuel_moisture))// Fuel Moisture (RAWS) (in %, 00 = 100%)
-      xastir_snprintf(weather->wx_fuel_moisture,
+      astir_snprintf(weather->wx_fuel_moisture,
                       sizeof(weather->wx_fuel_moisture),
                       "%03d",
                       (atoi(weather->wx_fuel_moisture)+99)%100+1);
@@ -3509,7 +3509,7 @@ int extract_weather(DataRow *p_station, char *data, int compr)
     // now there should be the name of the weather station...
 
     // Create a timestamp from the current time
-    xastir_snprintf(weather->wx_time,
+    astir_snprintf(weather->wx_time,
                     sizeof(weather->wx_time),
                     "%s",
                     get_time(time_data));
@@ -3527,7 +3527,7 @@ int extract_weather(DataRow *p_station, char *data, int compr)
 //            wx_done=1;
 //            weather->wx_type=data[wx_strpos];
 //            if(strlen(data)>wx_strpos+1)
-//                xastir_snprintf(weather->wx_station,
+//                astir_snprintf(weather->wx_station,
 //                    sizeof(weather->wx_station),
 //                    "%s",
 //                    data+wx_strpos+1);
@@ -3650,7 +3650,7 @@ int extract_storm(DataRow *p_station, char *data, int UNUSED(compr) )
     // "wx_speed" we'd have to convert it to MPH.
     if (strcmp(speed,"   ") != 0 && strcmp(speed,"...") != 0)
     {
-      xastir_snprintf(p_station->speed,
+      astir_snprintf(p_station->speed,
                       sizeof(p_station->speed),
                       "%s",
                       speed);
@@ -3661,7 +3661,7 @@ int extract_storm(DataRow *p_station, char *data, int UNUSED(compr) )
     }
 
     if (strcmp(course,"   ") != 0 && strcmp(course,"...") != 0)
-      xastir_snprintf(p_station->course,
+      astir_snprintf(p_station->course,
                       sizeof(p_station->course),
                       "%s",
                       course);
@@ -3677,7 +3677,7 @@ int extract_storm(DataRow *p_station, char *data, int UNUSED(compr) )
     // Extract the sustained wind speed in knots
     if(extract_weather_item(p2,'/',3,weather->wx_speed))
       // Convert from knots to MPH
-      xastir_snprintf(weather->wx_speed,
+      astir_snprintf(weather->wx_speed,
                       sizeof(weather->wx_speed),
                       "%0.1f",
                       atof(weather->wx_speed) * 1.1508);
@@ -3687,7 +3687,7 @@ int extract_storm(DataRow *p_station, char *data, int UNUSED(compr) )
     // Extract gust speed in knots
     if (extract_weather_item(p2,'^',3,weather->wx_gust)) // gust (peak wind speed in knots)
       // Convert from knots to MPH
-      xastir_snprintf(weather->wx_gust,
+      astir_snprintf(weather->wx_gust,
                       sizeof(weather->wx_gust),
                       "%0.1f",
                       atof(weather->wx_gust) * 1.1508);
@@ -3697,7 +3697,7 @@ int extract_storm(DataRow *p_station, char *data, int UNUSED(compr) )
     // Pressure is already in millibars/hPa.  No conversion
     // needed.
     if (extract_weather_item(p2,'/',4,weather->wx_baro))  // barometric pressure (1/10 mbar / 1/10 hPascal)
-      xastir_snprintf(weather->wx_baro,
+      astir_snprintf(weather->wx_baro,
                       sizeof(weather->wx_baro),
                       "%0.1f",
                       atof(weather->wx_baro));
@@ -3717,7 +3717,7 @@ int extract_storm(DataRow *p_station, char *data, int UNUSED(compr) )
     //fprintf(stderr,"%s\n",data);
 
     // Create a timestamp from the current time
-    xastir_snprintf(weather->wx_time,
+    astir_snprintf(weather->wx_time,
                     sizeof(weather->wx_time),
                     "%s",
                     get_time(time_data));
@@ -3870,10 +3870,10 @@ static void extract_multipoints(DataRow *p_station,
     // Use the following formula to convert the char to the value:
     // (10 ^ ((c - 33) / 20)) / 10000 degrees
     //
-    // Finally we have to convert to Xastir units. Xastir stores coordinates
+    // Finally we have to convert to Astir units. Astir stores coordinates
     // as hudredths of seconds. There are 360,000 of those per degree, so we
     // need to multiply by that factor so our numbers will be converted to
-    // Xastir units.
+    // Astir units.
 
     p = p + 4;
 
@@ -3962,11 +3962,11 @@ static void extract_multipoints(DataRow *p_station,
         }
 
         // Add the offset to the object's position to obtain the position of the point.
-        // Note that we're working in Xastir coordinates, and in North America they
+        // Note that we're working in Astir coordinates, and in North America they
         // are exactly opposite to lat/lon (larger numbers are farther east and south).
         // An offset with a positive value means that the point should be north and/or
         // west of the object, so we have to *subtract* the offset to get the correct
-        // placement in Xastir coordinates.
+        // placement in Astir coordinates.
         // TODO: Consider what we should do in the other geographic quadrants. Should we
         // check here for the correct sign of the offset? Or should the program that
         // creates the offsets take that into account?
@@ -4305,7 +4305,7 @@ int store_trail_point(DataRow *p_station,
   if (ptr->prev != NULL)      // we have at least two points...
   {
     // Check whether distance between points is too far.  We
-    // must convert from degrees to the Xastir coordinate system
+    // must convert from degrees to the Astir coordinate system
     // units, which are 100th of a second.
     if (    labs(lon - ptr->prev->trail_long_pos) > (trail_segment_distance * 60*60*100) ||
             labs(lat - ptr->prev->trail_lat_pos)  > (trail_segment_distance * 60*60*100) )
@@ -4616,43 +4616,43 @@ void month2str(int month, char *str, int str_size)
   switch (month)
   {
     case  0:
-      xastir_snprintf(str,str_size,"Jan");
+      astir_snprintf(str,str_size,"Jan");
       break;
     case  1:
-      xastir_snprintf(str,str_size,"Feb");
+      astir_snprintf(str,str_size,"Feb");
       break;
     case  2:
-      xastir_snprintf(str,str_size,"Mar");
+      astir_snprintf(str,str_size,"Mar");
       break;
     case  3:
-      xastir_snprintf(str,str_size,"Apr");
+      astir_snprintf(str,str_size,"Apr");
       break;
     case  4:
-      xastir_snprintf(str,str_size,"May");
+      astir_snprintf(str,str_size,"May");
       break;
     case  5:
-      xastir_snprintf(str,str_size,"Jun");
+      astir_snprintf(str,str_size,"Jun");
       break;
     case  6:
-      xastir_snprintf(str,str_size,"Jul");
+      astir_snprintf(str,str_size,"Jul");
       break;
     case  7:
-      xastir_snprintf(str,str_size,"Aug");
+      astir_snprintf(str,str_size,"Aug");
       break;
     case  8:
-      xastir_snprintf(str,str_size,"Sep");
+      astir_snprintf(str,str_size,"Sep");
       break;
     case  9:
-      xastir_snprintf(str,str_size,"Oct");
+      astir_snprintf(str,str_size,"Oct");
       break;
     case 10:
-      xastir_snprintf(str,str_size,"Nov");
+      astir_snprintf(str,str_size,"Nov");
       break;
     case 11:
-      xastir_snprintf(str,str_size,"Dec");
+      astir_snprintf(str,str_size,"Dec");
       break;
     default:
-      xastir_snprintf(str,str_size,"   ");
+      astir_snprintf(str,str_size,"   ");
       break;
   }
 }
@@ -4667,28 +4667,28 @@ void wday2str(int wday, char *str, int str_size)
   switch (wday)
   {
     case  0:
-      xastir_snprintf(str,str_size,"Sun");
+      astir_snprintf(str,str_size,"Sun");
       break;
     case  1:
-      xastir_snprintf(str,str_size,"Mon");
+      astir_snprintf(str,str_size,"Mon");
       break;
     case  2:
-      xastir_snprintf(str,str_size,"Tue");
+      astir_snprintf(str,str_size,"Tue");
       break;
     case  3:
-      xastir_snprintf(str,str_size,"Wed");
+      astir_snprintf(str,str_size,"Wed");
       break;
     case  4:
-      xastir_snprintf(str,str_size,"Thu");
+      astir_snprintf(str,str_size,"Thu");
       break;
     case  5:
-      xastir_snprintf(str,str_size,"Fri");
+      astir_snprintf(str,str_size,"Fri");
       break;
     case  6:
-      xastir_snprintf(str,str_size,"Sat");
+      astir_snprintf(str,str_size,"Sat");
       break;
     default:
-      xastir_snprintf(str,str_size,"   ");
+      astir_snprintf(str,str_size,"   ");
       break;
   }
 }
@@ -4737,7 +4737,7 @@ void exp_trailpos(FILE *f,long lat,long lon,time_t sec,long speed,int course,lon
         fprintf(f,"0 ");
       }
       break;
-    case EXPORT_XASTIR_TRACK:
+    case EXPORT_ASTIR_TRACK:
     default:
       if (newtrk)
       {
@@ -4793,7 +4793,7 @@ void exp_trailpos(FILE *f,long lat,long lon,time_t sec,long speed,int course,lon
  *
  *  @param f handle of file to write to
  *  @param p_station pointer to station to write
- *  @param export_format file format to use (xastir tracklog or kml).
+ *  @param export_format file format to use (astir tracklog or kml).
  */
 void exp_trailstation(FILE *f, DataRow *p_station, int export_format)
 {
@@ -4917,7 +4917,7 @@ void exp_trailstation(FILE *f, DataRow *p_station, int export_format)
       }
       break;
 
-    case EXPORT_XASTIR_TRACK:
+    case EXPORT_ASTIR_TRACK:
     default:
       if (p_station->origin[0] == '\0')
       {
@@ -4965,13 +4965,13 @@ void exp_trailstation(FILE *f, DataRow *p_station, int export_format)
         newtrk = 1;
       }
 
-      // identical for kml and xastir tracks, but could be different for other formats
+      // identical for kml and astir tracks, but could be different for other formats
       switch (export_format)
       {
         case EXPORT_KML_TRACK:
           exp_trailpos(f,lat0,lon0,sec,speed,course,alt,newtrk, export_format);
           break;
-        case EXPORT_XASTIR_TRACK:
+        case EXPORT_ASTIR_TRACK:
         default:
           exp_trailpos(f,lat0,lon0,sec,speed,course,alt,newtrk, export_format);
       }
@@ -5028,7 +5028,7 @@ void exp_trailstation(FILE *f, DataRow *p_station, int export_format)
         exp_trailpos(f,p_station->coord_lat,p_station->coord_lon,p_station->sec_heard,speed,course,alt,newtrk, export_format);
         fprintf(f,"</coordinates>\n\t</Point>\n");
         break;
-      case EXPORT_XASTIR_TRACK:
+      case EXPORT_ASTIR_TRACK:
       default:
         exp_trailpos(f,p_station->coord_lat,p_station->coord_lon,p_station->sec_heard,speed,course,alt,newtrk, export_format);
     }
@@ -5040,7 +5040,7 @@ void exp_trailstation(FILE *f, DataRow *p_station, int export_format)
     case (EXPORT_KML_TRACK):
       fprintf(f,"</Placemark>\n");
       break;
-    case (EXPORT_XASTIR_TRACK):
+    case (EXPORT_ASTIR_TRACK):
     default:
       fprintf(f,"\n");
   }
@@ -5079,7 +5079,7 @@ void export_trail(DataRow *p_station)
   if (storeall)
   {
     // define filename for storing all station
-    xastir_snprintf(file, sizeof(file),
+    astir_snprintf(file, sizeof(file),
                     "%s/%04d%02d%02d-%02d%02d%02d.trk",
                     get_user_base_dir("tracklogs", user_base_dir,
                                       sizeof(user_base_dir)),
@@ -5093,7 +5093,7 @@ void export_trail(DataRow *p_station)
   else
   {
     // define filename for current station
-    xastir_snprintf(file, sizeof(file), "%s/%s.trk",
+    astir_snprintf(file, sizeof(file), "%s/%s.trk",
                     get_user_base_dir("tracklogs", user_base_dir,
                                       sizeof(user_base_dir)),
                     p_station->call_sign);
@@ -5108,7 +5108,7 @@ void export_trail(DataRow *p_station)
   {
 
     fprintf(f,
-            "# WGS-84 tracklog created by Xastir %04d/%02d/%02d %02d:%02d\n",
+            "# WGS-84 tracklog created by Astir %04d/%02d/%02d %02d:%02d\n",
             time->tm_year+1900,
             time->tm_mon+1,
             time->tm_mday,
@@ -5120,13 +5120,13 @@ void export_trail(DataRow *p_station)
       p_station = n_first;
       while (p_station != NULL)
       {
-        exp_trailstation(f,p_station, EXPORT_XASTIR_TRACK);
+        exp_trailstation(f,p_station, EXPORT_ASTIR_TRACK);
         p_station = p_station->n_next;
       }
     }
     else
     {
-      exp_trailstation(f,p_station, EXPORT_XASTIR_TRACK);
+      exp_trailstation(f,p_station, EXPORT_ASTIR_TRACK);
     }
     (void)fclose(f);
   }
@@ -5174,7 +5174,7 @@ void export_trail_as_kml(DataRow *p_station)
   if (storeall)
   {
     // define filename for storing all station
-    xastir_snprintf(file, sizeof(file),
+    astir_snprintf(file, sizeof(file),
                     "%s/%04d%02d%02d-%02d%02d%02d.kml",
                     get_user_base_dir("tracklogs", user_base_dir,
                                       sizeof(user_base_dir)),
@@ -5188,7 +5188,7 @@ void export_trail_as_kml(DataRow *p_station)
   else
   {
     // define filename for current station, call + current time.
-    xastir_snprintf(file, sizeof(file),
+    astir_snprintf(file, sizeof(file),
                     "%s/%s_%04d%02d%02d-%02d%02d%02d.kml",
                     get_user_base_dir("tracklogs", user_base_dir,
                                       sizeof(user_base_dir)),
@@ -5212,7 +5212,7 @@ void export_trail_as_kml(DataRow *p_station)
     fprintf(f,"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<kml xmlns=\"http://earth.google.com/kml/2.2\">\n<Document>\n<name>APRS Data</name>\n<open>1</open>\n");
 
     fprintf(f,
-            "<description>WGS-84 tracklog created by Xastir %04d/%02d/%02d %02d:%02d</description>\n",
+            "<description>WGS-84 tracklog created by Astir %04d/%02d/%02d %02d:%02d</description>\n",
             time->tm_year+1900,
             time->tm_mon+1,
             time->tm_mday,
@@ -5401,7 +5401,7 @@ void remove_name(DataRow *p_rem)        // todo: return pointer to next element
       // Perhaps we could do some repair to the list pointers here?  Start
       // at the other end of the chain and navigate back to this end, then
       // fix up n_first to point to it?  This is at the risk of a memory
-      // leak, but at least Xastir might continue to run.
+      // leak, but at least Astir might continue to run.
 
     }
   }
@@ -5435,7 +5435,7 @@ void remove_name(DataRow *p_rem)        // todo: return pointer to next element
       // Perhaps we could do some repair to the list pointers here?  Start
       // at the other end of the chain and navigate back to this end, then
       // fix up n_last to point to it?  This is at the risk of a memory
-      // leak, but at least Xastir might continue to run.
+      // leak, but at least Astir might continue to run.
 
     }
   }
@@ -5494,7 +5494,7 @@ void remove_time(DataRow *p_rem)        // todo: return pointer to next element
       // Perhaps we could do some repair to the list pointers here?  Start
       // at the other end of the chain and navigate back to this end, then
       // fix up t_oldest to point to it?  This is at the risk of a memory
-      // leak, but at least Xastir might continue to run.
+      // leak, but at least Astir might continue to run.
 
     }
   }
@@ -5529,7 +5529,7 @@ void remove_time(DataRow *p_rem)        // todo: return pointer to next element
       // Perhaps we could do some repair to the list pointers here?  Start
       // at the other end of the chain and navigate back to this end, then
       // fix up t_newest to point to it?  This is at the risk of a memory
-      // leak, but at least Xastir might continue to run.
+      // leak, but at least Astir might continue to run.
 
     }
   }
@@ -5723,7 +5723,7 @@ void delete_station_memory(DataRow *p_del)
   }
 
   init_station(p_new);                    // initialize new station record
-  xastir_snprintf(p_new->call_sign,
+  astir_snprintf(p_new->call_sign,
                   sizeof(p_new->call_sign),
                   "%s",
                   call);
@@ -5802,7 +5802,7 @@ void delete_station_memory(DataRow *p_del)
     CHECKMALLOC(p_new->tactical_call_sign);
 
     //fprintf(stderr,"***Assigning tactical call to new record***\n");
-    xastir_snprintf(p_new->tactical_call_sign,
+    astir_snprintf(p_new->tactical_call_sign,
                     MAX_TACTICAL_CALL+1,
                     "%s",
                     tactical_call);
@@ -5823,7 +5823,7 @@ void delete_station_memory(DataRow *p_del)
 
 #ifdef HAVE_DB
 /* function add_simple_station()
- * adds an xastir DataRow using station and additional data from a simpleStation
+ * adds an astir DataRow using station and additional data from a simpleStation
  * record in a SQL database.
  * @param p_new_station Pointer to a DataRow for the new station, probably initialized as DataRow p_new_station = NULL
  * @param station  String pointer for the callsign or object name
@@ -5845,8 +5845,8 @@ void delete_station_memory(DataRow *p_del)
 int add_simple_station(DataRow *p_new_station,char *station, char *origin, char *symbol, char *overlay, char *aprs_type, char *latitude, char *longitude, char *record_type, char *node_path, char *transmit_time, char *timeformat)
 {
   int returnvalue = 0;
-  unsigned long x;  // xastir coordinate for longitude
-  unsigned long y;  // xastir coordinate for latitude
+  unsigned long x;  // astir coordinate for longitude
+  unsigned long y;  // astir coordinate for latitude
   float lat;  // latitude converted from retrieved string
   float lon;  // longitude converted from retrieved string
   DataRow *p_time;  // pointer to new station record
@@ -5881,7 +5881,7 @@ int add_simple_station(DataRow *p_new_station,char *station, char *origin, char 
         sec = mktime(&time);
         lat = strtof(latitude,NULL);
         lon = strtof(longitude,NULL);
-        if (convert_to_xastir_coordinates (&x, &y, lon, lat))
+        if (convert_to_astir_coordinates (&x, &y, lon, lat))
         {
           (void)store_trail_point(p_new_station, x, y, sec, empty, empty, empty, 0);
         }
@@ -5911,13 +5911,13 @@ int add_simple_station(DataRow *p_new_station,char *station, char *origin, char 
     if (!(p_new_station==NULL))
     {
       // set values for new station based on the database row
-      xastir_snprintf(p_new_station->origin,58,"%s",origin);
+      astir_snprintf(p_new_station->origin,58,"%s",origin);
       p_new_station->aprs_symbol.aprs_symbol = symbol[0];
       p_new_station->aprs_symbol.special_overlay = overlay[0];
       p_new_station->aprs_symbol.aprs_type = aprs_type[0];
       lat = strtof(latitude,NULL);
       lon = strtof(longitude,NULL);
-      if (convert_to_xastir_coordinates (&x, &y, lon, lat))
+      if (convert_to_astir_coordinates (&x, &y, lon, lat))
       {
         p_new_station->coord_lon = x;
         p_new_station->coord_lat = y;
@@ -5958,7 +5958,7 @@ int add_simple_station(DataRow *p_new_station,char *station, char *origin, char 
           p_new_station->sec_heard = sec_now();
         }
         (void)strftime(timestring,MAX_TIME,"%m%d%Y%H%M%S",&time);
-        xastir_snprintf(p_new_station->pos_time,
+        astir_snprintf(p_new_station->pos_time,
                         sizeof(p_new_station->pos_time),
                         "%s",
                         timestring);
@@ -7007,14 +7007,14 @@ int extract_position(DataRow *p_station, char **info, int type)
         my_data[6]  = my_data[16] = '5';
       }
 
-      xastir_snprintf(temp_lat,
+      astir_snprintf(temp_lat,
                       sizeof(temp_lat),
                       "%s",
                       my_data);
       temp_lat[9] = toupper(my_data[7]);
       temp_lat[10] = '\0';
 
-      xastir_snprintf(temp_lon,
+      astir_snprintf(temp_lon,
                       sizeof(temp_lon),
                       "%s",
                       my_data+9);
@@ -7071,7 +7071,7 @@ int extract_position(DataRow *p_station, char **info, int type)
     ok = (int)(ok && ((my_data[1]>='A')&&(my_data[1]<='R')));
     if (ok)
     {
-      xastir_snprintf(temp_grid,
+      astir_snprintf(temp_grid,
                       sizeof(temp_grid),
                       "%s",
                       my_data);
@@ -7298,13 +7298,13 @@ int extract_comp_position(DataRow *p_station, char **info, int UNUSED(type) )
       {
         if ((T & 0x18) == 0x10)     // check for GGA (with altitude)
         {
-          xastir_snprintf(p_station->altitude, sizeof(p_station->altitude), "%06.0f",pow(1.002,(double)(c*91+s))*0.3048);
+          astir_snprintf(p_station->altitude, sizeof(p_station->altitude), "%06.0f",pow(1.002,(double)(c*91+s))*0.3048);
         }
         else   // Found compressed course/speed bytes
         {
 
           // Convert 0 degrees to 360 degrees so that
-          // Xastir will see it as a valid course and do
+          // Astir will see it as a valid course and do
           // dead-reckoning properly on this station
           if (c == 0)
           {
@@ -7312,13 +7312,13 @@ int extract_comp_position(DataRow *p_station, char **info, int UNUSED(type) )
           }
 
           // Compute course in degrees
-          xastir_snprintf(p_station->course,
+          astir_snprintf(p_station->course,
                           sizeof(p_station->course),
                           "%03d",
                           c*4);
 
           // Compute speed in knots
-          xastir_snprintf(p_station->speed,
+          astir_snprintf(p_station->speed,
                           sizeof(p_station->speed),
                           "%03.0f",
                           pow( 1.08,(double)s ) - 1.0);
@@ -7339,23 +7339,23 @@ int extract_comp_position(DataRow *p_station, char **info, int UNUSED(type) )
           // DK7IN: dirty hack...  but better than nothing
           if (s <= 5)                         // 2.9387 mi
           {
-            xastir_snprintf(p_station->power_gain, sizeof(p_station->power_gain), "PHG%s0", "000");
+            astir_snprintf(p_station->power_gain, sizeof(p_station->power_gain), "PHG%s0", "000");
           }
           else if (s <= 17)                   // 7.40 mi
           {
-            xastir_snprintf(p_station->power_gain, sizeof(p_station->power_gain), "PHG%s0", "111");
+            astir_snprintf(p_station->power_gain, sizeof(p_station->power_gain), "PHG%s0", "111");
           }
           else if (s <= 36)                   // 31.936 mi
           {
-            xastir_snprintf(p_station->power_gain, sizeof(p_station->power_gain), "PHG%s0", "222");
+            astir_snprintf(p_station->power_gain, sizeof(p_station->power_gain), "PHG%s0", "222");
           }
           else if (s <= 75)                   // 642.41 mi
           {
-            xastir_snprintf(p_station->power_gain, sizeof(p_station->power_gain), "PHG%s0", "333");
+            astir_snprintf(p_station->power_gain, sizeof(p_station->power_gain), "PHG%s0", "333");
           }
           else                       // max 90:  2037.8 mi
           {
-            xastir_snprintf(p_station->power_gain, sizeof(p_station->power_gain), "PHG%s0", "444");
+            astir_snprintf(p_station->power_gain, sizeof(p_station->power_gain), "PHG%s0", "444");
           }
         }
       }
@@ -7784,7 +7784,7 @@ int extract_probability_min(char *info, char *prob_min, int prob_min_size)
   }
 
   // Copy the substring across
-  xastir_snprintf(prob_min,
+  astir_snprintf(prob_min,
                   prob_min_size,
                   "%s",
                   c);
@@ -7866,7 +7866,7 @@ int extract_probability_max(char *info, char *prob_max, int prob_max_size)
   }
 
   // Copy the substring across
-  xastir_snprintf(prob_max,
+  astir_snprintf(prob_max,
                   prob_max_size,
                   "%s",
                   c);
@@ -8173,11 +8173,11 @@ void process_data_extension(DataRow *p_station, char *data, int UNUSED(type) )
       if (atof(temp2) > 0)
       {
         //fprintf(stderr,"course is non-zero\n");
-        xastir_snprintf(p_station->speed,
+        astir_snprintf(p_station->speed,
                         sizeof(p_station->speed),
                         "%06.2f",
                         atof(temp1));
-        xastir_snprintf(p_station->course,  // in degrees
+        astir_snprintf(p_station->course,  // in degrees
                         sizeof(p_station->course),
                         "%s",
                         temp2);
@@ -8186,11 +8186,11 @@ void process_data_extension(DataRow *p_station, char *data, int UNUSED(type) )
       if (extract_bearing_NRQ(data, bearing, nrq))    // Beam headings from DF'ing
       {
         //fprintf(stderr,"extracted bearing and NRQ\n");
-        xastir_snprintf(p_station->bearing,
+        astir_snprintf(p_station->bearing,
                         sizeof(p_station->bearing),
                         "%s",
                         bearing);
-        xastir_snprintf(p_station->NRQ,
+        astir_snprintf(p_station->NRQ,
                         sizeof(p_station->NRQ),
                         "%s",
                         nrq);
@@ -8204,11 +8204,11 @@ void process_data_extension(DataRow *p_station, char *data, int UNUSED(type) )
     {
 
       //fprintf(stderr,"extracted bearing and NRQ\n");
-      xastir_snprintf(p_station->bearing,
+      astir_snprintf(p_station->bearing,
                       sizeof(p_station->bearing),
                       "%s",
                       bearing);
-      xastir_snprintf(p_station->NRQ,
+      astir_snprintf(p_station->NRQ,
                       sizeof(p_station->NRQ),
                       "%s",
                       nrq);
@@ -8221,7 +8221,7 @@ void process_data_extension(DataRow *p_station, char *data, int UNUSED(type) )
 
         //fprintf(stderr,"Found power_gain: %s\n", temp1);
 
-        xastir_snprintf(p_station->power_gain,
+        astir_snprintf(p_station->power_gain,
                         sizeof(p_station->power_gain),
                         "%s",
                         temp1);
@@ -8229,11 +8229,11 @@ void process_data_extension(DataRow *p_station, char *data, int UNUSED(type) )
         if (extract_bearing_NRQ(data, bearing, nrq))    // Beam headings from DF'ing
         {
           //fprintf(stderr,"extracted bearing and NRQ\n");
-          xastir_snprintf(p_station->bearing,
+          astir_snprintf(p_station->bearing,
                           sizeof(p_station->bearing),
                           "%s",
                           bearing);
-          xastir_snprintf(p_station->NRQ,
+          astir_snprintf(p_station->NRQ,
                           sizeof(p_station->NRQ),
                           "%s",
                           nrq);
@@ -8244,7 +8244,7 @@ void process_data_extension(DataRow *p_station, char *data, int UNUSED(type) )
       {
         if (extract_omnidf(data,temp1))
         {
-          xastir_snprintf(p_station->signal_gain,
+          astir_snprintf(p_station->signal_gain,
                           sizeof(p_station->signal_gain),
                           "%s",
                           temp1);   // Grab the SHGD values
@@ -8260,11 +8260,11 @@ void process_data_extension(DataRow *p_station, char *data, int UNUSED(type) )
             if (atof(temp2) > 0)
             {
               //fprintf(stderr,"course is non-zero\n");
-              xastir_snprintf(p_station->speed,
+              astir_snprintf(p_station->speed,
                               sizeof(p_station->speed),
                               "%06.2f",
                               atof(temp1));
-              xastir_snprintf(p_station->course,
+              astir_snprintf(p_station->course,
                               sizeof(p_station->course),
                               "%s",
                               temp2);                    // in degrees
@@ -8277,11 +8277,11 @@ void process_data_extension(DataRow *p_station, char *data, int UNUSED(type) )
           if (extract_bearing_NRQ(data, bearing, nrq))    // Beam headings from DF'ing
           {
             //fprintf(stderr,"extracted bearing and NRQ\n");
-            xastir_snprintf(p_station->bearing,
+            astir_snprintf(p_station->bearing,
                             sizeof(p_station->bearing),
                             "%s",
                             bearing);
-            xastir_snprintf(p_station->NRQ,
+            astir_snprintf(p_station->NRQ,
                             sizeof(p_station->NRQ),
                             "%s",
                             nrq);
@@ -8304,7 +8304,7 @@ void process_data_extension(DataRow *p_station, char *data, int UNUSED(type) )
       else
       {
         //fprintf(stderr,"extracted probability_min data: %s\n",temp3);
-        xastir_snprintf(p_station->probability_min,
+        astir_snprintf(p_station->probability_min,
                         sizeof(p_station->probability_min),
                         "%s",
                         temp3);
@@ -8328,7 +8328,7 @@ void process_data_extension(DataRow *p_station, char *data, int UNUSED(type) )
       else
       {
         //fprintf(stderr,"extracted probability_max data: %s\n",temp3);
-        xastir_snprintf(p_station->probability_max,
+        astir_snprintf(p_station->probability_max,
                         sizeof(p_station->probability_max),
                         "%s",
                         temp3);
@@ -8353,7 +8353,7 @@ void process_info_field(DataRow *p_station, char *info, int UNUSED(type) )
 
   if (extract_altitude(info,temp_data))                           // get altitude
   {
-    xastir_snprintf(p_station->altitude, sizeof(p_station->altitude), "%.2f",atof(temp_data)*0.3048);
+    astir_snprintf(p_station->altitude, sizeof(p_station->altitude), "%.2f",atof(temp_data)*0.3048);
     //fprintf(stderr,"%.2f\n",atof(temp_data)*0.3048);
   }
 
@@ -8369,7 +8369,7 @@ void process_info_field(DataRow *p_station, char *info, int UNUSED(type) )
     char temp_signpost[3+1];
     if (extract_signpost(info, temp_signpost))
     {
-      xastir_snprintf(p_station->signpost,
+      astir_snprintf(p_station->signpost,
                       sizeof(p_station->signpost),
                       "%s",
                       temp_signpost);
@@ -8452,7 +8452,7 @@ int extract_RMC(DataRow *p_station, char *data, char *call_sign, char *path, int
   p_station->record_type = NORMAL_GPS_RMC;
   // Create a timestamp from the current time
   // get_time saves the time in temp_data
-  xastir_snprintf(p_station->pos_time,
+  astir_snprintf(p_station->pos_time,
                   sizeof(p_station->pos_time),
                   "%s",
                   get_time(temp_data));
@@ -8463,7 +8463,7 @@ int extract_RMC(DataRow *p_station, char *data, char *call_sign, char *path, int
 
   // Make a copy of the incoming data.  The string passed to
   // split_string() gets destroyed.
-  xastir_snprintf(temp_string,
+  astir_snprintf(temp_string,
                   sizeof(temp_string),
                   "%s",
                   data);
@@ -8527,7 +8527,7 @@ int extract_RMC(DataRow *p_station, char *data, char *call_sign, char *path, int
     return(ok);
   }
 
-  xastir_snprintf(lat_s,
+  astir_snprintf(lat_s,
                   sizeof(lat_s),
                   "%s%c",
                   Substring[3],
@@ -8553,7 +8553,7 @@ int extract_RMC(DataRow *p_station, char *data, char *call_sign, char *path, int
     return(ok);
   }
 
-  xastir_snprintf(long_s,
+  astir_snprintf(long_s,
                   sizeof(long_s),
                   "%s%c",
                   Substring[5],
@@ -8580,7 +8580,7 @@ int extract_RMC(DataRow *p_station, char *data, char *call_sign, char *path, int
   }
   else
   {
-    xastir_snprintf(p_station->speed,
+    astir_snprintf(p_station->speed,
                     MAX_SPEED,
                     "%s",
                     Substring[7]);
@@ -8589,14 +8589,14 @@ int extract_RMC(DataRow *p_station, char *data, char *call_sign, char *path, int
 
   if (Substring[8] == NULL)   // No course string
   {
-    xastir_snprintf(p_station->course,
+    astir_snprintf(p_station->course,
                     sizeof(p_station->course),
                     "000.0");  // No course available
     return(ok);
   }
   else
   {
-    xastir_snprintf(p_station->course,
+    astir_snprintf(p_station->course,
                     MAX_COURSE,
                     "%s",
                     Substring[8]);
@@ -8671,7 +8671,7 @@ int extract_GGA(DataRow *p_station,char *data,char *call_sign, char *path, int *
   p_station->record_type = NORMAL_GPS_GGA;
   // Create a timestamp from the current time
   // get_time saves the time in temp_data
-  xastir_snprintf(p_station->pos_time,
+  astir_snprintf(p_station->pos_time,
                   sizeof(p_station->pos_time),
                   "%s",
                   get_time(temp_data));
@@ -8682,7 +8682,7 @@ int extract_GGA(DataRow *p_station,char *data,char *call_sign, char *path, int *
 
   // Make a copy of the incoming data.  The string passed to
   // split_string() gets destroyed.
-  xastir_snprintf(temp_string,
+  astir_snprintf(temp_string,
                   sizeof(temp_string),
                   "%s",
                   data);
@@ -8736,7 +8736,7 @@ int extract_GGA(DataRow *p_station,char *data,char *call_sign, char *path, int *
     return(ok);
   }
 
-  xastir_snprintf(lat_s,
+  astir_snprintf(lat_s,
                   sizeof(lat_s),
                   "%s%c",
                   Substring[2],
@@ -8762,7 +8762,7 @@ int extract_GGA(DataRow *p_station,char *data,char *call_sign, char *path, int *
     return(ok);
   }
 
-  xastir_snprintf(long_s,
+  astir_snprintf(long_s,
                   sizeof(long_s),
                   "%s%c",
                   Substring[4],
@@ -8801,7 +8801,7 @@ int extract_GGA(DataRow *p_station,char *data,char *call_sign, char *path, int *
   else
   {
     // Store
-    xastir_snprintf(p_station->sats_visible,
+    astir_snprintf(p_station->sats_visible,
                     sizeof(p_station->sats_visible),
                     "%d",
                     temp_num);
@@ -8811,7 +8811,7 @@ int extract_GGA(DataRow *p_station,char *data,char *call_sign, char *path, int *
   // Check for valid number for HDOP instead of just throwing it away?
 
 
-  xastir_snprintf(p_station->altitude,
+  astir_snprintf(p_station->altitude,
                   sizeof(p_station->altitude),
                   "%s",
                   Substring[9]); // Get altitude
@@ -8886,7 +8886,7 @@ int extract_GLL(DataRow *p_station,char *data,char *call_sign, char *path, int *
   p_station->record_type = NORMAL_GPS_GLL;
   // Create a timestamp from the current time
   // get_time saves the time in temp_data
-  xastir_snprintf(p_station->pos_time,
+  astir_snprintf(p_station->pos_time,
                   sizeof(p_station->pos_time),
                   "%s",
                   get_time(temp_data));
@@ -8897,7 +8897,7 @@ int extract_GLL(DataRow *p_station,char *data,char *call_sign, char *path, int *
 
   // Make a copy of the incoming data.  The string passed to
   // split_string() gets destroyed.
-  xastir_snprintf(temp_string,
+  astir_snprintf(temp_string,
                   sizeof(temp_string),
                   "%s",
                   data);
@@ -8937,7 +8937,7 @@ int extract_GLL(DataRow *p_station,char *data,char *call_sign, char *path, int *
     return(ok);
   }
 
-  xastir_snprintf(lat_s,
+  astir_snprintf(lat_s,
                   sizeof(lat_s),
                   "%s%c",
                   Substring[1],
@@ -8961,7 +8961,7 @@ int extract_GLL(DataRow *p_station,char *data,char *call_sign, char *path, int *
     return(ok);
   }
 
-  xastir_snprintf(long_s,
+  astir_snprintf(long_s,
                   sizeof(long_s),
                   "%s%c",
                   Substring[3],
@@ -8973,7 +8973,7 @@ int extract_GLL(DataRow *p_station,char *data,char *call_sign, char *path, int *
   p_station->coord_lon = convert_lon_s2l(long_s);
   ok = 1; // We have enough for a position now
 
-  xastir_snprintf(p_station->course,
+  astir_snprintf(p_station->course,
                   sizeof(p_station->course),
                   "000.0");  // Fill in with dummy values
   p_station->speed[0] = '\0';        // Fill in with dummy values
@@ -9161,7 +9161,7 @@ void add_status(DataRow *p_station, char *status_string)
       CHECKMALLOC(p_station->status_data->text_ptr);
 
       // Fill in the string
-      xastir_snprintf(p_station->status_data->text_ptr,
+      astir_snprintf(p_station->status_data->text_ptr,
                       len+1,
                       "%s",
                       status_string);
@@ -9346,7 +9346,7 @@ void add_comment(DataRow *p_station, char *comment_string)
       CHECKMALLOC(p_station->comment_data->text_ptr);
 
       // Fill in the string
-      xastir_snprintf(p_station->comment_data->text_ptr,
+      astir_snprintf(p_station->comment_data->text_ptr,
                       len+1,
                       "%s",
                       comment_string);
@@ -9448,7 +9448,7 @@ int data_add(int type,
 
   weather = NULL; // only to make the compiler happy...
   found_pos = 1;
-  xastir_snprintf(call,
+  astir_snprintf(call,
                   sizeof(call),
                   "%s",
                   call_sign);
@@ -9502,15 +9502,15 @@ int data_add(int type,
     last_lat = p_station->coord_lat;                // remember last position
     last_lon = p_station->coord_lon;
     last_stn_sec = p_station->sec_heard;
-    xastir_snprintf(last_alt,
+    astir_snprintf(last_alt,
                     sizeof(last_alt),
                     "%s",
                     p_station->altitude);
-    xastir_snprintf(last_speed,
+    astir_snprintf(last_speed,
                     sizeof(last_speed),
                     "%s",
                     p_station->speed);
-    xastir_snprintf(last_course,
+    astir_snprintf(last_course,
                     sizeof(last_course),
                     "%s",
                     p_station->course);
@@ -9548,7 +9548,7 @@ int data_add(int type,
         {
 
           // Create a timestamp from the current time
-          xastir_snprintf(p_station->pos_time,
+          astir_snprintf(p_station->pos_time,
                           sizeof(p_station->pos_time),
                           "%s",
                           get_time(temp_data));
@@ -9608,7 +9608,7 @@ int data_add(int type,
         if (ok) {
 
         // Create a timestamp from the current time
-        xastir_snprintf(p_station->pos_time,
+        astir_snprintf(p_station->pos_time,
         sizeof(p_station->pos_time),
         "%s",
         get_time(temp_data));
@@ -9859,12 +9859,12 @@ int data_add(int type,
           }
 
           // Create a timestamp from the current time
-          xastir_snprintf(p_station->pos_time,
+          astir_snprintf(p_station->pos_time,
                           sizeof(p_station->pos_time),
                           "%s",
                           get_time(temp_data));
 
-          xastir_snprintf(p_station->origin,
+          astir_snprintf(p_station->origin,
                           sizeof(p_station->origin),
                           "%s",
                           origin);                   // define it as object
@@ -9985,11 +9985,11 @@ int data_add(int type,
           }
 
           // Create a timestamp from the current time
-          xastir_snprintf(p_station->pos_time,
+          astir_snprintf(p_station->pos_time,
                           sizeof(p_station->pos_time),
                           "%s",
                           get_time(temp_data));
-          xastir_snprintf(p_station->origin,
+          astir_snprintf(p_station->origin,
                           sizeof(p_station->origin),
                           "%s",
                           origin);                   // define it as item
@@ -10121,7 +10121,7 @@ int data_add(int type,
           }
           p_station->record_type = (char)type;
           // Create a timestamp from the current time
-          xastir_snprintf(weather->wx_time,
+          astir_snprintf(weather->wx_time,
                           sizeof(weather->wx_time),
                           "%s",
                           get_time(temp_data));
@@ -10375,7 +10375,7 @@ int data_add(int type,
     {
       char filtered_data[MAX_LINE_SIZE + 1];
 
-      xastir_snprintf(filtered_data,
+      astir_snprintf(filtered_data,
                       sizeof(filtered_data),
                       "%s",
                       data-1);
@@ -10516,7 +10516,7 @@ int data_add(int type,
     p_station->last_port_heard = port;
     p_station->data_via = from;
     // Create a timestamp from the current time
-    xastir_snprintf(p_station->packet_time,
+    astir_snprintf(p_station->packet_time,
                     sizeof(p_station->packet_time),
                     "%s",
                     get_time(temp_data)); // get_time returns value in temp_data
@@ -10531,18 +10531,18 @@ int data_add(int type,
       p_station->flag &= (~ST_3RD_PT);  // clear "third party" flag
     }
     if (origin != NULL && strcmp(origin,"INET") == 0)  // special treatment for inet names
-      xastir_snprintf(p_station->origin,
+      astir_snprintf(p_station->origin,
                       sizeof(p_station->origin),
                       "%s",
                       origin);           // to keep them separated from calls
     if (origin != NULL && strcmp(origin,"INET-NWS") == 0)  // special treatment for NWS
-      xastir_snprintf(p_station->origin,
+      astir_snprintf(p_station->origin,
                       sizeof(p_station->origin),
                       "%s",
                       origin);           // to keep them separated from calls
 
     if (origin != NULL && strcmp(origin,"INET-BOM") == 0)  // special treatment for BOM (AU)
-      xastir_snprintf(p_station->origin,
+      astir_snprintf(p_station->origin,
                       sizeof(p_station->origin),
                       "%s",
                       origin);           // to keep them separated from calls
@@ -11098,16 +11098,16 @@ int data_add(int type,
       {
         if (p_station->origin[0] == '\0')   // new station
         {
-          xastir_snprintf(station_id, sizeof(station_id), langcode("BBARSTA001"),p_station->call_sign);
+          astir_snprintf(station_id, sizeof(station_id), langcode("BBARSTA001"),p_station->call_sign);
         }
         else                                // new object
         {
-          xastir_snprintf(station_id, sizeof(station_id), langcode("BBARSTA000"),p_station->call_sign);
+          astir_snprintf(station_id, sizeof(station_id), langcode("BBARSTA000"),p_station->call_sign);
         }
       }
       else                                  // updated data
       {
-        xastir_snprintf(station_id, sizeof(station_id), langcode("BBARSTA002"),p_station->call_sign);
+        astir_snprintf(station_id, sizeof(station_id), langcode("BBARSTA002"),p_station->call_sign);
       }
 
       xa_ui_status(station_id);
@@ -11126,13 +11126,13 @@ int data_add(int type,
       {
         char speech_callsign[50];
 
-        xastir_snprintf(speech_callsign,
+        astir_snprintf(speech_callsign,
                         sizeof(speech_callsign),
                         "%s",
                         p_station->call_sign);
         spell_it_out(speech_callsign, 50);
 
-        xastir_snprintf(station_id,
+        astir_snprintf(station_id,
                         sizeof(station_id),
                         "%s, %s",
                         langcode("SPCHSTR010"),
@@ -11172,7 +11172,7 @@ int data_add(int type,
 
         if (xa_sound[XA_SOUND_PROX].enabled)
         {
-          xastir_snprintf(station_id, sizeof(station_id),
+          astir_snprintf(station_id, sizeof(station_id),
                           "%s < %.3f %s",p_station->call_sign,
                           distance,
                           english_units?langcode("UNIOP00004"):langcode("UNIOP00005"));
@@ -11186,7 +11186,7 @@ int data_add(int type,
       {
         char speech_callsign[50];
 
-        xastir_snprintf(speech_callsign,
+        astir_snprintf(speech_callsign,
                         sizeof(speech_callsign),
                         "%s",
                         p_station->call_sign);
@@ -11195,25 +11195,25 @@ int data_add(int type,
         if (english_units)
         {
           if (distance < 1.0)
-            xastir_snprintf(station_id, sizeof(station_id), langcode("SPCHSTR005"), speech_callsign,
+            astir_snprintf(station_id, sizeof(station_id), langcode("SPCHSTR005"), speech_callsign,
                             (int)(distance * 1760), langcode("SPCHSTR004")); // say it in yards
           else if ((int)((distance * 10) + 0.5) % 10)
-            xastir_snprintf(station_id, sizeof(station_id), langcode("SPCHSTR006"), speech_callsign, distance,
+            astir_snprintf(station_id, sizeof(station_id), langcode("SPCHSTR006"), speech_callsign, distance,
                             langcode("SPCHSTR003")); // say it in miles with one decimal
           else
-            xastir_snprintf(station_id, sizeof(station_id), langcode("SPCHSTR005"), speech_callsign, (int)(distance + 0.5),
+            astir_snprintf(station_id, sizeof(station_id), langcode("SPCHSTR005"), speech_callsign, (int)(distance + 0.5),
                             langcode("SPCHSTR003")); // say it in miles with no decimal
         }
         else
         {
           if (distance < 1.0)
-            xastir_snprintf(station_id, sizeof(station_id), langcode("SPCHSTR005"), speech_callsign,
+            astir_snprintf(station_id, sizeof(station_id), langcode("SPCHSTR005"), speech_callsign,
                             (int)(distance * 1000), langcode("SPCHSTR002")); // say it in meters
           else if ((int)((distance * 10) + 0.5) % 10)
-            xastir_snprintf(station_id, sizeof(station_id), langcode("SPCHSTR006"), speech_callsign, distance,
+            astir_snprintf(station_id, sizeof(station_id), langcode("SPCHSTR006"), speech_callsign, distance,
                             langcode("SPCHSTR001")); // say it in kilometers with one decimal
           else
-            xastir_snprintf(station_id, sizeof(station_id), langcode("SPCHSTR005"), speech_callsign, (int)(distance + 0.5),
+            astir_snprintf(station_id, sizeof(station_id), langcode("SPCHSTR005"), speech_callsign, (int)(distance + 0.5),
                             langcode("SPCHSTR001")); // say it in kilometers with no decimal
         }
         SayText(station_id);
@@ -11223,7 +11223,7 @@ int data_add(int type,
       if (xa_sound[XA_SOUND_BAND_OPEN].enabled && from == DATA_VIA_TNC && !(p_station->flag & ST_3RD_PT) &&
           (distance > atof(bando_min)) && (distance < atof(bando_max)))
       {
-        xastir_snprintf(station_id, sizeof(station_id), "%s %s %.1f %s",p_station->call_sign, langcode("UMBNDO0001"),
+        astir_snprintf(station_id, sizeof(station_id), "%s %s %.1f %s",p_station->call_sign, langcode("UMBNDO0001"),
                         distance, english_units?langcode("UNIOP00004"):langcode("UNIOP00005"));
         xa_ui_status(station_id);
         play_sound(sound_command,xa_sound[XA_SOUND_BAND_OPEN].file);
@@ -11235,13 +11235,13 @@ int data_add(int type,
       {
         char speech_callsign[50];
 
-        xastir_snprintf(speech_callsign,
+        astir_snprintf(speech_callsign,
                         sizeof(speech_callsign),
                         "%s",
                         p_station->call_sign);
         spell_it_out(speech_callsign, 50);
 
-        xastir_snprintf(station_id,
+        astir_snprintf(station_id,
                         sizeof(station_id),
                         langcode("SPCHSTR011"),
                         speech_callsign,
@@ -11622,12 +11622,12 @@ void my_station_gps_change(char *pos_long, char *pos_lat, char *course, char *sp
   substr(p_station->node_path_ptr,"local",strlen("local"));
 
   // Create a timestamp from the current time
-  xastir_snprintf(p_station->packet_time,
+  astir_snprintf(p_station->packet_time,
                   sizeof(p_station->packet_time),
                   "%s",
                   get_time(temp_data));
   // Create a timestamp from the current time
-  xastir_snprintf(p_station->pos_time,
+  astir_snprintf(p_station->pos_time,
                   sizeof(p_station->pos_time),
                   "%s",
                   get_time(temp_data));
@@ -11639,10 +11639,10 @@ void my_station_gps_change(char *pos_long, char *pos_lat, char *course, char *sp
 
   /* convert back to clean string for config data */
   convert_lon_l2s(pos_long_temp, temp_data, sizeof(temp_data), CONVERT_HP_NORMAL);
-  xastir_snprintf(temp_long, sizeof(temp_long), "%c%c%c%c%c.%c%c%c%c",temp_data[0],temp_data[1],temp_data[2], temp_data[4],temp_data[5],
+  astir_snprintf(temp_long, sizeof(temp_long), "%c%c%c%c%c.%c%c%c%c",temp_data[0],temp_data[1],temp_data[2], temp_data[4],temp_data[5],
                   temp_data[7],temp_data[8], temp_data[9], temp_data[10]);
   convert_lat_l2s(pos_lat_temp, temp_data, sizeof(temp_data), CONVERT_HP_NORMAL);
-  xastir_snprintf(temp_lat, sizeof(temp_lat), "%c%c%c%c.%c%c%c%c",temp_data[0],temp_data[1],temp_data[3],temp_data[4], temp_data[6],
+  astir_snprintf(temp_lat, sizeof(temp_lat), "%c%c%c%c.%c%c%c%c",temp_data[0],temp_data[1],temp_data[3],temp_data[4], temp_data[6],
                   temp_data[7], temp_data[8],temp_data[9]);
 
   /* fill the data in */    // ???????????????
@@ -11694,16 +11694,16 @@ void my_station_gps_change(char *pos_long, char *pos_lat, char *course, char *sp
 
   curr_sec = sec_now();
   my_last_altitude_time = curr_sec;
-  xastir_snprintf(p_station->speed,
+  astir_snprintf(p_station->speed,
                   sizeof(p_station->speed),
                   "%s",
                   speed);
   // is speed always in knots, otherwise we need a conversion!
-  xastir_snprintf(p_station->course,
+  astir_snprintf(p_station->course,
                   sizeof(p_station->course),
                   "%s",
                   course);
-  xastir_snprintf(p_station->altitude,
+  astir_snprintf(p_station->altitude,
                   sizeof(p_station->altitude),
                   "%s",
                   alt);
@@ -11721,7 +11721,7 @@ void my_station_gps_change(char *pos_long, char *pos_lat, char *course, char *sp
 
   /* get my last speed in knots */
   my_last_speed = atoi(speed);
-  xastir_snprintf(p_station->sats_visible,
+  astir_snprintf(p_station->sats_visible,
                   sizeof(p_station->sats_visible),
                   "%s",
                   sats);
@@ -11821,12 +11821,12 @@ void my_station_add(char *my_callsign, char my_group, char my_symbol, char *my_l
   substr(p_station->node_path_ptr,"local",strlen("local"));
 
   // Create a timestamp from the current time
-  xastir_snprintf(p_station->packet_time,
+  astir_snprintf(p_station->packet_time,
                   sizeof(p_station->packet_time),
                   "%s",
                   get_time(temp_data));
   // Create a timestamp from the current time
-  xastir_snprintf(p_station->pos_time,
+  astir_snprintf(p_station->pos_time,
                   sizeof(p_station->pos_time),
                   "%s",
                   get_time(temp_data));
@@ -11858,7 +11858,7 @@ void my_station_add(char *my_callsign, char my_group, char my_symbol, char *my_l
   p_station->aprs_symbol.aprs_symbol = my_symbol;
 
   p_station->pos_amb = my_amb;
-  xastir_snprintf(temp_data,
+  astir_snprintf(temp_data,
                   sizeof(temp_data),
                   "%s",
                   my_lat);
@@ -11868,7 +11868,7 @@ void my_station_add(char *my_callsign, char my_group, char my_symbol, char *my_l
   temp_data[9] = '\0';
 
   strp = &temp_data[20];
-  xastir_snprintf(strp,
+  astir_snprintf(strp,
                   //        sizeof(strp),   // No good, as strp is a pointer
                   (int)(sizeof(temp_data) / 2),
                   "%s",
@@ -11943,15 +11943,15 @@ void packet_data_add(char *from, char *line, int data_port)
 
   if (data_port == -1)    // x_spider port (server port)
   {
-    xastir_snprintf(prefix,sizeof(prefix),"sp");
+    astir_snprintf(prefix,sizeof(prefix),"sp");
   }
   else if (data_port == -99)  // All ports, used for transmitting
   {
-    xastir_snprintf(prefix,sizeof(prefix),"**");
+    astir_snprintf(prefix,sizeof(prefix),"**");
   }
   else
   {
-    xastir_snprintf(prefix,sizeof(prefix),"%2d",data_port);
+    astir_snprintf(prefix,sizeof(prefix),"%2d",data_port);
   }
 
   offset=0;
@@ -12037,7 +12037,7 @@ void packet_data_add(char *from, char *line, int data_port)
   redraw_on_new_packet_data++;
 
   // Now save the packet in the history:
-  xastir_snprintf(packet_data_string[next_line],MAX_LINE_SIZE,"%s:%s-> %s\n",
+  astir_snprintf(packet_data_string[next_line],MAX_LINE_SIZE,"%s:%s-> %s\n",
                   prefix,from,line+offset);
   next_line = (next_line+1)%MAX_PACKET_DATA_DISPLAY;
   nlinesadd++;
@@ -12360,11 +12360,11 @@ int decode_Mic_E(char *call_sign,char *path,char *info,char from,int port,int th
   //fprintf(stderr,"north:%c->%d\tlat:%c->%d\twest:%c->%d\n",path[3],north,path[4],long_offset,path[5],west);
 
   /* Put the latitude string into the temp variable */
-  xastir_snprintf(temp, sizeof(temp), "%c%c%c%c.%c%c%c%c",s_b1,s_b2,s_b3,s_b4,s_b5,s_b6,
+  astir_snprintf(temp, sizeof(temp), "%c%c%c%c.%c%c%c%c",s_b1,s_b2,s_b3,s_b4,s_b5,s_b6,
                   (north ? 'N': 'S'), info[7]);   // info[7] = symbol table
 
   /* Compute degrees longitude */
-  xastir_snprintf(new_info,
+  astir_snprintf(new_info,
                   sizeof(new_info),
                   "%s",
                   temp);
@@ -12395,7 +12395,7 @@ int decode_Mic_E(char *call_sign,char *path,char *info,char from,int port,int th
   /* Compute hundredths of minutes longitude */
   h = (int) info[2]-28;
   /* Add the longitude string into the temp variable */
-  xastir_snprintf(temp, sizeof(temp), "%03d%02d.%02d%c%c",d,m,h,(west ? 'W': 'E'), info[6]);
+  astir_snprintf(temp, sizeof(temp), "%03d%02d.%02d%c%c",d,m,h,(west ? 'W': 'E'), info[6]);
   strncat(new_info,
           temp,
           sizeof(new_info) - 1 - strlen(new_info));
@@ -12419,7 +12419,7 @@ int decode_Mic_E(char *call_sign,char *path,char *info,char from,int port,int th
       fprintf(stderr,"info[4]-28 mod 10 - 4 = %d\n",( ( (int)info[4]) - 28) % 10 - 4);
       fprintf(stderr,"info[5]-28 = %d\n", ( (int)info[5]) - 28 );
   */
-  xastir_snprintf(temp, sizeof(temp), "%03d/%03d",course,speed);
+  astir_snprintf(temp, sizeof(temp), "%03d/%03d",course,speed);
   strncat(new_info,
           temp,
           sizeof(new_info) - 1 - strlen(new_info));
@@ -12431,11 +12431,11 @@ int decode_Mic_E(char *call_sign,char *path,char *info,char from,int port,int th
   {
     /* detected type code:     > TH-D7    ] TM-D700 */
     if (info[offset] == '>')
-      xastir_snprintf(rig_type,
+      astir_snprintf(rig_type,
                       sizeof(rig_type),
                       " TH-D7");
     else
-      xastir_snprintf(rig_type,
+      astir_snprintf(rig_type,
                       sizeof(rig_type),
                       " TM-D700");
 
@@ -12463,7 +12463,7 @@ int decode_Mic_E(char *call_sign,char *path,char *info,char from,int port,int th
     }
     else    // Altitude is ok
     {
-      xastir_snprintf(temp, sizeof(temp), " /A=%06ld",alt);
+      astir_snprintf(temp, sizeof(temp), " /A=%06ld",alt);
       offset += 4;
       strncat(new_info,
               temp,
@@ -12474,7 +12474,7 @@ int decode_Mic_E(char *call_sign,char *path,char *info,char from,int port,int th
   /* start of comment */
   if (strlen(rig_type) > 0)
   {
-    xastir_snprintf(temp, sizeof(temp), "%s",rig_type);
+    astir_snprintf(temp, sizeof(temp), "%s",rig_type);
     strncat(new_info,
             temp,
             sizeof(new_info) - 1 - strlen(new_info));
@@ -12585,14 +12585,14 @@ int decode_Mic_E(char *call_sign,char *path,char *info,char from,int port,int th
               // passed
 
               last_emergency_time = sec_now();
-              xastir_snprintf(last_emergency_callsign,
+              astir_snprintf(last_emergency_callsign,
                               sizeof(last_emergency_callsign),
                               "%s",
                               call_sign);
 
               // Bring up the Find Station dialog so that the
               // operator can go to the location quickly
-              xastir_snprintf(locate_station_call,
+              astir_snprintf(locate_station_call,
                               sizeof(locate_station_call),
                               "%s",
                               call_sign);
@@ -12602,17 +12602,17 @@ int decode_Mic_E(char *call_sign,char *path,char *info,char from,int port,int th
               // Bring up another dialog with the
               // callsign plus distance/bearing to the
               // station.
-              xastir_snprintf(temp,
+              astir_snprintf(temp,
                               sizeof(temp),
                               "%0.1f",
                               distance);
-              xastir_snprintf(temp2,
+              astir_snprintf(temp2,
                               sizeof(temp2),
                               langcode("WPUPSTI022"),
                               temp,
                               course_deg);
               get_timestamp(timestring);
-              xastir_snprintf(temp3,
+              astir_snprintf(temp3,
                               sizeof(temp3),
                               "%s  %s",
                               timestring,
@@ -12631,7 +12631,7 @@ int decode_Mic_E(char *call_sign,char *path,char *info,char from,int port,int th
   }
   else
   {
-    xastir_snprintf(temp, sizeof(temp), "Custom%d",msg);
+    astir_snprintf(temp, sizeof(temp), "Custom%d",msg);
     strncat(new_info,
             temp,
             sizeof(new_info) - 1 - strlen(new_info));
@@ -12668,7 +12668,7 @@ int decode_Mic_E(char *call_sign,char *path,char *info,char from,int port,int th
     // third_party: 0
   }
 
-  // We don't transmit Mic-E protocol from Xastir, so we know it's
+  // We don't transmit Mic-E protocol from Astir, so we know it's
   // not our station's packets or our object/item packets,
   // therefore the last two parameters here are both zero.
   //
@@ -12706,7 +12706,7 @@ int process_directed_query(char *call,char *path,char *message,char from)
   if (!ok && strncmp(message,"APRSD",5) == 0 && from != 'F')    // stations heard direct
   {
     pad_callsign(from_call,call);
-    xastir_snprintf(temp, sizeof(temp), ":%s:Directs=",from_call);
+    astir_snprintf(temp, sizeof(temp), ":%s:Directs=",from_call);
     p_station = n_first;
     while (p_station != NULL)
     {
@@ -12734,7 +12734,7 @@ int process_directed_query(char *call,char *path,char *message,char from)
             // default paths instead of a calculated reverse path.
 
             transmit_message_data(call,temp,NULL);
-            xastir_snprintf(temp, sizeof(temp),
+            astir_snprintf(temp, sizeof(temp),
                             ":%s:Directs=",from_call);
             strncat(temp,
                     " ",
@@ -12867,7 +12867,7 @@ int process_directed_query(char *call,char *path,char *message,char from)
               ||  strncmp(message,"PING?",5)==0) && from != 'F')
   {
     pad_callsign(from_call,call);
-    xastir_snprintf(temp, sizeof(temp), ":%s:PATH= %s>%s",from_call,call,path);    // correct format ?????
+    astir_snprintf(temp, sizeof(temp), ":%s:PATH= %s>%s",from_call,call,path);    // correct format ?????
 
     // Nice to return via the reverse path here?  No!  Better to use the
     // default paths instead of a calculated reverse path.
@@ -12895,7 +12895,7 @@ int process_directed_query(char *call,char *path,char *message,char from)
   if (!ok && strncasecmp("VER",message,3) == 0 && from != 'F')   // not in Reference !???
   {
     pad_callsign(from_call,call);
-    xastir_snprintf(temp, sizeof(temp), ":%s:%s",from_call,VERSIONLABEL);
+    astir_snprintf(temp, sizeof(temp), ":%s:%s",from_call,VERSIONLABEL);
 
     // Nice to return via the reverse path here?  No!  Better to use the
     // default paths instead of a calculated reverse path.
@@ -13000,7 +13000,7 @@ int process_query( char *call_sign, char * UNUSED(path), char *message,char from
 
     if (operate_as_an_igate && from != 'F')
     {
-      xastir_snprintf(temp, sizeof(temp), "<IGATE,MSG_CNT=%d,LOC_CNT=%d",(int)igate_msgs_tx,stations_types(3));
+      astir_snprintf(temp, sizeof(temp), "<IGATE,MSG_CNT=%d,LOC_CNT=%d",(int)igate_msgs_tx,stations_types(3));
 
       // OLD:
       //output_my_data(temp,port,0,0,0,NULL);    // Not igating
@@ -13113,7 +13113,7 @@ void shorten_path( char *path, char *short_path, int short_path_size )
   if ( (path != NULL) && (strlen(path) >= 1) )
   {
 
-    xastir_snprintf(short_path,
+    astir_snprintf(short_path,
                     short_path_size,
                     "%s",
                     path);
@@ -13374,7 +13374,7 @@ int fill_in_tactical_callsign(char *call, char *tactical_call)
         return -1;
       }
 
-      xastir_snprintf(p_station->tactical_call_sign,
+      astir_snprintf(p_station->tactical_call_sign,
                       MAX_TACTICAL_CALL+1,
                       "%s",
                       tactical_call);
@@ -13577,7 +13577,7 @@ int decode_message(char *call,char *path,char *message,char from,int port,int th
   {
 
     substr(addr9,message,9); // extract addressee
-    xastir_snprintf(addr,
+    astir_snprintf(addr,
                     sizeof(addr),
                     "%s",
                     addr9);
@@ -13599,7 +13599,7 @@ int decode_message(char *call,char *path,char *message,char from,int port,int th
 
     // Save the message text and the acks/reply-acks before we
     // extract the acks below.
-    xastir_snprintf(message_plus_acks,
+    astir_snprintf(message_plus_acks,
                     sizeof(message_plus_acks),
                     "%s",
                     message);
@@ -13614,7 +13614,7 @@ int decode_message(char *call,char *path,char *message,char from,int port,int th
     }
 
     // Save the original msg_id away.
-    xastir_snprintf(orig_msg_id,
+    astir_snprintf(orig_msg_id,
                     sizeof(orig_msg_id),
                     "%s",
                     msg_id);
@@ -13646,7 +13646,7 @@ int decode_message(char *call,char *path,char *message,char from,int port,int th
 
       // Separate out the extra ack so that we can deal with
       // it properly.
-      xastir_snprintf(ack_string,
+      astir_snprintf(ack_string,
                       sizeof(ack_string),
                       "%s",
                       temp_ptr+1); // After the '}' character!
@@ -13687,7 +13687,7 @@ int decode_message(char *call,char *path,char *message,char from,int port,int th
         }
 
         // Put this code into the UI message area as well (if applicable).
-        xastir_snprintf(ack_string,
+        astir_snprintf(ack_string,
                         sizeof(ack_string),
                         "%s",
                         temp_ptr+1);    // After the '}' character!
@@ -13774,7 +13774,7 @@ int decode_message(char *call,char *path,char *message,char from,int port,int th
         // empty, else just end the packet with the message
         // string.  This keeps us from appending a '}' when
         // it's not called for.
-        xastir_snprintf(ipacket_message,
+        astir_snprintf(ipacket_message,
                         sizeof(ipacket_message),
                         //                    "}%s>%s,TCPIP,%s*::%s:%s%s%s",
                         "}%s>%s,TCPIP,%s*::%s:%s",
@@ -13858,7 +13858,7 @@ int decode_message(char *call,char *path,char *message,char from,int port,int th
         // empty, else just end the packet with the message
         // string.  This keeps us from appending a '}' when
         // it's not called for.
-        xastir_snprintf(ipacket_message,
+        astir_snprintf(ipacket_message,
                         sizeof(ipacket_message),
                         //                    "}%s>%s,TCPIP,%s*::%s:%s%s%s",
                         "}%s>%s,TCPIP,%s*::%s:%s",
@@ -13994,7 +13994,7 @@ int decode_message(char *call,char *path,char *message,char from,int port,int th
       /* I re-use ipacket_message as my string buffer */
       if (festival_speak_new_message_alert)
       {
-        xastir_snprintf(ipacket_message,
+        astir_snprintf(ipacket_message,
                         sizeof(ipacket_message),
                         "You have a new message from %s.",
                         call);
@@ -14002,7 +14002,7 @@ int decode_message(char *call,char *path,char *message,char from,int port,int th
       }
       if (festival_speak_new_message_body)
       {
-        xastir_snprintf(ipacket_message,
+        astir_snprintf(ipacket_message,
                         sizeof(ipacket_message),
                         " %s",
                         message);
@@ -14044,8 +14044,8 @@ int decode_message(char *call,char *path,char *message,char from,int port,int th
 
       // In this case we want to send orig_msg_id back, not
       // the (possibly) truncated msg_id.  This is per Bob B's
-      // Reply/Ack spec, sent to xastir-dev on Nov 14, 2001.
-      xastir_snprintf(ack, sizeof(ack), ":%s:ack%s",from_call,orig_msg_id);
+      // Reply/Ack spec, sent to astir-dev on Nov 14, 2001.
+      astir_snprintf(ack, sizeof(ack), ":%s:ack%s",from_call,orig_msg_id);
 
       //WE7U
       // Need to figure out the reverse path for this one instead of
@@ -14108,7 +14108,7 @@ int decode_message(char *call,char *path,char *message,char from,int port,int th
       if (auto_reply == 1)
       {
 
-        xastir_snprintf(ipacket_message,
+        astir_snprintf(ipacket_message,
                         sizeof(ipacket_message), "AA:%s", auto_reply_message);
 
         if (debug_level & 2)
@@ -14202,7 +14202,7 @@ int decode_message(char *call,char *path,char *message,char from,int port,int th
       /* I re-use ipacket_message as my string buffer */
       if (festival_speak_new_message_alert)
       {
-        xastir_snprintf(ipacket_message,
+        astir_snprintf(ipacket_message,
                         sizeof(ipacket_message),
                         "You have a new message from %s.",
                         call);
@@ -14210,7 +14210,7 @@ int decode_message(char *call,char *path,char *message,char from,int port,int th
       }
       if (festival_speak_new_message_body)
       {
-        xastir_snprintf(ipacket_message,
+        astir_snprintf(ipacket_message,
                         sizeof(ipacket_message),
                         " %s",
                         message);
@@ -14264,7 +14264,7 @@ int decode_message(char *call,char *path,char *message,char from,int port,int th
 
       shorten_path(path,short_path,sizeof(short_path));
 
-      xastir_snprintf(ipacket_message,
+      astir_snprintf(ipacket_message,
                       sizeof(ipacket_message),
                       "}%s>%s,TCPIP,%s*::%s:%s",
                       call,
@@ -14317,7 +14317,7 @@ int decode_message(char *call,char *path,char *message,char from,int port,int th
 
       shorten_path(path,short_path,sizeof(short_path));
 
-      xastir_snprintf(ipacket_message,
+      astir_snprintf(ipacket_message,
                       sizeof(ipacket_message),
                       "}%s>%s,TCPIP,%s*::%s:%s",
                       call,
@@ -14368,7 +14368,7 @@ int decode_message(char *call,char *path,char *message,char from,int port,int th
       // what's happening.  Perhaps add the original callsign
       // to the message itself in a note at the start?
       //
-      xastir_snprintf(message_plus_note,
+      astir_snprintf(message_plus_note,
                       sizeof(message_plus_note),
                       "(Sent to:%s) %s",
                       addr,
@@ -14441,7 +14441,7 @@ int decode_message(char *call,char *path,char *message,char from,int port,int th
       //    addr);
 
       shorten_path(path,short_path,sizeof(short_path));
-      xastir_snprintf(ipacket_message,
+      astir_snprintf(ipacket_message,
                       sizeof(ipacket_message),
                       //                "}%s>%s,TCPIP,%s*::%s:%s{%s",
                       "}%s>%s,TCPIP,%s*::%s:%s",
@@ -14689,7 +14689,7 @@ int decode_UI_message(char *call,char *path,char *message,char from,int port,int
         msg_update_ack_stamp(record);
 
         pad_callsign(from_call,call);         /* ack the message */
-        xastir_snprintf(ack, sizeof(ack), ":%s:ack%s",from_call,msg_id);
+        astir_snprintf(ack, sizeof(ack), ":%s:ack%s",from_call,msg_id);
 
         // Nice to return via the reverse path here?  No!  Better to use the
         // default paths instead of a calculated reverse path.
@@ -14699,7 +14699,7 @@ int decode_UI_message(char *call,char *path,char *message,char from,int port,int
         {
           char temp[300];
 
-          xastir_snprintf(temp, sizeof(temp), "AA:%s", auto_reply_message);
+          astir_snprintf(temp, sizeof(temp), "AA:%s", auto_reply_message);
 
           if (debug_level & 2)
             fprintf(stderr,"Send autoreply to <%s> from <%s> :%s\n",
@@ -15138,7 +15138,7 @@ void decode_info_field(char *call,
         {
           char temp_msg[MAX_MESSAGE_LENGTH+1];
 
-          xastir_snprintf(temp_msg,
+          astir_snprintf(temp_msg,
                           sizeof(temp_msg),
                           "%s>%s:%s",
                           call,
@@ -15408,7 +15408,7 @@ void decode_info_field(char *call,
       // Here's where we inject our own callsign like this:
       // "WE7U-15,I" in order to provide injection ID for our
       // igate.
-      xastir_snprintf(line,
+      astir_snprintf(line,
                       sizeof(line),
                       "%s>%s,%s,I:%s",
                       (strlen(origin)) ? origin : call,
@@ -15446,7 +15446,7 @@ void decode_info_field(char *call,
 
     shorten_path(path,short_path,sizeof(short_path));
 
-    xastir_snprintf(ipacket_message,
+    astir_snprintf(ipacket_message,
                     sizeof(ipacket_message),
                     "}%s>%s,TCPIP,%s*:%s",
                     (strlen(origin)) ? origin : call,
@@ -15589,7 +15589,7 @@ int extract_third_party(char *call,
   if (ok)
   {
 
-    xastir_snprintf(path,
+    astir_snprintf(path,
                     path_size,
                     "%s",
                     p_path);
@@ -15601,7 +15601,7 @@ int extract_third_party(char *call,
     {
       char filtered_data[MAX_LINE_SIZE + 1];
 
-      xastir_snprintf(filtered_data,
+      astir_snprintf(filtered_data,
                       sizeof(filtered_data),
                       "%s",
                       path);
@@ -15616,14 +15616,14 @@ int extract_third_party(char *call,
     if (valid_inet_name(p_call,(*info),origin,origin_size))   // accept some of the names used in internet
     {
       // Treat it as object with special origin
-      xastir_snprintf(call,
+      astir_snprintf(call,
                       MAX_CALLSIGN+1,
                       "%s",
                       p_call);
     }
     else if (valid_call(p_call))                // accept real AX.25 calls
     {
-      xastir_snprintf(call,
+      astir_snprintf(call,
                       MAX_CALLSIGN+1,
                       "%s",
                       p_call);
@@ -15635,7 +15635,7 @@ int extract_third_party(char *call,
       {
         char filtered_data[MAX_LINE_SIZE + 1];
 
-        xastir_snprintf(filtered_data,
+        astir_snprintf(filtered_data,
                         sizeof(filtered_data),
                         "%s",
                         p_call);
@@ -15780,7 +15780,7 @@ int decode_ax25_address(char *string, char *callsign, int asterisk)
 // whether the packet was corrupted over the serial channel between
 // the TNC and the computer.  Upon sending a KISS packet to the TNC,
 // the TNC itself adds the CRC bytes back on before sending it over
-// the air.  In Xastir we can just assume that we're getting
+// the air.  In Astir we can just assume that we're getting
 // error-free packets from the TNC, ignoring possible corruption
 // over the serial line.
 //
@@ -15867,7 +15867,7 @@ int decode_ax25_header(unsigned char *data_string, int *length)
   }
   temp[7] = '\0';
   more = decode_ax25_address(temp, callsign, 0); // No asterisk
-  xastir_snprintf(dest,sizeof(dest),"%s",callsign);
+  astir_snprintf(dest,sizeof(dest),"%s",callsign);
 
   // Process the source address
   for (i = 0; i < 7; i++)
@@ -15879,7 +15879,7 @@ int decode_ax25_header(unsigned char *data_string, int *length)
 
   // Store the two callsigns we have into "result" in the correct
   // order
-  xastir_snprintf(result,sizeof(result),"%s>%s",callsign,dest);
+  astir_snprintf(result,sizeof(result),"%s>%s",callsign,dest);
 
   // Process the digipeater addresses (if any)
   num_digis = 0;
@@ -15908,7 +15908,7 @@ int decode_ax25_header(unsigned char *data_string, int *length)
 
   // Check the Control and PID bytes and toss packets that are
   // AX.25 connect/disconnect or information packets.  We only
-  // want to process UI packets in Xastir.
+  // want to process UI packets in Astir.
 
 
   // Control byte should be 0x03 (UI Frame).  Strip the poll-bit
@@ -16055,7 +16055,7 @@ void relay_digipeat(char *call, char *path, char *info, int port)
 
   // Make a copy of the incoming path.  The string passed to
   // split_string() gets destroyed.
-  xastir_snprintf(temp_string,
+  astir_snprintf(temp_string,
                   sizeof(temp_string),
                   "%s",
                   path);
@@ -16074,7 +16074,7 @@ void relay_digipeat(char *call, char *path, char *info, int port)
   }
   else    // Save the destination callsign away
   {
-    xastir_snprintf(destination,
+    astir_snprintf(destination,
                     sizeof(destination),
                     "%s",
                     Substring[0]);
@@ -16245,7 +16245,7 @@ void relay_digipeat(char *call, char *path, char *info, int port)
   // each callsign that has an asterisk.
 
   // Construct the new digi call, with the trailing asterisk
-  xastir_snprintf(new_digi,
+  astir_snprintf(new_digi,
                   sizeof(new_digi),
                   "%s*",
                   my_callsign);
@@ -16256,7 +16256,7 @@ void relay_digipeat(char *call, char *path, char *info, int port)
 
   // Construct the new path, substituting the correct portion.
   // Start with the first digi and a comma:
-  xastir_snprintf(new_path,
+  astir_snprintf(new_path,
                   sizeof(new_path),
                   "%s,",
                   Substring[1]);
@@ -16297,20 +16297,20 @@ void relay_digipeat(char *call, char *path, char *info, int port)
     //fprintf(stderr,"AX25 RELAY   new_path: %s\n", new_path);
 
     // set from call
-    xastir_snprintf(header_txt, sizeof(header_txt), "%c%s %s\r", '\3', "MYCALL", call);
+    astir_snprintf(header_txt, sizeof(header_txt), "%c%s %s\r", '\3', "MYCALL", call);
     if (port_data[port].status == DEVICE_UP)
     {
       port_write_string(port, header_txt);
     }
     // set path
-    xastir_snprintf(header_txt, sizeof(header_txt), "%c%s %s VIA %s\r", '\3', "UNPROTO",
+    astir_snprintf(header_txt, sizeof(header_txt), "%c%s %s VIA %s\r", '\3', "UNPROTO",
                     destination, new_path);
     if (port_data[port].status == DEVICE_UP)
     {
       port_write_string(port, header_txt);
     }
     // set converse mode
-    xastir_snprintf(header_txt, sizeof(header_txt), "%c%s\r", '\3', "CONV");
+    astir_snprintf(header_txt, sizeof(header_txt), "%c%s\r", '\3', "CONV");
     if (port_data[port].status == DEVICE_UP)
     {
       port_write_string(port, header_txt);
@@ -16323,7 +16323,7 @@ void relay_digipeat(char *call, char *path, char *info, int port)
   }
   else if (devices[port].device_type == DEVICE_NET_AGWPE)
   {
-    send_agwpe_packet(port, // Xastir interface port
+    send_agwpe_packet(port, // Astir interface port
                       atoi(devices[port].device_host_filter_string), // AGWPE RadioPort
                       '\0',                         // Type of frame (data)
                       (unsigned char *)call,        // source
@@ -16374,7 +16374,7 @@ int decode_ax25_line(char *line, char from, int port, int dbadd)
     fprintf(stderr, "WARNING:  Guard band around global pointers was corrupted!\n");
   }
 
-  xastir_snprintf(backup,
+  astir_snprintf(backup,
                   sizeof(backup),
                   "%s",
                   line);
@@ -16390,7 +16390,7 @@ int decode_ax25_line(char *line, char from, int port, int dbadd)
   {
     char filtered_data[MAX_LINE_SIZE+1];
 
-    xastir_snprintf(filtered_data,
+    astir_snprintf(filtered_data,
                     sizeof(filtered_data),
                     "%s",
                     line);
@@ -16456,13 +16456,13 @@ int decode_ax25_line(char *line, char from, int port, int dbadd)
   if (ok)
   {
 
-    xastir_snprintf(path,
+    astir_snprintf(path,
                     sizeof(path),
                     "%s",
                     path0);
 
     memset(info_copy, '\0', sizeof(info_copy));
-    xastir_snprintf(info_copy,
+    astir_snprintf(info_copy,
                     sizeof(info_copy),
                     "%s",
                     info);
@@ -16474,7 +16474,7 @@ int decode_ax25_line(char *line, char from, int port, int dbadd)
     {
       char filtered_data[MAX_LINE_SIZE + 1];
 
-      xastir_snprintf(filtered_data,
+      astir_snprintf(filtered_data,
                       sizeof(filtered_data),
                       "%s",
                       path);
@@ -16501,7 +16501,7 @@ int decode_ax25_line(char *line, char from, int port, int dbadd)
       //
       // Snag just the TO: field from the path, used for most of the
       // comparisons below.  It will be pointed to by ViaCalls[0];
-      xastir_snprintf(tmp_path,   // Make a temporary backup
+      astir_snprintf(tmp_path,   // Make a temporary backup
                       sizeof(tmp_path),
                       "%s",
                       path);
@@ -16578,7 +16578,7 @@ int decode_ax25_line(char *line, char from, int port, int dbadd)
               // has passed
 
               last_emergency_time = sec_now();
-              xastir_snprintf(last_emergency_callsign,
+              astir_snprintf(last_emergency_callsign,
                               sizeof(last_emergency_callsign),
                               "%s",
                               call_sign);
@@ -16586,7 +16586,7 @@ int decode_ax25_line(char *line, char from, int port, int dbadd)
               // Bring up the Find Station dialog so
               // that the operator can go to the
               // location quickly.
-              xastir_snprintf(locate_station_call,
+              astir_snprintf(locate_station_call,
                               sizeof(locate_station_call),
                               "%s",
                               call_sign);
@@ -16604,17 +16604,17 @@ int decode_ax25_line(char *line, char from, int port, int dbadd)
               // Bring up another dialog with the
               // callsign plus distance/bearing to the
               // station.
-              xastir_snprintf(temp,
+              astir_snprintf(temp,
                               sizeof(temp),
                               "%0.1f",
                               distance);
-              xastir_snprintf(temp2,
+              astir_snprintf(temp2,
                               sizeof(temp2),
                               langcode("WPUPSTI022"),
                               temp,
                               course_deg);
               get_timestamp(timestring);
-              xastir_snprintf(temp3,
+              astir_snprintf(temp3,
                               sizeof(temp3),
                               "%s  %s",
                               timestring,
@@ -16649,7 +16649,7 @@ int decode_ax25_line(char *line, char from, int port, int dbadd)
     {
       char filtered_data[MAX_LINE_SIZE + 1];
 
-      xastir_snprintf(filtered_data,
+      astir_snprintf(filtered_data,
                       sizeof(filtered_data),
                       "%s",
                       info);
@@ -16663,14 +16663,14 @@ int decode_ax25_line(char *line, char from, int port, int dbadd)
     (void)remove_trailing_asterisk(call_sign);              // is an asterisk valid here ???
     if (valid_inet_name(call_sign,info,origin,sizeof(origin)))   // accept some of the names used in internet
     {
-      xastir_snprintf(call,
+      astir_snprintf(call,
                       sizeof(call),
                       "%s",
                       call_sign);
     }
     else if (valid_call(call_sign))                       // accept real AX.25 calls
     {
-      xastir_snprintf(call,
+      astir_snprintf(call,
                       sizeof(call),
                       "%s",
                       call_sign);
@@ -16682,7 +16682,7 @@ int decode_ax25_line(char *line, char from, int port, int dbadd)
       {
         char filtered_data[MAX_LINE_SIZE + 1];
 
-        xastir_snprintf(filtered_data,
+        astir_snprintf(filtered_data,
                         sizeof(filtered_data),
                         "%s",
                         call_sign);
@@ -16722,7 +16722,7 @@ int decode_ax25_line(char *line, char from, int port, int dbadd)
 
   if (ok && (info[0] == ';' || info[0] == ')'))               // look for objects or items
   {
-    xastir_snprintf(origin,
+    astir_snprintf(origin,
                     sizeof(origin),
                     "%s",
                     call);
@@ -16790,7 +16790,7 @@ int decode_ax25_line(char *line, char from, int port, int dbadd)
       // Here's where we inject our own callsign like this:
       // "WE7U-15,I" in order to provide injection ID for our
       // igate.
-      xastir_snprintf(tmp_line2,
+      astir_snprintf(tmp_line2,
                       sizeof(tmp_line2),
                       "%s>%s,%s,I:%s",
                       call_sign,
@@ -17081,7 +17081,7 @@ double calc_aloha_distance(void)
     {
       if (position_defined(p_station->coord_lat,p_station->coord_lon,1))
       {
-        xastir_snprintf(aloha_array[num_aloha_entries].call_sign,
+        astir_snprintf(aloha_array[num_aloha_entries].call_sign,
                         MAX_CALLSIGN+1,
                         "%s",
                         p_station->call_sign);
@@ -17306,7 +17306,7 @@ void calc_aloha(int secs_now)
     {
       if ( aloha_radius != -1 )
       {
-        xastir_snprintf(status_text,
+        astir_snprintf(status_text,
                         sizeof(status_text),
                         langcode("BBARSTA044"),
                         (english_units) ? (int)aloha_radius : (int)(aloha_radius * cvt_mi2len),
@@ -17378,7 +17378,7 @@ void upd_echo(char *path)
   {
     for (i=0; i<5; i++)
     {
-      xastir_snprintf(echo_digis[i],
+      astir_snprintf(echo_digis[i],
                       MAX_CALLSIGN+1,
                       "%s",
                       echo_digis[i+1]);

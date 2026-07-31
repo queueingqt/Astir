@@ -1,6 +1,6 @@
 /*
  *
- * XASTIR, Amateur Station Tracking and Information Reporting
+ * ASTIR, Amateur Station Tracking and Information Reporting
  * Copyright (C) 1999,2000  Frank Giannandrea
  * Copyright (C) 2000-2026 The Xastir Group
  *
@@ -37,7 +37,7 @@
 
 #include "core/state/xa_config.h"
 #include "core/io/interface.h"
-#include "core/xastir.h"
+#include "core/astir.h"
 #include "core/main.h"
 #include "core/aprs/db_funcs.h"
 #include "core/util/util.h"
@@ -61,12 +61,12 @@
 
 
 
-#define CONFIG_FILE      "config/xastir.cnf"
-#define CONFIG_FILE_BAK1 "config/xastir.cnf.1"
-#define CONFIG_FILE_BAK2 "config/xastir.cnf.2"
-#define CONFIG_FILE_BAK3 "config/xastir.cnf.3"
-#define CONFIG_FILE_BAK4 "config/xastir.cnf.4"
-#define CONFIG_FILE_TMP  "config/xastir.cnf.tmp"
+#define CONFIG_FILE      "config/astir.cnf"
+#define CONFIG_FILE_BAK1 "config/astir.cnf.1"
+#define CONFIG_FILE_BAK2 "config/astir.cnf.2"
+#define CONFIG_FILE_BAK3 "config/astir.cnf.3"
+#define CONFIG_FILE_BAK4 "config/astir.cnf.4"
+#define CONFIG_FILE_TMP  "config/astir.cnf.tmp"
 
 #define MAX_VALUE 300
 
@@ -81,7 +81,7 @@ void store_string(FILE * fout, char *option, char *value)
   //        fprintf(stderr,"Store String Start\n");
 
   // TODO:  Replace with function which doesn't depend on locale.
-  // We'd also need to replace any xastir_snprintf() functions
+  // We'd also need to replace any astir_snprintf() functions
   // throughout.
   fprintf (fout, "%s:%s\n", option, value);
 
@@ -111,7 +111,7 @@ void store_int(FILE * fout, char *option, int value)
 {
   char value_o[MAX_VALUE];
 
-  xastir_snprintf (value_o, sizeof(value_o), "%d", value);
+  astir_snprintf (value_o, sizeof(value_o), "%d", value);
   store_string (fout, option, value_o);
 }
 
@@ -123,7 +123,7 @@ void store_long (FILE * fout, char *option, long value)
 {
   char value_o[MAX_VALUE];
 
-  xastir_snprintf(value_o, sizeof(value_o), "%ld", value);
+  astir_snprintf(value_o, sizeof(value_o), "%ld", value);
   store_string (fout, option, value_o);
 }
 
@@ -135,7 +135,7 @@ void store_float (FILE * fout, char *option, float value)
 {
   char value_o[MAX_VALUE];
 
-  xastir_snprintf(value_o, sizeof(value_o), "%f", value);
+  astir_snprintf(value_o, sizeof(value_o), "%f", value);
   store_string (fout, option, value_o);
 }
 
@@ -159,7 +159,7 @@ void input_close(void)
 
 
 /*
-  This function will read the configuration file (xastir.cnf) until it finds
+  This function will read the configuration file (astir.cnf) until it finds
   the requested option. When the requested option is found it will return
   the value of that option.
   The return value of the function will be 1 if the option is found and 0
@@ -253,7 +253,7 @@ int get_string(char *option, char *value, int value_size)
             value = "";
           }
           else
-            xastir_snprintf(value,
+            astir_snprintf(value,
                             value_size,
                             "%s",
                             value_array[1]);
@@ -280,7 +280,7 @@ static void get_string_default(char *option, char *value, int value_size,
 {
   if (!get_string(option, value, value_size) || value[0] == '\0')
   {
-    xastir_snprintf(value, value_size, "%s", dflt);
+    astir_snprintf(value, value_size, "%s", dflt);
   }
 }
 
@@ -321,13 +321,13 @@ int get_int(char *option, int low, int high, int def)
 
   if (!ret)
   {
-    //        fprintf(stderr,"xastir.cnf: %s not found, inserting default: %d\n",
+    //        fprintf(stderr,"astir.cnf: %s not found, inserting default: %d\n",
     //            option,
     //            def);
     return(def);
   }
 
-  fprintf(stderr,"xastir.cnf: %s out-of-range: %d, changing to default: %d\n",
+  fprintf(stderr,"astir.cnf: %s out-of-range: %d, changing to default: %d\n",
           option,
           atoi(value_o),
           def);
@@ -353,14 +353,14 @@ long get_long(char *option, long low, long high, long def)
 
   if (!ret)
   {
-    //        fprintf(stderr,"xastir.cnf: %s not found, inserting default: %ld\n",
+    //        fprintf(stderr,"astir.cnf: %s not found, inserting default: %ld\n",
     //            option,
     //            def);
     return(def);
   }
 
   fprintf(stderr,
-          "xastir.cnf: %s out-of-range: %ld, changing to default: %ld\n",
+          "astir.cnf: %s out-of-range: %ld, changing to default: %ld\n",
           option,
           atol(value_o),
           def);
@@ -386,14 +386,14 @@ float get_float(char *option, float low, float high, float def)
 
   if (!ret)
   {
-    //        fprintf(stderr,"xastir.cnf: %s not found, inserting default: %f\n",
+    //        fprintf(stderr,"astir.cnf: %s not found, inserting default: %f\n",
     //            option,
     //            def);
     return(def);
   }
 
   fprintf(stderr,
-          "xastir.cnf: %s out-of-range: %f, changing to default: %f\n",
+          "astir.cnf: %s out-of-range: %f, changing to default: %f\n",
           option,
           strtof(value_o, NULL),
           def);
@@ -435,27 +435,27 @@ char *get_user_base_dir(char *dir, char * base, size_t base_size)
   {
     case '/':
       //have some path
-      xastir_snprintf(base, base_size, "%s",xa_config_dir);
+      astir_snprintf(base, base_size, "%s",xa_config_dir);
       break;
 
     case '\0' :
       // build from scratch
-      xastir_snprintf(base,
+      astir_snprintf(base,
                       base_size,
                       "%s",
-                      ((env_ptr = getenv ("XASTIR_USER_BASE")) != NULL) ? env_ptr : user_dir);
+                      ((env_ptr = getenv ("ASTIR_USER_BASE")) != NULL) ? env_ptr : user_dir);
 
       if (base[strlen (base) - 1] != '/')
       {
         strncat (base, "/", base_size - 1 - strlen(base));
       }
 
-      strncat (base, ".xastir/", base_size - 1 - strlen(base));
+      strncat (base, ".astir/", base_size - 1 - strlen(base));
       break ;
 
     default:
       // Unqualified path
-      xastir_snprintf(base, base_size, "%s",
+      astir_snprintf(base, base_size, "%s",
                       ((env_ptr = getenv ("PWD")) != NULL) ? env_ptr : user_dir);
 
       if (base[strlen (base) - 1] != '/')
@@ -473,7 +473,7 @@ char *get_user_base_dir(char *dir, char * base, size_t base_size)
 
   // Save base so we monkey around less later.
 
-  xastir_snprintf(xa_config_dir,sizeof(xa_config_dir),"%s", base);
+  astir_snprintf(xa_config_dir,sizeof(xa_config_dir),"%s", base);
 
   // Append dir and return
 
@@ -494,13 +494,13 @@ char *get_data_base_dir(char *dir)
   // else grab it from the define from the compile command-line
   // that should look like one of these:
   //
-  // -DXASTIR_DATA_BASE=\"/opt/Xastir/share/xastir\"
-  // -DXASTIR_DATA_BASE=\"/usr/local/share/xastir\"
+  // -DASTIR_DATA_BASE=\"/opt/Astir/share/astir\"
+  // -DASTIR_DATA_BASE=\"/usr/local/share/astir\"
   //
-  xastir_snprintf(base,
+  astir_snprintf(base,
                   sizeof(base),
                   "%s",
-                  ((env_ptr = getenv ("XASTIR_DATA_BASE")) != NULL) ? env_ptr : XASTIR_DATA_BASE);
+                  ((env_ptr = getenv ("ASTIR_DATA_BASE")) != NULL) ? env_ptr : ASTIR_DATA_BASE);
 
   if (base[strlen (base) - 1] != '/')
   {
@@ -516,7 +516,7 @@ char *get_data_base_dir(char *dir)
 
 
 // Care should be taken here to make sure that no out-of-range data
-// is saved, as it will mess up Xastir startup from that point on.
+// is saved, as it will mess up Astir startup from that point on.
 // Also: Config file should be owned by the user, and not by root.
 // If chmod 4755 is done on the executable, then the config file ends
 // up being owned by root from then on.
@@ -527,8 +527,8 @@ char *get_data_base_dir(char *dir)
 // of them get blown away.
 //
 // Another step that needs to be made is to restore config settings
-// for the cases where Xastir comes up with a nonexistent or empty
-// xastir.cnf file.  If the backups exist, we should copy them
+// for the cases where Astir comes up with a nonexistent or empty
+// astir.cnf file.  If the backups exist, we should copy them
 // across.
 //
 void save_data(void)
@@ -785,30 +785,30 @@ void save_data(void)
 
     for (i = 0; i < MAX_IFACE_DEVICES; i++)
     {
-      xastir_snprintf (name_temp, sizeof(name_temp), "DEVICE%0d_", i);
+      astir_snprintf (name_temp, sizeof(name_temp), "DEVICE%0d_", i);
 
-      xastir_snprintf(name,
+      astir_snprintf(name,
                       sizeof(name),
                       "%s",
                       name_temp);
       strncat (name, "TYPE", sizeof(name) - 1 - strlen(name));
       store_int (fout, name, devices[i].device_type);
 
-      xastir_snprintf(name,
+      astir_snprintf(name,
                       sizeof(name),
                       "%s",
                       name_temp);
       strncat (name, "NAME", sizeof(name) - 1 - strlen(name));
       store_string (fout, name, devices[i].device_name);
 
-      xastir_snprintf(name,
+      astir_snprintf(name,
                       sizeof(name),
                       "%s",
                       name_temp);
       strncat (name, "RADIO_PORT", sizeof(name) - 1 - strlen(name));
       store_string (fout, name, devices[i].radio_port);
 
-      xastir_snprintf(name,
+      astir_snprintf(name,
                       sizeof(name),
                       "%s",
                       name_temp);
@@ -818,42 +818,42 @@ void save_data(void)
 
 #ifdef HAVE_DB
 
-      xastir_snprintf(name,
+      astir_snprintf(name,
                       sizeof(name),
                       "%s",
                       name_temp);
       strncat (name, "DATABASE_TYPE", sizeof(name) - 1 - strlen(name));
       store_int (fout, name, devices[i].database_type);
 
-      xastir_snprintf(name,
+      astir_snprintf(name,
                       sizeof(name),
                       "%s",
                       name_temp);
       strncat (name, "DATABASE_SCHEMA_TYPE", sizeof(name) - 1 - strlen(name));
       store_int (fout, name, devices[i].database_schema_type);
 
-      xastir_snprintf(name,
+      astir_snprintf(name,
                       sizeof(name),
                       "%s",
                       name_temp);
       strncat (name, "DATABASE_USERNAME", sizeof(name) - 1 - strlen(name));
       store_string (fout, name, devices[i].database_username);
 
-      xastir_snprintf(name,
+      astir_snprintf(name,
                       sizeof(name),
                       "%s",
                       name_temp);
       strncat (name, "DATABASE_SCHEMA", sizeof(name) - 1 - strlen(name));
       store_string (fout, name, devices[i].database_schema);
 
-      xastir_snprintf(name,
+      astir_snprintf(name,
                       sizeof(name),
                       "%s",
                       name_temp);
       strncat (name, "DATABASE_UNIX_SOCKET", sizeof(name) - 1 - strlen(name));
       store_string (fout, name, devices[i].database_unix_socket);
 
-      xastir_snprintf(name,
+      astir_snprintf(name,
                       sizeof(name),
                       "%s",
                       name_temp);
@@ -862,182 +862,182 @@ void save_data(void)
 
 #endif /* HAVE_DB */
 
-      xastir_snprintf(name,
+      astir_snprintf(name,
                       sizeof(name),
                       "%s",
                       name_temp);
       strncat (name, "INTERFACE_COMMENT", sizeof(name) - 1 - strlen(name));
       store_string (fout, name, devices[i].comment);
 
-      xastir_snprintf(name,
+      astir_snprintf(name,
                       sizeof(name),
                       "%s",
                       name_temp);
       strncat (name, "HOST", sizeof(name) - 1 - strlen(name));
       store_string (fout, name, devices[i].device_host_name);
 
-      xastir_snprintf(name,
+      astir_snprintf(name,
                       sizeof(name),
                       "%s",
                       name_temp);
       strncat (name, "PASSWD", sizeof(name) - 1 - strlen(name));
       store_string (fout, name, devices[i].device_host_pswd);
 
-      xastir_snprintf(name,
+      astir_snprintf(name,
                       sizeof(name),
                       "%s",
                       name_temp);
       strncat (name, "FILTER_PARAMS", sizeof(name) - 1 - strlen(name));
       store_string (fout, name, devices[i].device_host_filter_string);
 
-      xastir_snprintf(name,
+      astir_snprintf(name,
                       sizeof(name),
                       "%s",
                       name_temp);
       strncat (name, "UNPROTO1", sizeof(name) - 1 - strlen(name));
       store_string (fout, name, devices[i].unproto1);
 
-      xastir_snprintf(name,
+      astir_snprintf(name,
                       sizeof(name),
                       "%s",
                       name_temp);
       strncat (name, "UNPROTO2", sizeof(name) - 1 - strlen(name));
       store_string (fout, name, devices[i].unproto2);
 
-      xastir_snprintf(name,
+      astir_snprintf(name,
                       sizeof(name),
                       "%s",
                       name_temp);
       strncat (name, "UNPROTO3", sizeof(name) - 1 - strlen(name));
       store_string (fout, name, devices[i].unproto3);
 
-      xastir_snprintf(name,
+      astir_snprintf(name,
                       sizeof(name),
                       "%s",
                       name_temp);
       strncat (name, "UNPROTO_IGATE", sizeof(name) - 1 - strlen(name));
       store_string (fout, name, devices[i].unproto_igate);
 
-      xastir_snprintf(name,
+      astir_snprintf(name,
                       sizeof(name),
                       "%s",
                       name_temp);
       strncat (name, "TNC_UP_FILE", sizeof(name) - 1 - strlen(name));
       store_string (fout, name, devices[i].tnc_up_file);
 
-      xastir_snprintf(name,
+      astir_snprintf(name,
                       sizeof(name),
                       "%s",
                       name_temp);
       strncat (name, "TNC_DOWN_FILE", sizeof(name) - 1 - strlen(name));
       store_string (fout, name, devices[i].tnc_down_file);
 
-      xastir_snprintf(name,
+      astir_snprintf(name,
                       sizeof(name),
                       "%s",
                       name_temp);
       strncat (name, "TNC_TXDELAY", sizeof(name) - 1 - strlen(name));
       store_string (fout, name, devices[i].txdelay);
 
-      xastir_snprintf(name,
+      astir_snprintf(name,
                       sizeof(name),
                       "%s",
                       name_temp);
       strncat (name, "TNC_PERSISTENCE", sizeof(name) - 1 - strlen(name));
       store_string (fout, name, devices[i].persistence);
 
-      xastir_snprintf(name,
+      astir_snprintf(name,
                       sizeof(name),
                       "%s",
                       name_temp);
       strncat (name, "TNC_SLOTTIME", sizeof(name) - 1 - strlen(name));
       store_string (fout, name, devices[i].slottime);
 
-      xastir_snprintf(name,
+      astir_snprintf(name,
                       sizeof(name),
                       "%s",
                       name_temp);
       strncat (name, "TNC_TXTAIL", sizeof(name) - 1 - strlen(name));
       store_string (fout, name, devices[i].txtail);
 
-      xastir_snprintf(name,
+      astir_snprintf(name,
                       sizeof(name),
                       "%s",
                       name_temp);
       strncat (name, "TNC_FULLDUPLEX", sizeof(name) - 1 - strlen(name));
       store_int (fout, name, devices[i].fullduplex);
 
-      xastir_snprintf(name,
+      astir_snprintf(name,
                       sizeof(name),
                       "%s",
                       name_temp);
       strncat (name, "TNC_INIT_KISSMODE", sizeof(name) - 1 - strlen(name));
       store_int (fout, name, devices[i].init_kiss);
 
-      xastir_snprintf(name,
+      astir_snprintf(name,
                       sizeof(name),
                       "%s",
                       name_temp);
       strncat (name, "SPEED", sizeof(name) - 1 - strlen(name));
       store_int (fout, name, devices[i].sp);
 
-      xastir_snprintf(name,
+      astir_snprintf(name,
                       sizeof(name),
                       "%s",
                       name_temp);
       strncat (name, "STYLE", sizeof(name) - 1 - strlen(name));
       store_int (fout, name, devices[i].style);
 
-      xastir_snprintf(name,
+      astir_snprintf(name,
                       sizeof(name),
                       "%s",
                       name_temp);
       strncat (name, "IGATE_OPTION", sizeof(name) - 1 - strlen(name));
       store_int (fout, name, devices[i].igate_options);
 
-      xastir_snprintf(name,
+      astir_snprintf(name,
                       sizeof(name),
                       "%s",
                       name_temp);
       strncat (name, "TXMT", sizeof(name) - 1 - strlen(name));
       store_int (fout, name, devices[i].transmit_data);
 
-      xastir_snprintf(name,
+      astir_snprintf(name,
                       sizeof(name),
                       "%s",
                       name_temp);
       strncat (name, "RELAY_DIGIPEAT", sizeof(name) - 1 - strlen(name));
       store_int (fout, name, devices[i].relay_digipeat);
 
-      xastir_snprintf(name,
+      astir_snprintf(name,
                       sizeof(name),
                       "%s",
                       name_temp);
       strncat (name, "RECONN", sizeof(name) - 1 - strlen(name));
       store_int (fout, name, devices[i].reconnect);
 
-      xastir_snprintf(name,
+      astir_snprintf(name,
                       sizeof(name),
                       "%s",
                       name_temp);
       strncat (name, "ONSTARTUP", sizeof(name) - 1 - strlen(name));
       store_int (fout, name, devices[i].connect_on_startup);
 
-      xastir_snprintf(name,
+      astir_snprintf(name,
                       sizeof(name),
                       "%s",
                       name_temp);
       strncat(name, "GPSRETR", sizeof(name) - 1 - strlen(name));
       store_int (fout, name, devices[i].gps_retrieve);
 
-      xastir_snprintf(name,
+      astir_snprintf(name,
                       sizeof(name),
                       "%s",
                       name_temp);
       strncat (name, "SETTIME", sizeof(name) - 1 - strlen(name));
       store_int (fout, name, devices[i].set_time);
 
-      xastir_snprintf(name,
+      astir_snprintf(name,
                       sizeof(name),
                       "%s",
                       name_temp);
@@ -1195,14 +1195,14 @@ void save_data(void)
     /* list attributes */
     for (i = 0; i < LST_NUM; i++)
     {
-      xastir_snprintf (name_temp, sizeof(name_temp), "LIST%0d_", i);
-      xastir_snprintf(name,
+      astir_snprintf (name_temp, sizeof(name_temp), "LIST%0d_", i);
+      astir_snprintf(name,
                       sizeof(name),
                       "%s",
                       name_temp);
       strncat (name, "H", sizeof(name) - 1 - strlen(name));
       store_int (fout, name, list_size_h[i]);
-      xastir_snprintf(name,
+      astir_snprintf(name,
                       sizeof(name),
                       "%s",
                       name_temp);
@@ -1235,11 +1235,11 @@ void save_data(void)
     // Rename the old config files so that we have a few
     // backups in case of corruption:
     //
-    //   xastir.cnf.3   -> xastir.cnf.4
-    //   xastir.cnf.2   -> xastir.cnf.3
-    //   xastir.cnf.1   -> xastir.cnf.2
-    //   xastir.cnf     -> xastir.cnf.1
-    //   xastir.cnf.tmp -> xastir.cnf
+    //   astir.cnf.3   -> astir.cnf.4
+    //   astir.cnf.2   -> astir.cnf.3
+    //   astir.cnf.1   -> astir.cnf.2
+    //   astir.cnf     -> astir.cnf.1
+    //   astir.cnf.tmp -> astir.cnf
     //
 
     // Rename bak3 to bak4
@@ -1362,7 +1362,7 @@ void save_data(void)
       }
     }
 
-    // Rename config.tmp to xastir.cnf
+    // Rename config.tmp to astir.cnf
     // NOTE: config won't exist until the first save happens.
     //
     // Check whether config.tmp exists
@@ -1401,7 +1401,7 @@ void save_data(void)
     // Continue using original config file.
     if ( rename (config_file_bak1, config_file) )
     {
-      // Problem here, couldn't rename bak1 file to xastir.cnf
+      // Problem here, couldn't rename bak1 file to astir.cnf
       fprintf(stderr,
               "Couldn't recover %s from %s file\n",
               config_file,
@@ -1433,7 +1433,7 @@ void load_data_or_default(void)
   if (!get_string ("LANGUAGE", lang_to_use, sizeof(lang_to_use))
       || lang_to_use[0] == '\0')
   {
-    xastir_snprintf(lang_to_use,
+    astir_snprintf(lang_to_use,
                     sizeof(lang_to_use),
                     "English");
   }
@@ -1442,7 +1442,7 @@ void load_data_or_default(void)
   if (!get_string ("STATION_CALLSIGN", my_callsign, sizeof(my_callsign))
       || my_callsign[0] == '\0')
   {
-    xastir_snprintf(my_callsign,
+    astir_snprintf(my_callsign,
                     sizeof(my_callsign),
                     "NOCALL");
   }
@@ -1450,14 +1450,14 @@ void load_data_or_default(void)
   if (!get_string ("STATION_LAT", my_lat, sizeof(my_lat))
       || my_lat[0] == '\0')
   {
-    xastir_snprintf(my_lat,
+    astir_snprintf(my_lat,
                     sizeof(my_lat),
                     "0000.000N");
   }
   if ( (my_lat[4] != '.')
        || (my_lat[8] != 'N' && my_lat[8] != 'S') )
   {
-    xastir_snprintf(my_lat,
+    astir_snprintf(my_lat,
                     sizeof(my_lat),
                     "0000.000N");
     fprintf(stderr,"Invalid Latitude, changing it to 0000.000N\n");
@@ -1470,14 +1470,14 @@ void load_data_or_default(void)
   if (!get_string ("STATION_LONG", my_long, sizeof(my_long))
       || my_long[0] == '\0')
   {
-    xastir_snprintf(my_long,
+    astir_snprintf(my_long,
                     sizeof(my_long),
                     "00000.000W");
   }
   if ( (my_long[5] != '.')
        || (my_long[9] != 'W' && my_long[9] != 'E') )
   {
-    xastir_snprintf(my_long,
+    astir_snprintf(my_long,
                     sizeof(my_long),
                     "00000.000W");
     fprintf(stderr,"Invalid Longitude, changing it to 00000.000W\n");
@@ -1513,8 +1513,8 @@ void load_data_or_default(void)
   if (!get_string ("STATION_COMMENTS", my_comment, sizeof(my_comment))
       || my_comment[0] == '\0')
   {
-    // We used to put "XASTIR-Linux" (or similar) here...
-    //xastir_snprintf (my_comment, sizeof(my_comment), "XASTIR-%s", XASTIR_SYSTEM);
+    // We used to put "ASTIR-Linux" (or similar) here...
+    //astir_snprintf (my_comment, sizeof(my_comment), "ASTIR-%s", ASTIR_SYSTEM);
     // Now we put the empty string.
     my_comment[0] = '\0';
   }
@@ -1537,7 +1537,7 @@ void load_data_or_default(void)
   // Empty string is ok here
   if (!get_string("RELAY_DIGIPEAT_CALLS", relay_digipeater_calls, sizeof(relay_digipeater_calls)))
   {
-    xastir_snprintf (relay_digipeater_calls, sizeof(relay_digipeater_calls), "WIDE1-1");
+    astir_snprintf (relay_digipeater_calls, sizeof(relay_digipeater_calls), "WIDE1-1");
   }
   // Make them all upper-case.
   (void)to_upper(relay_digipeater_calls);
@@ -1564,7 +1564,7 @@ void load_data_or_default(void)
   if (!get_string ("PRINT_PROGRAM", printer_program, sizeof(printer_program))
       || printer_program[0] == '\0')
   {
-    xastir_snprintf(printer_program,
+    astir_snprintf(printer_program,
                     sizeof(printer_program),
                     "%s",
 #ifdef LPR_PATH
@@ -1579,7 +1579,7 @@ void load_data_or_default(void)
   if (!get_string ("PREVIEWER_PROGRAM", previewer_program, sizeof(previewer_program))
       || previewer_program[0] == '\0')
   {
-    xastir_snprintf(previewer_program,
+    astir_snprintf(previewer_program,
                     sizeof(previewer_program),
                     "%s",
 #ifdef GV_PATH
@@ -1600,9 +1600,9 @@ void load_data_or_default(void)
 
   // Empty string is ok here
   if (!get_string("ALTNET_CALL", altnet_call, sizeof(altnet_call)))
-    xastir_snprintf(altnet_call,
+    astir_snprintf(altnet_call,
                     sizeof(altnet_call),
-                    "XASTIR");
+                    "ASTIR");
 
   altnet = get_int("ALTNET", 0, 1, 0);
 
@@ -1627,7 +1627,7 @@ void load_data_or_default(void)
   // Check for old complete path, change to new short path if a
   // match
   if (strncmp( user_base_dir, SELECTED_MAP_DATA, strlen(user_base_dir)) == 0)
-    xastir_snprintf(SELECTED_MAP_DATA,
+    astir_snprintf(SELECTED_MAP_DATA,
                     sizeof(SELECTED_MAP_DATA),
                     "%s",
                     "config/selected_maps.sys");
@@ -1637,7 +1637,7 @@ void load_data_or_default(void)
   // Check for old complete path, change to new short path if a
   // match
   if (strncmp( user_base_dir, MAP_INDEX_DATA, strlen(user_base_dir)) == 0)
-    xastir_snprintf(MAP_INDEX_DATA,
+    astir_snprintf(MAP_INDEX_DATA,
                     sizeof(MAP_INDEX_DATA),
                     "%s",
                     "config/map_index.sys");
@@ -1653,7 +1653,7 @@ void load_data_or_default(void)
   // Check for old complete path, change to new short path if a
   // match
   if (strncmp( user_base_dir, group_data_file, strlen(user_base_dir)) == 0)
-    xastir_snprintf(group_data_file,
+    astir_snprintf(group_data_file,
                     sizeof(group_data_file),
                     "%s",
                     "config/groups");
@@ -1703,7 +1703,7 @@ void load_data_or_default(void)
   if (!get_string ("MAPS_LABEL_FONT_TINY", rotated_label_fontname[FONT_TINY], sizeof(rotated_label_fontname[FONT_TINY]))
       || rotated_label_fontname[FONT_TINY][0] == '\0')
   {
-    xastir_snprintf(rotated_label_fontname[FONT_TINY],
+    astir_snprintf(rotated_label_fontname[FONT_TINY],
                     sizeof(rotated_label_fontname[FONT_TINY]),
 #ifdef HAVE_CAIRO
                     "sans:size=8");
@@ -1715,7 +1715,7 @@ void load_data_or_default(void)
   if (!get_string ("MAPS_LABEL_FONT_SMALL", rotated_label_fontname[FONT_SMALL], sizeof(rotated_label_fontname[FONT_SMALL]))
       || rotated_label_fontname[FONT_SMALL][0] == '\0')
   {
-    xastir_snprintf(rotated_label_fontname[FONT_SMALL],
+    astir_snprintf(rotated_label_fontname[FONT_SMALL],
                     sizeof(rotated_label_fontname[FONT_SMALL]),
 #ifdef HAVE_CAIRO
                     "sans:size=10");
@@ -1727,7 +1727,7 @@ void load_data_or_default(void)
   if (!get_string ("MAPS_LABEL_FONT_MEDIUM", rotated_label_fontname[FONT_MEDIUM], sizeof(rotated_label_fontname[FONT_MEDIUM]))
       || rotated_label_fontname[FONT_MEDIUM][0] == '\0')
   {
-    xastir_snprintf(rotated_label_fontname[FONT_MEDIUM],
+    astir_snprintf(rotated_label_fontname[FONT_MEDIUM],
                     sizeof(rotated_label_fontname[FONT_MEDIUM]),
 #ifdef HAVE_CAIRO
                     "sans:size=12");
@@ -1740,7 +1740,7 @@ void load_data_or_default(void)
   if (!get_string ("MAPS_LABEL_FONT_LARGE", rotated_label_fontname[FONT_LARGE], sizeof(rotated_label_fontname[FONT_LARGE]))
       || rotated_label_fontname[FONT_LARGE][0] == '\0')
   {
-    xastir_snprintf(rotated_label_fontname[FONT_LARGE],
+    astir_snprintf(rotated_label_fontname[FONT_LARGE],
                     sizeof(rotated_label_fontname[FONT_LARGE]),
 #ifdef HAVE_CAIRO
                     "sans:size=14");
@@ -1752,7 +1752,7 @@ void load_data_or_default(void)
   if (!get_string ("MAPS_LABEL_FONT_HUGE", rotated_label_fontname[FONT_HUGE], sizeof(rotated_label_fontname[FONT_HUGE]))
       || rotated_label_fontname[FONT_HUGE][0] == '\0')
   {
-    xastir_snprintf(rotated_label_fontname[FONT_HUGE],
+    astir_snprintf(rotated_label_fontname[FONT_HUGE],
                     sizeof(rotated_label_fontname[FONT_HUGE]),
 #ifdef HAVE_CAIRO
                     "sans:size=24");
@@ -1764,7 +1764,7 @@ void load_data_or_default(void)
   if (!get_string ("MAPS_LABEL_FONT_BORDER", rotated_label_fontname[FONT_BORDER], sizeof(rotated_label_fontname[FONT_BORDER]))
       || rotated_label_fontname[FONT_BORDER][0] == '\0')
   {
-    xastir_snprintf(rotated_label_fontname[FONT_BORDER],
+    astir_snprintf(rotated_label_fontname[FONT_BORDER],
                     sizeof(rotated_label_fontname[FONT_BORDER]),
 #ifdef HAVE_CAIRO
                     "sans:size=14");
@@ -1776,7 +1776,7 @@ void load_data_or_default(void)
   if (!get_string ("SYSTEM_FIXED_FONT", rotated_label_fontname[FONT_SYSTEM], sizeof(rotated_label_fontname[FONT_SYSTEM]))
       || rotated_label_fontname[FONT_SYSTEM][0] == '\0')
   {
-    xastir_snprintf(rotated_label_fontname[FONT_SYSTEM],
+    astir_snprintf(rotated_label_fontname[FONT_SYSTEM],
                     sizeof(rotated_label_fontname[FONT_SYSTEM]),
                     "fixed");
     // NOTE:  This same default font is hard-coded into
@@ -1787,7 +1787,7 @@ void load_data_or_default(void)
   if (!get_string ("STATION_FONT", rotated_label_fontname[FONT_STATION], sizeof(rotated_label_fontname[FONT_STATION]))
       || rotated_label_fontname[FONT_STATION][0] == '\0')
   {
-    xastir_snprintf(rotated_label_fontname[FONT_STATION],
+    astir_snprintf(rotated_label_fontname[FONT_STATION],
                     sizeof(rotated_label_fontname[FONT_STATION]),
                     "fixed");
     // NOTE:  This same default font is hard-coded into
@@ -1798,7 +1798,7 @@ void load_data_or_default(void)
   if (!get_string ("ATV_ID_FONT", rotated_label_fontname[FONT_ATV_ID], sizeof(rotated_label_fontname[FONT_ATV_ID]))
       || rotated_label_fontname[FONT_ATV_ID][0] == '\0')
   {
-    xastir_snprintf(rotated_label_fontname[FONT_ATV_ID],
+    astir_snprintf(rotated_label_fontname[FONT_ATV_ID],
                     sizeof(rotated_label_fontname[FONT_ATV_ID]),
                     "-*-helvetica-*-*-*-*-*-240-*-*-*-*-*-*");
   }
@@ -1895,14 +1895,14 @@ void load_data_or_default(void)
 
   for (i = 0; i < MAX_IFACE_DEVICES; i++)
   {
-    xastir_snprintf (name_temp, sizeof(name_temp), "DEVICE%0d_", i);
-    xastir_snprintf(name,
+    astir_snprintf (name_temp, sizeof(name_temp), "DEVICE%0d_", i);
+    astir_snprintf(name,
                     sizeof(name),
                     "%s",
                     name_temp);
     strncat (name, "TYPE", sizeof(name) - 1 - strlen(name));
     devices[i].device_type = get_int (name, 0,MAX_IFACE_DEVICE_TYPES,DEVICE_NONE);
-    xastir_snprintf(name,
+    astir_snprintf(name,
                     sizeof(name),
                     "%s",
                     name_temp);
@@ -1913,32 +1913,32 @@ void load_data_or_default(void)
       devices[i].device_name[0] = '\0';
     }
 
-    xastir_snprintf(name,
+    astir_snprintf(name,
                     sizeof(name),
                     "%s",
                     name_temp);
     strncat (name, "RADIO_PORT", sizeof(name) - 1 - strlen(name));
     // Empty string is ok here.
     if (!get_string (name, devices[i].radio_port, sizeof(devices[i].radio_port)))
-      xastir_snprintf(devices[i].radio_port,
+      astir_snprintf(devices[i].radio_port,
                       sizeof(devices[i].radio_port),
                       "0");
 
-    xastir_snprintf(name,
+    astir_snprintf(name,
                     sizeof(name),
                     "%s",
                     name_temp);
     strncat (name, "CONVERSE_CMD", sizeof(name) - 1 - strlen(name));
     if (!get_string (name, devices[i].device_converse_string, sizeof(devices[i].device_converse_string))
         || (strlen(devices[i].device_converse_string) == 0))
-      xastir_snprintf(devices[i].device_converse_string,
+      astir_snprintf(devices[i].device_converse_string,
                       sizeof(devices[i].device_converse_string),
                       "k");
 
 
 #ifdef HAVE_DB
 
-    xastir_snprintf(name,
+    astir_snprintf(name,
                     sizeof(name),
                     "%s",
                     name_temp);
@@ -1946,47 +1946,47 @@ void load_data_or_default(void)
 
     devices[i].database_type = get_int (name, 0,MAX_DB_TYPE,MAX_DB_TYPE);
 
-    xastir_snprintf(name,
+    astir_snprintf(name,
                     sizeof(name),
                     "%s",
                     name_temp);
     strncat (name, "DATABASE_SCHEMA_TYPE", sizeof(name) - 1 - strlen(name));
-    devices[i].database_schema_type = get_int (name, 0,MAX_XASTIR_SCHEMA,XASTIR_SCHEMA_SIMPLE);
+    devices[i].database_schema_type = get_int (name, 0,MAX_ASTIR_SCHEMA,ASTIR_SCHEMA_SIMPLE);
 
-    xastir_snprintf(name,
+    astir_snprintf(name,
                     sizeof(name),
                     "%s",
                     name_temp);
     strncat (name, "DATABASE_USERNAME", sizeof(name) - 1 - strlen(name));
-    // default to xastir
+    // default to astir
     if (!get_string (name, devices[i].database_username, sizeof(devices[i].database_username)))
-      xastir_snprintf(devices[i].database_username,
+      astir_snprintf(devices[i].database_username,
                       sizeof(devices[i].database_username),
-                      "xastir");
+                      "astir");
 
-    xastir_snprintf(name,
+    astir_snprintf(name,
                     sizeof(name),
                     "%s",
                     name_temp);
     strncat (name, "DATABASE_SCHEMA", sizeof(name) - 1 - strlen(name));
-    // default to xastir
+    // default to astir
     if (!get_string (name, devices[i].database_schema, sizeof(devices[i].database_schema)))
-      xastir_snprintf(devices[i].database_schema,
+      astir_snprintf(devices[i].database_schema,
                       sizeof(devices[i].database_schema),
-                      "xastir");
+                      "astir");
 
-    xastir_snprintf(name,
+    astir_snprintf(name,
                     sizeof(name),
                     "%s",
                     name_temp);
     strncat (name, "DATABASE_UNIX_SOCKET", sizeof(name) - 1 - strlen(name));
     // empty string is ok here
     if (!get_string (name, devices[i].database_unix_socket, sizeof(devices[i].database_unix_socket)))
-      xastir_snprintf(devices[i].database_unix_socket,
+      astir_snprintf(devices[i].database_unix_socket,
                       sizeof(devices[i].database_unix_socket),
                       "0");
 
-    xastir_snprintf(name,
+    astir_snprintf(name,
                     sizeof(name),
                     "%s",
                     name_temp);
@@ -1995,7 +1995,7 @@ void load_data_or_default(void)
 
 #endif /* HAVE_DB */
 
-    xastir_snprintf(name,
+    astir_snprintf(name,
                     sizeof(name),
                     "%s",
                     name_temp);
@@ -2006,7 +2006,7 @@ void load_data_or_default(void)
       devices[i].comment[0] = '\0';
     }
 
-    xastir_snprintf(name,
+    astir_snprintf(name,
                     sizeof(name),
                     "%s",
                     name_temp);
@@ -2017,7 +2017,7 @@ void load_data_or_default(void)
       devices[i].device_host_name[0] = '\0';
     }
 
-    xastir_snprintf(name,
+    astir_snprintf(name,
                     sizeof(name),
                     "%s",
                     name_temp);
@@ -2028,7 +2028,7 @@ void load_data_or_default(void)
       devices[i].device_host_pswd[0] = '\0';
     }
 
-    xastir_snprintf(name,
+    astir_snprintf(name,
                     sizeof(name),
                     "%s",
                     name_temp);
@@ -2039,7 +2039,7 @@ void load_data_or_default(void)
       devices[i].device_host_filter_string[0] = '\0';
     }
 
-    xastir_snprintf(name,
+    astir_snprintf(name,
                     sizeof(name),
                     "%s",
                     name_temp);
@@ -2050,7 +2050,7 @@ void load_data_or_default(void)
       devices[i].unproto1[0] = '\0';
     }
 
-    xastir_snprintf(name,
+    astir_snprintf(name,
                     sizeof(name),
                     "%s",
                     name_temp);
@@ -2061,7 +2061,7 @@ void load_data_or_default(void)
       devices[i].unproto2[0] = '\0';
     }
 
-    xastir_snprintf(name,
+    astir_snprintf(name,
                     sizeof(name),
                     "%s",
                     name_temp);
@@ -2072,7 +2072,7 @@ void load_data_or_default(void)
       devices[i].unproto3[0] = '\0';
     }
 
-    xastir_snprintf(name,
+    astir_snprintf(name,
                     sizeof(name),
                     "%s",
                     name_temp);
@@ -2081,10 +2081,10 @@ void load_data_or_default(void)
     if (!get_string (name, devices[i].unproto_igate, sizeof(devices[i].unproto_igate))
         || devices[i].unproto_igate[0] == '\0')
     {
-      xastir_snprintf(devices[i].unproto_igate, sizeof(devices[i].unproto_igate), "WIDE2-1");
+      astir_snprintf(devices[i].unproto_igate, sizeof(devices[i].unproto_igate), "WIDE2-1");
     }
 
-    xastir_snprintf(name,
+    astir_snprintf(name,
                     sizeof(name),
                     "%s",
                     name_temp);
@@ -2095,7 +2095,7 @@ void load_data_or_default(void)
       devices[i].tnc_up_file[0] = '\0';
     }
 
-    xastir_snprintf(name,
+    astir_snprintf(name,
                     sizeof(name),
                     "%s",
                     name_temp);
@@ -2106,128 +2106,128 @@ void load_data_or_default(void)
       devices[i].tnc_down_file[0] = '\0';
     }
 
-    xastir_snprintf(name,
+    astir_snprintf(name,
                     sizeof(name),
                     "%s",
                     name_temp);
     strncat (name, "TNC_TXDELAY", sizeof(name) - 1 - strlen(name));
     // Empty string is ok here.
     if (!get_string (name, devices[i].txdelay, sizeof(devices[i].txdelay)))
-      xastir_snprintf(devices[i].txdelay,
+      astir_snprintf(devices[i].txdelay,
                       sizeof(devices[i].txdelay),
                       "40");
 
-    xastir_snprintf(name,
+    astir_snprintf(name,
                     sizeof(name),
                     "%s",
                     name_temp);
     strncat (name, "TNC_PERSISTENCE", sizeof(name) - 1 - strlen(name));
     // Empty string is ok here.
     if (!get_string (name, devices[i].persistence, sizeof(devices[i].persistence)))
-      xastir_snprintf(devices[i].persistence,
+      astir_snprintf(devices[i].persistence,
                       sizeof(devices[i].persistence),
                       "63");
 
-    xastir_snprintf(name,
+    astir_snprintf(name,
                     sizeof(name),
                     "%s",
                     name_temp);
     strncat (name, "TNC_SLOTTIME", sizeof(name) - 1 - strlen(name));
     // Empty string is ok here.
     if (!get_string (name, devices[i].slottime, sizeof(devices[i].slottime)))
-      xastir_snprintf(devices[i].slottime,
+      astir_snprintf(devices[i].slottime,
                       sizeof(devices[i].slottime),
                       "10");
 
-    xastir_snprintf(name,
+    astir_snprintf(name,
                     sizeof(name),
                     "%s",
                     name_temp);
     strncat (name, "TNC_TXTAIL", sizeof(name) - 1 - strlen(name));
     // Empty string is ok here.
     if (!get_string (name, devices[i].txtail, sizeof(devices[i].txtail)))
-      xastir_snprintf(devices[i].txtail,
+      astir_snprintf(devices[i].txtail,
                       sizeof(devices[i].txtail),
                       "30");
 
-    xastir_snprintf(name,
+    astir_snprintf(name,
                     sizeof(name),
                     "%s",
                     name_temp);
     strncat (name, "TNC_FULLDUPLEX", sizeof(name) - 1 - strlen(name));
     devices[i].fullduplex = get_int (name, 0, 1, 0);
 
-    xastir_snprintf(name,
+    astir_snprintf(name,
                     sizeof(name),
                     "%s",
                     name_temp);
     strncat (name, "TNC_INIT_KISSMODE", sizeof(name) - 1 - strlen(name));
     devices[i].init_kiss = get_int (name, 0, 1, 0);
 
-    xastir_snprintf(name,
+    astir_snprintf(name,
                     sizeof(name),
                     "%s",
                     name_temp);
     strncat (name, "SPEED", sizeof(name) - 1 - strlen(name));
     devices[i].sp = get_int (name, 0,230400,0);
 
-    xastir_snprintf(name,
+    astir_snprintf(name,
                     sizeof(name),
                     "%s",
                     name_temp);
     strncat (name, "STYLE", sizeof(name) - 1 - strlen(name));
     devices[i].style = get_int (name, 0,2,0);
 
-    xastir_snprintf(name,
+    astir_snprintf(name,
                     sizeof(name),
                     "%s",
                     name_temp);
     strncat (name, "IGATE_OPTION", sizeof(name) - 1 - strlen(name));
     devices[i].igate_options = get_int (name, 0,2,0);
 
-    xastir_snprintf(name,
+    astir_snprintf(name,
                     sizeof(name),
                     "%s",
                     name_temp);
     strncat (name, "TXMT", sizeof(name) - 1 - strlen(name));
     devices[i].transmit_data = get_int (name, 0,1,0);
 
-    xastir_snprintf(name,
+    astir_snprintf(name,
                     sizeof(name),
                     "%s",
                     name_temp);
     strncat (name, "RELAY_DIGIPEAT", sizeof(name) - 1 - strlen(name));
     devices[i].relay_digipeat = get_int (name, 0,1,1);
 
-    xastir_snprintf(name,
+    astir_snprintf(name,
                     sizeof(name),
                     "%s",
                     name_temp);
     strncat (name, "RECONN", sizeof(name) - 1 - strlen(name));
     devices[i].reconnect = get_int (name, 0,1,0);
 
-    xastir_snprintf(name,
+    astir_snprintf(name,
                     sizeof(name),
                     "%s",
                     name_temp);
     strncat (name, "ONSTARTUP", sizeof(name) - 1 - strlen(name));
     devices[i].connect_on_startup = get_int (name, 0,1,0);
 
-    xastir_snprintf(name,
+    astir_snprintf(name,
                     sizeof(name),
                     "%s",
                     name_temp);
     strncat (name, "GPSRETR", sizeof(name) - 1 - strlen(name));
     devices[i].gps_retrieve = get_int (name, 0,255,DEFAULT_GPS_RETR);
 
-    xastir_snprintf(name,
+    astir_snprintf(name,
                     sizeof(name),
                     "%s",
                     name_temp);
     strncat (name, "SETTIME", sizeof(name) - 1 - strlen(name));
     devices[i].set_time = get_int (name, 0,1,0);
 
-    xastir_snprintf(name,
+    astir_snprintf(name,
                     sizeof(name),
                     "%s",
                     name_temp);
@@ -2243,7 +2243,7 @@ void load_data_or_default(void)
   // Check for old complete path, change to new short path if a
   // match
   if (strncmp( user_base_dir, xa_log[XA_LOG_TNC].file, strlen(user_base_dir)) == 0)
-    xastir_snprintf(xa_log[XA_LOG_TNC].file,
+    astir_snprintf(xa_log[XA_LOG_TNC].file,
                     sizeof(xa_log[XA_LOG_TNC].file),
                     "%s",
                     "logs/tnc.log");
@@ -2267,7 +2267,7 @@ void load_data_or_default(void)
   // Check for old complete path, change to new short path if a
   // match
   if (strncmp( user_base_dir, xa_log[XA_LOG_IGATE].file, strlen(user_base_dir)) == 0)
-    xastir_snprintf(xa_log[XA_LOG_IGATE].file,
+    astir_snprintf(xa_log[XA_LOG_IGATE].file,
                     sizeof(xa_log[XA_LOG_IGATE].file),
                     "%s",
                     "logs/igate.log");
@@ -2277,7 +2277,7 @@ void load_data_or_default(void)
   // Check for old complete path, change to new short path if a
   // match
   if (strncmp( user_base_dir, xa_log[XA_LOG_NET].file, strlen(user_base_dir)) == 0)
-    xastir_snprintf(xa_log[XA_LOG_NET].file,
+    astir_snprintf(xa_log[XA_LOG_NET].file,
                     sizeof(xa_log[XA_LOG_NET].file),
                     "%s",
                     "logs/net.log");
@@ -2287,7 +2287,7 @@ void load_data_or_default(void)
   // Check for old complete path, change to new short path if a
   // match
   if (strncmp( user_base_dir, xa_log[XA_LOG_WX].file, strlen(user_base_dir)) == 0)
-    xastir_snprintf(xa_log[XA_LOG_WX].file,
+    astir_snprintf(xa_log[XA_LOG_WX].file,
                     sizeof(xa_log[XA_LOG_WX].file),
                     "%s",
                     "logs/wx.log");
@@ -2297,7 +2297,7 @@ void load_data_or_default(void)
   // Check for old complete path, change to new short path if a
   // match
   if (strncmp( user_base_dir, xa_log[XA_LOG_MESSAGE].file, strlen(user_base_dir)) == 0)
-    xastir_snprintf(xa_log[XA_LOG_MESSAGE].file,
+    astir_snprintf(xa_log[XA_LOG_MESSAGE].file,
                     sizeof(xa_log[XA_LOG_MESSAGE].file),
                     "%s",
                     "logs/message.log");
@@ -2307,7 +2307,7 @@ void load_data_or_default(void)
   // Check for old complete path, change to new short path if a
   // match
   if (strncmp( user_base_dir, xa_log[XA_LOG_WX_ALERT].file, strlen(user_base_dir)) == 0)
-    xastir_snprintf(xa_log[XA_LOG_WX_ALERT].file,
+    astir_snprintf(xa_log[XA_LOG_WX_ALERT].file,
                     sizeof(xa_log[XA_LOG_WX_ALERT].file),
                     "%s",
                     "logs/wx_alert.log");
@@ -2367,7 +2367,7 @@ void load_data_or_default(void)
   /* Audio Alarms*/
   // Empty string is ok here.
   if (!get_string ("SOUND_COMMAND", sound_command, sizeof(sound_command)))
-    xastir_snprintf(sound_command,
+    astir_snprintf(sound_command,
                     sizeof(sound_command),
                     "play");
 
@@ -2376,7 +2376,7 @@ void load_data_or_default(void)
   if (!get_string ("SOUND_ONS_FILE", xa_sound[XA_SOUND_NEW_STATION].file, sizeof(xa_sound[XA_SOUND_NEW_STATION].file))
       || xa_sound[XA_SOUND_NEW_STATION].file[0] == '\0')
   {
-    xastir_snprintf(xa_sound[XA_SOUND_NEW_STATION].file,
+    astir_snprintf(xa_sound[XA_SOUND_NEW_STATION].file,
                     sizeof(xa_sound[XA_SOUND_NEW_STATION].file),
                     "newstation.wav");
   }
@@ -2386,7 +2386,7 @@ void load_data_or_default(void)
   if (!get_string ("SOUND_ONM_FILE", xa_sound[XA_SOUND_NEW_MESSAGE].file, sizeof(xa_sound[XA_SOUND_NEW_MESSAGE].file))
       || xa_sound[XA_SOUND_NEW_MESSAGE].file[0] == '\0')
   {
-    xastir_snprintf(xa_sound[XA_SOUND_NEW_MESSAGE].file,
+    astir_snprintf(xa_sound[XA_SOUND_NEW_MESSAGE].file,
                     sizeof(xa_sound[XA_SOUND_NEW_MESSAGE].file),
                     "newmessage.wav");
   }
@@ -2396,7 +2396,7 @@ void load_data_or_default(void)
   if (!get_string ("SOUND_PROX_FILE", xa_sound[XA_SOUND_PROX].file, sizeof(xa_sound[XA_SOUND_PROX].file))
       || xa_sound[XA_SOUND_PROX].file[0] == '\0')
   {
-    xastir_snprintf(xa_sound[XA_SOUND_PROX].file,
+    astir_snprintf(xa_sound[XA_SOUND_PROX].file,
                     sizeof(xa_sound[XA_SOUND_PROX].file),
                     "proxwarn.wav");
   }
@@ -2404,7 +2404,7 @@ void load_data_or_default(void)
   if (!get_string ("PROX_MIN", prox_min, sizeof(prox_min))
       || prox_min[0] == '\0')
   {
-    xastir_snprintf(prox_min,
+    astir_snprintf(prox_min,
                     sizeof(prox_min),
                     "0.01");
   }
@@ -2412,7 +2412,7 @@ void load_data_or_default(void)
   if (!get_string ("PROX_MAX", prox_max, sizeof(prox_max))
       || prox_max[0] == '\0')
   {
-    xastir_snprintf(prox_max,
+    astir_snprintf(prox_max,
                     sizeof(prox_max),
                     "10");
   }
@@ -2422,7 +2422,7 @@ void load_data_or_default(void)
   if (!get_string ("SOUND_BAND_FILE", xa_sound[XA_SOUND_BAND_OPEN].file, sizeof(xa_sound[XA_SOUND_BAND_OPEN].file))
       || xa_sound[XA_SOUND_BAND_OPEN].file[0] == '\0')
   {
-    xastir_snprintf(xa_sound[XA_SOUND_BAND_OPEN].file,
+    astir_snprintf(xa_sound[XA_SOUND_BAND_OPEN].file,
                     sizeof(xa_sound[XA_SOUND_BAND_OPEN].file),
                     "bandopen.wav");
   }
@@ -2430,7 +2430,7 @@ void load_data_or_default(void)
   if (!get_string ("BANDO_MIN", bando_min, sizeof(bando_min))
       || bando_min[0] == '\0')
   {
-    xastir_snprintf(bando_min,
+    astir_snprintf(bando_min,
                     sizeof(bando_min),
                     "200");
   }
@@ -2438,7 +2438,7 @@ void load_data_or_default(void)
   if (!get_string ("BANDO_MAX", bando_max, sizeof(bando_max))
       || bando_max[0] == '\0')
   {
-    xastir_snprintf(bando_max,
+    astir_snprintf(bando_max,
                     sizeof(bando_max),
                     "2000");
   }
@@ -2448,7 +2448,7 @@ void load_data_or_default(void)
   if (!get_string ("SOUND_WX_ALERT_FILE", xa_sound[XA_SOUND_WX_ALERT].file, sizeof(xa_sound[XA_SOUND_WX_ALERT].file))
       || xa_sound[XA_SOUND_WX_ALERT].file[0] == '\0')
   {
-    xastir_snprintf(xa_sound[XA_SOUND_WX_ALERT].file,
+    astir_snprintf(xa_sound[XA_SOUND_WX_ALERT].file,
                     sizeof(xa_sound[XA_SOUND_WX_ALERT].file),
                     "thunder.wav");
   }
@@ -2478,7 +2478,7 @@ void load_data_or_default(void)
   if (!get_string ("MESSAGE_COUNTER", message_counter, sizeof(message_counter))
       || message_counter[0] == '\0')
   {
-    xastir_snprintf(message_counter,
+    astir_snprintf(message_counter,
                     sizeof(message_counter),
                     "00");
   }
@@ -2501,7 +2501,7 @@ void load_data_or_default(void)
   if (!get_string ("AUTO_MSG_REPLY", auto_reply_message, sizeof(auto_reply_message))
       || auto_reply_message[0] == '\0')
   {
-    xastir_snprintf(auto_reply_message,
+    astir_snprintf(auto_reply_message,
                     sizeof(auto_reply_message),
                     "Autoreply- No one is at the keyboard");
   }
@@ -2517,7 +2517,7 @@ void load_data_or_default(void)
   if (!get_string ("PREDEF_MENU_FILE", predefined_object_definition_filename, sizeof(predefined_object_definition_filename))
       || predefined_object_definition_filename[0] == '\0')
   {
-    xastir_snprintf(predefined_object_definition_filename,
+    astir_snprintf(predefined_object_definition_filename,
                     sizeof(predefined_object_definition_filename),
                     "predefined_SAR.sys");
   }
@@ -2539,15 +2539,15 @@ void load_data_or_default(void)
   /* list attributes */
   for (i = 0; i < LST_NUM; i++)
   {
-    xastir_snprintf (name_temp, sizeof(name_temp), "LIST%0d_", i);
-    xastir_snprintf(name,
+    astir_snprintf (name_temp, sizeof(name_temp), "LIST%0d_", i);
+    astir_snprintf(name,
                     sizeof(name),
                     "%s",
                     name_temp);
     strncat (name, "H", sizeof(name) - 1 - strlen(name));
     list_size_h[i] = get_int (name, -1,8192,-1);
 
-    xastir_snprintf(name,
+    astir_snprintf(name,
                     sizeof(name),
                     "%s",
                     name_temp);
