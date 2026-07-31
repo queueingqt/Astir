@@ -2847,7 +2847,20 @@ void set_shpt_arc_attributes(int color, int lanes, int pattern)
 
 
 
-// Set the fill style and stipple pattern used for filled polygons
+/*
+ * Set how a filled polygon is painted.
+ *
+ * dbfawk's fill_stipple picks one of the old X stipple bitmaps -- 13% or 25%
+ * coverage -- which existed to fake translucency on hardware with no alpha
+ * channel.  They are asked for here as densities instead: same intent, same
+ * rule files, but a wash that stays smooth at any display scale rather than an
+ * 8x8 pattern that pixelates the moment the scale is not 1:1.
+ *
+ * These were the bitmaps the Motif main() built at startup.  Nothing built them
+ * after the front end changed, so every stippled fill in the program was
+ * painting with a NULL pattern and drawing nothing at all: land, lakes and
+ * water all vanished and only their outlines were left.
+ */
 void set_shpt_polygon_fill_stipple(int fill_style, int fill_stipple,
                                int draw_filled)
 {
@@ -2855,18 +2868,19 @@ void set_shpt_polygon_fill_stipple(int fill_style, int fill_stipple,
 
   if (draw_filled != 0 && fill_style == FillStippled)
   {
-
+    // No bitmap: a density, so the backend paints a translucent solid.
+    xa_pen_stipple(gc, XA_SURFACE_NONE);
 
     switch (fill_stipple)
     {
       case 0:
-        xa_pen_stipple(gc, pixmap_13pct_stipple);
+        xa_pen_fill_density(gc, 0.13);
         break;
       case 1:
-        xa_pen_stipple(gc, pixmap_25pct_stipple);
+        xa_pen_fill_density(gc, 0.25);
         break;
       default:
-        xa_pen_stipple(gc, pixmap_25pct_stipple);
+        xa_pen_fill_density(gc, 0.25);
         break;
     }
   }

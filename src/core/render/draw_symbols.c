@@ -820,8 +820,11 @@ void draw_DF_circle(long x_long, long y_lat, char *shgd, time_t sec_heard, xa_su
       xa_pen_line(gc_stipple, 8, XA_LINE_SOLID, XA_CAP_BUTT, XA_JOIN_MITER);
     }
 
-    // Stipple the area instead of obscuring the map underneath
-    xa_pen_stipple(gc_stipple, pixmap_50pct_stipple);
+    // Half coverage, so the map underneath still reads through.  This asked for
+    // a 50% stipple bitmap; a density says the same thing without tiling a
+    // pattern that pixelates when the display scale is not 1:1.
+    xa_pen_stipple(gc_stipple, XA_SURFACE_NONE);
+    xa_pen_fill_density(gc_stipple, 0.5);
     xa_pen_fill_style(gc_stipple, XA_FILL_STIPPLED);
 
     // Choose the color for the DF'ing circle
@@ -1849,7 +1852,10 @@ void draw_area(long x_long, long y_lat, char type, char color,
     xa_pen_line(gc, 2, XA_LINE_SOLID, XA_CAP_BUTT, XA_JOIN_MITER);
   }
   xa_pen_fill_style(gc, XA_FILL_SOLID); // just in case
-  xa_pen_stipple(gc, pixmap_50pct_stipple);
+  // Area objects that ask to be filled below are drawn at half coverage, so an
+  // object never hides the map it is describing.
+  xa_pen_stipple(gc, XA_SURFACE_NONE);
+  xa_pen_fill_density(gc, 0.5);
 
   switch (type)
   {

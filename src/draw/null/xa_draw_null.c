@@ -55,8 +55,7 @@ static char null_font_token;
 xa_pen gc, gc2, gc_tint, gc_stipple, gc_bigfont;
 
 xa_surface_id pixmap, pixmap_final, pixmap_alerts;
-xa_surface_id pixmap_50pct_stipple, pixmap_25pct_stipple;
-xa_surface_id pixmap_13pct_stipple, pixmap_wx_stipple;
+xa_surface_id pixmap_wx_stipple;
 
 xa_color colors[256];
 xa_color trail_colors[MAX_TRAIL_COLORS];
@@ -612,6 +611,14 @@ void xa_pen_stipple(xa_pen pen, xa_surface_id bitmap)
   (void)pen;
   (void)bitmap;
   null_record("xa_pen_stipple");
+}
+
+
+void xa_pen_fill_density(xa_pen pen, double density)
+{
+  (void)pen;
+  (void)density;
+  null_record("xa_pen_fill_density");
 }
 
 

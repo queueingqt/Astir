@@ -474,6 +474,20 @@ void xa_pen_line(xa_pen pen, int width, int line_style, int cap, int join);
 void xa_pen_dashes(xa_pen pen, int dash_offset, const char *dash_list, int n);
 void xa_pen_fill_style(xa_pen pen, int fill_style);
 void xa_pen_stipple(xa_pen pen, xa_surface_id bitmap);
+
+/*
+ * How much of a stippled fill actually lands, 0.0 to 1.0.  Ignored unless the
+ * fill style is stippled, and ignored when the pen carries a stipple bitmap --
+ * a bitmap is a PATTERN, and a pattern means something.
+ *
+ * A stipple was originally two things at once: a way to show a pattern, and a
+ * way to get a translucent wash out of hardware that had no alpha.  Only the
+ * first still needs a bitmap.  For the second, a tiled 8x8 pattern is a raster
+ * image that pixelates when the display scale is not 1:1, and asking for "13%
+ * of this colour" says what was actually wanted.  Set a density and the fill
+ * arrives as a translucent solid, at any scale.
+ */
+void xa_pen_fill_density(xa_pen pen, double density);
 void xa_pen_ts_origin(xa_pen pen, int x, int y);
 void xa_pen_function(xa_pen pen, int func);
 void xa_pen_clip_mask(xa_pen pen, xa_surface_id mask);
@@ -581,10 +595,15 @@ extern xa_surface_id pixmap;            // the map being composed
 extern xa_surface_id pixmap_final;      // the finished frame, what is presented
 extern xa_surface_id pixmap_alerts;     // weather alert overlay
 
-// Stipple patterns: position ambiguity at three sizes, and weather alerts.
-extern xa_surface_id pixmap_50pct_stipple;
-extern xa_surface_id pixmap_25pct_stipple;
-extern xa_surface_id pixmap_13pct_stipple;
+/*
+ * The weather alert pattern, loaded from an .xbm.
+ *
+ * The only stipple left that is genuinely a PATTERN: the shape of the hatching
+ * distinguishes one alert from another, so it has to be a bitmap.  The 13%, 25%
+ * and 50% stipples that used to live beside it were not patterns at all, only a
+ * way to get translucency without an alpha channel, and they are asked for as
+ * densities now -- see xa_pen_fill_density().
+ */
 extern xa_surface_id pixmap_wx_stipple;
 
 /*

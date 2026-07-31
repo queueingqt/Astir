@@ -527,6 +527,7 @@ typedef struct
   double dash_offset;
   int fill_style;
   xa_surface_id stipple;
+  double fill_density;           /* used when stippled with no bitmap */
   int ts_x, ts_y;
   int func;
   xa_surface_id clip_mask;
@@ -554,6 +555,9 @@ xa_pen xa_pen_create(xa_surface_id for_surface)
   p->fill_style = XA_FILL_SOLID;
   p->func = XA_FUNC_COPY;
   p->stipple = XA_SURFACE_NONE;
+  // Opaque unless somebody asks otherwise, so a pen that is switched to
+  // stippled without setting a density still paints something.
+  p->fill_density = 1.0;
   p->clip_mask = XA_SURFACE_NONE;
   return (xa_pen)p;
 }
@@ -623,6 +627,19 @@ void xa_pen_stipple(xa_pen pen, xa_surface_id bitmap)
   if (pen) { ((gtk4_pen *)pen)->stipple = bitmap; }
 }
 
+void xa_pen_fill_density(xa_pen pen, double density)
+{
+  gtk4_pen *p = (gtk4_pen *)pen;
+
+  if (p == NULL)
+  {
+    return;
+  }
+  if (density < 0.0) { density = 0.0; }
+  if (density > 1.0) { density = 1.0; }
+  p->fill_density = density;
+}
+
 void xa_pen_ts_origin(xa_pen pen, int x, int y)
 {
   gtk4_pen *p = (gtk4_pen *)pen;
@@ -655,6 +672,7 @@ void xa_pen_copy_fill(xa_pen dst, xa_pen src)
   {
     d->fill_style = s->fill_style;
     d->stipple = s->stipple;
+    d->fill_density = s->fill_density;
   }
 }
 
@@ -1011,6 +1029,11 @@ static cairo_t *begin(xa_surface_id dst, xa_pen pen)
  * XA_FILL_OPAQUE_STIPPLED paints the background elsewhere as well.  Both become
  * a repeating mask pattern in Cairo, which is a closer match than X's own
  * model.
+ *
+ * A stippled pen with no bitmap is not an error, and it must not be silently
+ * skipped: the caller has already turned the path into a clip by this point, so
+ * returning without painting loses the fill entirely and shows as a map with no
+ * land on it.  It means "a translucent wash", and it is drawn as one.
  */
 static void fill_source(cairo_t *cr, gtk4_pen *p)
 {
@@ -1023,6 +1046,11 @@ static void fill_source(cairo_t *cr, gtk4_pen *p)
   st = surf_of(p->stipple);
   if (st == NULL)
   {
+    if (p->fill_density > 0.0)
+    {
+      set_source_color(cr, p->fg);
+      cairo_paint_with_alpha(cr, p->fill_density);
+    }
     return;
   }
   if (p->fill_style == XA_FILL_OPAQUE_STIPPLED)
@@ -2020,8 +2048,7 @@ int xa_text_height(const char *fontspec)
 xa_pen gc, gc2, gc_tint, gc_stipple, gc_bigfont;
 
 xa_surface_id pixmap, pixmap_final, pixmap_alerts;
-xa_surface_id pixmap_50pct_stipple, pixmap_25pct_stipple;
-xa_surface_id pixmap_13pct_stipple, pixmap_wx_stipple;
+xa_surface_id pixmap_wx_stipple;
 
 xa_color colors[256];
 xa_color trail_colors[MAX_TRAIL_COLORS];
