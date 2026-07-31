@@ -56,7 +56,7 @@ scripts/get-BOMdata
 scripts/get-NWSdata
 scripts/get-fcc-rac.pl
 scripts/icontable.pl
-src/compiledate.c
+src/core/util/compiledate.c
 tests/atconfig
 tests/atlocal
 
