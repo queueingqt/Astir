@@ -148,12 +148,25 @@ static int  prev_valid = 0;
  * live behind db_gui.c).  Every call in it is an xa_draw one, which is why it
  * fits in thirty lines here and took a thousand there.
  */
+/*
+ * Set for as long as a frame is being composed.
+ *
+ * Read by ui_pump_events(), which must not re-enter the main loop while this is
+ * set.  Declared here rather than beside the render scheduler because it has to
+ * wrap EVERY entry to xa_render(), not just the scheduled one -- a resize, a
+ * scale change, a reindex and the core's own redraw request all call it too, and
+ * a flag that covered one of five was a flag that reported the wrong thing four
+ * times out of five.
+ */
+static int rendering;
+
 static void xa_render(void)
 {
   if (!xa_ready || pixmap == XA_SURFACE_NONE)
   {
     return;
   }
+  rendering++;
 
   xa_perf_frame_begin();
 
@@ -307,6 +320,8 @@ static void xa_render(void)
 
   // The markers are drawn for the view the map was just drawn for.
   xa_render_markers();
+
+  rendering--;
 }
 
 
@@ -417,7 +432,6 @@ static guint render_timer;
 static double view_dx, view_dy;
 static double view_scale = 1.0;
 
-static int rendering;
 static void render_soon(void);   // defined below; render_now() re-arms itself
 
 static gboolean render_now(gpointer u)
@@ -454,9 +468,7 @@ static gboolean render_now(gpointer u)
   dy0 = view_dy;
   s0  = view_scale;
 
-  rendering = 1;
   xa_render();
-  rendering = 0;
 
   view_dx -= dx0;
   view_dy -= dy0;
@@ -1009,9 +1021,36 @@ static void ui_status(const char *text)
   }
 }
 
+/*
+ * Let the front end breathe during a long operation.
+ *
+ * NOT DURING A RENDER, which is what this used to do and is where it came from:
+ * the core calls it every 64 shapes so that a pan can interrupt a slow redraw,
+ * and the Motif build answered with HandlePendingEvents(app_context).  Xt
+ * tolerated being re-entered like that.  GTK4 does not.
+ *
+ * Dispatching input from inside a render runs handlers while the frame they
+ * would affect is half composed, and hands GTK's gesture recognisers and event
+ * controllers a press whose release arrives in a different nesting level.  What
+ * that looks like from the outside is a program that ignores clicks: a button or
+ * a menu has to be hit several times in a row before one lands in a gap between
+ * renders.  It is not GTK being slow, and it is not a busy main loop -- the
+ * marker redraw measures 15 ms and fires about twice a second, nowhere near
+ * enough to swallow a click.  It is this function.
+ *
+ * The interruption it bought is worth much less than it was.  A warm frame was
+ * 941 ms when this was written and is 113 ms now, so a render that runs to
+ * completion is not something anybody notices, while a lost click is.
+ *
+ * Long work that is NOT a render -- rebuilding the map index, a tile download --
+ * still gets pumped, which is the other half of what this is for.
+ */
 static void ui_pump_events(void)
 {
-  // The core calls this every 64 shapes so a pan can interrupt a slow redraw.
+  if (rendering)
+  {
+    return;
+  }
   while (g_main_context_pending(NULL))
   {
     g_main_context_iteration(NULL, FALSE);
@@ -1357,12 +1396,30 @@ static gboolean on_tick(gpointer user_data)
   // Expiry and decode both set this; one place to notice it.
   if (redraw_on_new_data > 0)
   {
+    static long n_redraws, total_us;
+    gint64 t0 = g_get_monotonic_time();
+
     redraw_on_new_data = 0;
     // Markers only: a new station changes where the symbols are, not what the
     // map underneath them looks like, and the marker pass is 35 ms against the
     // map's several hundred.
     xa_render_markers();
     gtk_widget_queue_draw(xa_area);
+
+    // How much of the main loop this is actually eating.  A tick that spends
+    // most of its 50 ms redrawing leaves little room for anything else --
+    // including delivering a button press.
+    if (getenv("ASTIR_TICK_TRACE") != NULL)
+    {
+      total_us += g_get_monotonic_time() - t0;
+      n_redraws++;
+      if ((n_redraws % 20) == 0)
+      {
+        g_print("[tick] %ld marker redraws, %.1f ms each, %.0f%% of the loop\n",
+                n_redraws, total_us / 1000.0 / n_redraws,
+                (total_us / 1000.0 / n_redraws) / 50.0 * 100.0);
+      }
+    }
   }
 
   return G_SOURCE_CONTINUE;
