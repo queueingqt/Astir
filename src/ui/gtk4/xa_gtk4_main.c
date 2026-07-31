@@ -116,6 +116,21 @@ static void xa_render_markers(void);
  */
 static double marker_dx = 0.0, marker_dy = 0.0;
 
+/*
+ * The map layer as it was last drawn, and the view it was drawn for.
+ *
+ * A pan moves the view without changing the scale, so most of the new frame is
+ * the old one shifted: only an L-shaped strip along two edges is genuinely
+ * new.  Keeping the previous layer lets that strip be the only thing redrawn.
+ *
+ * Only for pans.  A zoom changes what every pixel means, and there is nothing
+ * to reuse.
+ */
+static xa_surface_id pixmap_prev = XA_SURFACE_NONE;
+static long prev_center_lon, prev_center_lat;
+static long prev_scale_x, prev_scale_y;
+static int  prev_valid = 0;
+
 
 /* ---- rendering --------------------------------------------------------- */
 
@@ -157,9 +172,83 @@ static void xa_render(void)
   convert_from_astir_coordinates(&f_SE_corner_longitude, &f_SE_corner_latitude,
                                   SE_corner_longitude, SE_corner_latitude);
 
-  xa_pen_color(gc, colors[0xfd]);      // map background
-  xa_pen_bg(gc, colors[0xfd]);
-  xa_fill_rect(pixmap, gc, 0, 0, (int)screen_width, (int)screen_height);
+  /*
+   * Reuse the previous map layer when this is a pan.
+   *
+   * Same scale and a shift smaller than the window means the old pixels are
+   * still correct, just in a different place.  Blit them across and mark only
+   * the newly exposed strip dirty; everything else is skipped by the culling
+   * that every map driver already runs.
+   *
+   * The exposed area is an L, and this uses its bounding box, so a diagonal
+   * drag saves little and an axis-aligned one -- which is most dragging --
+   * saves nearly everything.  Two rectangles would cover the L exactly and is
+   * the obvious refinement.
+   */
+  {
+    int reused = 0;
+
+    // ASTIR_GTK4_REUSE=0 forces a full redraw, which is how the reused frame
+    // is checked against the frame it is supposed to be identical to.
+    static int reuse_enabled = -1;
+
+    if (reuse_enabled < 0)
+    {
+      const char *e = getenv("ASTIR_GTK4_REUSE");
+
+      reuse_enabled = (e != NULL && atoi(e) == 0) ? 0 : 1;
+    }
+
+    if (reuse_enabled && prev_valid && pixmap_prev != XA_SURFACE_NONE
+        && scale_x == prev_scale_x && scale_y == prev_scale_y)
+    {
+      long dpx = (prev_center_lon - center_longitude) / scale_x;
+      long dpy = (prev_center_lat - center_latitude) / scale_y;
+
+      if ((dpx != 0 || dpy != 0)
+          && labs(dpx) < screen_width && labs(dpy) < screen_height)
+      {
+        long l, r, tp, bt;
+
+        xa_pen_color(gc, colors[0xfd]);
+        xa_pen_bg(gc, colors[0xfd]);
+        xa_fill_rect(pixmap, gc, 0, 0, (int)screen_width, (int)screen_height);
+        xa_copy_area(pixmap_prev, pixmap, gc, 0, 0,
+                     (int)screen_width, (int)screen_height,
+                     (int)dpx, (int)dpy);
+
+        // The strip uncovered by the shift, as a bounding box, in Astir units.
+        l  = (dpx > 0) ? NW_corner_longitude
+                       : NW_corner_longitude + (screen_width + dpx) * scale_x;
+        r  = (dpx > 0) ? NW_corner_longitude + dpx * scale_x
+                       : SE_corner_longitude;
+        tp = (dpy > 0) ? NW_corner_latitude
+                       : NW_corner_latitude + (screen_height + dpy) * scale_y;
+        bt = (dpy > 0) ? NW_corner_latitude + dpy * scale_y
+                       : SE_corner_latitude;
+
+        if (dpx == 0) { l = NW_corner_longitude; r = SE_corner_longitude; }
+        if (dpy == 0) { tp = NW_corner_latitude; bt = SE_corner_latitude; }
+        if (dpx != 0 && dpy != 0)
+        {
+          l = NW_corner_longitude;      // both axes moved: the L spans
+          r = SE_corner_longitude;      // the window, so redraw it all
+          tp = NW_corner_latitude;
+          bt = SE_corner_latitude;
+        }
+        xa_dirty_set(l, r, tp, bt);
+        reused = 1;
+      }
+    }
+
+    if (!reused)
+    {
+      xa_dirty_clear();
+      xa_pen_color(gc, colors[0xfd]);      // map background
+      xa_pen_bg(gc, colors[0xfd]);
+      xa_fill_rect(pixmap, gc, 0, 0, (int)screen_width, (int)screen_height);
+    }
+  }
 
   /*
    * Labels are collected during the map pass and placed at the end of it.
@@ -168,6 +257,19 @@ static void xa_render(void)
    */
   label_frame_begin();
   load_maps();
+  xa_dirty_clear();
+
+  // Remember this layer and the view it belongs to, for the next pan.
+  if (pixmap_prev != XA_SURFACE_NONE)
+  {
+    xa_copy_area(pixmap, pixmap_prev, gc, 0, 0,
+                 (int)screen_width, (int)screen_height, 0, 0);
+    prev_center_lon = center_longitude;
+    prev_center_lat = center_latitude;
+    prev_scale_x = scale_x;
+    prev_scale_y = scale_y;
+    prev_valid = 1;
+  }
 
   xa_copy_area(pixmap, pixmap_alerts, gc, 0, 0,
                (int)screen_width, (int)screen_height, 0, 0);
@@ -535,11 +637,14 @@ static void rebuild_surfaces(GtkWidget *area, int width, int height)
   xa_surface_destroy(pixmap_alerts);
   xa_surface_destroy(pixmap_final);
   xa_surface_destroy(pixmap_markers);
+  xa_surface_destroy(pixmap_prev);
   xa_gtk4_set_canvas(area, width, height);
   pixmap         = xa_surface_create(width, height, XA_DEPTH_CANVAS);
   pixmap_alerts  = xa_surface_create(width, height, XA_DEPTH_CANVAS);
   pixmap_final   = xa_surface_create(width, height, XA_DEPTH_CANVAS);
   pixmap_markers = xa_surface_create(width, height, XA_DEPTH_ALPHA);
+  pixmap_prev    = xa_surface_create(width, height, XA_DEPTH_CANVAS);
+  prev_valid = 0;
 }
 
 
@@ -1010,6 +1115,7 @@ static int init_core(void)
   pixmap_alerts  = xa_surface_create(xa_w, xa_h, XA_DEPTH_CANVAS);
   pixmap_final   = xa_surface_create(xa_w, xa_h, XA_DEPTH_CANVAS);
   pixmap_markers = xa_surface_create(xa_w, xa_h, XA_DEPTH_ALPHA);
+  pixmap_prev    = xa_surface_create(xa_w, xa_h, XA_DEPTH_CANVAS);
   if (pixmap == XA_SURFACE_NONE || pixmap_final == XA_SURFACE_NONE)
   {
     g_printerr("could not create the drawing surfaces\n");
@@ -1289,9 +1395,22 @@ int main(int argc, char **argv)
       int frames = (nf != NULL) ? atoi(nf) : 1;
       int f;
 
+      /*
+       * Optionally pan between frames, so the surface-reuse path is exercised
+       * headlessly.  Without this the harness renders the same view twice and
+       * never takes the branch that a real drag takes every time.
+       */
+      const char *pan = getenv("ASTIR_GTK4_PAN_BETWEEN");
+      long pan_px = (pan != NULL) ? atol(pan) : 0;
+
       if (frames < 1) { frames = 1; }
       for (f = 0; f < frames; f++)
       {
+        if (f > 0 && pan_px != 0)
+        {
+          center_longitude += pan_px * scale_x;
+          xa_rescale();
+        }
         if (frames > 1)
         {
           g_print("--- frame %d of %d (%s) ---\n", f + 1, frames,

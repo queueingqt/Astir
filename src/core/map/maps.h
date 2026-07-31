@@ -248,6 +248,30 @@ extern long get_x_scale(long x, long y, long ysc);
 #define MAP_ATTRIBUTION_MAX 128
 extern char map_attribution[MAP_ATTRIBUTION_MAX];
 
+/*
+ * A dirty rectangle, in Astir coordinates, or inactive.
+ *
+ * When a pan moves the view, most of the new frame is the old frame shifted;
+ * only an L-shaped strip along two edges is new.  Redrawing the whole map to
+ * produce mostly what was already there is the largest avoidable cost in a
+ * gesture.
+ *
+ * This is honoured by map_visible_lat_lon(), which every shapefile shape
+ * already passes through, and by the raster tile driver, which clamps its
+ * pixel loop to it.  Anything drawn outside is discarded, so a driver that
+ * ignores it is correct but slow rather than wrong.
+ *
+ * The view corners stay at the FULL view throughout: screen positions are
+ * derived from them, so narrowing them would move everything that did get
+ * drawn.  This is a separate rectangle for that reason.
+ */
+extern int  xa_dirty_active;
+extern long xa_dirty_left, xa_dirty_right;    /* longitude, Astir units */
+extern long xa_dirty_top, xa_dirty_bottom;    /* latitude, Astir units */
+
+void xa_dirty_set(long left, long right, long top, long bottom);
+void xa_dirty_clear(void);
+
 #endif /* __ASTIR_MAPS_H */
 
 

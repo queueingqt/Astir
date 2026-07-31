@@ -793,6 +793,8 @@ static double astir_osm_now(void)
   return ts.tv_sec * 1000.0 + ts.tv_nsec / 1e6;
 }
 
+static long dirty_x0, dirty_x1, dirty_y0, dirty_y1;
+
 static void render_OSM_image_pixels(
   Image *image,
   ExceptionInfo *except_ptr,
@@ -988,6 +990,33 @@ static void render_OSM_image_pixels(
   map_act  = 0;
   map_seen = 0;
 
+  /*
+   * The dirty rectangle, in screen pixels, or the whole window.
+   *
+   * This driver writes into a pixel buffer rather than through a pen, so a
+   * clip cannot reach it and it has to do its own.  Without this a partial
+   * redraw is not merely slow, it is WRONG: the driver captures the screen,
+   * paints tiles across all of it, and writes it back, erasing whatever the
+   * surface-reuse blit had just put there.  That showed up as the entire road
+   * network vanishing from the reused part of the frame.
+   */
+  {
+    if (xa_dirty_active)
+    {
+      dirty_x0 = (xa_dirty_left  - NW_corner_longitude) / scale_x;
+      dirty_x1 = (xa_dirty_right - NW_corner_longitude) / scale_x;
+      dirty_y0 = (xa_dirty_top    - NW_corner_latitude) / scale_y;
+      dirty_y1 = (xa_dirty_bottom - NW_corner_latitude) / scale_y;
+    }
+    else
+    {
+      dirty_x0 = 0;
+      dirty_y0 = 0;
+      dirty_x1 = screen_width;
+      dirty_y1 = screen_height;
+    }
+  }
+
   // loop over map pixel rows
   for (map_image_row = map_y_min; (map_image_row <= map_y_max); map_image_row++)
   {
@@ -1025,6 +1054,12 @@ static void render_OSM_image_pixels(
       scr_dy = 1;
     }
 
+    // Rows outside the dirty rectangle are already correct on the surface.
+    if (scr_y + scr_dy < dirty_y0 || scr_y > dirty_y1)
+    {
+      continue;
+    }
+
     if (scr_y != scr_yp)                    // don't do a row twice
     {
       scr_yp = scr_y;                     // remember as previous y
@@ -1045,6 +1080,11 @@ static void render_OSM_image_pixels(
         {
           scr_dx = 1;
         }
+        if (scr_x + scr_dx < dirty_x0 || scr_x > dirty_x1)
+        {
+          continue;               // already correct from the previous frame
+        }
+
         if (scr_x != scr_xp)        // don't do a pixel twice
         {
           scr_xp = scr_x;         // remember as previous x

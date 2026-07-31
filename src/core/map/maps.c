@@ -183,6 +183,24 @@ int grid_size = 0;
 // The credit the drawn maps require; see maps.h.
 char map_attribution[MAP_ATTRIBUTION_MAX] = "";
 
+// The dirty rectangle; see maps.h.
+int  xa_dirty_active = 0;
+long xa_dirty_left, xa_dirty_right, xa_dirty_top, xa_dirty_bottom;
+
+void xa_dirty_set(long left, long right, long top, long bottom)
+{
+  xa_dirty_left = left;
+  xa_dirty_right = right;
+  xa_dirty_top = top;
+  xa_dirty_bottom = bottom;
+  xa_dirty_active = 1;
+}
+
+void xa_dirty_clear(void)
+{
+  xa_dirty_active = 0;
+}
+
 // Start of the current map draw, for the per-driver timing below.
 static double astir_map_t0;
 
@@ -3800,6 +3818,24 @@ int map_visible_lat_lon (double map_min_y,    // f_bottom_map_boundary
   //
   // The quick rejection algorithm:
   //
+  /*
+   * Against the dirty rectangle when there is one, so a partial redraw skips
+   * everything that is already on the surface from the previous frame.
+   */
+  if (xa_dirty_active)
+  {
+    double d_left   = (double)xa_dirty_left   / 360000.0 - 180.0;
+    double d_right  = (double)xa_dirty_right  / 360000.0 - 180.0;
+    double d_top    = 90.0 - (double)xa_dirty_top    / 360000.0;
+    double d_bottom = 90.0 - (double)xa_dirty_bottom / 360000.0;
+
+    if (map_max_y < d_bottom || map_min_y > d_top
+        || map_max_x < d_left || map_min_x > d_right)
+    {
+      return(0);
+    }
+  }
+
   if (map_max_y < f_SE_corner_latitude )
   {
     return(0);  // map below view
