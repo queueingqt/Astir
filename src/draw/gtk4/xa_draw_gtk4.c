@@ -811,9 +811,83 @@ void xa_region_subtract(xa_region a, xa_region b, xa_region dst)
 }
 
 
+/*
+ * Deep-copy a region into the pen, the way XSetRegion() does.
+ *
+ * This used to store the caller's pointer, and that is a use-after-free
+ * waiting for the right zoom level.  map_shp.c does exactly what Xlib asks
+ * for:
+ *
+ *     xa_pen_clip_region(gc_temp, region[i]);
+ *     xa_region_destroy(region[i]);          // immediately
+ *
+ * which is correct against X -- XSetRegion copies the region into the GC, so
+ * the client's copy is the caller's to free straight afterwards.  Aliasing it
+ * instead left the pen pointing at freed memory, and the next fill through
+ * that pen walked a dangling list.  It survived at city zoom because the code
+ * path that sets a region is the one that clips a filled polygon to a
+ * shapefile's extent, and at a world zoom the Natural Earth lakes take it:
+ * SIGSEGV in apply_region_clip().
+ *
+ * The whole class of bug is an X idiom that stops being true when the backend
+ * changes, and the interface said nothing about ownership either way.  It does
+ * now, and the copy makes both readings safe.
+ */
 void xa_pen_clip_region(xa_pen pen, xa_region r)
 {
-  if (pen) { ((gtk4_pen *)pen)->clip_region = r; }
+  gtk4_pen *p = (gtk4_pen *)pen;
+  const gtk4_region *src = (const gtk4_region *)r;
+  gtk4_region *copy;
+  const gtk4_shape *s;
+  gtk4_shape **tail;
+
+  if (p == NULL)
+  {
+    return;
+  }
+
+  // Drop whatever the pen was holding; it owns its copy.
+  if (p->clip_region != NULL)
+  {
+    shape_free(((gtk4_region *)p->clip_region)->head);
+    free(p->clip_region);
+    p->clip_region = NULL;
+  }
+  if (src == NULL)
+  {
+    return;
+  }
+
+  copy = (gtk4_region *)calloc(1, sizeof(gtk4_region));
+  if (copy == NULL)
+  {
+    return;
+  }
+  tail = &copy->head;
+  for (s = src->head; s != NULL; s = s->next)
+  {
+    gtk4_shape *d = (gtk4_shape *)calloc(1, sizeof(gtk4_shape));
+
+    if (d == NULL)
+    {
+      break;
+    }
+    *d = *s;
+    d->next = NULL;
+    if (s->pts != NULL && s->npts > 0)
+    {
+      d->pts = (xa_point *)malloc((size_t)s->npts * sizeof(xa_point));
+      if (d->pts == NULL)
+      {
+        free(d);
+        break;
+      }
+      memcpy(d->pts, s->pts, (size_t)s->npts * sizeof(xa_point));
+    }
+    *tail = d;
+    tail = &d->next;
+  }
+  p->clip_region = (xa_region)copy;
 }
 
 
