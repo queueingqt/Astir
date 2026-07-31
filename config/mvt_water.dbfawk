@@ -1,0 +1,35 @@
+# Astir styling for the "water" layer of a vector tile.
+#
+# Claimed by layer name: the driver builds the signature "mvt:<layername>".
+# Attribute names follow the OpenMapTiles schema, which is what most open tile
+# builds use; a set using different names needs its own rule file rather than
+# a change here.
+#
+# Water is drawn first in practice because it is the largest thing on the map,
+# and it is filled rather than outlined: a coastline drawn as a line leaves the
+# sea the same colour as the land, which is how the shipped Natural Earth set
+# looks at a city zoom.
+BEGIN {
+dbfinfo="mvt:water";
+dbffields="class:name:intermittent";
+}
+
+BEGIN_RECORD {key=""; lanes=1; color=26; fill_color=23; name=""; filled=1;
+              fill_style=2; fill_stipple=0; pattern=0;
+              display_level=2147483647; min_display_level=0;
+              label_level=64000; label_color=26; font_size=1; symbol="";}
+
+/^name=(.*)$/ {name="$1";}
+
+# lightblue fill with a SteelBlue edge, which reads as water at any zoom
+# without competing with the roads on top of it.
+/^class=ocean$/  {fill_color=23; color=26; display_level=2147483647; next}
+/^class=lake$/   {fill_color=23; color=26; display_level=512000; next}
+/^class=river$/  {fill_color=23; color=26; display_level=256000; next}
+/^class=pond$/   {fill_color=23; color=26; display_level=24000; next}
+/^class=dock$/   {fill_color=23; color=26; display_level=12000; next}
+/^class=swimming_pool$/ {fill_color=23; color=26; display_level=3000; next}
+
+# A watercourse that is dry for part of the year: outline only, so the map does
+# not promise water that is not there.
+/^intermittent=1$/ {filled=0; pattern=1; next}

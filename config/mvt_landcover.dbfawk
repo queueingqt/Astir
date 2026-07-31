@@ -1,0 +1,22 @@
+# Astir styling for the "landcover" layer of a vector tile.
+#
+# Landcover is what the ground IS -- wood, grass, sand, ice.  The separate
+# "landuse" layer is what it is USED FOR, and OpenMapTiles keeps them apart
+# because a golf course is grass used for golf.  Two rule files for the same
+# reason.
+BEGIN {
+dbfinfo="mvt:landcover";
+dbffields="class:subclass";
+}
+
+BEGIN_RECORD {key=""; lanes=1; color=100; fill_color=100; name=""; filled=1;
+              fill_style=2; fill_stipple=0; pattern=0;
+              display_level=256000; min_display_level=0;
+              label_level=0; label_color=8; font_size=1; symbol="";}
+
+/^class=wood$/     {fill_color=100; color=100; display_level=256000; next}
+/^class=grass$/    {fill_color=82;  color=82;  display_level=64000; next}
+/^class=farmland$/ {fill_color=82;  color=82;  display_level=128000; next}
+/^class=wetland$/  {fill_color=44;  color=44;  display_level=64000; next}
+/^class=sand$/     {fill_color=99;  color=99;  display_level=32000; next}
+/^class=ice$/      {fill_color=15;  color=20;  display_level=512000; next}

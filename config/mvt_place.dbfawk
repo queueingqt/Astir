@@ -1,0 +1,31 @@
+# Astir styling for the "place" layer of a vector tile.
+#
+# Place features are points that exist to carry a name, so these rules are all
+# about label_level -- the zoom at which a name stops being drawn -- and font
+# size.  The driver draws the name rather than the point.
+#
+# There is no collision detection anywhere in Astir, so two places close
+# together will overlap.  Keeping the smaller categories to close zooms is the
+# crude substitute, and it is the reason the levels below fall away so sharply.
+BEGIN {
+dbfinfo="mvt:place";
+dbffields="class:name:rank";
+}
+
+BEGIN_RECORD {key=""; lanes=1; color=8; fill_color=8; name=""; filled=0;
+              pattern=0; display_level=0; min_display_level=0;
+              label_level=12000; label_color=8; font_size=1; symbol="";}
+
+/^name=(.*)$/ {name="$1";}
+
+/^class=continent$/ {font_size=4; label_color=8; label_level=2147483647; next}
+/^class=country$/   {font_size=4; label_color=8; label_level=2147483647; next}
+/^class=state$/     {font_size=3; label_color=8; label_level=1024000; next}
+/^class=province$/  {font_size=3; label_color=8; label_level=512000; next}
+/^class=city$/      {font_size=3; label_color=8; label_level=256000; next}
+/^class=town$/      {font_size=2; label_color=8; label_level=64000; next}
+/^class=village$/   {font_size=2; label_color=8; label_level=24000; next}
+/^class=hamlet$/    {font_size=1; label_color=8; label_level=12000; next}
+/^class=(suburb|quarter|neighbourhood)$/
+                    {font_size=1; label_color=41; label_level=8000; next}
+/^class=island$/    {font_size=2; label_color=26; label_level=64000; next}

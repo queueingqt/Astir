@@ -1,0 +1,32 @@
+# Astir styling for the "landuse" layer of a vector tile.
+#
+# What the ground is used for.  Deliberately quiet: built-up areas are the
+# background a road map is read against, and if they compete with the roads the
+# map is harder to use, not richer.
+BEGIN {
+dbfinfo="mvt:landuse";
+dbffields="class:name";
+}
+
+BEGIN_RECORD {key=""; lanes=1; color=67; fill_color=67; name=""; filled=1;
+              fill_style=2; fill_stipple=0; pattern=0;
+              display_level=64000; min_display_level=0;
+              label_level=0; label_color=8; font_size=1; symbol="";}
+
+/^name=(.*)$/ {name="$1";}
+
+# Green space, which is what gives a city map its shape at a glance.
+/^class=(park|nature_reserve|recreation_ground|village_green|garden)$/ {fill_color=82; color=82; display_level=64000; next}
+/^class=(cemetery|grave_yard)$/ {fill_color=82; color=67; next}
+/^class=(pitch|playground|stadium|track|golf_course)$/ {fill_color=82; color=82; display_level=24000; next}
+
+# Built-up land: gray80, quiet enough to sit under the road network.
+/^class=(residential|suburb|quarter|neighbourhood)$/ {fill_color=67; color=67; display_level=64000; next}
+/^class=(commercial|retail)$/   {fill_color=67; color=67; display_level=32000; next}
+/^class=industrial$/            {fill_color=67; color=67; display_level=32000; next}
+
+# Things worth telling apart from ordinary city: hospitals and schools are
+# where people are sent in an emergency, which is the job this program does.
+/^class=hospital$/ {fill_color=69; color=12; display_level=24000; next}
+/^class=(school|university|college)$/ {fill_color=67; color=67; display_level=24000; next}
+/^class=military$/ {fill_color=67; color=4; pattern=1; display_level=64000; next}

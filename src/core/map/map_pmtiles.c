@@ -152,6 +152,13 @@ static void draw_feature(const mvt_feature *f, const mvt_layer *l,
     return;                      // too close in
   }
 
+  if (debug_level & 16)
+  {
+    fprintf(stderr, "  feature type=%d parts=%d npts=%d color=%d fill=%d "
+            "fill_color=%d disp=%d mindisp=%d\n",
+            f->type, f->nparts, f->npts, st.color, st.filled, st.fill_color,
+            st.display_level, st.min_display_level);
+  }
   xa_pen_color(gc, colors[st.color]);
   xa_pen_line(gc, st.lanes > 0 ? st.lanes : 1,
               st.pattern ? XA_LINE_ON_OFF_DASH : XA_LINE_SOLID,
@@ -185,10 +192,35 @@ static void draw_feature(const mvt_feature *f, const mvt_layer *l,
     }
     if (out < 2)
     {
-      // A point feature, or a line that fell off the world.
+      /*
+       * A point feature.  In a vector tile that usually means a label anchor
+       * -- the "place" layer is a set of names at positions -- so the name is
+       * the thing to draw, not the point.
+       *
+       * No collision detection.  Two places close together will overlap, and
+       * that is the honest state of it: deciding which labels to drop when
+       * they collide is a large piece of work in its own right and is what a
+       * full vector tile renderer spends much of its time on.  label_level
+       * keeps the count down by zoom, which is the crude version.
+       */
       if (out == 1 && f->type == MVT_GEOM_POINT)
       {
-        xa_draw_point(where, gc, pts[0].x, pts[0].y);
+        if (st.name != NULL && st.name[0] != '\0'
+            && (st.label_level == 0 || scale_y <= st.label_level))
+        {
+          // -90, not 0.  This renderer measures rotation the way xvertext
+          // did, where zero reads bottom-to-top; the shapefile path uses -90
+          // for its own unrotated labels for the same reason.
+          (void)draw_rotated_label_text(-90, pts[0].x, pts[0].y,
+                                        (int)strlen(st.name),
+                                        colors[st.label_color],
+                                        (char *)st.name,
+                                        st.font_size);
+        }
+        else
+        {
+          xa_draw_point(where, gc, pts[0].x, pts[0].y);
+        }
       }
       continue;
     }
@@ -313,7 +345,17 @@ void draw_pmtiles_map(char *dir,
                               siglabel, filenm);
         if (sig == NULL || sig->prog == NULL)
         {
+          if (debug_level & 16)
+          {
+            fprintf(stderr, "draw_pmtiles_map: no rule for layer %s (%s)\n",
+                    l->name ? l->name : "(unnamed)", siglabel);
+          }
           continue;              // no rule claims this layer, so skip it
+        }
+        if (debug_level & 16)
+        {
+          fprintf(stderr, "draw_pmtiles_map: layer %s -> %d features\n",
+                  l->name ? l->name : "?", l->nfeatures);
         }
         if (map_dbfawk_compile(sig) < 0)
         {
