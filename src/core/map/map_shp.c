@@ -1449,9 +1449,89 @@ void draw_shapefile_map (char *dir,
       }
       if (sig_info)
       {
-        xa_perf_begin(XA_ZONE_DBFAWK);
-        dbfawk_parse_record(sig_info->prog,hDBF,fld_info,structure);
-        xa_perf_end(XA_ZONE_DBFAWK);
+        /*
+         * Style this shape, or recall what it was last time.
+         *
+         * Running the rules was half of every warm frame, and it produced the
+         * same answer every time: a shape's attributes do not change between
+         * frames.  The cache holds the rule OUTPUT, not the decision to draw
+         * -- display_level is compared against the current scale further down
+         * -- so one cached entry is correct at every zoom.
+         *
+         * si is the file's hash entry, which already holds its R-tree.  With
+         * no entry (a weather alert, or a file searched sequentially) there is
+         * nowhere to cache and the rules run as before.
+         */
+        shp_style *sc = NULL;
+
+        if (si != NULL && structure >= 0)
+        {
+          if (si->styles == NULL && si->nstyles == 0)
+          {
+            int n = DBFGetRecordCount(hDBF);
+
+            if (n > 0)
+            {
+              si->styles = (shp_style *)calloc((size_t)n, sizeof(shp_style));
+              si->nstyles = si->styles ? n : 0;
+            }
+          }
+          if (si->styles != NULL && structure < si->nstyles)
+          {
+            sc = &si->styles[structure];
+          }
+        }
+
+        if (sc != NULL && sc->valid)
+        {
+          color = sc->color;
+          lanes = sc->lanes;
+          filled = sc->filled;
+          pattern = sc->pattern;
+          display_level = sc->display_level;
+          min_display_level = sc->min_display_level;
+          label_level = sc->label_level;
+          fill_style = sc->fill_style;
+          fill_color = sc->fill_color;
+          fill_stipple = sc->fill_stipple;
+          label_color = sc->label_color;
+          font_size = sc->font_size;
+          memcpy(name, sc->name, sizeof(name) < sizeof(sc->name)
+                 ? sizeof(name) : sizeof(sc->name));
+          memcpy(key, sc->key, sizeof(key) < sizeof(sc->key)
+                 ? sizeof(key) : sizeof(sc->key));
+          memcpy(sym, sc->sym, sizeof(sym) < sizeof(sc->sym)
+                 ? sizeof(sym) : sizeof(sc->sym));
+        }
+        else
+        {
+          xa_perf_begin(XA_ZONE_DBFAWK);
+          dbfawk_parse_record(sig_info->prog,hDBF,fld_info,structure);
+          xa_perf_end(XA_ZONE_DBFAWK);
+
+          if (sc != NULL)
+          {
+            sc->color = (short)color;
+            sc->lanes = (short)lanes;
+            sc->filled = (short)filled;
+            sc->pattern = (short)pattern;
+            sc->display_level = display_level;
+            sc->min_display_level = min_display_level;
+            sc->label_level = label_level;
+            sc->fill_style = (short)fill_style;
+            sc->fill_color = (short)fill_color;
+            sc->fill_stipple = (short)fill_stipple;
+            sc->label_color = (short)label_color;
+            sc->font_size = (short)font_size;
+            memcpy(sc->name, name, sizeof(sc->name) < sizeof(name)
+                   ? sizeof(sc->name) : sizeof(name));
+            memcpy(sc->key, key, sizeof(sc->key) < sizeof(key)
+                   ? sizeof(sc->key) : sizeof(key));
+            memcpy(sc->sym, sym, sizeof(sc->sym) < sizeof(sym)
+                   ? sizeof(sc->sym) : sizeof(sym));
+            sc->valid = 1;
+          }
+        }
         if (debug_level & 16)
         {
           fprintf(stderr,"------\n");

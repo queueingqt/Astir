@@ -169,6 +169,11 @@ void empty_shpinfo(shpinfo *si)
       si->root=NULL;
     }
 
+    // The style cache has the same lifetime as the index above it.
+    free(si->styles);
+    si->styles = NULL;
+    si->nstyles = 0;
+
     // The hashtable functions free the
     // key, which is in our case the filename.  So since we're only going
     // to empty the shpinfo when we're removing from the hashtable, we
@@ -249,6 +254,8 @@ void add_shp_to_hash(char *filename, SHPHandle sHP)
 //    astir_snprintf(temp->filename,sizeof(shpinfo),"%s",filename);
 
   temp->root = Astir_RTreeNewIndex();
+  temp->styles = NULL;
+  temp->nstyles = 0;
   temp->creation = sec_now();
   temp->last_access = temp->creation;
 
