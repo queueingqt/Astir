@@ -452,8 +452,25 @@ static void xa_draw_cb(GtkDrawingArea *area, cairo_t *cr,
 
     if (m != NULL)
     {
+      /*
+       * Translated with the map, but never scaled.
+       *
+       * The two halves of the gesture are not the same kind of change.  A pan
+       * moves every marker by exactly the same number of pixels, so sliding
+       * the whole layer is not an approximation -- it is the right answer, and
+       * it is why the markers can keep up with the pointer without being
+       * redrawn.  A zoom moves them by different amounts each and changes none
+       * of their sizes, so the layer is redrawn instead and never stretched.
+       *
+       * Painting this layer at a fixed origin got the zoom rule right and the
+       * pan rule wrong: the map slid under the pointer while the stations
+       * stayed nailed to the window and jumped into place on release.
+       */
+      cairo_save(cr);
+      cairo_translate(cr, view_dx, view_dy);
       cairo_set_source_surface(cr, m, 0, 0);
-      cairo_paint(cr);           // one to one: never scaled, never offset
+      cairo_paint(cr);
+      cairo_restore(cr);
     }
   }
 
@@ -588,7 +605,7 @@ static void xa_rescale(void)
 
 static void xa_zoom(double factor)
 {
-  long s = (long)(scale_y * factor);
+  long s = (long)(scale_y * factor + 0.5);
   long max_out;
 
   /*
@@ -610,6 +627,32 @@ static void xa_zoom(double factor)
     max_out = 500000L;      // never exceed what the config can store
   }
 
+  /*
+   * Guarantee the step actually moves.
+   *
+   * scale_y is an integer, and a scroll notch is a 1.15x factor, so once
+   * zoomed in far enough the multiplication truncates straight back to where
+   * it started: at scale_y 6, 6 * 1.15 is 6.9, which is 6.  The function then
+   * returned "already at the limit" and the scroll wheel stopped zooming out
+   * entirely, while the menu button kept working because it uses a factor of
+   * two and two times an integer is always a different integer.
+   *
+   * Rounding alone is not enough -- 6 * 1.15 rounds to 7 but 3 * 1.15 rounds
+   * back to 3 -- so a step that lands on its own starting value is pushed one
+   * unit in the direction it was going.
+   */
+  if (s == scale_y)
+  {
+    if (factor > 1.0)
+    {
+      s = scale_y + 1;
+    }
+    else if (factor < 1.0)
+    {
+      s = scale_y - 1;
+    }
+  }
+
   if (s < 1)
   {
     s = 1;
@@ -620,7 +663,7 @@ static void xa_zoom(double factor)
   }
   if (s == scale_y)
   {
-    return;                        // already at the limit; do not queue work
+    return;                        // genuinely at the limit; do not queue work
   }
   // The frame on screen was drawn at the old scale, so showing it that much
   // larger or smaller is exactly right until the new one is ready.
