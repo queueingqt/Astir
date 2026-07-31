@@ -1018,11 +1018,38 @@ static void ui_pump_events(void)
   }
 }
 
+// Put the pointer back when the event loop next goes idle.
+static gboolean ui_unbusy(gpointer unused)
+{
+  (void)unused;
+  if (xa_area != NULL)
+  {
+    gtk_widget_set_cursor(xa_area, NULL);   // back to the inherited cursor
+  }
+  return G_SOURCE_REMOVE;
+}
+
+
+/*
+ * Something slow started.
+ *
+ * xa_ui.h is explicit that there is no matching "not busy", because the Motif
+ * shell cleared its cursor from an idle work procedure.  This front end set the
+ * wait cursor and had nothing that ever cleared it, so the first slow thing in a
+ * session -- resolving a hostname, starting an interface -- left the pointer
+ * spinning for as long as Astir stayed open.
+ *
+ * So it does what Motif did.  The cursor is set now and cleared the next time
+ * the main loop reaches idle, which is precisely "when the slow thing is no
+ * longer holding us up" and needs nothing added to the core's side of the
+ * contract.
+ */
 static void ui_busy(void)
 {
   if (xa_area != NULL)
   {
     gtk_widget_set_cursor_from_name(xa_area, "wait");
+    g_idle_add(ui_unbusy, NULL);
   }
 }
 

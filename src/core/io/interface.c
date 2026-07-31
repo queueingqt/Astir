@@ -6679,31 +6679,49 @@ void port_stats(int port)
 void startup_all_or_defined_port(int port)
 {
   int i, override;
-  int start;
+  int start, stop;
 
   override = 0;
 
+  /*
+   * `stop` is new, and it is the whole point.
+   *
+   * The default case said "Start only the interface specified in port" and then
+   * set start = port and ran the loop to MAX_IFACE_DEVICES -- so starting port 1
+   * also walked 2, 3 and everything after it.  Asking for one interface reached
+   * into every interface defined after it, which is how starting a GPS could
+   * disturb an APRS-IS connection three slots further down.
+   *
+   * Now the range says what the comment always claimed.
+   */
   switch (port)
   {
 
     case -1:    // Start if "Activate on Startup" enabled
       start = 0;
+      stop = MAX_IFACE_DEVICES;
       break;
 
     case -2:    // Start all interfaces, period!
       start = 0;
+      stop = MAX_IFACE_DEVICES;
       override = 1;
       break;
 
     default:    // Start only the interface specified in "port"
+      if (port < 0 || port >= MAX_IFACE_DEVICES)
+      {
+        return;
+      }
       start = port;
+      stop = port + 1;
       override = 1;
       break;
   }
 
   begin_critical_section(&devices_lock, "interface.c:startup_all_or_defined_port" );
 
-  for (i = start; i < MAX_IFACE_DEVICES; i++)
+  for (i = start; i < stop; i++)
   {
 
     // Only start ports that aren't already up
@@ -6908,23 +6926,35 @@ void startup_all_or_defined_port(int port)
 void shutdown_all_active_or_defined_port(int port)
 {
   int i;
-  int start;
+  int start, stop;
 
   if (debug_level & 2)
   {
     fprintf(stderr,"\nshutdown_all_active_or_defined_port: %d\n\n",port);
   }
 
+  /*
+   * Same range bug as startup_all_or_defined_port had, and worse here: asking
+   * to shut down port 1 shut down 1 and everything defined after it.  Stopping
+   * a GPS took an APRS-IS connection three slots along with it, which looks
+   * like the connection failing on its own.
+   */
   if (port == -1)
   {
     start = 0;
+    stop = MAX_IFACE_DEVICES;
   }
   else
   {
+    if (port < 0 || port >= MAX_IFACE_DEVICES)
+    {
+      return;
+    }
     start = port;
+    stop = port + 1;
   }
 
-  for( i = start; i < MAX_IFACE_DEVICES; i++ )
+  for( i = start; i < stop; i++ )
   {
     if ( (port_data[i].active == DEVICE_IN_USE)
          && ( (port_data[i].status == DEVICE_UP)
