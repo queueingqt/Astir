@@ -208,6 +208,20 @@ int xa_device_scale(void)
   return gtk4_device_scale;
 }
 
+/*
+ * The Cairo surface behind a handle.
+ *
+ * For the front end's compositor, which paints several layers with different
+ * transforms and so needs each one rather than just the canvas.
+ */
+cairo_surface_t *xa_gtk4_surface_of(xa_surface_id s)
+{
+  gtk4_surface *g = surf_of(s);
+
+  return g ? g->surf : NULL;
+}
+
+
 // What the widget's draw function should paint.  NULL before set_canvas().
 cairo_surface_t *xa_gtk4_canvas_surface(void)
 {
@@ -249,10 +263,39 @@ xa_surface_id xa_surface_create(int width, int height, int depth)
     return surf_new(cairo_image_surface_create(CAIRO_FORMAT_A8, width, height),
                     width, height, 1);
   }
+  if (depth == XA_DEPTH_ALPHA)
+  {
+    // ARGB32 and device-scaled like the canvas, because an overlay is composited
+    // onto the canvas one-to-one and has to carry the same resolution.
+    cairo_surface_t *cs =
+      cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
+                                 width  * gtk4_device_scale,
+                                 height * gtk4_device_scale);
+
+    cairo_surface_set_device_scale(cs, (double)gtk4_device_scale,
+                                   (double)gtk4_device_scale);
+    return surf_new(cs, width, height, 0);
+  }
   // Colour surfaces are layers Astir composes the frame from -- pixmap,
   // pixmap_alerts, pixmap_final -- and are copied to the canvas whole, so they
   // have to carry the same resolution or the copy throws it away again.
   return surf_new(canvas_surface_create(width, height), width, height, 0);
+}
+
+
+void xa_surface_clear(xa_surface_id s)
+{
+  gtk4_surface *g = surf_of(s);
+  cairo_t *cr;
+
+  if (g == NULL)
+  {
+    return;
+  }
+  cr = cairo_create(g->surf);
+  cairo_set_operator(cr, CAIRO_OPERATOR_CLEAR);
+  cairo_paint(cr);
+  cairo_destroy(cr);
 }
 
 

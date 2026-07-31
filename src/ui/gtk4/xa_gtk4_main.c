@@ -68,6 +68,7 @@
 // is a build-time choice.
 void             xa_gtk4_set_canvas(GtkWidget *canvas, int width, int height);
 cairo_surface_t *xa_gtk4_canvas_surface(void);
+cairo_surface_t *xa_gtk4_surface_of(xa_surface_id s);
 int              xa_gtk4_set_device_scale(int scale);
 int              xa_gtk4_device_scale(void);
 
@@ -78,6 +79,26 @@ static GtkWidget *xa_area = NULL;      // the map canvas
 static GtkWidget *xa_status = NULL;    // the status line in the header bar
 static int xa_w = 1024, xa_h = 700;
 static int xa_ready = 0;               // core initialised, safe to render
+
+/*
+ * The marker layer.
+ *
+ * Stations, symbols, trails and range rings, on their own transparent surface
+ * rather than painted into the map.  They are not part of the picture of the
+ * world; they are things AT places in it, and the difference shows the moment
+ * the view moves: a map scales when you zoom, a station does not.  It moves.
+ *
+ * Sharing one buffer forced them to share one transform, which is why an icon
+ * grew during a zoom and snapped back when the real frame landed -- the whole
+ * reason for tracing the symbols into outlines was undone by compositing them
+ * into something that gets stretched.
+ *
+ * Measured as separate passes: the map is 1393 ms and the markers 35 ms, so
+ * markers can be redrawn on every frame of a gesture and the map cannot.  That
+ * ratio is the argument for the split, not tidiness.
+ */
+static xa_surface_id pixmap_markers = XA_SURFACE_NONE;
+static void xa_render_markers(void);
 
 
 /* ---- rendering --------------------------------------------------------- */
@@ -133,16 +154,70 @@ static void xa_render(void)
 
   if (long_lat_grid)
   {
+    xa_perf_begin(XA_ZONE_DRAW_GRID);
     draw_grid();
+    xa_perf_end(XA_ZONE_DRAW_GRID);
   }
-
-  // Stations, symbols, trails and the range rings, onto pixmap_final over the
-  // map.  display_file() used to live in db_gui.c and take a Widget it never
-  // touched, which is the only reason a second front end could not call it.
-  display_file();
 
   xa_present_full(pixmap_final);
   xa_perf_frame_end("gtk4_render");
+
+  // The markers are drawn for the view the map was just drawn for.
+  xa_render_markers();
+}
+
+
+/*
+ * Draw the marker layer for the CURRENT view.
+ *
+ * Cheap enough to run on every frame of a drag or a zoom -- 35 ms against the
+ * map's 1393 -- which is the point: markers are re-projected rather than
+ * stretched, so they stay the size and shape they were drawn at while the map
+ * underneath is still catching up.
+ *
+ * The corners have to be recomputed here as well as in xa_render(), because
+ * this runs without it: display_file() projects every station against them, and
+ * with stale corners the markers would be drawn for the previous view.
+ */
+static void xa_render_markers(void)
+{
+  if (!xa_ready || pixmap_markers == XA_SURFACE_NONE)
+  {
+    return;
+  }
+  NW_corner_longitude = center_longitude - (screen_width  * scale_x / 2);
+  NW_corner_latitude  = center_latitude  - (screen_height * scale_y / 2);
+  SE_corner_longitude = center_longitude + (screen_width  * scale_x / 2);
+  SE_corner_latitude  = center_latitude  + (screen_height * scale_y / 2);
+  convert_from_astir_coordinates(&f_NW_corner_longitude, &f_NW_corner_latitude,
+                                  NW_corner_longitude, NW_corner_latitude);
+  convert_from_astir_coordinates(&f_SE_corner_longitude, &f_SE_corner_latitude,
+                                  SE_corner_longitude, SE_corner_latitude);
+
+  // Its own frame, because it is its own pass now.  Folded into the map frame
+  // it was 23 ms lost in 633; run after that frame ended it was not counted at
+  // all.  It is the pass that has to stay fast, so it is the pass to watch.
+  xa_perf_frame_begin();
+  xa_surface_clear(pixmap_markers);
+
+  // display_file() draws onto whatever pixmap_final names, so point it at the
+  // overlay for the duration.  A parameter would be better and is a separate
+  // change: fifteen call sites reach for these globals.
+  {
+    xa_surface_id was = pixmap_final;
+
+    pixmap_final = pixmap_markers;
+    xa_perf_begin(XA_ZONE_DISPLAY_FILE);
+    display_file();
+    xa_perf_end(XA_ZONE_DISPLAY_FILE);
+    pixmap_final = was;
+  }
+  xa_perf_frame_end("gtk4_markers");
+
+  if (xa_area != NULL)
+  {
+    gtk_widget_queue_draw(xa_area);
+  }
 }
 
 
@@ -299,6 +374,26 @@ static void xa_draw_cb(GtkDrawingArea *area, cairo_t *cr,
   {
     return;
   }
+  /*
+   * Three layers, three transform policies.  That is the whole design.
+   *
+   *   the map      IS a picture of the world, so while a new one is composed
+   *                the old one is stretched and slid to preview the gesture.
+   *                Scaling a picture of a map is a reasonable lie for 150 ms.
+   *
+   *   the markers  are NOT a picture.  A station is a thing at a place: when
+   *                the view changes it moves, and it never changes size.  So
+   *                this layer is redrawn for the new view instead of being
+   *                transformed, and drawn one to one.
+   *
+   *   the chrome   does not belong to the world at all and never moves.
+   *
+   * Before this the three shared one buffer and therefore one policy, and the
+   * markers got the map's.  That is why a station icon grew during a zoom and
+   * snapped back afterwards -- and why tracing the symbols into outlines had
+   * not fixed the pixelation people actually see, which happens during the
+   * gesture and not after it.
+   */
   cairo_save(cr);
   if (view_scale != 1.0)
   {
@@ -312,7 +407,17 @@ static void xa_draw_cb(GtkDrawingArea *area, cairo_t *cr,
   cairo_paint(cr);
   cairo_restore(cr);
 
-  // Chrome goes on after the restore, so it does not move with the frame.
+  if (pixmap_markers != XA_SURFACE_NONE)
+  {
+    cairo_surface_t *m = xa_gtk4_surface_of(pixmap_markers);
+
+    if (m != NULL)
+    {
+      cairo_set_source_surface(cr, m, 0, 0);
+      cairo_paint(cr);           // one to one: never scaled, never offset
+    }
+  }
+
   draw_attribution(cr, width, height);
 }
 
@@ -356,10 +461,12 @@ static void rebuild_surfaces(GtkWidget *area, int width, int height)
   xa_surface_destroy(pixmap);
   xa_surface_destroy(pixmap_alerts);
   xa_surface_destroy(pixmap_final);
+  xa_surface_destroy(pixmap_markers);
   xa_gtk4_set_canvas(area, width, height);
-  pixmap        = xa_surface_create(width, height, XA_DEPTH_CANVAS);
-  pixmap_alerts = xa_surface_create(width, height, XA_DEPTH_CANVAS);
-  pixmap_final  = xa_surface_create(width, height, XA_DEPTH_CANVAS);
+  pixmap         = xa_surface_create(width, height, XA_DEPTH_CANVAS);
+  pixmap_alerts  = xa_surface_create(width, height, XA_DEPTH_CANVAS);
+  pixmap_final   = xa_surface_create(width, height, XA_DEPTH_CANVAS);
+  pixmap_markers = xa_surface_create(width, height, XA_DEPTH_ALPHA);
 }
 
 
@@ -486,6 +593,11 @@ static void xa_zoom(double factor)
   }
   scale_y = s;
   xa_rescale();
+  // Markers now, map later.  Re-projecting the stations for the new scale is
+  // 35 ms, so they land in the right places at the right size immediately,
+  // while the map pass waits for the timer and the stretched old frame stands
+  // in for it.
+  xa_render_markers();
   gtk_widget_queue_draw(xa_area);
   render_soon();
 }
@@ -537,6 +649,7 @@ static void on_drag_end(GtkGestureDrag *g, double ox, double oy, gpointer u)
   center_longitude -= (long)(ox * scale_x);
   center_latitude  -= (long)(oy * scale_y);
   xa_rescale();
+  xa_render_markers();             // see the zoom handler
   gtk_widget_queue_draw(xa_area);
   render_soon();
 }
@@ -768,9 +881,10 @@ static int init_core(void)
   gc_stipple = xa_pen_create(XA_SURFACE_NONE);
   gc_bigfont = xa_pen_create(XA_SURFACE_NONE);
 
-  pixmap        = xa_surface_create(xa_w, xa_h, XA_DEPTH_CANVAS);
-  pixmap_alerts = xa_surface_create(xa_w, xa_h, XA_DEPTH_CANVAS);
-  pixmap_final  = xa_surface_create(xa_w, xa_h, XA_DEPTH_CANVAS);
+  pixmap         = xa_surface_create(xa_w, xa_h, XA_DEPTH_CANVAS);
+  pixmap_alerts  = xa_surface_create(xa_w, xa_h, XA_DEPTH_CANVAS);
+  pixmap_final   = xa_surface_create(xa_w, xa_h, XA_DEPTH_CANVAS);
+  pixmap_markers = xa_surface_create(xa_w, xa_h, XA_DEPTH_ALPHA);
   if (pixmap == XA_SURFACE_NONE || pixmap_final == XA_SURFACE_NONE)
   {
     g_printerr("could not create the drawing surfaces\n");
@@ -989,19 +1103,59 @@ int main(int argc, char **argv)
     xa_render();
     s = xa_gtk4_canvas_surface();
 
-    // Draw the chrome onto the canvas before writing it out.
-    //
-    // Chrome normally goes on the widget, after the frame is painted, which is
-    // what keeps it still while the map zooms.  Headless there is no widget and
-    // no draw callback, so without this the one thing that can check the
-    // attribution -- the scripted render -- is the one thing that cannot see
-    // it.  A gate blind to a feature is how the feature breaks unnoticed.
+    /*
+     * Composite the layers the widget would have composited.
+     *
+     * Everything above the map -- the markers, the chrome -- lives on its own
+     * surface and is put together by the draw callback, and headless there is
+     * no widget and no draw callback.  Without this the scripted render, which
+     * is the only thing that can check any of it, shows the map alone.
+     *
+     * That has now happened twice in this session: once when the attribution
+     * moved off the canvas and once when the markers did.  Both times the gate
+     * went blind in the same commit that added the feature.
+     */
     if (s != NULL)
     {
       cairo_t *cr = cairo_create(s);
 
+      if (pixmap_markers != XA_SURFACE_NONE)
+      {
+        cairo_surface_t *m = xa_gtk4_surface_of(pixmap_markers);
+
+        if (m != NULL)
+        {
+          cairo_set_source_surface(cr, m, 0, 0);
+          cairo_paint(cr);
+        }
+      }
       draw_attribution(cr, xa_w, xa_h);
       cairo_destroy(cr);
+    }
+
+    /*
+     * Optionally write each layer on its own.
+     *
+     * The composite cannot answer the question the layer split exists for.
+     * "Did the markers scale, or move?" and "is that symbol still the size it
+     * was drawn at?" are both invisible once the layers are flattened onto a
+     * busy map -- a marker that is wrong just looks like map detail.  The
+     * marker layer alone, on transparency, makes the POLICY testable rather
+     * than only the result.
+     */
+    if (getenv("ASTIR_GTK4_RENDER_LAYERS") != NULL
+        && pixmap_markers != XA_SURFACE_NONE)
+    {
+      cairo_surface_t *m = xa_gtk4_surface_of(pixmap_markers);
+      char buf[512];
+
+      g_snprintf(buf, sizeof(buf), "%s-markers.png",
+                 getenv("ASTIR_GTK4_RENDER_LAYERS"));
+      if (m != NULL
+          && cairo_surface_write_to_png(m, buf) == CAIRO_STATUS_SUCCESS)
+      {
+        g_print("wrote %s\n", buf);
+      }
     }
 
     if (s == NULL

@@ -288,10 +288,30 @@ int xa_color_resolve(unsigned short *r, unsigned short *g, unsigned short *b,
 
 /* ---- surfaces --------------------------------------------------------- */
 
-// Create an offscreen surface.  XA_DEPTH_CANVAS means "same as the canvas";
-// XA_DEPTH_BITMAP is the 1-bit depth used for stipples and clip masks.
+/*
+ * Create an offscreen surface.
+ *
+ *   XA_DEPTH_CANVAS  same as the canvas: opaque, no alpha channel.
+ *   XA_DEPTH_BITMAP  the 1-bit depth used for stipples and clip masks.
+ *   XA_DEPTH_ALPHA   colour WITH an alpha channel, so it can be composited
+ *                    over another surface and let it show through.
+ *
+ * XA_DEPTH_ALPHA exists for overlay layers.  A frame is not one picture: the
+ * map is a picture, and the stations on top of it are not -- they are markers
+ * at positions, and when the view changes they MOVE while the map SCALES.
+ * Composing both into one opaque buffer forces them to share a fate, which is
+ * why a station icon used to grow during a zoom and then snap back.  Keeping
+ * the markers on their own transparent layer is what lets each be transformed
+ * by its own rule.
+ */
 #define XA_DEPTH_CANVAS 0
 #define XA_DEPTH_BITMAP 1
+#define XA_DEPTH_ALPHA  2
+
+// Erase a surface to fully transparent.  Only meaningful for XA_DEPTH_ALPHA;
+// an overlay has to be cleared before each pass or the previous frame's
+// markers stay behind it.
+void xa_surface_clear(xa_surface_id s);
 xa_surface_id xa_surface_create(int width, int height, int depth);
 void          xa_surface_destroy(xa_surface_id s);
 

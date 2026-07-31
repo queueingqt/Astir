@@ -784,3 +784,8 @@ int xa_device_scale(void)
 {
   return 1;
 }
+
+void xa_surface_clear(xa_surface_id s)
+{
+  (void)s;
+}
