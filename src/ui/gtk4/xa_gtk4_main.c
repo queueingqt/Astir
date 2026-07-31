@@ -42,6 +42,8 @@
 #include "core/state/xa_settings.h"
 #include "core/state/xa_config.h"
 #include "core/state/first_run.h"
+#include "core/io/incoming.h"
+#include "core/io/interface.h"
 #include "core/xa_ui.h"
 #include "core/map/maps.h"
 #include "core/util/lang.h"
@@ -1248,7 +1250,64 @@ static int init_core(void)
   }
   index_restore_from_file();     // the map index
 
+  /*
+   * Bring up whatever interfaces the config defines.
+   *
+   * startup_all_or_defined_port() has been in the core the whole time and was
+   * called only from the Motif main(), so a GTK4 build with a perfectly good
+   * interface in its config connected to nothing: the devices were loaded, the
+   * list was right, and no thread was ever started.
+   *
+   * Devices marked "start on run" are the only ones this brings up; the rest
+   * wait to be started from the interface window.
+   */
+  startup_all_or_defined_port(-1);
+
   return 1;
+}
+
+
+/*
+ * The heartbeat.
+ *
+ * Interfaces are threads that queue what they read, so a packet only becomes a
+ * station when something drains that queue.  Motif did it from UpdateTime() at
+ * 10 ms; 50 ms is used here because the work per tick is the same and a GTK
+ * timeout at 10 ms is a lot of wakeups for a program that mostly sits still.
+ * A 1200 baud channel cannot deliver two packets in 50 ms.
+ *
+ * The redraw is deliberately NOT immediate.  A busy channel would otherwise
+ * redraw the map on every packet; asking the scheduler for one lets it coalesce
+ * a burst into a single frame, which is the whole reason it exists.
+ */
+static gboolean on_tick(gpointer user_data)
+{
+  (void)user_data;
+
+  if (!xa_ready)
+  {
+    return G_SOURCE_CONTINUE;
+  }
+
+  if (xa_incoming_pump(0) > 0)
+  {
+    redraw_on_new_data = 2;      // 2 = "and reposition", as the core reads it
+  }
+
+  xa_housekeeping(sec_now());
+
+  // Expiry and decode both set this; one place to notice it.
+  if (redraw_on_new_data > 0)
+  {
+    redraw_on_new_data = 0;
+    // Markers only: a new station changes where the symbols are, not what the
+    // map underneath them looks like, and the marker pass is 35 ms against the
+    // map's several hundred.
+    xa_render_markers();
+    gtk_widget_queue_draw(xa_area);
+  }
+
+  return G_SOURCE_CONTINUE;
 }
 
 
@@ -1421,10 +1480,30 @@ static void on_activate(GtkApplication *app, gpointer user_data)
 }
 
 
-int main(int argc, char **argv)
+int main(int argc, char **argv, char **envp)
 {
   GtkApplication *app;
   int status;
+
+  /*
+   * The core keeps its own copy of the command line, and something has to give
+   * it one.
+   *
+   * Only one thing reads it: forked_getaddrinfo() forks a child to resolve a
+   * hostname, and the child renames itself by overwriting argv in place so a
+   * process listing shows "hostname lookup" rather than a second copy of
+   * Astir.  With these left as the zero they were initialised to, that child
+   * dereferences a null argv and dies -- and a resolver child that dies is
+   * indistinguishable from a name that would not resolve.
+   *
+   * The visible symptom was that no network interface could ever connect: the
+   * address lookup for a host as ordinary as "localhost" failed, and the
+   * interface reported a hard failure with nothing to say why.  main.c set
+   * these; nothing did after the front end changed.
+   */
+  my_argc = argc;
+  my_argv = argv;
+  my_envp = envp;
 
   // The third-party libraries the map drivers use need their own startup, and
   // it is main.c that has always done it.  Missing InitializeMagick() shows up
@@ -1460,6 +1539,34 @@ int main(int argc, char **argv)
     g_print("centre %ld,%ld  scale %ld/%ld  maps selected from %s\n",
             center_longitude, center_latitude, scale_x, scale_y,
             SELECTED_MAP_DATA);
+
+    /*
+     * Optionally listen before rendering, so a received station can be checked
+     * without a human watching the window.
+     *
+     * The interfaces are already up -- init_core() started them -- but the tick
+     * that drains their queue belongs to the main loop, which this path never
+     * reaches.  Without this, a headless run connects to a radio, fills the
+     * queue and renders an empty map, which would look exactly like a receive
+     * path that does not work.
+     */
+    {
+      const char *rx = getenv("ASTIR_GTK4_RX_SECONDS");
+      int secs = (rx != NULL) ? atoi(rx) : 0;
+      int got = 0;
+      int i;
+
+      for (i = 0; i < secs * 20; i++)       // 50 ms, as the real tick uses
+      {
+        got += xa_incoming_pump(0);
+        xa_housekeeping(sec_now());
+        g_usleep(50000);
+      }
+      if (secs > 0)
+      {
+        g_print("listened %d s, %d packets decoded\n", secs, got);
+      }
+    }
 
     /*
      * Render more than once when asked.
@@ -1571,6 +1678,13 @@ int main(int argc, char **argv)
   app = gtk_application_new("org.astir.Gtk4", G_APPLICATION_DEFAULT_FLAGS);
   g_signal_connect(app, "activate", G_CALLBACK(on_activate), NULL);
   g_signal_connect(app, "shutdown", G_CALLBACK(on_shutdown), NULL);
+
+  /*
+   * The heartbeat that turns received bytes into stations.  Registered here
+   * rather than in on_activate() so it exists for the whole run, and outside
+   * the headless render path above, which returns before ever reaching this.
+   */
+  g_timeout_add(50, on_tick, NULL);
 
   /*
    * Quit cleanly on an interrupt so the config is still written.
