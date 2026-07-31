@@ -106,6 +106,7 @@ libastircore_a_SOURCES = \
     core/map/map_shp_fwd.h \
     core/map/map_tif.c \
     core/map/maps.c \
+    core/map/mvt.c core/map/mvt.h \
     core/map/maps.h \
     core/map/shp_hash.c \
     core/map/shp_hash.h \
