@@ -242,24 +242,14 @@ int xa_housekeeping(time_t now)
   (void)alert_expire((int)now);  // sets the redraw flags itself
 
   /*
-   * Reconnect anything that has dropped.
+   * Reconnecting a dropped port is NOT done here any more.
    *
-   * check_ports() says in its own comment that it is "called periodically by
-   * main.c:UpdateTime()", and nothing called it after the front end changed --
-   * so an interface that lost its server stayed lost for the rest of the run.
-   * A radio link that drops and never comes back is worse than one that was
-   * never configured, because the map keeps showing stations that are simply
-   * the last thing heard before the link went.
-   *
-   * Five minutes, as it was.  It is not a poll of anything cheap: for a port
-   * that is down it attempts a fresh connection, and retrying a dead server
-   * every second would be a denial of service aimed at whoever runs it.
+   * This function is now called from packet arrival and from drawing a frame,
+   * and a port that is down produces neither -- so a reconnect driven from here
+   * would never happen in exactly the situation that needs it.  The front end
+   * arms a retry when a port reports failure instead, which is the moment the
+   * decision can actually be made.
    */
-  if (now - last_port_check >= 300)
-  {
-    last_port_check = now;
-    check_ports();
-  }
 
   return 1;
 }

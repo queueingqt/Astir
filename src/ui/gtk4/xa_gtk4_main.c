@@ -419,7 +419,7 @@ static void xa_render_markers(void)
  * So handlers change the position and ask for a render; one actually happens,
  * shortly after the input stops.
  */
-static guint render_timer;
+static guint render_tick;
 
 /*
  * How far the view has moved since the frame on screen was composed.
@@ -434,6 +434,27 @@ static double view_dx, view_dy;
 static double view_scale = 1.0;
 
 static void render_soon(void);   // defined below; render_now() re-arms itself
+static void housekeep_now(void);
+static gboolean render_now(gpointer u);
+static gboolean render_on_frame(GtkWidget *w, GdkFrameClock *c, gpointer u);
+
+/*
+ * The frame clock has come round.  Draw, and stand down.
+ *
+ * Removing itself is what keeps an idle Astir idle: with nothing moving there
+ * is no callback installed at all, so the process sleeps rather than being
+ * woken sixty times a second to decide it has nothing to do.
+ */
+static gboolean render_on_frame(GtkWidget *w, GdkFrameClock *clock, gpointer u)
+{
+  (void)w;
+  (void)clock;
+  render_tick = 0;
+  housekeep_now();               // expiry, on an event rather than a clock
+  (void)render_now(u);
+  return G_SOURCE_REMOVE;
+}
+
 
 static gboolean render_now(gpointer u)
 {
@@ -444,7 +465,7 @@ static gboolean render_now(gpointer u)
   // Cleared FIRST, and unconditionally.  Returning early with it still set
   // leaves render_soon() believing a render is pending forever, so nothing
   // ever renders again -- one skipped frame stops the map permanently.
-  render_timer = 0;
+  render_tick = 0;
 
   if (rendering)
   {
@@ -485,12 +506,25 @@ static gboolean render_now(gpointer u)
   return G_SOURCE_REMOVE;
 }
 
+/*
+ * Ask for a frame.
+ *
+ * On the widget's frame clock, not a timeout.  The frame clock is the
+ * compositor asking whether anything wants to be drawn, so a render is
+ * scheduled against the display's own rhythm instead of against a hundred and
+ * fifty milliseconds somebody picked.  Nothing is armed while the map is still:
+ * the callback removes itself after one frame, and installing it again is what
+ * the next gesture does.
+ *
+ * Repeated calls before that frame arrives collapse into one, which is the
+ * coalescing the timeout was there for.
+ */
 static void render_soon(void)
 {
-  if (render_timer == 0)
+  if (render_tick == 0 && xa_area != NULL)
   {
-    // Long enough to swallow a scroll burst, short enough not to feel laggy.
-    render_timer = g_timeout_add(150, render_now, NULL);
+    render_tick = gtk_widget_add_tick_callback(xa_area, render_on_frame,
+                                               NULL, NULL);
   }
 }
 
@@ -1156,21 +1190,6 @@ static void act_about(GSimpleAction *a, GVariant *p, gpointer u)
  * That the table can be filled in this partially, and the core neither knows
  * nor cares, is the property the whole extraction was for.
  */
-// Hide the toast once it has been still for a while.
-static guint status_hide_timer;
-
-static gboolean status_hide(gpointer unused)
-{
-  (void)unused;
-  status_hide_timer = 0;
-  if (xa_status != NULL)
-  {
-    gtk_widget_set_visible(xa_status, FALSE);
-  }
-  return G_SOURCE_REMOVE;
-}
-
-
 /*
  * Progress and status, as a toast over the bottom right of the map.
  *
@@ -1182,8 +1201,14 @@ static gboolean status_hide(gpointer unused)
  *
  * A menu bar holds things whose position you learn.  Anything that changes size
  * on its own does not belong in one.  So this floats over the map instead, where
- * moving costs nothing, and disappears when there is nothing to report rather
- * than leaving the last thing that happened on screen forever.
+ * moving costs nothing.
+ *
+ * It does NOT time out.  It used to clear itself four seconds after the last
+ * message, which meant a timer whose only job was to make information go away --
+ * and nothing to wait for except the clock.  Leaving the last thing that
+ * happened on screen until something else happens is both simpler and more
+ * useful: the toast becomes a standing "most recent activity" rather than a
+ * notification you had to be looking at.  Clicking it still opens the history.
  */
 static void ui_status(const char *text)
 {
@@ -1226,13 +1251,6 @@ static void ui_status(const char *text)
   gtk_label_set_text(GTK_LABEL(xa_status), text);
   gtk_widget_set_visible(xa_status, TRUE);
 
-  // Restart the countdown on every message, so a run of them reads as one
-  // continuous report rather than flickering once per update.
-  if (status_hide_timer != 0)
-  {
-    g_source_remove(status_hide_timer);
-  }
-  status_hide_timer = g_timeout_add_seconds(4, status_hide, NULL);
 }
 
 /*
@@ -1326,11 +1344,57 @@ static void ui_popup(const char *banner, const char *message)
   g_message("%s: %s", banner ? banner : "", message ? message : "");
 }
 
-// The core announces this from inside interface.c's locks, so the actual
-// rebuild is deferred rather than run here.
+/*
+ * Retry a dropped interface, once, some time after it drops.
+ *
+ * The only scheduled wake-up left in the program, and it is armed BY a failure
+ * rather than running on a cadence: nothing is pending while every interface is
+ * healthy.  It has to exist, because a dead network connection is the one thing
+ * that cannot announce its own recovery -- with every port down no packets
+ * arrive and no frames are drawn, so an event-driven program would otherwise
+ * never look again.
+ *
+ * Five minutes, as check_ports() always used.  Retrying a refused server every
+ * second is a denial of service aimed at whoever runs it.
+ */
+static guint reconnect_source;
+
+static gboolean reconnect_once(gpointer unused)
+{
+  (void)unused;
+  reconnect_source = 0;
+  if (xa_ready)
+  {
+    check_ports();               // brings back anything that has dropped
+  }
+  return G_SOURCE_REMOVE;
+}
+
+
+// The core announces this from inside interface.c's locks, so the actual work
+// is deferred rather than run here.
 static void ui_interfaces_changed(void)
 {
+  int i;
+
   xa_gtk4_interfaces_changed();
+
+  // Arm a retry if anything is down and wants to come back, and nothing is
+  // already waiting to try.
+  if (reconnect_source != 0)
+  {
+    return;
+  }
+  for (i = 0; i < MAX_IFACE_DEVICES; i++)
+  {
+    if (devices[i].device_type != DEVICE_NONE
+        && devices[i].reconnect
+        && port_data[i].status != DEVICE_UP)
+    {
+      reconnect_source = g_timeout_add_seconds(300, reconnect_once, NULL);
+      return;
+    }
+  }
 }
 
 
@@ -1630,6 +1694,8 @@ static gboolean on_packet_ready(gint fd, GIOCondition cond, gpointer user_data)
     redraw_on_new_data = 2;      // 2 = "and reposition", as the core reads it
   }
 
+  housekeep_now();               // expiry, on an event rather than a clock
+
   if (redraw_on_new_data > 0)
   {
     redraw_on_new_data = 0;
@@ -1645,30 +1711,33 @@ static gboolean on_packet_ready(gint fd, GIOCondition cond, gpointer user_data)
 
 
 /*
- * Deadlines, once a second.
+ * Expiry, driven by the things that were going to happen anyway.
  *
- * This one is a timer and has to be.  It exists to notice that a moment has
- * passed -- a station older than the expiry setting, a weather alert that has
- * run out, a dropped port due another reconnect attempt.  Nothing can announce
- * the passage of time, so here the clock IS the event rather than a poll asking
- * whether anything changed.  It reads no queue and asks no question that
- * something else could have answered by telling us.
+ * Removing old stations, old messages and expired alerts used to run from a
+ * one-second timer.  Nothing announces the passage of time, so that looked
+ * unavoidable -- but it is only needed when the answer could have CHANGED WHAT
+ * IS ON SCREEN, and the two moments that can do that are a packet arriving and
+ * a frame being drawn.  Both are already events, and both already call through
+ * here.
+ *
+ * xa_housekeeping() rate-limits itself to once a second internally, so calling
+ * it from a busy path costs a comparison.  On a channel with nothing on it
+ * expiry stalls -- and correctly so: with no packets and no redraws, nothing is
+ * being displayed that could be stale to anybody.  The moment either resumes,
+ * the first thing that happens is the sweep.
  */
-static gboolean on_expiry_tick(gpointer user_data)
+static void housekeep_now(void)
 {
-  (void)user_data;
-
-  if (xa_ready)
+  if (!xa_ready)
   {
-    xa_housekeeping(sec_now());
-    if (redraw_on_new_data > 0)
-    {
-      redraw_on_new_data = 0;
-      xa_render_markers();
-      gtk_widget_queue_draw(xa_area);
-    }
+    return;
   }
-  return G_SOURCE_CONTINUE;
+  if (xa_housekeeping(sec_now()) && redraw_on_new_data > 0)
+  {
+    redraw_on_new_data = 0;
+    xa_render_markers();
+    gtk_widget_queue_draw(xa_area);
+  }
 }
 
 
@@ -1922,8 +1991,21 @@ static void on_activate(GtkApplication *app, gpointer user_data)
 
     xa_status = gtk_label_new("");
     gtk_label_set_ellipsize(GTK_LABEL(xa_status), PANGO_ELLIPSIZE_END);
-    // Never wide enough to cover the map, never so narrow it says nothing.
-    gtk_label_set_max_width_chars(GTK_LABEL(xa_status), 48);
+    /*
+     * A FIXED width, not one that follows the text.
+     *
+     * Same fault as the header bar had, one step removed: the toast is
+     * right-aligned, so a message of a different length moves its left edge --
+     * and the history popover, which hangs off the middle of it, slid back and
+     * forth as the text changed underneath.  A thing other things attach to
+     * must not resize itself.
+     *
+     * Both bounds set to the same number, so short text pads rather than
+     * shrinks and long text ellipsizes rather than grows.
+     */
+    gtk_label_set_width_chars(GTK_LABEL(xa_status), 42);
+    gtk_label_set_max_width_chars(GTK_LABEL(xa_status), 42);
+    gtk_label_set_xalign(GTK_LABEL(xa_status), 0.0);
     gtk_widget_set_visible(xa_status, FALSE);
     gtk_widget_add_css_class(xa_status, "astir-toast");
 
@@ -2266,8 +2348,6 @@ int main(int argc, char **argv, char **envp)
     }
   }
 
-  // Deadlines, which nothing can announce.  See on_expiry_tick.
-  g_timeout_add_seconds(1, on_expiry_tick, NULL);
 
   /*
    * Quit cleanly on an interrupt so the config is still written.
