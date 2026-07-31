@@ -46,6 +46,7 @@
 #include "core/aprs/db_funcs.h"
 #include "core/aprs/station_draw.h"
 #include "core/render/draw_symbols.h"
+#include "core/render/label_place.h"
 #include "core/util/snprintf.h"
 #include "core/util/xa_perf.h"
 
@@ -146,12 +147,28 @@ static void xa_render(void)
   xa_pen_bg(gc, colors[0xfd]);
   xa_fill_rect(pixmap, gc, 0, 0, (int)screen_width, (int)screen_height);
 
+  /*
+   * Labels are collected during the map pass and placed at the end of it.
+   * Opening the frame here and flushing below is what lets an important name
+   * beat one that merely drew first.
+   */
+  label_frame_begin();
   load_maps();
 
   xa_copy_area(pixmap, pixmap_alerts, gc, 0, 0,
                (int)screen_width, (int)screen_height, 0, 0);
   xa_copy_area(pixmap_alerts, pixmap_final, gc, 0, 0,
                (int)screen_width, (int)screen_height, 0, 0);
+
+  {
+    int offered = 0;
+    int drawn = label_flush(pixmap_final, &offered);
+
+    if (debug_level & 16)
+    {
+      fprintf(stderr, "labels: %d of %d placed\n", drawn, offered);
+    }
+  }
 
   if (long_lat_grid)
   {
@@ -209,7 +226,28 @@ static void xa_render_markers(void)
 
     pixmap_final = pixmap_markers;
     xa_perf_begin(XA_ZONE_DISPLAY_FILE);
+
+    /*
+     * The marker layer gets its own label frame.
+     *
+     * Callsigns compete with each other, not with the map's names: the two
+     * layers are drawn at different times into different surfaces, which is
+     * the whole point of the split, so one registry cannot span both.  In
+     * practice the ordering is right anyway -- the marker layer is composited
+     * over the map, so a callsign covers a place name rather than the reverse.
+     * What is lost is the ink spent on the covered name, not the callsign.
+     */
+    label_frame_begin();
     display_file();
+    {
+      int offered = 0;
+      int drawn = label_flush(pixmap_markers, &offered);
+
+      if (debug_level & 16)
+      {
+        fprintf(stderr, "station labels: %d of %d placed\n", drawn, offered);
+      }
+    }
     xa_perf_end(XA_ZONE_DISPLAY_FILE);
     pixmap_final = was;
   }

@@ -118,6 +118,7 @@ libastircore_a_SOURCES = \
     core/render/draw_symbols.c \
     core/render/symbols_vector.c core/render/symbols_vector.h \
     core/render/symbol_draw_vector.c \
+    core/render/label_place.c core/render/label_place.h \
     core/render/draw_symbols.h \
     core/render/symbols.h \
     core/state/xa_config.c \

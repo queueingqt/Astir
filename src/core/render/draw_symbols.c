@@ -38,6 +38,7 @@
 #include "core/aprs/db_funcs.h"
 
 #include "core/render/draw_symbols.h"
+#include "core/render/label_place.h"
 #include "core/main.h"
 #include "core/util/util.h"
 #include "core/util/mutex_utils.h"
@@ -2871,7 +2872,21 @@ void draw_symbol(char symbol_table, char symbol_id, char symbol_overlay,
       {
         x_offset=((x_long-NW_corner_longitude)/scale_x)+13;
         y_offset=((y_lat -NW_corner_latitude) /scale_y)+posyr;
-        draw_nice_string(where,letter_style,x_offset,y_offset,callsign_text,0x08,0x0f,length);
+        /*
+         * The callsign goes through the placer, at the top priority.
+         *
+         * This is an APRS client: the stations are why it is running, and a
+         * callsign hidden behind a suburb name has the job backwards.  Stations
+         * cluster, though -- a net or an event puts a dozen in one block -- and
+         * a pile of callsigns on top of each other is as unreadable as any
+         * other pile of text, so they compete with each other even while
+         * outranking everything on the map.
+         */
+        label_submit_styled(x_offset, y_offset, 0, callsign_text,
+                            rotated_label_fontname[FONT_STATION],
+                            0x0f, 0x08, FONT_STATION,
+                            LABEL_PRIO_STATION, LABEL_STYLE_OUTLINED,
+                            letter_style);
         posyr += font_height;
       }
 

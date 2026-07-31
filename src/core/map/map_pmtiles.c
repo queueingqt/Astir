@@ -39,6 +39,7 @@
 #include "core/map/awk.h"
 #include "core/map/dbfawk.h"
 #include "core/map/map_style.h"
+#include "core/render/label_place.h"
 #include "core/util/util.h"
 #include "core/util/snprintf.h"
 #include "core/util/xa_perf.h"
@@ -208,14 +209,25 @@ static void draw_feature(const mvt_feature *f, const mvt_layer *l,
         if (st.name != NULL && st.name[0] != '\0'
             && (st.label_level == 0 || scale_y <= st.label_level))
         {
-          // -90, not 0.  This renderer measures rotation the way xvertext
-          // did, where zero reads bottom-to-top; the shapefile path uses -90
-          // for its own unrotated labels for the same reason.
-          (void)draw_rotated_label_text(-90, pts[0].x, pts[0].y,
-                                        (int)strlen(st.name),
-                                        colors[st.label_color],
-                                        (char *)st.name,
-                                        st.font_size);
+          /*
+           * Submitted, not drawn.  Whether this name gets the space depends on
+           * what else wants it, and that is not known until the pass is over.
+           *
+           * Priority comes from the rule's label_level: a category that stays
+           * visible when zoomed further out is a more important place, so the
+           * rule file already ranks them and there is no second table to keep
+           * in step.  -90 is upright here; see the label placer.
+           */
+          int prio = LABEL_PRIO_MAP;
+
+          if (st.label_level > 0)
+          {
+            prio = LABEL_PRIO_MAP + (st.label_level / 4096);
+            if (prio > LABEL_PRIO_PLACE_MAX) { prio = LABEL_PRIO_PLACE_MAX; }
+          }
+          label_submit(pts[0].x, pts[0].y, -90, st.name,
+                       rotated_label_fontname[st.font_size],
+                       st.label_color, st.font_size, prio);
         }
         else
         {

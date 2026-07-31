@@ -119,6 +119,7 @@ typedef struct _label_string
 // it contains nothing that interferes with that file.
 #include "core/map/map_shp_fwd.h"
 #include "core/map/map_style.h"
+#include "core/render/label_place.h"
 
 // RTrees are used as a spatial index for shapefiles.  We can search them
 // for shapes that intersect our viewport, and only read those from the
@@ -1683,18 +1684,37 @@ void draw_shapefile_map (char *dir,
                                                mod_number, &skip_label);
                 }
 
-                if (!skip_label)    // Draw the string
+                if (!skip_label)    // Offer the string for placement
                 {
                   // Compute the label rotation angle, select color
                   float angle = (gps_flag)?(-90):get_label_angle(x0,x1,y0,y1);
                   int color_to_use=(gps_flag)?gps_color:label_color;
 
-                  (void)draw_rotated_label_text((int)angle, x, y,
-                                                strlen(temp),
-                                                colors[color_to_use],
-                                                (char *)temp,
-                                                font_size);
+                  /*
+                   * Submitted rather than drawn: whether this name gets the
+                   * space depends on what else wants it, and that is not known
+                   * until the map pass is over.  Drawing here gave the map to
+                   * whichever feature was read first, which is an artefact of
+                   * file order.
+                   *
+                   * Priority from label_level, so a name that survives to a
+                   * wider zoom outranks one that does not -- the rule files
+                   * already express which names matter and there is no second
+                   * table to keep in step with them.
+                   */
+                  int prio = LABEL_PRIO_MAP;
 
+                  if (label_level > 0)
+                  {
+                    prio = LABEL_PRIO_MAP + (label_level / 4096);
+                    if (prio > LABEL_PRIO_PLACE_MAX)
+                    {
+                      prio = LABEL_PRIO_PLACE_MAX;
+                    }
+                  }
+                  label_submit(x, y, (int)angle, (char *)temp,
+                               rotated_label_fontname[font_size],
+                               color_to_use, font_size, prio);
                 }
 
                 if (new_label)
