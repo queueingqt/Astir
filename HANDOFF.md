@@ -258,13 +258,22 @@ holding up nothing.
 
 ## The GTK4 front end: how to run it, and what it does
 
-**Running uninstalled needs `ASTIR_DATA_BASE`.** The data directory compiled in
-is now `/usr/share/astir`, and nothing is installed there -- the dev tree has
-always borrowed the packaged install's data. Without it the shapefiles still
-draw, but with default styling instead of their dbfawk rules, which looks like
-a rendering regression and is not one:
+**Running uninstalled needs `ASTIR_DATA_BASE`.** Without it the shapefiles still
+draw, but with default styling instead of their dbfawk rules, which looks like a
+rendering regression and is not one.
 
-    ASTIR_DATA_BASE=/usr/share/xastir ./src/astir
+Build Astir's own data directory and point at that. Astir shares no files with
+Xastir, and pointing this at `/usr/share/xastir` is refused at startup now
+rather than quietly rendering another application's rules -- which is what it
+did, for weeks, because the map still drew:
+
+    ./tools/devdata.sh
+    ASTIR_DATA_BASE=$PWD/artifacts/datadir ./src/astir
+
+`devdata.sh` symlinks `config/`, `symbols/` and `help/` back to the repo, so a
+rule edited in the tree takes effect on the next run. A downloaded map
+collection goes in via `ASTIR_MAPS`, which likewise refuses another program's
+install directory -- keep the collection somewhere neither program owns.
 
     ./build.sh                 # builds src/astir; GTK4 is the only front end
     ./src/astir

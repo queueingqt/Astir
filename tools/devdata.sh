@@ -17,10 +17,18 @@
 #   maps/                           the app's own map directory
 #
 # The map COLLECTION is different in kind and is not assembled here.  TIGER
-# shapefiles are 564M of data the user downloaded; they are not a resource of
-# either program, and which directory they live in is the user's choice.  Point
-# ASTIR_MAPS at them and they are linked in; leave it unset and Astir starts
-# with only the maps it ships.
+# shapefiles are hundreds of megabytes the user downloaded; they are not a
+# resource of either program, and which directory they live in is the user's
+# choice.  Point ASTIR_MAPS at them and they are linked in; leave it unset and
+# Astir starts with only the maps it ships.
+#
+# ASTIR_MAPS MAY NOT BE ANOTHER PROGRAM'S INSTALL DIRECTORY, and this refuses
+# one.  Setting it to /usr/share/xastir/maps looks like it works -- the TIGER
+# shapefiles really are in there -- but it also drags in that program's own
+# resources, and it did: GPS/ and three attribution images were linked in
+# alongside, and then read on every run.  A map collection kept inside a
+# package's install prefix is the user's data in the wrong place; copy it out to
+# a directory neither program owns and point at that.
 #
 #   ./tools/devdata.sh
 #   ASTIR_DATA_BASE=$PWD/artifacts/datadir ./src/astir
@@ -29,6 +37,19 @@ cd "$(dirname "$0")/.."
 
 OUT="${1:-artifacts/datadir}"
 MAPS_SRC="${ASTIR_MAPS:-}"
+
+# Checked before anything is created or removed, so a refusal leaves the tree
+# exactly as it was rather than half-built.
+if [ -n "$MAPS_SRC" ]; then
+  case "$(cd "$MAPS_SRC" 2>/dev/null && pwd -P || echo "$MAPS_SRC")" in
+    */xastir/*|*/xastir)
+      echo "refusing ASTIR_MAPS=$MAPS_SRC: that is Xastir's install directory." >&2
+      echo "Astir shares no files with it.  Copy your map collection somewhere" >&2
+      echo "neither program owns and point ASTIR_MAPS at that instead." >&2
+      exit 1
+      ;;
+  esac
+fi
 
 rm -rf "$OUT"
 mkdir -p "$OUT/maps"

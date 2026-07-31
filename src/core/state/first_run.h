@@ -48,4 +48,21 @@ int xa_user_dirs_create(void);
  */
 int xa_resolve_config(const char *name, char *out, size_t out_size);
 
+/*
+ * Refuse to run out of another application's data directory.
+ *
+ * Astir is a separate program from Xastir, not a newer version of it, and the
+ * two share no files.  Pointing ASTIR_DATA_BASE at /usr/share/xastir makes it
+ * look like everything works -- the shapefiles are there, the symbols are there
+ * and a map appears -- while every render is being styled by another program's
+ * copy of the rules, so a change made here does nothing and a change made there
+ * silently alters this.
+ *
+ * That happened, and a warning was not enough: it was ignored precisely because
+ * the map still drew.  This refuses.
+ *
+ * Returns 1 when the data directory is Astir's own, 0 when it is not.
+ */
+int xa_data_base_is_ours(void);
+
 #endif /* ASTIR_FIRST_RUN_H */

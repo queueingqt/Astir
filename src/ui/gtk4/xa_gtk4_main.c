@@ -30,6 +30,8 @@
  */
 
 #include <gtk/gtk.h>
+#include <glib-unix.h>          // g_unix_signal_add, for saving on Ctrl-C
+#include <signal.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -1079,6 +1081,13 @@ static int init_core(void)
     astir_snprintf(user_dir, sizeof(user_dir), "%s", pw->pw_dir);
   }
 
+  // Before anything is read: whose data directory is this?  Getting this wrong
+  // renders a convincing map out of another program's files.
+  if (!xa_data_base_is_ours())
+  {
+    return 0;
+  }
+
   // Build ~/.astir before anything reads out of it.  A first run has no
   // directory at all, and every failure after this point would otherwise be
   // reported as a missing file rather than as a missing install.
@@ -1246,6 +1255,44 @@ static int init_core(void)
 static gboolean popup_menu_once(gpointer button)
 {
   gtk_menu_button_popup(GTK_MENU_BUTTON(button));
+  return G_SOURCE_REMOVE;
+}
+
+
+/*
+ * Write the config out on the way down.
+ *
+ * save_data() has been sitting in the core unused: the Motif main() called it
+ * from its shutdown path, its signal handler and a menu item, and none of that
+ * came across.  So Astir has been reading a config it never wrote -- a new user
+ * ended up with an empty astir.cnf and lost their position, their zoom and
+ * every preference on every exit, which looked like the settings not working
+ * rather than like the file not being saved.
+ *
+ * Only when the core actually came up.  Saving from a failed startup would
+ * write defaults over a config that was probably fine.
+ */
+static void on_shutdown(GApplication *app, gpointer user_data)
+{
+  (void)app;
+  (void)user_data;
+
+  if (!xa_ready)
+  {
+    return;
+  }
+  save_data();
+  xa_perf_report_totals();       // ASTIR_PERF=1; nothing otherwise
+}
+
+
+// SIGINT/SIGTERM: ask the application to quit rather than dying here, so the
+// shutdown handler above still runs.  Returning G_SOURCE_REMOVE means a second
+// interrupt is not caught, which is the behaviour you want if the first one
+// wedges.
+static gboolean quit_on_signal(gpointer app)
+{
+  g_application_quit(G_APPLICATION(app));
   return G_SOURCE_REMOVE;
 }
 
@@ -1523,6 +1570,20 @@ int main(int argc, char **argv)
 
   app = gtk_application_new("org.astir.Gtk4", G_APPLICATION_DEFAULT_FLAGS);
   g_signal_connect(app, "activate", G_CALLBACK(on_activate), NULL);
+  g_signal_connect(app, "shutdown", G_CALLBACK(on_shutdown), NULL);
+
+  /*
+   * Quit cleanly on an interrupt so the config is still written.
+   *
+   * Not a nicety: a program run from a terminal during development is stopped
+   * with Ctrl-C far more often than it is closed with the window button, and
+   * the default disposition kills the process outright.  Routing both signals
+   * through g_application_quit() means every way of stopping Astir ends at the
+   * same shutdown handler.
+   */
+  g_unix_signal_add(SIGINT, quit_on_signal, app);
+  g_unix_signal_add(SIGTERM, quit_on_signal, app);
+
   status = g_application_run(G_APPLICATION(app), argc, argv);
   g_object_unref(app);
   return status;

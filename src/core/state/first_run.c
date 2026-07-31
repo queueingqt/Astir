@@ -8,7 +8,9 @@
 #endif
 
 #include <errno.h>
+#include <limits.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -192,6 +194,30 @@ int xa_user_dirs_create(void)
 }
 
 
+int xa_data_base_is_ours(void)
+{
+  const char *base = get_data_base_dir("");
+
+  if (base == NULL)
+  {
+    return 1;                    // nothing to judge; let the caller carry on
+  }
+  if (strstr(base, "xastir") == NULL)
+  {
+    return 1;
+  }
+
+  fprintf(stderr,
+          "astir: refusing to run from another application's data directory:\n"
+          "         %s\n"
+          "       Astir shares no files with Xastir.  Unset ASTIR_DATA_BASE to\n"
+          "       use the installed copy, or point it at Astir's own tree --\n"
+          "       tools/devdata.sh builds one for a working checkout.\n",
+          base);
+  return 0;
+}
+
+
 int xa_resolve_config(const char *name, char *out, size_t out_size)
 {
   char rel[MAX_VALUE];
@@ -201,13 +227,37 @@ int xa_resolve_config(const char *name, char *out, size_t out_size)
     return 0;
   }
 
-  // The user's own copy wins, so an edited file is never overridden by an
-  // upgrade of the installed one.
+  /*
+   * The user's own copy wins, so an edited file is never overridden by an
+   * upgrade of the installed one -- unless it is not really theirs.
+   *
+   * Astir's predecessor put symlinks here pointing into its own install, and a
+   * ~/.astir seeded by copying a ~/.xastir inherits them.  They resolve, they
+   * are readable, and they win, so every string in the program comes out of
+   * another application's file while Astir's own copy sits unread.  A link that
+   * leads out of Astir's world is not the user's preference; it is a leftover,
+   * and it is skipped.
+   */
   astir_snprintf(rel, sizeof(rel), "config/%s", name);
   get_user_base_dir(rel, out, out_size);
   if (access(out, R_OK) == 0)
   {
-    return 1;
+    // NULL rather than a buffer of our own: realpath() wants at least PATH_MAX
+    // and will allocate exactly what it needs when asked to.
+    char *real = realpath(out, NULL);
+    int foreign = (real != NULL && strstr(real, "xastir") != NULL);
+
+    if (!foreign)
+    {
+      free(real);
+      return 1;
+    }
+    fprintf(stderr,
+            "astir: ignoring %s: it points into another application\n"
+            "         %s -> %s\n"
+            "       Using Astir's own copy.  Delete that link to silence this.\n",
+            name, out, real);
+    free(real);
   }
 
   astir_snprintf(out, out_size, "%s", get_data_base_dir(rel));
