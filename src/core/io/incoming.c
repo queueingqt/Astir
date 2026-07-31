@@ -149,12 +149,20 @@ int xa_incoming_pump(int budget)
 int xa_housekeeping(time_t now)
 {
   static time_t last = 0;
+  static time_t last_port_check = 0;
 
   if (now == last)
   {
     return 0;                    // called from a faster timer; nothing due
   }
   last = now;
+
+  // Not on the first call: at startup every port has just been brought up (or
+  // deliberately not), and a reconnect sweep a second later would fight it.
+  if (last_port_check == 0)
+  {
+    last_port_check = now;
+  }
 
   check_station_remove(now);     // stations older than the expiry setting
   check_message_remove(now);     // messages likewise
@@ -169,6 +177,26 @@ int xa_housekeeping(time_t now)
   calc_aloha((int)now);
 
   (void)alert_expire((int)now);  // sets the redraw flags itself
+
+  /*
+   * Reconnect anything that has dropped.
+   *
+   * check_ports() says in its own comment that it is "called periodically by
+   * main.c:UpdateTime()", and nothing called it after the front end changed --
+   * so an interface that lost its server stayed lost for the rest of the run.
+   * A radio link that drops and never comes back is worse than one that was
+   * never configured, because the map keeps showing stations that are simply
+   * the last thing heard before the link went.
+   *
+   * Five minutes, as it was.  It is not a poll of anything cheap: for a port
+   * that is down it attempts a fresh connection, and retrying a dead server
+   * every second would be a denial of service aimed at whoever runs it.
+   */
+  if (now - last_port_check >= 300)
+  {
+    last_port_check = now;
+    check_ports();
+  }
 
   return 1;
 }

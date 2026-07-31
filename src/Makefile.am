@@ -178,6 +178,8 @@ astir_SOURCES = \
     draw/xa_draw.h \
     draw/gtk4/xa_draw_gtk4.c \
     ui/gtk4/xa_gtk4_main.c \
+    ui/gtk4/xa_gtk4_interfaces.c \
+    ui/gtk4/xa_gtk4_interfaces.h \
     ui/gtk4/xa_gtk4_palette.c
 
 astir_CPPFLAGS = $(AM_CPPFLAGS) $(GTK4_CFLAGS)

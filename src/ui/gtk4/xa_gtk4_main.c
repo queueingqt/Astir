@@ -44,6 +44,7 @@
 #include "core/state/first_run.h"
 #include "core/io/incoming.h"
 #include "core/io/interface.h"
+#include "ui/gtk4/xa_gtk4_interfaces.h"
 #include "core/xa_ui.h"
 #include "core/map/maps.h"
 #include "core/util/lang.h"
@@ -964,6 +965,15 @@ static void act_reindex(GSimpleAction *a, GVariant *p, gpointer u)
 }
 
 
+// What Astir is connected to.  Its own window rather than a submenu of
+// toggles: an interface has state worth watching, not just a setting.
+static void act_interfaces(GSimpleAction *a, GVariant *p, gpointer u)
+{
+  (void)a; (void)p;
+  xa_gtk4_interfaces_show(GTK_WINDOW(u));
+}
+
+
 static void act_about(GSimpleAction *a, GVariant *p, gpointer u)
 {
   GtkWidget *dlg;
@@ -1311,6 +1321,24 @@ static gboolean on_tick(gpointer user_data)
 }
 
 
+static gboolean show_interfaces_once(gpointer win)
+{
+  const char *what = getenv("ASTIR_GTK4_SHOW_INTERFACES");
+
+  // "add" opens the dialog ALONE, so a screenshot of the active window gets
+  // the dialog rather than the list sitting in front of it.
+  if (what != NULL && strcmp(what, "add") == 0)
+  {
+    xa_gtk4_interfaces_show_add(GTK_WINDOW(win));
+  }
+  else
+  {
+    xa_gtk4_interfaces_show(GTK_WINDOW(win));
+  }
+  return G_SOURCE_REMOVE;
+}
+
+
 static gboolean popup_menu_once(gpointer button)
 {
   gtk_menu_button_popup(GTK_MENU_BUTTON(button));
@@ -1361,7 +1389,7 @@ static void on_activate(GtkApplication *app, gpointer user_data)
   GtkWidget *win, *header, *box;
   GtkGesture *drag;
   GtkEventController *scroll;
-  GMenu *menu, *view, *maps, *help;
+  GMenu *menu, *view, *maps, *iface, *help;
   GtkWidget *hamburger;
   static const GActionEntry acts[] =
   {
@@ -1370,6 +1398,7 @@ static void on_activate(GtkApplication *app, gpointer user_data)
     { "redraw",      act_redraw,   NULL, NULL,    NULL, {0} },
     { "about",       act_about,    NULL, NULL,    NULL, {0} },
     { "reindex",     act_reindex,  NULL, NULL,    NULL, {0} },
+    { "interfaces",  act_interfaces, NULL, NULL,  NULL, {0} },
     { "grid",        NULL, NULL, "false", act_toggle, {0} },
     { "map-labels",  NULL, NULL, "false", act_toggle, {0} },
     { "filled-maps", NULL, NULL, "false", act_toggle, {0} },
@@ -1409,11 +1438,20 @@ static void on_activate(GtkApplication *app, gpointer user_data)
   g_menu_append(maps, "Lat/Long Grid", "win.grid");
   g_menu_append(maps, "Map Labels", "win.map-labels");
   g_menu_append(maps, "Filled Maps", "win.filled-maps");
+  // Was appended after this section had been added and unreffed, from inside
+  // the help block below.  It survived on the section holding a reference,
+  // which is luck rather than intent.
+  g_menu_append(maps, "Rebuild Map Index", "win.reindex");
   g_menu_append_section(menu, "Maps", G_MENU_MODEL(maps));
   g_object_unref(maps);
 
+  // What Astir is connected to: radios, software TNCs, APRS-IS.
+  iface = g_menu_new();
+  g_menu_append(iface, "Interfaces\xe2\x80\xa6", "win.interfaces");
+  g_menu_append_section(menu, "Connections", G_MENU_MODEL(iface));
+  g_object_unref(iface);
+
   help = g_menu_new();
-  g_menu_append(maps, "Rebuild Map Index", "win.reindex");
   g_menu_append(help, "About Astir", "win.about");
   g_menu_append_section(menu, NULL, G_MENU_MODEL(help));
   g_object_unref(help);
@@ -1462,6 +1500,16 @@ static void on_activate(GtkApplication *app, gpointer user_data)
                                         (const char *[]){ "minus", NULL });
   gtk_application_set_accels_for_action(app, "win.redraw",
                                         (const char *[]){ "F5", NULL });
+  gtk_application_set_accels_for_action(app, "win.interfaces",
+                                        (const char *[]){ "<Control>i", NULL });
+
+  // Same reason as the menu hook below: this is a Wayland session with no input
+  // automation, so a window reached through a menu cannot be got on screen for
+  // a screenshot unless the application opens it itself.
+  if (getenv("ASTIR_GTK4_SHOW_INTERFACES") != NULL)
+  {
+    g_timeout_add_seconds(2, (GSourceFunc)show_interfaces_once, win);
+  }
 
   box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_box_append(GTK_BOX(box), xa_area);
