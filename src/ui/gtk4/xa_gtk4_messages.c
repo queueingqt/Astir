@@ -868,27 +868,38 @@ static GtkWidget *build_thread_page(void)
   gtk_box_append(GTK_BOX(page), bar);
 
   scroll = gtk_scrolled_window_new();
+  // Never sideways.  The transcript wraps, so a horizontal scrollbar would
+  // only ever be a way to lose text off the edge.
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll),
-                                 GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-  // Small on purpose, and smaller than a transcript line: this one scrolls
-  // sideways by design, so the floor is here to keep the scrollbar measurable,
-  // not to claim the width a line would like.
+                                 GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
   gtk_scrolled_window_set_min_content_width(GTK_SCROLLED_WINDOW(scroll), 240);
   gtk_widget_set_vexpand(scroll, TRUE);
 
   /*
-   * Monospace, and not wrapped.
+   * Monospace, and wrapped.
    *
    * The core formats a transcript line as a fixed-width prefix -- date, time,
-   * callsign, retry count -- and then the message.  That is a table, and it
-   * only reads as one if the columns line up.  A narrow sidebar scrolls
-   * sideways rather than breaking them.
+   * callsign, retry count -- and then the message, which is a table and reads
+   * as one only while the columns line up.  This first kept the columns and
+   * scrolled sideways for the rest, and that was wrong: GTK's scrollbars are
+   * overlays that stay hidden until the pointer is over them, so there was
+   * nothing on screen to say the line continued.  A message simply stopped at
+   * the edge of the sidebar, mid-word, and looked like text escaping its box.
+   *
+   * Text that cannot be seen is worse than a column that does not line up, so
+   * it wraps.  The prefix still aligns down the left of every message, because
+   * every prefix is the same width; only an over-long message breaks, and the
+   * hanging indent is what says the second line is a continuation and not a
+   * new message.
    */
   msg_view = gtk_text_view_new();
   gtk_text_view_set_editable(GTK_TEXT_VIEW(msg_view), FALSE);
   gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(msg_view), FALSE);
-  gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(msg_view), GTK_WRAP_NONE);
-  gtk_text_view_set_left_margin(GTK_TEXT_VIEW(msg_view), 8);
+  gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(msg_view), GTK_WRAP_WORD_CHAR);
+  // Hanging indent: every line is indented, and the first line of each message
+  // is pulled back out to the margin again.
+  gtk_text_view_set_left_margin(GTK_TEXT_VIEW(msg_view), 8 + 18);
+  gtk_text_view_set_indent(GTK_TEXT_VIEW(msg_view), -18);
   gtk_text_view_set_right_margin(GTK_TEXT_VIEW(msg_view), 8);
   gtk_text_view_set_top_margin(GTK_TEXT_VIEW(msg_view), 4);
   gtk_widget_add_css_class(msg_view, "monospace");
@@ -923,7 +934,7 @@ GtkWidget *xa_gtk4_messages_pane(GtkWindow *parent)
   msg_parent = parent;
 
   msg_pane = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  gtk_widget_set_size_request(msg_pane, 300, -1);
+  gtk_widget_set_size_request(msg_pane, 320, -1);
 
   msg_stack = gtk_stack_new();
   gtk_stack_set_transition_type(GTK_STACK(msg_stack),

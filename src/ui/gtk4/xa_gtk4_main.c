@@ -1112,7 +1112,16 @@ static void update_msg_toggle(void)
  */
 static GtkWidget *msg_paned;
 
-#define MSG_SIDEBAR_WIDTH 340
+/*
+ * Wide enough for a transcript line to say something.
+ *
+ * The core's prefix -- date, time, a callsign padded to nine, the retry count
+ * and the '>' -- is about twenty-two monospace characters before the message
+ * even starts, which at 340 left room for roughly fourteen characters of what
+ * somebody actually said, and every message wrapped three times.  This is not
+ * a number picked for looks; it is the prefix plus enough after it to read.
+ */
+#define MSG_SIDEBAR_WIDTH 420
 
 static void act_messages(GSimpleAction *a, GVariant *state, gpointer u)
 {
