@@ -10,6 +10,10 @@ perf.data
 perf.data.old
 summary.log
 *.png
+# The application icon is source, not a render artefact, and is installed into
+# hicolor by Makefile.am.  (gitignore has no inline comments -- a "#" after a
+# pattern is part of the pattern, so this note has to live on its own line.)
+!symbols/icon.png
 *.pkg.tar.zst
 selected_maps.sys.user
 ab-baseline-astir.cnf
@@ -49,9 +53,19 @@ src/testdbfawk
 src/astir_udp_client
 src/astir_testdbfawk
 callpass/astir_callpass
-online-maps/
 OSM_tiled_*.geo
-config/language-*.sys
+
+# The joke translations only.  scripts/lang*.pl generates these from
+# language-English.sys, so they are build output.  The seven real translations
+# in the same directory are source, are installed by config/Makefile.am, and
+# must not be caught here -- "config/language-*.sys" caught all twelve, and the
+# seven survived only because a rule cannot un-track a file that is already
+# tracked.  A glob that is wrong about product files is a landmine, not a rule.
+config/language-ElmerFudd.sys
+config/language-MuppetsChef.sys
+config/language-OldeEnglish.sys
+config/language-PigLatin.sys
+config/language-PirateEnglish.sys
 scripts/get-BOMdata
 scripts/get-NWSdata
 scripts/get-fcc-rac.pl
@@ -63,3 +77,72 @@ tests/atlocal
 # built by tools/build_gtk4.sh, not by make
 src/libastircore.a
 src/astir-gtk4
+
+# ---------------------------------------------------------------------------
+# Local testing stays local.
+#
+# The harnesses and their fixtures live in the working tree and are used every
+# build, but they are development scaffolding rather than part of the product.
+# A fixture config in particular reads like a real operator's station -- it has
+# a callsign, a home position and a map list -- and none of that belongs in a
+# repository other people clone.
+tools/*_test.c
+tools/*_test.sh
+tools/label_regress.sh
+tools/gtk4_smoke.c
+tools/gtk4_smoke.sh
+tools/gtk4probe.c
+tools/link_core.py
+tools/link_null.py
+tools/make_test_*.py
+tools/snapshot/
+tools/trace/
+tools/snapshot_ab.sh
+tools/trace_ab.sh
+tools/ab-shot.sh
+tools/bench-*.sh
+tools/audit_x11.py
+tools/convert_draw.py
+tools/core_boundary.py
+tools/drop_first_arg.py
+tools/extract_settings.py
+tools/find_dupes.py
+tools/classify_syms.py
+tools/restructure.py
+tools/srctree.py
+NWS-TEST.log
+
+# Working notes.  A handoff document is written for the next session on this
+# machine; it names branches, half-finished experiments and tools that are not
+# in the repository, and it goes stale the moment it is read.  Anything in it
+# worth publishing belongs in a commit message, a code comment, or one of the
+# documents that IS published.
+HANDOFF.md
+*.local.md
+
+# ---------------------------------------------------------------------------
+# The user's own things, which are never the project's.
+#
+# Astir keeps per-user state in ~/.astir, so none of this should appear in a
+# checkout at all -- but it does if somebody copies a config in to try
+# something, and a stray astir.cnf carries a callsign and a home position.
+*.cnf
+!config/*.cnf
+map_index.sys
+selected_maps.sys
+astir.cnf*
+language.sys
+help.dat
+OSMtiles/
+map_cache/
+tracklogs/
+*.log
+!ChangeLog
+!scripts/example_objects.log
+
+# Downloaded map collections.  Hundreds of megabytes that belong to whoever
+# downloaded them, not to this repository.
+maps/TIGER/
+maps/Counties/
+maps/GNIS/
+maps/fcc/

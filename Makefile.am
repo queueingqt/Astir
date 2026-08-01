@@ -51,8 +51,8 @@ sounddir=${pkgdatadir}/sounds
 sound_DATA=placeholder
 
 docdir=@docdir@
-doc_DATA=AUTHORS FAQ ChangeLog LICENSE README README.GIT.md README.CYGWIN \
-        README.MAPS README.sudo COPYING INSTALL.md \
+doc_DATA=AUTHORS FAQ ChangeLog LICENSE README README.md README.GIT.md \
+        README.CYGWIN README.MAPS README.sudo COPYING INSTALL.md \
         README.OSM_maps CONTRIBUTING.md FORK.md \
         COPYING.LIB.LESSTIF
 
