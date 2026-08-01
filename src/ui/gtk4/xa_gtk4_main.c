@@ -1356,6 +1356,33 @@ static void on_map_click(GtkGestureClick *g, int n_press, double x, double y,
 }
 
 
+/*
+ * Which build is this?
+ *
+ * VERSION is the release number from configure.ac.  gitstring is generated into
+ * compiledate.c on every build by scripts/AstirGitStamp.sh, and is "git
+ * describe --dirty" wrapped in parentheses -- or empty, when the source is not
+ * a git checkout, which is what a release tarball looks like.
+ *
+ * Both were already here and neither was reachable: the stamp was regenerated
+ * on every single build and read by nothing, and the About dialog showed no
+ * version at all.  So there was no way for anyone to say which build they were
+ * running, which makes a bug report most of the way to useless.
+ */
+static const char *astir_version_string(void)
+{
+  extern char gitstring[];
+  static char buf[128];
+
+  if (buf[0] == '\0')
+  {
+    astir_snprintf(buf, sizeof(buf), "%s%s%s", VERSION,
+                   gitstring[0] != '\0' ? " " : "", gitstring);
+  }
+  return buf;
+}
+
+
 static void act_about(GSimpleAction *a, GVariant *p, gpointer u)
 {
   GtkWidget *dlg;
@@ -1363,10 +1390,15 @@ static void act_about(GSimpleAction *a, GVariant *p, gpointer u)
   (void)a; (void)p;
   dlg = gtk_about_dialog_new();
   gtk_about_dialog_set_program_name(GTK_ABOUT_DIALOG(dlg), "Astir");
+  gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(dlg), astir_version_string());
   gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(dlg),
-                                "GTK4 front end.\n"
-                                "The same core as the Motif build, drawing "
-                                "through xa_draw.h on Cairo and Pango.");
+                                "An APRS client for amateur radio.\n"
+                                "GTK4 front end, drawing through xa_draw.h on "
+                                "Cairo and Pango.");
+  gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(dlg),
+                               "https://github.com/queueingqt/Astir");
+  gtk_about_dialog_set_website_label(GTK_ABOUT_DIALOG(dlg),
+                                     "Report a bug");
   gtk_about_dialog_set_license_type(GTK_ABOUT_DIALOG(dlg), GTK_LICENSE_GPL_2_0);
   gtk_window_set_transient_for(GTK_WINDOW(dlg), GTK_WINDOW(u));
   gtk_window_set_modal(GTK_WINDOW(dlg), TRUE);
@@ -1999,6 +2031,16 @@ static gboolean show_stations_once(gpointer win)
 }
 
 
+// The About dialog carries the version, so it is the one window a bug reporter
+// is told to open.  Same hook as the others, for the same reason: without input
+// automation there is no other way to get it on screen to check.
+static gboolean show_about_once(gpointer win)
+{
+  act_about(NULL, NULL, win);
+  return G_SOURCE_REMOVE;
+}
+
+
 static gboolean show_maps_once(gpointer win)
 {
   xa_gtk4_maps_show(GTK_WINDOW(win));
@@ -2242,6 +2284,11 @@ static void on_activate(GtkApplication *app, gpointer user_data)
     g_timeout_add_seconds(25, (GSourceFunc)show_stations_once, win);
   }
 
+  if (getenv("ASTIR_GTK4_SHOW_ABOUT") != NULL)
+  {
+    g_timeout_add_seconds(2, (GSourceFunc)show_about_once, win);
+  }
+
   // ASTIR_GTK4_SHOW_STATION=CALL opens that station's window, so what a click
   // does can be checked without a pointer.  Late, so traffic has arrived first.
   if (getenv("ASTIR_GTK4_SHOW_STATION") != NULL)
@@ -2351,6 +2398,26 @@ int main(int argc, char **argv, char **envp)
 {
   GtkApplication *app;
   int status;
+  int i;
+
+  /*
+   * Answer "which version is this?" before doing anything else.
+   *
+   * Deliberately a plain argv scan rather than a GApplication option entry.
+   * Asking a program its version must not start it: everything below this
+   * creates ~/.astir, initialises GraphicsMagick and brings up the core, and
+   * none of that should happen -- nor should it be able to fail -- just because
+   * somebody is filling in a bug report.  It also has to work when the reason
+   * they are asking is that the program will not start.
+   */
+  for (i = 1; i < argc; i++)
+  {
+    if (strcmp(argv[i], "-V") == 0 || strcmp(argv[i], "--version") == 0)
+    {
+      printf("Astir %s\n", astir_version_string());
+      return 0;
+    }
+  }
 
   /*
    * The core keeps its own copy of the command line, and something has to give

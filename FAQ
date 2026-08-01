@@ -120,10 +120,9 @@ CONTENTS
 
   <https://github.com/queueingqt/Astir/issues>
 
-  Useful things to include: what you did, what happened, what you expected, the
-  output printed on the terminal, and the output of `./configure` for your build
-  if it is a build problem.  See 4.2 about version numbers -- there is currently
-  no good answer, so say which commit you built from if you know it.
+  Useful things to include: the output of `astir -V` (see 4.2), what you did,
+  what happened, what you expected, anything printed on the terminal, and the
+  configure summary if it is a build problem.
 
 
 2. GETTING IT RUNNING
@@ -309,13 +308,20 @@ CONTENTS
 
 4.2  Which version am I running?
 
-  There is currently no good way to tell, and that is a known gap.  The About
-  dialog does not show a version, and this front end does not parse `-V` -- it
-  hands its arguments straight to GTK.  The build stamp is generated on every
-  build and then read by nothing.
+      astir -V
 
-  For now, if you built it yourself, `git describe --dirty` in the source tree
-  is the answer.
+  or Menu -> About Astir, which shows the same thing:
+
+      Astir 2.2.5 (Release-2.2.4-190-g3289c8cb-dirty)
+
+  The part in parentheses is the build stamp -- the last release, how many
+  commits past it this build is, the commit itself, and "-dirty" if the source
+  tree had uncommitted changes when it was built.  It is absent if you built
+  from a release tarball rather than a git checkout, which is normal.
+
+  Please include this in bug reports.  `astir -V` does not start the program,
+  read your configuration or need a display, so it still works when the reason
+  you are asking is that Astir will not start.
 
 
 4.3  Why does it use no CPU when nothing is happening?

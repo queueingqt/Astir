@@ -15,13 +15,23 @@ Xastir and worth keeping. So `master` normally carries an odd number, you set an
 even one to release, and you bump back to the next odd one immediately
 afterwards.
 
-> **Known gap.** `scripts/AstirGitStamp.sh` generates `gitstring` into
-> `src/core/util/compiledate.c` on every build, and nothing reads it. The GTK4
-> About dialog does not show a version, and this front end does not parse `-V`
-> — it hands its arguments straight to GApplication. So there is currently **no
-> way for a user to report which build they are running**, and the sanity check
-> below cannot confirm the binary's version. Worth fixing before a release
-> anyone else installs.
+Two things report it, and both come from the same place — `VERSION` from
+`configure.ac`, plus the build stamp `scripts/AstirGitStamp.sh` generates into
+`src/core/util/compiledate.c`:
+
+```
+$ astir -V
+Astir 2.2.5 (Release-2.2.4-190-g3289c8cb-dirty)
+```
+
+and Menu → About Astir, which is the one to ask a bug reporter for.
+
+The stamp is `git describe --dirty`, so it names the last release, how far past
+it this build is, the commit, and whether the tree was modified. It is empty
+when the source is not a git checkout — which is exactly what a release tarball
+is, so a tarball build reports a bare `Astir 2.2.5`. That is the intended
+behaviour and is why step 7 below matters: the tarball is the thing most people
+build, and it is the configuration you are least likely to have tested.
 
 ## The process
 
@@ -47,6 +57,12 @@ afterwards.
 
    Read the configure summary. A release configured without shapelib because the
    machine happened to be missing PCRE is a release that draws no maps.
+
+   Then confirm it is the version you think it is:
+
+   ```sh
+   ./src/astir -V
+   ```
 
 4. **Run the gates.** Building is not testing. At minimum the GTK4 smoke test
    and, if the harnesses are present on your machine, the label and symbol

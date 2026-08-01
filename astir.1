@@ -1,108 +1,104 @@
-.TH ASTIR 1 "HI8GN on Apr 09 2002" "By Jose R. Marte A." "Astir APRS(tm) Client APPLICATION"
+.TH ASTIR 1 "August 2026" "Astir" "Astir APRS Client"
 .SH NAME
-Astir \- graphical application that interfaces HAM radio
-and APRS(tm) internet access to real-time mapping software.
-.SH "DESCRIPTION"
-This manual page briefly documents the
-.BR Astir
-commands.
+astir \- APRS client for amateur radio
 .SH SYNOPSIS
 .B astir
-.I "[options] Language ..."
-.SH OPTIONS
-The program follows the usual GNU command line syntax, with long
-options starting with one dash (`-').
-A summary of options is included below.
-.TP
-.br
-.B \-c /path/dir
-Specify an optional config directory. Defaults to ~/.astir
-.TP
-.br
-.B \-f callsign
-Track callsign
-.TP
-.br
-.B \-i
-Use a private colormap
-.TP
-.br
-.B \-geometry WxH+x+y
-Set Window Geometry/Position
-.TP
-.br
-.B \-l Language
-Astir remembers the language once you set it the first time.
-.TP
-.br
-.B \-m
-Deselect Maps
-.TP
-.br
-.B \-p
-Disable popups
-.TP
-.br
-.B \-t
-Internal SIGSEGV handler enabled
-.TP
-.br
-.B \-v Level
-Set the debug level
-.TP
-.br
-.B \-?
-Show summary of options available.
-.br
-.SH AVAILABLE LANGUAGES
-Current choices are:
-.br
-.B Dutch English French German Italian Portuguese Spanish.
-.SH Usage is:
-.br
-.B astir -i -v 2047 -l Dutch &
-.br
-.SH SIGNALS
-.B SIGINT, SIQQUIT, SIGTERM
-Cause Astir to exit.
-.br
-.B SIGHUP
-Causes a restart.
-.br
-.B SIGUSR1
-Causes a snapshot to occur.
-.br
-.SH NETWORK PORTS
-Enable these ports on this menu:  "Interface->Enable Server Ports"
-.br
-.PP
-.B TCP:2023
-Bidirectional TCP port for clients to connect to.  Requires login if
-client will be transmitting.
-.br
-.B UDP:2023
-Unidirectional UDP input port for clients to inject packets.  See
-the documentation for the format.
-.br
-.SH "SEE ALSO"
-The program is documented fully by
-.IR "help-English.dat" ,
-available via the HELP menu option in Astir, plus the various
-README and INSTALL text files that come with the program.  Also see
-<http://xastir.org> and the Documentation Wiki there.
-.br
-.PP
+.RI [ options ]
+.SH DESCRIPTION
 .B Astir
-is a program for APRS(tm)...
-.br
+listens to a radio or to the internet, decodes what other amateur stations
+are transmitting \- positions, weather, messages and telemetry \- and draws
+them on a map.
 .PP
-.B APRS[tm]
-is a Trademark of Bob Bruninga, his home page is at
-"http://www.aprs.org/aprs.html"
+It is a fork of Xastir with a GTK4 front end, and is a separate program rather
+than a newer version of it.  The two install and run side by side and share no
+files.  See
+.BR FORK.md .
+.PP
+.B This port cannot transmit.
+Beaconing, messaging and digipeating exist in the core and are not reachable
+from the user interface.  The per-interface transmit checkbox arms a path that
+nothing currently originates traffic on.
+.SH OPTIONS
+This front end passes its arguments to GTK, and accepts no options of its own
+beyond the two below.  Configuration lives in the config file and in the
+program's own windows, not on the command line.
+.TP
+.B \-V ", " \-\-version
+Print the version and build stamp, then exit.  Does not start the program,
+read the configuration or require a display, so it still works when the reason
+you are asking is that Astir will not start.  Include its output in bug
+reports.
+.TP
+.B \-h ", " \-\-help
+Show GTK's option summary.
+.SH CONFIGURATION
+There is no settings window yet beyond interfaces and map selection.  Your
+callsign, home position and every other preference are edited in
+.IR ~/.astir/config/astir.cnf ,
+with the program closed \- Astir rewrites that file when it exits cleanly, so
+edits made while it is running are lost.
+.PP
+Interfaces are added and started from
+.BR "Menu \-> Connections \-> Interfaces" ,
+or Ctrl+I.  Astir receives nothing until one is configured.
+.SH ENVIRONMENT
+.TP
+.B ASTIR_USER_BASE
+Directory to keep
+.I .astir
+in, instead of the home directory.  Use this to run a second copy, or to test
+without risking a working configuration.
+.TP
+.B ASTIR_DATA_BASE
+Where to find maps, symbols, help and styling rules.  Defaults to the installed
+data directory.  Astir refuses to start if this points at another program's
+data directory.
+.TP
+.B ASTIR_PERF
+Set to 1 to print per-operation timings and geometry counters on exit.
+.SH FILES
+.TP
+.I ~/.astir/config/astir.cnf
+Settings, including callsign and position.
+.TP
+.I ~/.astir/config/map_index.sys
+Cached index of available maps.  Delete it, or use
+.BR "Menu \-> Maps \-> Rebuild Map Index" ,
+after adding map files.
+.TP
+.I ~/.astir/config/selected_maps.sys
+Which maps are drawn.
+.TP
+.I /usr/local/share/astir
+Maps, symbols, help text and dbfawk styling rules.
+.SH SIGNALS
+.TP
+.B SIGINT ", " SIGTERM
+Exit cleanly, writing the configuration on the way out.  Ctrl\-C is safe.
+.PP
+SIGHUP and SIGUSR1 had meanings in the Motif build \- restart, and take a
+snapshot \- and are not handled here.
+.SH BUGS
+<https://github.com/queueingqt/Astir/issues>
+.SH SEE ALSO
+.BR astir_callpass (1),
+.BR astir_testdbfawk (1),
+.BR astir_udp_client (1)
+.PP
+The
+.BR README.md ,
+.BR INSTALL.md ,
+.BR README.MAPS ,
+.B FAQ
+and
+.B FORK.md
+files distributed with the program.
 .SH COPYING
-Copyright (C) 1999,2000 Frank Giannandrea KC2GJS
+Copyright (C) 1999, 2000 Frank Giannandrea KC2GJS
 .br
-Copyright (C) 2000-2026 The Xastir Group
-.SH AUTHOR
-This manual page was written by Jose <hi8gn@amsat.org>,
-for the Debian GNU/Linux system (but may be used by others).
+Copyright (C) 2000\-2026 The Xastir Group
+.PP
+Distributed under the GNU General Public License, version 2.
+.PP
+APRS is a trademark of Bob Bruninga.
