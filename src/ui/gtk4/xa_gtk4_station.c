@@ -162,6 +162,8 @@ void xa_gtk4_station_note(const char *text, const char *callsign)
   {
     history_n++;
   }
+
+  xa_gtk4_history_changed();     // update an open popover, if there is one
 }
 
 

@@ -43,6 +43,15 @@ void xa_gtk4_station_note(const char *text, const char *callsign);
  */
 void xa_gtk4_station_changed(const char *call_sign);
 
+/*
+ * The history gained an entry.
+ *
+ * Implemented by whatever owns the popover, so a list already on screen adds
+ * the new row instead of freezing until closed and reopened.  A no-op when
+ * nothing is displaying it.
+ */
+void xa_gtk4_history_changed(void);
+
 // The history, newest first.  Returns how many entries were written.
 int xa_gtk4_station_history(const char **text, const char **callsign, int max);
 

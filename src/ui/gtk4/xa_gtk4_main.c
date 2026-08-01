@@ -1056,11 +1056,178 @@ static void on_history_row(GtkButton *b, gpointer win)
 }
 
 
+/*
+ * While the popover is open, this is its list; NULL when it is closed.
+ *
+ * Kept so a new entry can be added to a popover that is already on screen.  It
+ * used to be built once on click and never touched again, so the history froze
+ * the moment you looked at it and refreshed only by being closed and reopened
+ * -- which is the one thing a "recent activity" list must not do.
+ */
+static GtkWidget *history_box;
+static GtkWindow *history_win;
+
+#define HISTORY_ROWS_MAX 24
+
+
+static GtkWidget *make_history_row(const char *text, const char *call,
+                                   gpointer win)
+{
+  GtkWidget *row;
+
+  if (call != NULL)
+  {
+    GtkWidget *child;
+
+    row = gtk_button_new_with_label(text);
+    gtk_button_set_has_frame(GTK_BUTTON(row), FALSE);
+    // Copied: the history ring can be overwritten while this is open.
+    g_object_set_data_full(G_OBJECT(row), "callsign", g_strdup(call), g_free);
+    g_signal_connect(row, "clicked", G_CALLBACK(on_history_row), win);
+    gtk_widget_set_tooltip_text(row, "Open this station");
+
+    child = gtk_button_get_child(GTK_BUTTON(row));
+    if (GTK_IS_LABEL(child))
+    {
+      gtk_label_set_xalign(GTK_LABEL(child), 0.0);
+      gtk_label_set_ellipsize(GTK_LABEL(child), PANGO_ELLIPSIZE_END);
+    }
+  }
+  else
+  {
+    row = gtk_label_new(text);
+    gtk_label_set_xalign(GTK_LABEL(row), 0.0);
+    gtk_label_set_ellipsize(GTK_LABEL(row), PANGO_ELLIPSIZE_END);
+    gtk_widget_add_css_class(row, "dim-label");
+    gtk_widget_set_margin_start(row, 8);
+    gtk_widget_set_margin_end(row, 8);
+  }
+  return row;
+}
+
+
+// Set a row's visible text, whichever kind of row it turned out to be.
+static void history_row_set_text(GtkWidget *row, const char *text)
+{
+  if (GTK_IS_BUTTON(row))
+  {
+    GtkWidget *child = gtk_button_get_child(GTK_BUTTON(row));
+
+    if (GTK_IS_LABEL(child))
+    {
+      gtk_label_set_text(GTK_LABEL(child), text);
+    }
+  }
+  else if (GTK_IS_LABEL(row))
+  {
+    gtk_label_set_text(GTK_LABEL(row), text);
+  }
+}
+
+
+/*
+ * Something was added to the history.  Show it, if anyone is looking.
+ *
+ * Incremental on purpose.  Rebuilding the list would destroy every row several
+ * times a minute, including whichever one the pointer is over -- the same fault
+ * that made the interface list swallow clicks, and it would show up here as
+ * "the history sometimes ignores me".  So a station already listed has its text
+ * updated in place and is moved to the top, and anything else is a single row
+ * prepended.  Nothing already on screen is destroyed except a row falling off
+ * the bottom.
+ */
+void xa_gtk4_history_changed(void)
+{
+  const char *text[1];
+  const char *call[1];
+  GtkWidget *child, *row = NULL;
+  int n;
+
+  if (history_box == NULL)
+  {
+    return;                      // nobody is looking
+  }
+  n = xa_gtk4_station_history(text, call, 1);
+  if (n < 1)
+  {
+    return;
+  }
+
+  // Is this station already on screen?
+  if (call[0] != NULL)
+  {
+    for (child = gtk_widget_get_first_child(history_box);
+         child != NULL;
+         child = gtk_widget_get_next_sibling(child))
+    {
+      const char *c = g_object_get_data(G_OBJECT(child), "callsign");
+
+      if (c != NULL && g_ascii_strcasecmp(c, call[0]) == 0)
+      {
+        row = child;
+        break;
+      }
+    }
+  }
+
+  if (row != NULL)
+  {
+    history_row_set_text(row, text[0]);
+    gtk_box_reorder_child_after(GTK_BOX(history_box), row, NULL);
+    return;
+  }
+
+  // "Nothing recent." is a placeholder, not an entry: it goes as soon as there
+  // is something real to show.
+  child = gtk_widget_get_first_child(history_box);
+  if (child != NULL && GTK_IS_LABEL(child)
+      && g_object_get_data(G_OBJECT(child), "callsign") == NULL
+      && g_strcmp0(gtk_label_get_text(GTK_LABEL(child)), "Nothing recent.") == 0)
+  {
+    gtk_box_remove(GTK_BOX(history_box), child);
+  }
+
+  gtk_box_prepend(GTK_BOX(history_box),
+                  make_history_row(text[0], call[0], history_win));
+
+  // Trim the tail, so a popover left open all afternoon cannot grow unbounded.
+  {
+    int count = 0;
+
+    for (child = gtk_widget_get_first_child(history_box);
+         child != NULL;
+         child = gtk_widget_get_next_sibling(child))
+    {
+      count++;
+    }
+    while (count > HISTORY_ROWS_MAX)
+    {
+      child = gtk_widget_get_last_child(history_box);
+      if (child == NULL)
+      {
+        break;
+      }
+      gtk_box_remove(GTK_BOX(history_box), child);
+      count--;
+    }
+  }
+}
+
+
+static void on_history_closed(GtkPopover *pop, gpointer unused)
+{
+  (void)unused;
+  history_box = NULL;
+  history_win = NULL;
+  gtk_widget_unparent(GTK_WIDGET(pop));
+}
+
+
 static void on_toast_clicked(GtkButton *b, gpointer win)
 {
-  const char *text[24];
-  const char *call[24];
-  int n = xa_gtk4_station_history(text, call, 24);
+  const char *text[HISTORY_ROWS_MAX];
+  const char *call[HISTORY_ROWS_MAX];
+  int n = xa_gtk4_station_history(text, call, HISTORY_ROWS_MAX);
   GtkWidget *pop, *box, *scroll;
   int i;
 
@@ -1080,37 +1247,7 @@ static void on_toast_clicked(GtkButton *b, gpointer win)
 
   for (i = 0; i < n; i++)
   {
-    GtkWidget *row;
-
-    if (call[i] != NULL)
-    {
-      GtkWidget *child;
-
-      row = gtk_button_new_with_label(text[i]);
-      gtk_button_set_has_frame(GTK_BUTTON(row), FALSE);
-      // Copied: the history ring can be overwritten while this is open.
-      g_object_set_data_full(G_OBJECT(row), "callsign", g_strdup(call[i]),
-                             g_free);
-      g_signal_connect(row, "clicked", G_CALLBACK(on_history_row), win);
-      gtk_widget_set_tooltip_text(row, "Open this station");
-
-      child = gtk_button_get_child(GTK_BUTTON(row));
-      if (GTK_IS_LABEL(child))
-      {
-        gtk_label_set_xalign(GTK_LABEL(child), 0.0);
-        gtk_label_set_ellipsize(GTK_LABEL(child), PANGO_ELLIPSIZE_END);
-      }
-    }
-    else
-    {
-      row = gtk_label_new(text[i]);
-      gtk_label_set_xalign(GTK_LABEL(row), 0.0);
-      gtk_label_set_ellipsize(GTK_LABEL(row), PANGO_ELLIPSIZE_END);
-      gtk_widget_add_css_class(row, "dim-label");
-      gtk_widget_set_margin_start(row, 8);
-      gtk_widget_set_margin_end(row, 8);
-    }
-    gtk_box_append(GTK_BOX(box), row);
+    gtk_box_append(GTK_BOX(box), make_history_row(text[i], call[i], win));
   }
 
   scroll = gtk_scrolled_window_new();
@@ -1123,9 +1260,7 @@ static void on_toast_clicked(GtkButton *b, gpointer win)
    *
    * A GtkScrolledWindow does not take its height from its child unless it is
    * told to -- without this it asks for its minimum, which is one row, and a
-   * twelve-entry history opened as a single line you had to scroll.  A
-   * scrollbar should appear because there is more history than screen, not
-   * because the widget never asked for any height.
+   * twelve-entry history opened as a single line you had to scroll.
    */
   gtk_scrolled_window_set_propagate_natural_height(GTK_SCROLLED_WINDOW(scroll),
                                                    TRUE);
@@ -1136,7 +1271,10 @@ static void on_toast_clicked(GtkButton *b, gpointer win)
   gtk_popover_set_child(GTK_POPOVER(pop), scroll);
   gtk_widget_set_parent(pop, GTK_WIDGET(b));
   gtk_popover_set_position(GTK_POPOVER(pop), GTK_POS_TOP);
-  g_signal_connect(pop, "closed", G_CALLBACK(gtk_widget_unparent), NULL);
+
+  history_box = box;
+  history_win = GTK_WINDOW(win);
+  g_signal_connect(pop, "closed", G_CALLBACK(on_history_closed), NULL);
   gtk_popover_popup(GTK_POPOVER(pop));
 }
 
