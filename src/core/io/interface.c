@@ -8100,6 +8100,55 @@ void output_my_aprs_data(void)
 // This one currently tries to do local logging even if
 // transmit is disabled.
 //*****************************************************************************
+/*
+ * Can this port carry a message this station originates?
+ *
+ * The device types listed here are exactly the ones output_my_data() switches
+ * on for type 0; everything else falls into its `default: ok = 0` and is
+ * silently skipped.  The answer lives beside that switch on purpose.  A second
+ * copy of the list somewhere else is a copy that goes on saying yes after this
+ * one has changed, and the failure that produces is a front end telling the
+ * operator their message went out when nothing was ever written.
+ *
+ * A GPS, a weather station and a database are not radios.  They sit in
+ * devices[] like anything else and an old config can perfectly well have
+ * transmit_data set on one -- the flag is just an int, and nothing has ever
+ * refused to store it.  output_my_data() ignores them regardless, so anything
+ * asking "is there something here that can send" has to ignore them too.
+ */
+int device_can_transmit(int port)
+{
+  if (port < 0 || port >= MAX_IFACE_DEVICES)
+  {
+    return 0;
+  }
+  if (transmit_disable)                  // the global off switch
+  {
+    return 0;
+  }
+  if (port_data[port].status != DEVICE_UP || !devices[port].transmit_data)
+  {
+    return 0;
+  }
+
+  switch (port_data[port].device_type)
+  {
+    case DEVICE_NET_AGWPE:
+    case DEVICE_NET_STREAM:
+    case DEVICE_SERIAL_TNC:
+    case DEVICE_SERIAL_TNC_HSP_GPS:
+    case DEVICE_SERIAL_TNC_AUX_GPS:
+    case DEVICE_SERIAL_KISS_TNC:
+    case DEVICE_SERIAL_MKISS_TNC:
+    case DEVICE_AX25_TNC:
+      return 1;
+
+    default:
+      return 0;                          // not a thing that puts out packets
+  }
+}
+
+
 void output_my_data(char *message, int incoming_port, int type, int loopback_only, int use_igate_path, char *path)
 {
   char data_txt[MAX_LINE_SIZE+5];

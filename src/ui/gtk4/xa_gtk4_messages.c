@@ -870,20 +870,29 @@ static const char *why_not_sendable(const char *to)
            "on any interface until that is cleared.";
   }
 
+  /*
+   * Asked of the core, not worked out here.
+   *
+   * The first version of this checked "type is not NONE, port is up, transmit
+   * flag is set" and would have answered yes for a GPS or a weather station
+   * with an old transmit flag left on it -- neither of which output_my_data()
+   * writes to.  That is precisely the silent failure this whole function
+   * exists to prevent, reintroduced one level up.
+   */
   for (i = 0; i < MAX_IFACE_DEVICES; i++)
   {
-    if (devices[i].device_type != DEVICE_NONE
-        && port_data[i].status == DEVICE_UP
-        && devices[i].transmit_data)
+    if (device_can_transmit(i))
     {
-      return NULL;                 // something is up and willing to send
+      return NULL;                 // something is up and able to send
     }
   }
 
   return "No interface is up that can transmit.\n\n"
-         "Open Connections \xe2\x86\x92 Interfaces and bring up a device with "
-         "transmit enabled.  A receive-only APRS-IS connection -- the one-click "
-         "kind, which logs in with passcode -1 -- cannot send, by design.";
+         "Open Connections \xe2\x86\x92 Interfaces and bring up a TNC, a radio "
+         "or an APRS-IS connection with transmit enabled.  A receive-only "
+         "APRS-IS login -- the one-click kind, with passcode -1 -- cannot send, "
+         "by design; nor can a GPS or a weather station, whatever their "
+         "transmit setting says.";
 }
 
 

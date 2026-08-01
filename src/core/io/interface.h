@@ -278,6 +278,15 @@ extern void send_kiss_config(int port, int device, int command, int value);
 void port_write_string(int port, char *data);
 extern void init_device_names(void);
 extern void output_my_data(char *message, int port, int type, int loopback_only, int use_igate_path, char *path);
+
+/*
+ * Would output_my_data() write this station's own traffic to this port?
+ *
+ * Port is up, transmit is enabled on it and globally, and the device is a kind
+ * that emits packets at all -- which a GPS, a weather station and a database
+ * are not, however their transmit flag happens to be set.  See interface.c.
+ */
+extern int device_can_transmit(int port);
 int tnc_get_data_type(char *buf, int port);
 void tnc_data_clean(char *buf);
 extern void output_waypoint_data(char *message);
