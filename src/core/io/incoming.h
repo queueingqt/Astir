@@ -47,6 +47,15 @@ void xa_incoming_drain_wakeup(void);
 void xa_incoming_wake(void);
 
 /*
+ * Parse the newest GPS sentence the read thread saved, if there is one.
+ *
+ * Call from the main loop beside xa_incoming_pump().  Non-zero if a sentence
+ * was consumed -- a new position, so worth a redraw.  See incoming.c for why
+ * GPS is handled this way and not through the queue.
+ */
+int xa_gps_pump(void);
+
+/*
  * Drain the incoming queue and decode what is in it.
  *
  * Returns the number of packets processed, which is worth having: a front end

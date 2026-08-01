@@ -14,6 +14,7 @@
 #include "core/astir.h"
 #include "core/aprs/alert.h"
 #include "core/aprs/db_funcs.h"
+#include "core/io/gps.h"
 #include "core/io/incoming.h"
 #include "core/io/interface.h"
 #include "core/state/xa_config.h"      // get_user_base_dir, MAX_VALUE
@@ -206,6 +207,58 @@ int xa_incoming_pump(int budget)
   }
 
   return done;
+}
+
+
+/*
+ * Parse whatever the GPS last said, on this thread.
+ *
+ * The read thread deliberately does not queue GPS sentences -- it keeps only
+ * the newest GPRMC and GPGGA in globals, because a position from four seconds
+ * ago is not worth a queue slot.  Something then has to come along and read
+ * them, and in the Motif build that was UpdateTime() on a timer.  Nothing did
+ * after the front end changed, so gps_data_find() ended up with no callers at
+ * all and the whole GPS path was dead: no position on the map, and no
+ * SmartBeaconing, which is what the beacon schedule is built on.
+ *
+ * Here rather than in the read thread because gps_data_find() ends in
+ * my_station_gps_change(), which touches the station database and the beacon
+ * queue.  Those belong to the main loop; the read thread's job is to get the
+ * bytes off the socket and say so.
+ *
+ * Returns non-zero if a sentence was consumed, so the caller can redraw.
+ */
+int xa_gps_pump(void)
+{
+  char line[MAX_LINE_SIZE + 1];
+  int port = gps_port_save;
+  int did = 0;
+
+  if (port < 0 || port >= MAX_IFACE_DEVICES)
+  {
+    return 0;
+  }
+
+  // Copied, and the global cleared first: gps_data_find() is destructive to
+  // what it is given, and the read thread may write another sentence in at any
+  // moment.
+  if (gprmc_save_string[0] != '\0')
+  {
+    astir_snprintf(line, sizeof(line), "%s", gprmc_save_string);
+    gprmc_save_string[0] = '\0';
+    (void)gps_data_find(line, port);
+    did = 1;
+  }
+
+  if (gpgga_save_string[0] != '\0')
+  {
+    astir_snprintf(line, sizeof(line), "%s", gpgga_save_string);
+    gpgga_save_string[0] = '\0';
+    (void)gps_data_find(line, port);
+    did = 1;
+  }
+
+  return did;
 }
 
 

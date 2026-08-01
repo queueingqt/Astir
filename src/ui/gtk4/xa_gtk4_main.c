@@ -2174,6 +2174,14 @@ static gboolean on_packet_ready(gint fd, GIOCondition cond, gpointer user_data)
     redraw_on_new_data = 2;      // 2 = "and reposition", as the core reads it
   }
 
+  // The GPS, which does not come through the queue -- see xa_gps_pump().  This
+  // is what moves our own station and what drives SmartBeaconing, so a fix is
+  // as much "new data" as a packet is.
+  if (xa_gps_pump())
+  {
+    redraw_on_new_data = 2;
+  }
+
   housekeep_now();               // expiry, on an event rather than a clock
 
   if (redraw_on_new_data > 0)

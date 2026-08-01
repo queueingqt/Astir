@@ -1520,6 +1520,10 @@ void channel_data(int port, unsigned char *string, volatile int length)
                           string);
           gps_port_save = port;
           process_it = 0;
+          // Not queued, so the main loop would otherwise never be told.  A GPS
+          // with no packet traffic beside it must still wake the loop, or the
+          // sentence sits in the global until something else happens to.
+          xa_incoming_wake();
         }
         else if ( (length > 7) && (isGGA((char *)string)))
         {
@@ -1529,6 +1533,7 @@ void channel_data(int port, unsigned char *string, volatile int length)
                           string);
           gps_port_save = port;
           process_it = 0;
+          xa_incoming_wake();
         }
         else
         {
