@@ -1801,6 +1801,48 @@ static void ui_station_changed(const char *call_sign)
 }
 
 
+/*
+ * The interface-up beacon, on the main loop rather than where it was asked for.
+ *
+ * xa_ui_interfaces_changed() is called from twenty-odd places inside
+ * interface.c, and many of them are within the devices_lock critical section
+ * that startup_all_or_defined_port() holds while it opens ports -- on the
+ * interface's own thread, not this one.  Beaconing straight from the callback
+ * therefore took devices_lock a second time on a thread that already held it,
+ * and the matching unlock released the lock out from under the startup loop,
+ * which ran on unprotected and unlocked it again on the way out.  All three
+ * complaints appeared in the log together:
+ *
+ *     output_my_aprs_data:Warning:This thread already has the lock
+ *     startup_all_or_defined_port:Warning:Trying to unlock a resource that
+ *       hasn't been locked:0
+ *     startup_all_or_defined_port:Trying to unlock a resource that a different
+ *       thread locked originally
+ *
+ * An idle runs it on the main loop with no lock held, which is where it belongs
+ * for the same reason xa_gps_pump() is called there: it touches the station
+ * database and the beacon queue, and an interface thread's job is to work the
+ * socket and say that it did.
+ *
+ * The source id keeps a startup that brings up four ports from queueing four
+ * idles.  It is read and written from more than one thread and is deliberately
+ * not locked: the worst a lost race can do is queue a second idle, and
+ * beacon_if_due(0) declines the second one because the first has just moved
+ * posit_next_time into the future.  The correctness is in the due check, not
+ * in the guard.
+ */
+static guint beacon_idle_source;
+
+static gboolean beacon_on_idle(gpointer u)
+{
+  (void)u;
+
+  beacon_idle_source = 0;
+  (void)beacon_if_due(0);
+  return G_SOURCE_REMOVE;
+}
+
+
 static void ui_interfaces_changed(void)
 {
   int i;
@@ -1817,7 +1859,10 @@ static void ui_interfaces_changed(void)
    * transmit or when one has gone recently, so this cannot become a burst from
    * an interface that is flapping.
    */
-  (void)beacon_if_due(0);
+  if (beacon_idle_source == 0)
+  {
+    beacon_idle_source = g_idle_add(beacon_on_idle, NULL);
+  }
 
   // Arm a retry if anything is down and wants to come back, and nothing is
   // already waiting to try.
