@@ -441,17 +441,33 @@ static void thread_collect(Message *m)
    * trailing spaces -- which are invisible in the read view and are exactly
    * the sort of thing a raw view is opened to find -- can be seen.
    */
+  /*
+   * Labelled, because the two halves are not the same thing said twice.
+   *
+   * The top is the packet.  Below it is the record Astir's decoder made OF
+   * that packet, and `msg=` is its idea of the text -- which agrees with what
+   * is visible in the packet whenever nothing is wrong, and stops agreeing
+   * exactly when something is: a truncation, a trailing space, a byte that did
+   * not survive.  That disagreement is most of the reason to open this view,
+   * so the field stays and is labelled instead of being dropped for looking
+   * redundant.
+   *
+   * "rx" and "tx" because they are not the same claim.  An rx line is the
+   * bytes that arrived.  A tx line is the frame Astir handed to its own
+   * decoder on the way out -- what goes on the air -- and not literally what
+   * went down the wire to a TNC, which gets the info field only and supplies
+   * the "N0CALL>APZ225,WIDE2-2:" header itself from MYCALL and UNPROTO.
+   */
   astir_snprintf(t->raw, sizeof(t->raw),
-                 "%s\n\n"
-                 "from=%s to=%s seq=%s type=%c acked=%d tries=%d interval=%lds\n"
-                 "heard=%s via=%c tnc=%c pos=%d sec=%ld\n"
-                 "msg=\"%s\"",
-                 // The packet itself, first, because it is the thing being
-                 // asked for; the decoded fields under it are what Astir made
-                 // of it.  A message this station sent never came off the air,
-                 // and says so rather than showing a packet that is not its.
+                 "%s  %s\n\n"
+                 "decoded\n"
+                 "  from=%s to=%s seq=%s type=%c\n"
+                 "  acked=%d tries=%d interval=%lds\n"
+                 "  heard=%s via=%c tnc=%c pos=%d sec=%ld\n"
+                 "  msg=\"%s\"",
+                 (m->data_via == 'L') ? "tx" : "rx",
                  (m->raw_packet[0] != '\0') ? m->raw_packet
-                                            : "(sent by this station -- no received packet)",
+                                            : "(no packet recorded)",
                  m->from_call_sign,
                  m->call_sign,
                  (m->seq[0] != '\0') ? m->seq : "-",
@@ -528,13 +544,14 @@ static GtkWidget *make_bubble(const thread_line *t)
    * dim and the message can have the width.
    */
   /*
-   * Raw replaces the message; it does not annotate it.
+   * Raw replaces what the message says; it does not move it.
    *
-   * Shown as a flat full-width block rather than in a bubble on one side: the
-   * bubble and the side it is on are the prettified view, and leaving them
-   * around a raw record gives two answers to "what is this message" at once.
-   * Everything the read view shows is in the record anyway -- the text, who
-   * sent it, when -- so nothing is lost by standing in for it.
+   * The words become the packet and the decoded fields, because that is the
+   * point of the view.  The SIDE stays: which end of a conversation a message
+   * came from is not decoration, it is the fastest thing to read in a
+   * transcript, and a raw view that stacks both ends down one edge is harder
+   * to follow than the thing it replaced, not more faithful.  The tint goes
+   * with it for the same reason.
    */
   if (msg_raw)
   {
@@ -543,13 +560,19 @@ static GtkWidget *make_bubble(const thread_line *t)
     gtk_label_set_xalign(GTK_LABEL(raw), 0.0);
     gtk_label_set_wrap(GTK_LABEL(raw), TRUE);
     gtk_label_set_wrap_mode(GTK_LABEL(raw), PANGO_WRAP_WORD_CHAR);
+    // Narrower than the pane on purpose: a block that fills the width is on
+    // no side at all, and then there is nothing to read the alignment from.
+    gtk_label_set_max_width_chars(GTK_LABEL(raw), 42);
     gtk_label_set_selectable(GTK_LABEL(raw), TRUE);
     gtk_widget_add_css_class(raw, "monospace");
     gtk_widget_add_css_class(raw, "astir-raw");
-    gtk_widget_set_halign(raw, GTK_ALIGN_FILL);
+    gtk_widget_add_css_class(raw, "astir-bubble");
+    gtk_widget_add_css_class(raw, t->mine ? "astir-bubble-mine"
+                                          : "astir-bubble-theirs");
+    gtk_widget_set_halign(raw, t->mine ? GTK_ALIGN_END : GTK_ALIGN_START);
     gtk_box_append(GTK_BOX(bubble), raw);
 
-    gtk_widget_set_halign(bubble, GTK_ALIGN_FILL);
+    gtk_widget_set_halign(bubble, t->mine ? GTK_ALIGN_END : GTK_ALIGN_START);
     gtk_widget_set_margin_start(bubble, 8);
     gtk_widget_set_margin_end(bubble, 8);
     gtk_widget_set_margin_top(bubble, 4);
@@ -947,6 +970,72 @@ static void send_now(const char *to, const char *text)
   // It is in the store now, so both views can be told to re-read it.
   render_thread();
   refresh_list();
+}
+
+
+/*
+ * What an APRS message is allowed to contain.
+ *
+ * APRS101 section 14: the message text is printable ASCII, less '|' and '~',
+ * which are reserved for TNC use, and '{', which delimits the message ID that
+ * output_message() appends.  A '{' typed into the middle of a message would
+ * make the tail of it look like a sequence number to the station receiving it.
+ *
+ * Anything outside that range is not merely unusual, it is a different
+ * protocol: it may not survive the TNC, and on a receiver that follows the
+ * spec it is read as something else entirely.  Which answers the question
+ * about emoji -- no.  One is three or four bytes of UTF-8, not one of them
+ * ASCII, so it would spend a twentieth of the message and arrive as mojibake.
+ */
+static int aprs_message_char_ok(unsigned char c)
+{
+  if (c < 0x20 || c > 0x7E)
+  {
+    return 0;                    // a control code, or not ASCII at all
+  }
+  return (c != '|' && c != '~' && c != '{');
+}
+
+
+/*
+ * Refuse the characters that cannot be sent, as they are typed.
+ *
+ * At the point of entry rather than at the point of sending, because the two
+ * give very different answers to the same mistake: a filter here means the box
+ * shows exactly what will go out, and a check at send time means writing a
+ * whole message and being told at the end that it cannot go.  It also covers
+ * pasting, which is how most of what this rejects would arrive.
+ */
+static void on_insert_text(GtkEditable *editable, const char *text, int length,
+                           int *position, gpointer u)
+{
+  GString *keep;
+  int i, n;
+
+  n = (length < 0) ? (int)strlen(text) : length;
+  keep = g_string_new(NULL);
+  for (i = 0; i < n; i++)
+  {
+    if (aprs_message_char_ok((unsigned char)text[i]))
+    {
+      g_string_append_c(keep, text[i]);
+    }
+  }
+
+  // Nothing was dropped: let the default handler do the insert as usual.
+  if ((int)keep->len != n)
+  {
+    // Something was.  Insert what survived, and stop the signal so the
+    // rejected bytes never reach the entry at all.
+    g_signal_handlers_block_by_func(editable, (gpointer)on_insert_text, u);
+    if (keep->len > 0)
+    {
+      gtk_editable_insert_text(editable, keep->str, (int)keep->len, position);
+    }
+    g_signal_handlers_unblock_by_func(editable, (gpointer)on_insert_text, u);
+    g_signal_stop_emission_by_name(editable, "insert-text");
+  }
+  g_string_free(keep, TRUE);
 }
 
 
@@ -1434,6 +1523,10 @@ static GtkWidget *build_thread_page(void)
     gtk_widget_set_hexpand(msg_entry, TRUE);
     g_signal_connect(msg_entry, "activate", G_CALLBACK(on_send), NULL);
     g_signal_connect(msg_entry, "changed", G_CALLBACK(on_text_changed), NULL);
+    // Printable ASCII only, less the three the protocol reserves.  Typed or
+    // pasted, anything else never reaches the box.
+    g_signal_connect(msg_entry, "insert-text",
+                     G_CALLBACK(on_insert_text), NULL);
     gtk_box_append(GTK_BOX(row), msg_entry);
 
     /*
