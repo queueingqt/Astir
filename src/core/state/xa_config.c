@@ -1936,7 +1936,17 @@ void load_data_or_default(void)
 
 
   transmit_disable = get_int ("DISABLE_TRANSMIT", 0, 1, 0);
-  posit_tx_disable = get_int ("DISABLE_POSIT_TX", 0, 1, 0);
+  /*
+   * Beaconing is OFF on a fresh install.
+   *
+   * The default was 0 -- transmit posits -- which is the wrong way round for a
+   * setting whose effect is to put a callsign and a position on the air.  A
+   * program that starts beaconing because nobody told it not to is deciding
+   * something that is the operator's to decide, and on most bands is theirs to
+   * be licensed for.  An existing config has the key stored and keeps whatever
+   * it says; only an installation that has never been configured gets this.
+   */
+  posit_tx_disable = get_int ("DISABLE_POSIT_TX", 0, 1, 1);
   object_tx_disable = get_int ("DISABLE_OBJECT_TX", 0, 1, 0);
   enable_server_port = get_int ("ENABLE_SERVER_PORT", 0, 1, 0);
 

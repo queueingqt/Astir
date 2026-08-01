@@ -695,8 +695,12 @@ void xa_gtk4_mystation_show(GtkWindow *parent, int first_run)
   /* ---- comment ---- */
   m->comment = gtk_entry_new();
   gtk_entry_set_max_length(GTK_ENTRY(m->comment), MAX_COMMENT);
+  // Generic on purpose.  This used to read "Astir - Seattle, WA", which is a
+  // real place that is not the operator's, and a placeholder naming somewhere
+  // specific reads as sample data left in by mistake -- doubly so on the
+  // first-run window, where every other field is genuinely filled in.
   gtk_entry_set_placeholder_text(GTK_ENTRY(m->comment),
-                                 "Astir \xe2\x80\x94 Seattle, WA");
+                                 "sent with every beacon; may be left empty");
   gtk_editable_set_text(GTK_EDITABLE(m->comment), my_comment);
   row = labelled("Comment", m->comment, 28);
   gtk_widget_set_hexpand(m->comment, TRUE);

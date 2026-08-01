@@ -8123,6 +8123,18 @@ int beacon_if_due(int force)
 {
   int i;
 
+  /*
+   * The operator's switch, and it governs the forced beacon too.
+   *
+   * Off means off.  A "beacon now" that still transmits while beaconing is
+   * turned off is the same fault as a transmit tick box on a receiver: a
+   * setting that says one thing while the program does another.
+   */
+  if (posit_tx_disable)
+  {
+    return 0;
+  }
+
   if (!force && posit_next_time > sec_now())
   {
     return 0;                            // not yet

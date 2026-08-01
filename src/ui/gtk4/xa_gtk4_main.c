@@ -1145,10 +1145,86 @@ static void act_beacon(GSimpleAction *a, GVariant *p, gpointer u)
   else
   {
     xa_ui_popup("No beacon was sent",
-                "Astir needs a callsign of its own and an interface that is up "
-                "and allowed to transmit.\n\nSettings \xe2\x86\x92 My Station "
-                "sets the callsign; Connections \xe2\x86\x92 Interfaces brings "
-                "up a device and enables transmit on it.");
+                "Astir needs beaconing switched on, a callsign of its own, and "
+                "an interface that is up and allowed to transmit.\n\nSettings "
+                "\xe2\x86\x92 Beacon My Position turns it on; Settings "
+                "\xe2\x86\x92 My Station sets the callsign; Connections "
+                "\xe2\x86\x92 Interfaces brings up a device and enables "
+                "transmit on it.");
+  }
+}
+
+
+/*
+ * Beaconing on or off, and the header-bar light that says which.
+ *
+ * The state lives in the core's posit_tx_disable, which xa_config.c already
+ * writes on exit, so the switch is remembered without this file inventing a
+ * setting of its own.  Off on a fresh install -- see the default in
+ * xa_config.c for why a program should not start transmitting because nobody
+ * told it not to.
+ *
+ * The indicator is the toggle itself: pressed means Astir is beaconing.  A
+ * separate light would be a second thing to keep in step with the first.
+ */
+static GtkWidget *beacon_toggle;
+
+/*
+ * True while the switch is being set to what the config said, at startup.
+ *
+ * Turning beaconing on is an event worth announcing the station for, so the
+ * handler beacons immediately.  Restoring a saved setting is not that event --
+ * and doing both put two identical posits on the air seconds apart, one from
+ * here and one from the interface coming up.
+ */
+static int beacon_state_restoring;
+
+static void update_beacon_toggle(void)
+{
+  if (beacon_toggle == NULL)
+  {
+    return;
+  }
+  gtk_widget_set_tooltip_text(beacon_toggle,
+                              posit_tx_disable
+                                ? "Not beaconing \xe2\x80\x94 this station's "
+                                  "position is not being transmitted"
+                                : "Beaconing \xe2\x80\x94 this station's "
+                                  "position goes out as the GPS reports it");
+  if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(beacon_toggle))
+      == (posit_tx_disable ? TRUE : FALSE))
+  {
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(beacon_toggle),
+                                 posit_tx_disable ? FALSE : TRUE);
+  }
+}
+
+
+static void act_beacon_auto(GSimpleAction *a, GVariant *state, gpointer u)
+{
+  gboolean on = g_variant_get_boolean(state);
+
+  (void)u;
+  posit_tx_disable = on ? 0 : 1;
+  g_simple_action_set_state(a, state);
+  update_beacon_toggle();
+
+  /*
+   * Say so on the way in, not on the way out.
+   *
+   * Switching beaconing on is the moment a station starts appearing on other
+   * people's maps, and it is worth one line saying that happened.  Switching
+   * it off is worth the same line, because "did that take effect" is exactly
+   * what somebody wonders after turning off a transmitter.
+   */
+  xa_ui_status(on ? "Beaconing on" : "Beaconing off");
+
+  // On the way in, announce the station promptly rather than leaving it to
+  // whenever the next fix decides a posit is due -- but only when somebody
+  // actually turned it on, not when the saved setting is being restored.
+  if (on && !beacon_state_restoring)
+  {
+    (void)beacon_if_due(1);
   }
 }
 
@@ -2373,6 +2449,7 @@ static void on_activate(GtkApplication *app, gpointer user_data)
     { "stations",    act_stations, NULL, NULL,   NULL, {0} },
     { "messages",    NULL, NULL, "false", act_messages, {0} },
     { "beacon",      act_beacon,   NULL, NULL,   NULL, {0} },
+    { "beacon-auto", NULL, NULL, "false", act_beacon_auto, {0} },
     { "grid",        NULL, NULL, "false", act_toggle, {0} },
     { "map-labels",  NULL, NULL, "false", act_toggle, {0} },
     { "filled-maps", NULL, NULL, "false", act_toggle, {0} },
@@ -2418,6 +2495,28 @@ static void on_activate(GtkApplication *app, gpointer user_data)
     gtk_actionable_set_action_name(GTK_ACTIONABLE(tb), "win.messages");
     gtk_header_bar_pack_start(GTK_HEADER_BAR(header), tb);
   }
+  /*
+   * Whether this station is beaconing, where it can be seen without opening a
+   * menu.  A transmitter that is on should not be something you have to go
+   * looking for.
+   */
+  {
+    beacon_toggle = gtk_toggle_button_new();
+    /*
+     * A map pin, not a transmit arrow.
+     *
+     * network-transmit-symbolic is an up-arrow in a rounded box, and pressed
+     * in a header bar it reads as an error badge rather than as "on air" --
+     * which is the worst possible misreading for the one control that says
+     * whether this station is transmitting.  What is being beaconed is a
+     * POSITION, so a pin says it: lit means the pin is going out.
+     */
+    gtk_button_set_icon_name(GTK_BUTTON(beacon_toggle),
+                             "mark-location-symbolic");
+    gtk_actionable_set_action_name(GTK_ACTIONABLE(beacon_toggle),
+                                   "win.beacon-auto");
+    gtk_header_bar_pack_start(GTK_HEADER_BAR(header), beacon_toggle);
+  }
   // A GMenu rather than a menu bar: one model, described once, and GTK builds
   // the popover from it.  The Motif build spends several hundred lines on
   // XmCreatePulldownMenu calls to say less than this.
@@ -2454,7 +2553,8 @@ static void on_activate(GtkApplication *app, gpointer user_data)
   // afterwards, because a callsign and a position are things that change --
   // people move, and a station gets set up portable.
   station = g_menu_new();
-  g_menu_append(station, "Beacon Position Now", "win.beacon");
+  g_menu_append(station, "Beacon My Position", "win.beacon-auto");
+  g_menu_append(station, "Beacon Once Now", "win.beacon");
   g_menu_append(station, "My Station\xe2\x80\xa6", "win.mystation");
   g_menu_append_section(menu, "Settings", G_MENU_MODEL(station));
   g_object_unref(station);
@@ -2730,6 +2830,25 @@ static void on_activate(GtkApplication *app, gpointer user_data)
       // long time to look like there is no traffic.
       xa_gtk4_messages_set_unread_notify(update_msg_toggle);
       update_msg_toggle();
+
+      /*
+       * Start the beacon switch where the config left it.
+       *
+       * The action is declared "false" because a GActionEntry's initial state
+       * is a literal, and the answer lives in a variable read from the config
+       * long after that literal was written.  Set through the action rather
+       * than by hand so the menu item, the header toggle and posit_tx_disable
+       * are all in step from the first frame -- the alternative is a toggle
+       * that looks off while the station is beaconing.
+       */
+      if (!posit_tx_disable)
+      {
+        beacon_state_restoring = 1;
+        g_action_group_change_action_state(G_ACTION_GROUP(win), "beacon-auto",
+                                           g_variant_new_boolean(TRUE));
+        beacon_state_restoring = 0;
+      }
+      update_beacon_toggle();
 
       gtk_box_append(GTK_BOX(box), paned);
     }
