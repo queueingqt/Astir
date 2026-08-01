@@ -8130,8 +8130,21 @@ int device_can_transmit(int port)
   {
     return 0;
   }
+  return device_type_can_transmit(port_data[port].device_type);
+}
 
-  switch (port_data[port].device_type)
+
+/*
+ * The type half of that question, asked on its own.
+ *
+ * A configuration window needs this before there is a port to ask about: it is
+ * deciding whether to offer a transmit setting at all, and offering one that
+ * can never do anything is how a config comes to hold a flag that is quietly
+ * ignored forever.
+ */
+int device_type_can_transmit(int device_type)
+{
+  switch (device_type)
   {
     case DEVICE_NET_AGWPE:
     case DEVICE_NET_STREAM:

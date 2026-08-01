@@ -266,7 +266,70 @@ typedef struct
   GtkWidget *target_label;
   GtkWidget *port_label;
   GtkWidget *hint;
+  GtkWidget *tx_note;            /* why transmit is unavailable, when it is */
 } iface_dialog;
+
+
+// APRS-IS calls -1 "receive only" and means it: the server accepts the login
+// and then refuses everything sent up it.  Anything else numeric and positive
+// is a real passcode.
+static int passcode_allows_transmit(const char *pass)
+{
+  return (pass != NULL) && (pass[0] != '\0') && (atoi(pass) > 0);
+}
+
+
+/*
+ * Offer the transmit setting only where it could do something.
+ *
+ * Two quite different reasons it might not, and they want different words: the
+ * kind of device never transmits at all, or it does but this particular login
+ * is not allowed to.  Saying "no" without saying which leaves the operator to
+ * guess, and the second one is fixable in the box directly above it.
+ *
+ * Turned OFF as well as disabled.  A tick left set on a setting that cannot
+ * apply is exactly the stale flag this is meant to stop being written.
+ */
+static void refresh_transmit_availability(iface_dialog *d)
+{
+  guint sel = gtk_drop_down_get_selected(GTK_DROP_DOWN(d->kind));
+  const iface_kind *k;
+  const char *why = "";
+
+  if (sel >= (guint)NKINDS)
+  {
+    return;
+  }
+  k = &kinds[sel];
+
+  if (!device_type_can_transmit(k->type))
+  {
+    why = "This kind of interface only ever receives.";
+  }
+  else if (k->type == DEVICE_NET_STREAM
+           && !passcode_allows_transmit(
+                gtk_editable_get_text(GTK_EDITABLE(d->passcode))))
+  {
+    why = "A receive-only login cannot transmit. APRS-IS accepts passcode -1 "
+          "and then refuses anything sent up it. Enter the passcode for your "
+          "callsign above to enable this \xe2\x80\x94 astir_callpass computes it.";
+  }
+
+  gtk_widget_set_sensitive(d->transmit, why[0] == '\0');
+  if (why[0] != '\0')
+  {
+    gtk_check_button_set_active(GTK_CHECK_BUTTON(d->transmit), FALSE);
+  }
+  gtk_label_set_text(GTK_LABEL(d->tx_note), why);
+  gtk_widget_set_visible(d->tx_note, why[0] != '\0');
+}
+
+
+static void on_passcode_changed(GtkEditable *e, gpointer data)
+{
+  (void)e;
+  refresh_transmit_availability(data);
+}
 
 
 // Follow the type selection: the same two entry boxes mean different things for
@@ -305,6 +368,8 @@ static void on_kind_changed(GtkDropDown *dd, GParamSpec *ps, gpointer data)
                          k->type == DEVICE_NET_STREAM);
   gtk_widget_set_visible(gtk_widget_get_parent(d->filter),
                          k->type == DEVICE_NET_STREAM);
+
+  refresh_transmit_availability(d);
 }
 
 
@@ -546,6 +611,15 @@ static void show_dialog(GtkWindow *parent, int port)
                   "Allow transmit on this interface");
   gtk_box_append(GTK_BOX(box), d->transmit);
 
+  // Sits under the tick box and says why it is unavailable, when it is.
+  d->tx_note = gtk_label_new("");
+  gtk_label_set_wrap(GTK_LABEL(d->tx_note), TRUE);
+  gtk_label_set_xalign(GTK_LABEL(d->tx_note), 0.0);
+  gtk_widget_set_margin_start(d->tx_note, 24);
+  gtk_widget_add_css_class(d->tx_note, "dim-label");
+  gtk_widget_set_visible(d->tx_note, FALSE);
+  gtk_box_append(GTK_BOX(box), d->tx_note);
+
   if (port >= 0)                 // editing: fill in what is there
   {
     const iface_kind *k = kind_of(devices[port].device_type);
@@ -580,6 +654,10 @@ static void show_dialog(GtkWindow *parent, int port)
   g_signal_connect(save, "clicked", G_CALLBACK(on_dialog_save), d);
   g_signal_connect(d->kind, "notify::selected",
                    G_CALLBACK(on_kind_changed), d);
+  // Typing a real passcode is what makes transmit available on APRS-IS, so the
+  // tick box has to follow the box above it as it is typed.
+  g_signal_connect(d->passcode, "changed",
+                   G_CALLBACK(on_passcode_changed), d);
 
   // Run it once so the labels and hint match the selection before it is shown.
   on_kind_changed(GTK_DROP_DOWN(d->kind), NULL, d);
@@ -844,6 +922,15 @@ static void on_win_destroy(GtkWidget *w, gpointer unused)
 void xa_gtk4_interfaces_show_add(GtkWindow *parent)
 {
   show_dialog(parent, -1);
+}
+
+
+void xa_gtk4_interfaces_show_edit(GtkWindow *parent, int port)
+{
+  if (port >= 0 && port < MAX_IFACE_DEVICES && slot_in_use(port))
+  {
+    show_dialog(parent, port);
+  }
 }
 
 

@@ -2251,6 +2251,13 @@ static gboolean show_interfaces_once(gpointer win)
   {
     xa_gtk4_interfaces_show_add(GTK_WINDOW(win));
   }
+  // "edit2" opens the editor on interface 2, for the same reason: what the
+  // dialog offers depends on what is being edited, and that cannot be seen
+  // from the Add dialog, which starts on the first kind in the list.
+  else if (what != NULL && strncmp(what, "edit", 4) == 0)
+  {
+    xa_gtk4_interfaces_show_edit(GTK_WINDOW(win), atoi(what + 4));
+  }
   else
   {
     xa_gtk4_interfaces_show(GTK_WINDOW(win));

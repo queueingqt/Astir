@@ -36,6 +36,16 @@ void xa_gtk4_interfaces_show(GtkWindow *parent);
 void xa_gtk4_interfaces_show_add(GtkWindow *parent);
 
 /*
+ * Open the editor on an interface that already exists.
+ *
+ * The settings a dialog offers depend on what is being edited -- a passcode is
+ * an APRS-IS idea, transmit is meaningless on a receiver -- so the only way to
+ * see that it gets that right is to open it on a configured interface, which
+ * on a session with no input automation nothing else can do.
+ */
+void xa_gtk4_interfaces_show_edit(GtkWindow *parent, int port);
+
+/*
  * A port opened, closed or changed state.  Wired to xa_ui's interfaces_changed
  * callback, which the core has been announcing all along with nothing
  * listening.  Replaces the half-second poll this window used to run on.

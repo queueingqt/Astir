@@ -287,6 +287,15 @@ extern void output_my_data(char *message, int port, int type, int loopback_only,
  * are not, however their transmit flag happens to be set.  See interface.c.
  */
 extern int device_can_transmit(int port);
+
+/*
+ * Whether a device of this kind ever transmits, regardless of any port.
+ *
+ * For a configuration window deciding whether to offer the setting: a GPS, a
+ * weather station and a database never do, and a tick box that cannot mean
+ * anything is worse than no tick box.
+ */
+extern int device_type_can_transmit(int device_type);
 int tnc_get_data_type(char *buf, int port);
 void tnc_data_clean(char *buf);
 extern void output_waypoint_data(char *message);
