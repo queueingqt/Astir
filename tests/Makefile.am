@@ -24,35 +24,35 @@ test_interface_helpers_SOURCES = test_interface_helpers.c
 test_interface_helpers_CPPFLAGS = -I$(top_srcdir)/src
 
 
-test_db_SOURCES = test_db.c test_db_stubs.c $(top_srcdir)/src/db.c $(top_srcdir)/src/encoding.c
-test_db_CPPFLAGS = $(CPPFLAGS) -I$(top_srcdir) -I$(top_srcdir)/src -I$(top_builddir)
+test_db_SOURCES = test_db.c test_db_stubs.c $(top_srcdir)/src/core/aprs/db.c $(top_srcdir)/src/core/util/encoding.c
+test_db_CPPFLAGS = $(CPPFLAGS) -I$(top_srcdir) -I$(top_srcdir)/src -I$(top_srcdir)/src/core -I$(top_srcdir)/src/core/aprs -I$(top_srcdir)/src/core/util -I$(top_srcdir)/src/core/io -I$(top_srcdir)/src/core/map -I$(top_srcdir)/src/core/state -I$(top_builddir)
 #test_db_LDADD = -L$(top_builddir)/src/rtree -lrtree
 
 
-test_object_utils_SOURCES = test_object_utils.c test_object_utils_stubs.c $(top_srcdir)/src/object_utils.c
-test_object_utils_CPPFLAGS = $(CPPFLAGS) -I$(top_srcdir) -I$(top_srcdir)/src -I$(top_builddir)
+test_object_utils_SOURCES = test_object_utils.c test_object_utils_stubs.c $(top_srcdir)/src/core/aprs/object_utils.c
+test_object_utils_CPPFLAGS = $(CPPFLAGS) -I$(top_srcdir) -I$(top_srcdir)/src -I$(top_srcdir)/src/core -I$(top_srcdir)/src/core/aprs -I$(top_srcdir)/src/core/util -I$(top_srcdir)/src/core/io -I$(top_srcdir)/src/core/map -I$(top_srcdir)/src/core/state -I$(top_builddir)
 
 test_output_my_aprs_data_SOURCES = test_output_my_aprs_data.c mock_output_my_aprs_data.c \
-      $(top_srcdir)/src/interface.c
-test_output_my_aprs_data_CPPFLAGS = $(CPPFLAGS) -I$(top_srcdir) -I$(top_srcdir)/src -I$(top_builddir)
+      $(top_srcdir)/src/core/io/interface.c
+test_output_my_aprs_data_CPPFLAGS = $(CPPFLAGS) -I$(top_srcdir) -I$(top_srcdir)/src -I$(top_srcdir)/src/core -I$(top_srcdir)/src/core/aprs -I$(top_srcdir)/src/core/util -I$(top_srcdir)/src/core/io -I$(top_srcdir)/src/core/map -I$(top_srcdir)/src/core/state -I$(top_builddir)
 test_output_my_aprs_data_LDADD = -lpthread
 
-test_util_SOURCES = test_util.c test_util_stubs.c $(top_srcdir)/src/util.c
-test_util_CPPFLAGS = $(CPPFLAGS) -I$(top_srcdir) -I$(top_srcdir)/src -I$(top_builddir)
+test_util_SOURCES = test_util.c test_util_stubs.c $(top_srcdir)/src/core/util/util.c
+test_util_CPPFLAGS = $(CPPFLAGS) -I$(top_srcdir) -I$(top_srcdir)/src -I$(top_srcdir)/src/core -I$(top_srcdir)/src/core/aprs -I$(top_srcdir)/src/core/util -I$(top_srcdir)/src/core/io -I$(top_srcdir)/src/core/map -I$(top_srcdir)/src/core/state -I$(top_builddir)
 
-test_objects_SOURCES = test_objects.c test_objects_stubs.c $(top_srcdir)/src/objects.c $(top_srcdir)/src/util.c $(top_srcdir)/src/object_utils.c $(top_srcdir)/src/db.c $(top_srcdir)/src/encoding.c
-test_objects_CPPFLAGS = $(CPPFLAGS) -I$(top_srcdir) -I$(top_srcdir)/src -I$(top_builddir)
+test_objects_SOURCES = test_objects.c test_objects_stubs.c $(top_srcdir)/src/core/aprs/objects.c $(top_srcdir)/src/core/util/util.c $(top_srcdir)/src/core/aprs/object_utils.c $(top_srcdir)/src/core/aprs/db.c $(top_srcdir)/src/core/util/encoding.c
+test_objects_CPPFLAGS = $(CPPFLAGS) -I$(top_srcdir) -I$(top_srcdir)/src -I$(top_srcdir)/src/core -I$(top_srcdir)/src/core/aprs -I$(top_srcdir)/src/core/util -I$(top_srcdir)/src/core/io -I$(top_srcdir)/src/core/map -I$(top_srcdir)/src/core/state -I$(top_builddir)
 
-test_log_utils_SOURCES = test_log_utils.c test_log_utils_stubs.c $(top_srcdir)/src/log_utils.c $(top_srcdir)/src/util.c
-test_log_utils_CPPFLAGS = $(CPPFLAGS) -I$(top_srcdir) -I$(top_srcdir)/src -I$(top_builddir)
+test_log_utils_SOURCES = test_log_utils.c test_log_utils_stubs.c $(top_srcdir)/src/core/util/log_utils.c $(top_srcdir)/src/core/util/util.c
+test_log_utils_CPPFLAGS = $(CPPFLAGS) -I$(top_srcdir) -I$(top_srcdir)/src -I$(top_srcdir)/src/core -I$(top_srcdir)/src/core/aprs -I$(top_srcdir)/src/core/util -I$(top_srcdir)/src/core/io -I$(top_srcdir)/src/core/map -I$(top_srcdir)/src/core/state -I$(top_builddir)
 
-test_cad_objects_SOURCES = test_cad_objects.c test_cad_objects_stubs.c $(top_srcdir)/src/cad_objects.c $(top_srcdir)/src/util.c
-test_cad_objects_CPPFLAGS = $(CPPFLAGS) -I$(top_srcdir) -I$(top_srcdir)/src -I$(top_builddir)
+test_cad_objects_SOURCES = test_cad_objects.c test_cad_objects_stubs.c $(top_srcdir)/src/core/aprs/cad_objects.c $(top_srcdir)/src/core/util/util.c
+test_cad_objects_CPPFLAGS = $(CPPFLAGS) -I$(top_srcdir) -I$(top_srcdir)/src -I$(top_srcdir)/src/core -I$(top_srcdir)/src/core/aprs -I$(top_srcdir)/src/core/util -I$(top_srcdir)/src/core/io -I$(top_srcdir)/src/core/map -I$(top_srcdir)/src/core/state -I$(top_builddir)
 
 # Nominatim tests (conditional on HAVE_NOMINATIM)
 if HAVE_NOMINATIM
-test_nominatim_SOURCES = test_nominatim.c test_nominatim_stubs.c $(top_srcdir)/src/nominatim.c
-test_nominatim_CPPFLAGS = $(CPPFLAGS) $(LIBCURL_CFLAGS) $(CJSON_CFLAGS) -I$(top_srcdir) -I$(top_srcdir)/src -I$(top_builddir) -DNOMINATIM_UNIT_TEST
+test_nominatim_SOURCES = test_nominatim.c test_nominatim_stubs.c $(top_srcdir)/src/core/map/nominatim.c
+test_nominatim_CPPFLAGS = $(CPPFLAGS) $(LIBCURL_CFLAGS) $(CJSON_CFLAGS) -I$(top_srcdir) -I$(top_srcdir)/src -I$(top_srcdir)/src/core -I$(top_srcdir)/src/core/aprs -I$(top_srcdir)/src/core/util -I$(top_srcdir)/src/core/io -I$(top_srcdir)/src/core/map -I$(top_srcdir)/src/core/state -I$(top_builddir) -DNOMINATIM_UNIT_TEST
 test_nominatim_LDADD = $(LIBCURL_LIBS) $(CJSON_LIBS) -lpthread
 endif
 
