@@ -427,6 +427,107 @@ int test_copy_token_null_source(void)
   TEST_PASS("copy_token");
 }
 
+/*
+ * loc_to_sec(): Maidenhead locator to coordinates.
+ *
+ * Checked against places whose grid squares are independently known, not only
+ * by round-tripping through sec_to_loc().  A round trip proves the two agree
+ * with each other; it cannot notice that both are wrong the same way -- and
+ * they share a sign convention and an off-by-one that would survive it.
+ */
+int test_loc_to_sec_known_places(void)
+{
+  long lon, lat;
+
+  // CN87 is Seattle: 124W-122W, 47N-48N.  Centre of the square is 123W 47.5N.
+  TEST_ASSERT(loc_to_sec("CN87", &lon, &lat) == 1, "CN87 is accepted");
+  // Astir longitude counts 1/100 second east from 180W: 123W is 57 deg east.
+  TEST_ASSERT(lon == 57L * 3600L * 100L, "CN87 centres on 123W");
+  // Astir latitude counts 1/100 second south from 90N: 47.5N is 42.5 south.
+  TEST_ASSERT(lat == (2L * 90L * 3600L - 1L - (long)(137.5 * 3600.0)) * 100L,
+              "CN87 centres on 47.5N");
+
+  // JO62 is Berlin: 12E-14E, 52N-53N.  Centre 13E 52.5N.
+  TEST_ASSERT(loc_to_sec("JO62", &lon, &lat) == 1, "JO62 is accepted");
+  TEST_ASSERT(lon == 193L * 3600L * 100L, "JO62 centres on 13E");
+  TEST_ASSERT(lat == (2L * 90L * 3600L - 1L - (long)(142.5 * 3600.0)) * 100L,
+              "JO62 centres on 52.5N");
+
+  // The south-west corner of the world, where a flipped sign or an off-by-one
+  // shows up most clearly.
+  TEST_ASSERT(loc_to_sec("AA00", &lon, &lat) == 1, "AA00 is accepted");
+  TEST_ASSERT(lon == 3600L * 100L, "AA00 centres one degree east of 180W");
+  TEST_ASSERT(lat == (2L * 90L * 3600L - 1L - 1800L) * 100L,
+              "AA00 centres half a degree north of 90S");
+
+  TEST_PASS("loc_to_sec");
+}
+
+
+int test_loc_to_sec_six_character(void)
+{
+  long lon4, lat4, lon6, lat6, lonU, latU;
+
+  // A six-character locator must land inside the four-character square it
+  // extends.
+  TEST_ASSERT(loc_to_sec("CN87", &lon4, &lat4) == 1, "CN87 is accepted");
+  TEST_ASSERT(loc_to_sec("CN87us", &lon6, &lat6) == 1, "CN87us is accepted");
+
+  TEST_ASSERT(lon6 > lon4, "CN87us is east of the centre of CN87");
+  TEST_ASSERT(lat6 < lat4, "CN87us is north of the centre of CN87");
+  // Still inside: half of two degrees of longitude, half of one of latitude.
+  TEST_ASSERT(lon6 - lon4 < 3600L * 100L, "CN87us stays inside CN87");
+  TEST_ASSERT(lat4 - lat6 < 1800L * 100L, "CN87us stays inside CN87");
+
+  // Case must not matter, in either direction.
+  TEST_ASSERT(loc_to_sec("cn87US", &lonU, &latU) == 1, "mixed case accepted");
+  TEST_ASSERT(lonU == lon6 && latU == lat6, "case makes no difference");
+
+  TEST_PASS("loc_to_sec");
+}
+
+
+int test_loc_to_sec_round_trip(void)
+{
+  static const char *locs[] =
+  {
+    "CN87us", "JO62qm", "FN20xr", "AA00aa", "RR99xx", "IO91wm", NULL
+  };
+  long lon, lat;
+  int  i;
+
+  for (i = 0; locs[i] != NULL; i++)
+  {
+    TEST_ASSERT(loc_to_sec(locs[i], &lon, &lat) == 1, "locator is accepted");
+    TEST_ASSERT_STR_EQ(locs[i], sec_to_loc(lon, lat),
+                       "sec_to_loc returns the locator it came from");
+  }
+  TEST_PASS("loc_to_sec");
+}
+
+
+int test_loc_to_sec_rejects_rubbish(void)
+{
+  long lon = 12345, lat = 67890;
+
+  TEST_ASSERT(loc_to_sec(NULL, &lon, &lat) == 0, "NULL is rejected");
+  TEST_ASSERT(loc_to_sec("", &lon, &lat) == 0, "empty is rejected");
+  TEST_ASSERT(loc_to_sec("CN", &lon, &lat) == 0, "two characters rejected");
+  TEST_ASSERT(loc_to_sec("CN8", &lon, &lat) == 0, "three characters rejected");
+  TEST_ASSERT(loc_to_sec("CN87u", &lon, &lat) == 0, "five characters rejected");
+  TEST_ASSERT(loc_to_sec("CN87usx", &lon, &lat) == 0, "seven rejected");
+  TEST_ASSERT(loc_to_sec("SN87", &lon, &lat) == 0, "field past R rejected");
+  TEST_ASSERT(loc_to_sec("CNX7", &lon, &lat) == 0, "non-digit square rejected");
+  TEST_ASSERT(loc_to_sec("CN87yz", &lon, &lat) == 0, "sub-square past x rejected");
+  TEST_ASSERT(loc_to_sec("N0CALL", &lon, &lat) == 0, "a callsign is rejected");
+
+  // Nothing above may have written through the pointers.
+  TEST_ASSERT(lon == 12345 && lat == 67890,
+              "a rejected locator leaves the coordinates alone");
+  TEST_PASS("loc_to_sec");
+}
+
+
 /* Test runner */
 typedef struct {
     const char *name;
@@ -460,6 +561,10 @@ int main(int argc, char *argv[])
     {"copy_token_empty",test_copy_token_empty},
     {"copy_token_whitespace_only",test_copy_token_whitespace_only},
     {"copy_token_null_source",test_copy_token_null_source},
+    {"loc_to_sec_known_places",test_loc_to_sec_known_places},
+    {"loc_to_sec_six_character",test_loc_to_sec_six_character},
+    {"loc_to_sec_round_trip",test_loc_to_sec_round_trip},
+    {"loc_to_sec_rejects_rubbish",test_loc_to_sec_rejects_rubbish},
     {NULL,NULL}
   };
 

@@ -3636,6 +3636,87 @@ char *sec_to_loc(long longitude, long latitude)
 
 
 /*
+ * The other direction: a Maidenhead locator to coordinates.
+ *
+ * This exists so nobody has to know their latitude and longitude.  A licensed
+ * operator knows their grid square -- it is on QSL cards, in contest exchanges
+ * and in every logging program -- and six characters of it locate you to about
+ * 3 km, which is far finer than a map centre or an APRS-IS filter radius needs.
+ *
+ * Four characters (AA00) and six (AA00aa) are both accepted, and case is
+ * ignored in the sub-square pair even though the convention is lower case.
+ *
+ * The position returned is the CENTRE of the named square, not its corner.
+ * sec_to_loc() truncates, so the corner is what the arithmetic gives you for
+ * free -- and it would put a four-character locator up to 55 km south-west of
+ * where the operator actually is, consistently, in the same direction every
+ * time.  Half a square is the smallest honest answer to "somewhere in here".
+ *
+ * Returns 1 and fills both coordinates, or 0 and touches neither.
+ */
+int loc_to_sec(const char *loc, long *longitude, long *latitude)
+{
+  long lon_sec, lat_sec;        // seconds east of 180W, and north of 90S
+  int  len;
+
+  if (loc == NULL || longitude == NULL || latitude == NULL)
+  {
+    return 0;
+  }
+
+  len = (int)strlen(loc);
+  if (len != 4 && len != 6)
+  {
+    return 0;
+  }
+
+  // Field: A-R, 18 of them, 20 degrees of longitude and 10 of latitude each.
+  if (toupper((int)loc[0]) < 'A' || toupper((int)loc[0]) > 'R'
+      || toupper((int)loc[1]) < 'A' || toupper((int)loc[1]) > 'R')
+  {
+    return 0;
+  }
+  // Square: 0-9 within the field.
+  if (!isdigit((int)loc[2]) || !isdigit((int)loc[3]))
+  {
+    return 0;
+  }
+
+  lon_sec = (long)(toupper((int)loc[0]) - 'A') * 72000L
+            + (long)(loc[2] - '0') * 7200L;
+  lat_sec = (long)(toupper((int)loc[1]) - 'A') * 36000L
+            + (long)(loc[3] - '0') * 3600L;
+
+  if (len == 6)
+  {
+    // Sub-square: a-x, 24 of them, dividing the square into 5' by 2.5' cells.
+    if (tolower((int)loc[4]) < 'a' || tolower((int)loc[4]) > 'x'
+        || tolower((int)loc[5]) < 'a' || tolower((int)loc[5]) > 'x')
+    {
+      return 0;
+    }
+    lon_sec += (long)(tolower((int)loc[4]) - 'a') * 300L + 150L;   // + half
+    lat_sec += (long)(tolower((int)loc[5]) - 'a') * 150L +  75L;
+  }
+  else
+  {
+    lon_sec += 3600L;           // half of a 2-degree square
+    lat_sec += 1800L;           // half of a 1-degree square
+  }
+
+  // Back into Astir units, exactly inverting sec_to_loc: 1/100 second, with
+  // longitude 0 at 180W and latitude 0 at 90N -- so latitude counts the other
+  // way and has to be flipped.
+  *longitude = lon_sec * 100L;
+  *latitude  = (2L * 90L * 3600L - 1L - lat_sec) * 100L;
+  return 1;
+}
+
+
+
+
+
+/*
  *  Substring function WITH a terminating NULL char, needs a string of at least size+1
  */
 void substr(char *dest, char *src, int size)

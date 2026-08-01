@@ -142,6 +142,9 @@ extern void spell_it_out(char *text, int max_length);
 // dl9sau
 extern char *sec_to_loc(long longitude, long latitude);
 
+// ...and back, so a first run can ask for a grid square instead of a latitude.
+extern int loc_to_sec(const char *loc, long *longitude, long *latitude);
+
 extern short checkHash(char *theCall, short theHash);
 
 extern void split_string ( char *data, char *cptr[], int max, char search_char );

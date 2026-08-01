@@ -153,3 +153,27 @@ AT_KEYWORDS([util copy_token])
 AT_CHECK(["$abs_top_builddir/tests/test_util" copy_token_null_source], [0], [PASS: copy_token
 ])
 AT_CLEANUP
+
+AT_SETUP([loc_to_sec: known grid squares])
+AT_KEYWORDS([util loc_to_sec maidenhead])
+AT_CHECK(["$abs_top_builddir/tests/test_util" loc_to_sec_known_places], [0], [PASS: loc_to_sec
+])
+AT_CLEANUP
+
+AT_SETUP([loc_to_sec: six-character locators])
+AT_KEYWORDS([util loc_to_sec maidenhead])
+AT_CHECK(["$abs_top_builddir/tests/test_util" loc_to_sec_six_character], [0], [PASS: loc_to_sec
+])
+AT_CLEANUP
+
+AT_SETUP([loc_to_sec: round trip through sec_to_loc])
+AT_KEYWORDS([util loc_to_sec maidenhead])
+AT_CHECK(["$abs_top_builddir/tests/test_util" loc_to_sec_round_trip], [0], [PASS: loc_to_sec
+])
+AT_CLEANUP
+
+AT_SETUP([loc_to_sec: malformed input is rejected])
+AT_KEYWORDS([util loc_to_sec maidenhead])
+AT_CHECK(["$abs_top_builddir/tests/test_util" loc_to_sec_rejects_rubbish], [0], [PASS: loc_to_sec
+])
+AT_CLEANUP
