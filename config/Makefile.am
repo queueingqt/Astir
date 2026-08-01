@@ -49,6 +49,16 @@ EXTRA_DIST = \
     OSM_geofabrik_2026_natural_and_water.dbfawk \
     OSM_geofabrik_2026_roads.dbfawk \
     OSM_geofabrik_2026_waterways.dbfawk \
+    osm_landuse.dbfawk \
+    osm_places.dbfawk \
+    osm_rivers.dbfawk \
+    osm_roads.dbfawk \
+    osm_water.dbfawk \
+    mvt_landcover.dbfawk \
+    mvt_landuse.dbfawk \
+    mvt_place.dbfawk \
+    mvt_transportation.dbfawk \
+    mvt_water.dbfawk \
     predefined_EVENT.sys \
     predefined_SAR.sys \
     tl_2009_aiannh.dbfawk \
