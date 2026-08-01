@@ -2358,129 +2358,33 @@ void load_pixmap_symbol_file(char *filename, int reloading)
 
 // add a symbol to the end of the symbol table.
 //
-// Here we actually draw the pixels into the SymbolData struct,
-// which contains separate xa_surface_id's for the icon, the transparent
-// background, and the ghost image.
+// Metadata only.  This used to rasterise the symbol's pixel art into three
+// 20x20 surfaces per symbol -- the icon, its coverage mask, and a ghost mask
+// with every second bit cleared -- and draw_symbol() blitted one of those.
+// draw_symbol() has drawn filled outlines from astir_sym_glyphs[] since the
+// symbols were traced to vectors, and it never read a pixmap again.
+//
+// Leaving them behind was not free.  Three surfaces for each of ~169 symbols is
+// just over 500, and the GTK4 backend has 512 surface handles in total -- so by
+// the time the map was drawn the pool was full, and EVERY later
+// xa_surface_create() in the program failed.  It went unnoticed because the
+// things that allocate surfaces at startup had already done so; it surfaced as
+// a window that could not draw a 22-pixel symbol preview, with 418 allocation
+// failures behind it.  The per-pixel work went too: 400 points x 3 surfaces x
+// 169 symbols is around 200,000 draw calls that produced nothing.
+//
+// `pixel`, `deg` and `reloading` are now unused.  They stay in the signature
+// because the call sites pass them and the symbol tables are parsed to produce
+// them; removing them is a separate change.
 //
 void insert_symbol(char table, char symbol, char *pixel, int deg, char orient, int reloading)
 {
-  int x,y,idx,old_next,color,last_color,last_gc2;
+  (void)pixel;
+  (void)deg;
+  (void)reloading;
 
   if (symbols_loaded < MAX_SYMBOLS)
   {
-    // first time loading, -> create pixmap...
-    // when reloading -> reuse already created pixmaps...
-    if(reloading == 0)
-    {
-      symbol_data[symbols_loaded].pix=xa_surface_create(20, 20, XA_DEPTH_CANVAS);
-
-      symbol_data[symbols_loaded].pix_mask=xa_surface_create(20, 20, 1);
-
-      symbol_data[symbols_loaded].pix_mask_old=xa_surface_create(20, 20, 1);
-    }
-
-    old_next=0;
-    last_color = -1;    // Something bogus
-    last_gc2 = -1;      // Also bogus
-
-    for (y=0; y<20; y++)
-    {
-      for (x=0; x<20; x++)
-      {
-        switch (deg)
-        {
-          case(0):
-            idx = 20* (19-x) +   y;
-            break;
-          case(90):
-            idx = 20*   y    + (19-x);
-            break;
-          case(180):
-            idx = 20* (19-x) + (19-y);
-            break;
-          default:
-            idx = 20*   y    +   x;
-            break;
-        }
-        color = (int)(pixel[idx]);
-        if (color<0)
-        {
-          color = 0xff;
-        }
-
-// Change to new color only when necessary.  We use two different
-// GC's here, one for the main icon pixmap, and one for the symbol
-// mask and ghost layer.
-
-
-        // DK7IN: is (da) correct or should this be (appshell) ?
-        if (color != last_color)
-        {
-          xa_pen_color(gc, colors[color]);
-          last_color = color;
-        }
-
-// Check that our parameters are within spec for XDrawPoint.  Tricky
-// 'cuz the XPoint struct uses short's, while XDrawPoint manpage
-// specifies int's.  We'll stick to 16-bit numbers just to make
-// sure.
-
-        xa_draw_point(symbol_data[symbols_loaded].pix, gc, l16(x), l16(y));    // int
-        // DK7IN
-
-
-        // Create symbol mask
-        if (color != 0xff)
-        {
-          if (last_gc2 != 1)
-          {
-            xa_pen_color(gc2, 1);  // active bit
-            last_gc2 = 1;
-          }
-        }
-        else
-        {
-          if (last_gc2 != 0)
-          {
-            xa_pen_color(gc2, 0);  // transparent.
-            last_gc2 = 0;
-          }
-        }
-
-// Check that our parameters are within spec for XDrawPoint.  Tricky
-// 'cuz the XPoint struct uses short's, while XDrawPoint manpage
-// specifies int's.  We'll stick to 16-bit numbers just to make
-// sure.
-
-        xa_draw_point(symbol_data[symbols_loaded].pix_mask, gc2, l16(x), l16(y));    // int
-
-
-        // Create ghost symbol mask by setting every 2nd bit
-        // to transparent
-        old_next++;
-        if (old_next>1)
-        {
-          old_next=0;
-          if (last_gc2 != 0)
-          {
-            xa_pen_color(gc2, 0);
-            last_gc2 = 0;
-          }
-        }
-
-// Check that our parameters are within spec for XDrawPoint.  Tricky
-// 'cuz the XPoint struct uses short's, while XDrawPoint manpage
-// specifies int's.  We'll stick to 16-bit numbers just to make
-// sure.
-
-        xa_draw_point(symbol_data[symbols_loaded].pix_mask_old, gc2, l16(x), l16(y));    // int
-      }
-      old_next++;    // shift one bit every scan line for ghost image
-      if (old_next>1)
-      {
-        old_next=0;
-      }
-    }
     symbol_data[symbols_loaded].active = SYMBOL_ACTIVE;
     symbol_data[symbols_loaded].table  = table;
     symbol_data[symbols_loaded].symbol = symbol;
