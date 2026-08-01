@@ -45,6 +45,20 @@ int  xa_gtk4_messages_get_visible(void);
 void xa_gtk4_messages_show_call(const char *call);
 
 /*
+ * Open a conversation, type `text` into its compose box, and press send.
+ *
+ * The test hook behind ASTIR_GTK4_SEND_MESSAGE, and the counterpart of
+ * ASTIR_GTK4_MYSTATION_SAVE: this is a Wayland session with no input
+ * automation, so the one thing that cannot otherwise be checked is what
+ * happens when somebody actually presses the button.
+ *
+ * Deliberately goes through the same call the button does, rather than calling
+ * the core directly -- a hook that takes a shortcut past the widget proves the
+ * shortcut works and nothing about the button.
+ */
+void xa_gtk4_messages_compose(const char *call, const char *text);
+
+/*
  * How many arrivals have not been looked at.
  *
  * The header-bar toggle shows this, which is the whole reason an unread count

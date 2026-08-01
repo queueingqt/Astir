@@ -621,6 +621,21 @@ void init_message_data(void)    // called at start of main
    */
   init_critical_section(&send_message_dialog_lock);
 
+  /*
+   * Every outgoing slot marked free, which is not the same as zeroed.
+   *
+   * output_message() looks for a slot whose `active` is MESSAGE_CLEAR -- the
+   * character 'C' -- and message_pool[] is a global, so every slot starts as 0.
+   * Zero is neither MESSAGE_CLEAR nor MESSAGE_ACTIVE, so the search found no
+   * free slot in a completely empty queue and every send failed with "Output
+   * message queue is full!" on stderr.  The first message ever sent hit it.
+   *
+   * reset_outgoing_messages() has always existed to say the slots are free.
+   * Like init_message_data() itself, main.c called it and nothing did
+   * afterwards -- and it went unnoticed because nothing could send.
+   */
+  reset_outgoing_messages();
+
   new_message_data = 0;
   last_message_remove = sec_now();
 }

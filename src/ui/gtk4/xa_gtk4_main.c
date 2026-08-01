@@ -2153,11 +2153,37 @@ static gboolean show_messages_once(gpointer win)
 {
   const char *call = getenv("ASTIR_GTK4_SHOW_MESSAGE_CALL");
 
+  const char *send = getenv("ASTIR_GTK4_SEND_MESSAGE");
+
   g_action_group_change_action_state(G_ACTION_GROUP(win), "messages",
                                      g_variant_new_boolean(TRUE));
   if (call != NULL && call[0] != '\0')
   {
     xa_gtk4_messages_show_call(call);
+  }
+
+  /*
+   * ASTIR_GTK4_SEND_MESSAGE="CALL:text" presses send, once.
+   *
+   * On this hook rather than one of its own, so it costs no extra scheduled
+   * wake-up: by the time this runs the sidebar is open and the store has been
+   * read, which is exactly when a send would be possible by hand.
+   */
+  if (send != NULL)
+  {
+    const char *colon = strchr(send, ':');
+
+    if (colon != NULL && colon != send)
+    {
+      char to[MAX_CALLSIGN+1];
+
+      astir_snprintf(to, sizeof(to), "%.*s", (int)(colon - send), send);
+      xa_gtk4_messages_compose(to, colon + 1);
+    }
+    else
+    {
+      g_printerr("ASTIR_GTK4_SEND_MESSAGE wants CALL:text, got \"%s\"\n", send);
+    }
   }
   return G_SOURCE_REMOVE;
 }

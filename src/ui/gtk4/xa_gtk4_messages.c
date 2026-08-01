@@ -17,6 +17,7 @@
 #include "core/aprs/database.h"
 #include "core/aprs/db_funcs.h"
 #include "core/aprs/messages.h"
+#include "core/io/interface.h"
 #include "core/state/xa_settings.h"
 #include "core/util/snprintf.h"
 #include "core/util/util.h"
@@ -54,6 +55,8 @@ static GtkWidget *msg_scroll;    /* what holds that list */
 static GtkWidget *msg_view;      /* the transcript on screen */
 static GtkWidget *msg_title;     /* whose conversation that is */
 static GtkWidget *msg_empty;     /* shown instead of the list when it is empty */
+static GtkWidget *msg_entry;     /* the reply box under the transcript */
+static GtkWidget *msg_newcall;   /* who a new message is to */
 static GtkWindow *msg_parent;
 
 // Which slot the transcript view is pointed at, or -1 for none.
@@ -493,9 +496,197 @@ static void show_slot(int i)
 
   gtk_stack_set_visible_child_name(GTK_STACK(msg_stack), "thread");
 
+  // Say who the reply is to, on the box it is typed into, so a conversation
+  // opened from somewhere else cannot be replied to under the wrong callsign.
+  if (msg_entry != NULL)
+  {
+    char hint[MAX_CALLSIGN + 16];
+
+    astir_snprintf(hint, sizeof(hint), "Message %s", c->call);
+    gtk_entry_set_placeholder_text(GTK_ENTRY(msg_entry), hint);
+    gtk_widget_grab_focus(msg_entry);
+  }
+
   // Ask the core to fill it.  It rebuilds every open window, this one included,
   // and does not otherwise run for traffic this station is not part of.
   update_messages(1);
+}
+
+
+/* ---- sending ------------------------------------------------------------- */
+
+/*
+ * Why this message cannot go out, or NULL if it can.
+ *
+ * Asked BEFORE anything is queued, because the transmit path has no way to
+ * report back.  output_my_data() walks the ports, writes to the ones that are
+ * up and willing, and returns void -- so a message sent with no interface, or
+ * with transmit disabled, is accepted in silence and simply never leaves.  The
+ * operator would be looking at their own words in the transcript with no way
+ * to tell they had gone nowhere.
+ *
+ * Checking first is what replaces that.  Every one of these is a condition the
+ * operator can see and fix, so each says which.
+ */
+static const char *why_not_sendable(const char *to)
+{
+  int i;
+
+  if (to == NULL || to[0] == '\0')
+  {
+    return "No callsign to send to.";
+  }
+
+  if (my_callsign[0] == '\0' || strcasecmp(my_callsign, "NOCALL") == 0)
+  {
+    return "This station has no callsign of its own yet.\n\n"
+           "Set one in Settings \xe2\x86\x92 My Station.  Astir will not "
+           "transmit as NOCALL: an unidentified packet on the air is somebody "
+           "else's problem to chase down, and in most countries it is illegal.";
+  }
+
+  if (transmit_disable)
+  {
+    return "Transmit is disabled for this station.\n\n"
+           "DISABLE_TRANSMIT is set in the configuration.  Nothing will go out "
+           "on any interface until that is cleared.";
+  }
+
+  for (i = 0; i < MAX_IFACE_DEVICES; i++)
+  {
+    if (devices[i].device_type != DEVICE_NONE
+        && port_data[i].status == DEVICE_UP
+        && devices[i].transmit_data)
+    {
+      return NULL;                 // something is up and willing to send
+    }
+  }
+
+  return "No interface is up that can transmit.\n\n"
+         "Open Connections \xe2\x86\x92 Interfaces and bring up a device with "
+         "transmit enabled.  A receive-only APRS-IS connection -- the one-click "
+         "kind, which logs in with passcode -1 -- cannot send, by design.";
+}
+
+
+/*
+ * Send one message, now.
+ *
+ * Nothing is scheduled and nothing polls.  output_message() queues it and
+ * stamps it due immediately; kick_outgoing_timer() clears the once-a-second
+ * guard inside check_and_transmit_messages(), without which a second message
+ * sent in the same second as the first would be silently held back; and then
+ * the transmit runs on this button press, in this call.
+ *
+ * What is NOT done is retrying.  The core can retry with a backoff up to
+ * MAX_TRIES, and driving that needs something to act at a future moment, which
+ * is the one thing an event cannot do.  So a message goes out once and stands
+ * in the transcript as unacked -- dimmed and italic -- until an ack arrives and
+ * clears it, which is itself an event.  Sending again is the operator pressing
+ * send again, deliberately, at a moment they chose.
+ */
+static void send_now(const char *to, const char *text)
+{
+  const char *why;
+  char call[MAX_CALLSIGN+1];
+  char body[MAX_MESSAGE_OUTPUT_LENGTH+1];
+
+  if (text == NULL || text[0] == '\0')
+  {
+    return;                        // an empty send is not an error, it is a
+  }                                // finger slip
+
+  astir_snprintf(call, sizeof(call), "%s", (to != NULL) ? to : "");
+  (void)remove_trailing_spaces(call);
+  (void)to_upper(call);
+
+  why = why_not_sendable(call);
+  if (why != NULL)
+  {
+    xa_ui_popup("This message was not sent", why);
+    return;
+  }
+
+  astir_snprintf(body, sizeof(body), "%s", text);
+
+  output_message(my_callsign, call, body, "");
+  kick_outgoing_timer(call);
+  check_and_transmit_messages(sec_now());
+
+  // It is in the store now, so both views can be told to re-read it.
+  update_messages(1);
+  refresh_list();
+}
+
+
+static void on_send(GtkWidget *w, gpointer u)
+{
+  conversation *c = slot(msg_shown);
+  const char *text;
+
+  (void)w;
+  (void)u;
+  if (c == NULL || msg_entry == NULL)
+  {
+    return;
+  }
+  text = gtk_editable_get_text(GTK_EDITABLE(msg_entry));
+  if (text == NULL || text[0] == '\0')
+  {
+    return;
+  }
+
+  send_now(c->call, text);
+
+  // Cleared whether or not it went: send_now() has already said why not, and
+  // leaving the text to be pressed again would send a second copy of anything
+  // that did go out.
+  gtk_editable_set_text(GTK_EDITABLE(msg_entry), "");
+}
+
+
+// "New message": ask who to, then open that conversation and compose in it.
+// One send path rather than two, so a new message and a reply cannot diverge.
+static void on_new_message(GtkButton *b, gpointer u)
+{
+  (void)b;
+  (void)u;
+  if (msg_newcall == NULL)
+  {
+    return;
+  }
+  gtk_widget_set_visible(msg_newcall, TRUE);
+  gtk_widget_grab_focus(msg_newcall);
+}
+
+
+static void on_newcall_activate(GtkEntry *e, gpointer u)
+{
+  char call[MAX_CALLSIGN+1];
+  const char *typed = gtk_editable_get_text(GTK_EDITABLE(e));
+  int i;
+
+  (void)u;
+  if (typed == NULL || typed[0] == '\0')
+  {
+    gtk_widget_set_visible(GTK_WIDGET(e), FALSE);
+    return;
+  }
+
+  astir_snprintf(call, sizeof(call), "%s", typed);
+  (void)remove_trailing_spaces(call);
+  (void)to_upper(call);
+
+  gtk_editable_set_text(GTK_EDITABLE(e), "");
+  gtk_widget_set_visible(GTK_WIDGET(e), FALSE);
+
+  // Opened even though there is not a word of traffic with them yet: the
+  // conversation is where the compose box lives, and it is about to have one.
+  i = slot_for(call);
+  if (i >= 0)
+  {
+    show_slot(i);
+  }
 }
 
 
@@ -780,6 +971,18 @@ int xa_gtk4_messages_get_visible(void)
 }
 
 
+void xa_gtk4_messages_compose(const char *call, const char *text)
+{
+  xa_gtk4_messages_show_call(call);
+  if (msg_entry == NULL || text == NULL)
+  {
+    return;
+  }
+  gtk_editable_set_text(GTK_EDITABLE(msg_entry), text);
+  on_send(NULL, NULL);
+}
+
+
 void xa_gtk4_messages_show_call(const char *call)
 {
   int i = slot_for(call);
@@ -796,6 +999,35 @@ void xa_gtk4_messages_show_call(const char *call)
 static GtkWidget *build_list_page(void)
 {
   GtkWidget *page = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+
+  /* ---- starting one that does not exist yet ---- */
+  {
+    GtkWidget *bar = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 6);
+    GtkWidget *newbtn = gtk_button_new_from_icon_name("mail-message-new-symbolic");
+
+    gtk_widget_set_margin_start(bar, 6);
+    gtk_widget_set_margin_end(bar, 6);
+    gtk_widget_set_margin_top(bar, 6);
+    gtk_widget_set_margin_bottom(bar, 2);
+
+    gtk_button_set_has_frame(GTK_BUTTON(newbtn), FALSE);
+    gtk_widget_set_tooltip_text(newbtn, "Message a station");
+    g_signal_connect(newbtn, "clicked", G_CALLBACK(on_new_message), NULL);
+    gtk_box_append(GTK_BOX(bar), newbtn);
+
+    // Hidden until asked for.  A callsign field sitting open above the list
+    // would be the most prominent thing in a sidebar whose job is reading.
+    msg_newcall = gtk_entry_new();
+    gtk_entry_set_placeholder_text(GTK_ENTRY(msg_newcall), "Callsign");
+    gtk_entry_set_max_length(GTK_ENTRY(msg_newcall), MAX_CALLSIGN);
+    gtk_widget_set_hexpand(msg_newcall, TRUE);
+    gtk_widget_set_visible(msg_newcall, FALSE);
+    g_signal_connect(msg_newcall, "activate",
+                     G_CALLBACK(on_newcall_activate), NULL);
+    gtk_box_append(GTK_BOX(bar), msg_newcall);
+
+    gtk_box_append(GTK_BOX(page), bar);
+  }
 
   msg_scroll = gtk_scrolled_window_new();
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(msg_scroll),
@@ -905,6 +1137,39 @@ static GtkWidget *build_thread_page(void)
   gtk_widget_add_css_class(msg_view, "monospace");
   gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scroll), msg_view);
   gtk_box_append(GTK_BOX(page), scroll);
+
+  /* ---- the compose box ---- */
+  {
+    GtkWidget *row = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 6);
+    GtkWidget *send;
+
+    gtk_widget_set_margin_start(row, 6);
+    gtk_widget_set_margin_end(row, 6);
+    gtk_widget_set_margin_top(row, 4);
+    gtk_widget_set_margin_bottom(row, 6);
+
+    msg_entry = gtk_entry_new();
+    /*
+     * One message, one packet.
+     *
+     * output_message() will happily split anything longer into as many APRS
+     * messages as it takes, each with its own sequence number and its own ack
+     * to wait for.  Stopping at the protocol's own limit means what is typed
+     * is what goes on the air, and a long paste cannot turn into a burst of
+     * six packets that somebody else's channel has to carry.
+     */
+    gtk_entry_set_max_length(GTK_ENTRY(msg_entry), MAX_MESSAGE_OUTPUT_LENGTH);
+    gtk_widget_set_hexpand(msg_entry, TRUE);
+    g_signal_connect(msg_entry, "activate", G_CALLBACK(on_send), NULL);
+    gtk_box_append(GTK_BOX(row), msg_entry);
+
+    send = gtk_button_new_from_icon_name("document-send-symbolic");
+    gtk_widget_set_tooltip_text(send, "Send this message");
+    g_signal_connect(send, "clicked", G_CALLBACK(on_send), NULL);
+    gtk_box_append(GTK_BOX(row), send);
+
+    gtk_box_append(GTK_BOX(page), row);
+  }
 
   return page;
 }
