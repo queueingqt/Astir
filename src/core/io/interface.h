@@ -296,6 +296,15 @@ extern int device_can_transmit(int port);
  * anything is worse than no tick box.
  */
 extern int device_type_can_transmit(int device_type);
+
+/*
+ * Send a position beacon if one is due; non-zero if one went.
+ *
+ * Driven by the GPS path rather than a timer -- each fix asks whether the next
+ * posit is due, so the fix stream is the clock.  `force` is the operator
+ * asking for one now and skips only the due check.
+ */
+extern int beacon_if_due(int force);
 int tnc_get_data_type(char *buf, int port);
 void tnc_data_clean(char *buf);
 extern void output_waypoint_data(char *message);

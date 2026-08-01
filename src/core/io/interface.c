@@ -8101,6 +8101,66 @@ void output_my_aprs_data(void)
 // transmit is disabled.
 //*****************************************************************************
 /*
+ * Beacon this station's position, if one is due.
+ *
+ * The scheduling is already done and has been for years: SmartBeaconing sets
+ * posit_next_time from each GPS fix -- slower when stopped, faster when
+ * moving, and immediately on a turn -- and POSIT_rate is the fixed interval
+ * when SmartBeaconing is off.  What has never existed is anything that acts on
+ * it.  output_my_aprs_data() had no callers at all.
+ *
+ * Called from the GPS path, which is what makes this work without a timer.  A
+ * fix arrives roughly once a second while the receiver has one, and each fix
+ * asks whether the next posit is due yet, so the GPS stream is the clock.  For
+ * a station with no GPS there is no clock and no beacon: see the note in the
+ * front end, which is where that has to be said out loud.
+ *
+ * `force` is the operator asking for one now, which is not a schedule and so
+ * skips the due check -- but not the checks below it.  Returns non-zero if
+ * something was actually sent.
+ */
+int beacon_if_due(int force)
+{
+  int i;
+
+  if (!force && posit_next_time > sec_now())
+  {
+    return 0;                            // not yet
+  }
+
+  // The same three refusals messages use, for the same reason: output_my_data()
+  // reports nothing, so a beacon into no interface is silence that looks like
+  // success.  Unlike a message there is nobody to tell, so this simply does not
+  // beacon and does not move the clock -- the next fix will ask again.
+  if (my_callsign[0] == '\0' || strcasecmp(my_callsign, "NOCALL") == 0)
+  {
+    return 0;
+  }
+  for (i = 0; i < MAX_IFACE_DEVICES; i++)
+  {
+    if (device_can_transmit(i))
+    {
+      break;
+    }
+  }
+  if (i == MAX_IFACE_DEVICES)
+  {
+    return 0;                            // nothing up that could carry it
+  }
+
+  output_my_aprs_data();
+
+  posit_last_time = sec_now();
+  // SmartBeaconing owns the interval when it is on and recomputes it from the
+  // next fix; this is the fallback for a fixed rate, and the floor under a
+  // forced beacon so a held-down button cannot become a carrier.
+  posit_next_time = posit_last_time
+                    + ((POSIT_rate > 0) ? POSIT_rate : (time_t)1800);
+  return 1;
+}
+
+
+/*
  * Can this port carry a message this station originates?
  *
  * The device types listed here are exactly the ones output_my_data() switches

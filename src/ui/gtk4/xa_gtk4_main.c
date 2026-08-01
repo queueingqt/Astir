@@ -1123,6 +1123,36 @@ static GtkWidget *msg_paned;
  */
 #define MSG_SIDEBAR_WIDTH 420
 
+/*
+ * Send a position beacon now.
+ *
+ * The only way a station with no GPS ever beacons, and the way any station
+ * beacons the moment it wants to rather than when the schedule says.  Beacons
+ * are otherwise driven entirely by GPS fixes -- see beacon_if_due().
+ *
+ * Says what happened, because a beacon is silent by nature: output_my_data()
+ * reports nothing, and "I pressed it and cannot tell whether anything left"
+ * is exactly the complaint the message send path had to answer.
+ */
+static void act_beacon(GSimpleAction *a, GVariant *p, gpointer u)
+{
+  (void)a; (void)p; (void)u;
+
+  if (beacon_if_due(1))
+  {
+    xa_ui_status("Position beacon sent");
+  }
+  else
+  {
+    xa_ui_popup("No beacon was sent",
+                "Astir needs a callsign of its own and an interface that is up "
+                "and allowed to transmit.\n\nSettings \xe2\x86\x92 My Station "
+                "sets the callsign; Connections \xe2\x86\x92 Interfaces brings "
+                "up a device and enables transmit on it.");
+  }
+}
+
+
 static void act_messages(GSimpleAction *a, GVariant *state, gpointer u)
 {
   gboolean on = g_variant_get_boolean(state);
@@ -1700,6 +1730,18 @@ static void ui_interfaces_changed(void)
   int i;
 
   xa_gtk4_interfaces_changed();
+
+  /*
+   * An interface came up or went down; if one can now transmit, say hello.
+   *
+   * Without this a station with no GPS never appears at all until somebody
+   * presses the menu item, and one WITH a GPS waits for whatever posit_next_time
+   * happens to hold -- up to half an hour of being invisible to everyone who
+   * just came into range.  beacon_if_due(0) declines quietly when nothing can
+   * transmit or when one has gone recently, so this cannot become a burst from
+   * an interface that is flapping.
+   */
+  (void)beacon_if_due(0);
 
   // Arm a retry if anything is down and wants to come back, and nothing is
   // already waiting to try.
@@ -2330,6 +2372,7 @@ static void on_activate(GtkApplication *app, gpointer user_data)
     { "choose-maps", act_choose_maps, NULL, NULL, NULL, {0} },
     { "stations",    act_stations, NULL, NULL,   NULL, {0} },
     { "messages",    NULL, NULL, "false", act_messages, {0} },
+    { "beacon",      act_beacon,   NULL, NULL,   NULL, {0} },
     { "grid",        NULL, NULL, "false", act_toggle, {0} },
     { "map-labels",  NULL, NULL, "false", act_toggle, {0} },
     { "filled-maps", NULL, NULL, "false", act_toggle, {0} },
@@ -2411,6 +2454,7 @@ static void on_activate(GtkApplication *app, gpointer user_data)
   // afterwards, because a callsign and a position are things that change --
   // people move, and a station gets set up portable.
   station = g_menu_new();
+  g_menu_append(station, "Beacon Position Now", "win.beacon");
   g_menu_append(station, "My Station\xe2\x80\xa6", "win.mystation");
   g_menu_append_section(menu, "Settings", G_MENU_MODEL(station));
   g_object_unref(station);

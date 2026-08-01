@@ -11665,6 +11665,19 @@ void my_station_gps_change(char *pos_long, char *pos_lat, char *course, char *sp
   //fprintf(stderr,"Speed: %s\n",speed);
   compute_smart_beacon(course, speed);
 
+  /*
+   * And act on what it just decided.
+   *
+   * This is the whole of the beacon schedule.  compute_smart_beacon() has set
+   * posit_next_time from this fix -- slower standing still, faster moving,
+   * immediately on a turn -- and nothing has ever asked whether that time had
+   * arrived.  Asking here, on each fix, is what makes a beacon happen without
+   * anything running on a cadence: the GPS is already sending, so its stream
+   * is the clock, and a station that is not receiving fixes is one whose
+   * position has not changed either.
+   */
+  (void)beacon_if_due(0);
+
   p_station = NULL;
   if (!search_station_name(&p_station,my_callsign,1))    // find my data in the database
   {
