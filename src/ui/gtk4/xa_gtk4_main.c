@@ -49,6 +49,7 @@
 #include "ui/gtk4/xa_gtk4_maps.h"
 #include "ui/gtk4/xa_gtk4_stationlist.h"
 #include "ui/gtk4/xa_gtk4_view.h"
+#include "ui/gtk4/xa_gtk4_mystation.h"
 #include "core/xa_ui.h"
 #include "core/map/maps.h"
 #include "core/util/lang.h"
@@ -1042,6 +1043,16 @@ static void act_interfaces(GSimpleAction *a, GVariant *p, gpointer u)
 {
   (void)a; (void)p;
   xa_gtk4_interfaces_show(GTK_WINDOW(u));
+}
+
+
+// Callsign, position, symbol.  Not first_run: the explanation and the button
+// through to the interface window belong to somebody who has never seen this
+// before, not to somebody who came here to correct a typo.
+static void act_mystation(GSimpleAction *a, GVariant *p, gpointer u)
+{
+  (void)a; (void)p;
+  xa_gtk4_mystation_show(GTK_WINDOW(u), 0);
 }
 
 
@@ -2041,6 +2052,22 @@ static gboolean show_about_once(gpointer win)
 }
 
 
+static gboolean show_mystation_once(gpointer win)
+{
+  xa_gtk4_mystation_show(GTK_WINDOW(win), 1);
+  return G_SOURCE_REMOVE;
+}
+
+
+// The menu's version of the same window: no introduction, no route onward to
+// the interfaces, and prefilled from what is already configured.
+static gboolean show_mystation_settings_once(gpointer win)
+{
+  xa_gtk4_mystation_show(GTK_WINDOW(win), 0);
+  return G_SOURCE_REMOVE;
+}
+
+
 static gboolean show_maps_once(gpointer win)
 {
   xa_gtk4_maps_show(GTK_WINDOW(win));
@@ -2129,7 +2156,7 @@ static void on_activate(GtkApplication *app, gpointer user_data)
   GtkWidget *win, *header, *box;
   GtkGesture *drag;
   GtkEventController *scroll;
-  GMenu *menu, *view, *maps, *iface, *help;
+  GMenu *menu, *view, *maps, *iface, *station, *help;
   GtkWidget *hamburger;
   static const GActionEntry acts[] =
   {
@@ -2139,6 +2166,7 @@ static void on_activate(GtkApplication *app, gpointer user_data)
     { "about",       act_about,    NULL, NULL,    NULL, {0} },
     { "reindex",     act_reindex,  NULL, NULL,    NULL, {0} },
     { "interfaces",  act_interfaces, NULL, NULL,  NULL, {0} },
+    { "mystation",   act_mystation, NULL, NULL,   NULL, {0} },
     { "choose-maps", act_choose_maps, NULL, NULL, NULL, {0} },
     { "stations",    act_stations, NULL, NULL,   NULL, {0} },
     { "grid",        NULL, NULL, "false", act_toggle, {0} },
@@ -2191,6 +2219,14 @@ static void on_activate(GtkApplication *app, gpointer user_data)
   g_menu_append(iface, "Interfaces\xe2\x80\xa6", "win.interfaces");
   g_menu_append_section(menu, "Connections", G_MENU_MODEL(iface));
   g_object_unref(iface);
+
+  // Who this station is.  Shown by itself on a fresh install, and here
+  // afterwards, because a callsign and a position are things that change --
+  // people move, and a station gets set up portable.
+  station = g_menu_new();
+  g_menu_append(station, "My Station\xe2\x80\xa6", "win.mystation");
+  g_menu_append_section(menu, "Settings", G_MENU_MODEL(station));
+  g_object_unref(station);
 
   help = g_menu_new();
   g_menu_append(help, "About Astir", "win.about");
@@ -2263,6 +2299,10 @@ static void on_activate(GtkApplication *app, gpointer user_data)
                                         (const char *[]){ "<Control>m", NULL });
   gtk_application_set_accels_for_action(app, "win.stations",
                                         (const char *[]){ "<Control>l", NULL });
+  // Ctrl+comma is the desktop convention for preferences, and this is the only
+  // settings window there is to give it to.
+  gtk_application_set_accels_for_action(app, "win.mystation",
+                                        (const char *[]){ "<Control>comma", NULL });
 
   // Same reason as the menu hook below: this is a Wayland session with no input
   // automation, so a window reached through a menu cannot be got on screen for
@@ -2287,6 +2327,28 @@ static void on_activate(GtkApplication *app, gpointer user_data)
   if (getenv("ASTIR_GTK4_SHOW_ABOUT") != NULL)
   {
     g_timeout_add_seconds(2, (GSourceFunc)show_about_once, win);
+  }
+
+  /*
+   * A fresh install has no callsign and no position, and nothing on screen
+   * says so -- it draws a world map centred on the Gulf of Guinea and then
+   * sits there.  Ask once, on the run where the settings are still untouched.
+   *
+   * Short delay rather than immediately, so the map is already drawn behind
+   * it: a modal dialog over a blank window looks like a program that failed to
+   * start, and the whole point is to show that it did not.  ASTIR_GTK4_FIRSTRUN
+   * forces it for testing, since the condition is by nature hard to get back
+   * to once you have answered it.
+   */
+  if (getenv("ASTIR_GTK4_SHOW_MYSTATION") != NULL)
+  {
+    g_timeout_add_seconds(2, (GSourceFunc)show_mystation_settings_once, win);
+  }
+  else if (getenv("ASTIR_GTK4_RENDER_TO") == NULL
+           && (xa_gtk4_mystation_needed()
+               || getenv("ASTIR_GTK4_FIRSTRUN") != NULL))
+  {
+    g_timeout_add_seconds(1, (GSourceFunc)show_mystation_once, win);
   }
 
   // ASTIR_GTK4_SHOW_STATION=CALL opens that station's window, so what a click

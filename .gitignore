@@ -146,3 +146,11 @@ maps/TIGER/
 maps/Counties/
 maps/GNIS/
 maps/fcc/
+
+# Test binaries, built by "make -C tests check".  They sit beside their sources
+# and are named the same, so the exceptions are not optional -- without them
+# this rule hides test_framework.h and every test_*.c in the suite.
+tests/test_*
+!tests/test_*.c
+!tests/test_*.h
+!tests/test_*.at

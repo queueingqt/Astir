@@ -374,6 +374,66 @@ static void on_dialog_save(GtkButton *b, gpointer data)
 }
 
 
+/*
+ * One click to the thing that works without a radio.
+ *
+ * A fresh install receives nothing until an interface exists, which is correct
+ * -- but it means Astir sits there drawing a world map and never doing anything,
+ * and nothing on screen says why.  APRS-IS is the honest answer to that: it
+ * needs no radio, no licence and no hardware, and it proves the whole receive
+ * path in about ten seconds.
+ *
+ * Receive-only, and not by accident.  Passcode -1 is the documented read-only
+ * login: the server sends traffic and will not accept any, so a button that
+ * puts a beginner on the network cannot put them on the AIR.  transmit_data is
+ * left at zero for the same reason.
+ *
+ * Filtered to where the operator is, because the alternative is the entire
+ * planet's traffic -- tens of thousands of stations, which is not a useful
+ * first experience and is rude to the server.  The radius is deliberately
+ * generous: 200 km covers anywhere a VHF signal might plausibly have come from,
+ * and forgives a position that is only accurate to a grid square.
+ */
+static void on_add_aprsis(GtkButton *b, gpointer unused)
+{
+  int    port;
+  double lat_deg, lon_deg;
+
+  (void)b; (void)unused;
+
+  port = first_free_slot();
+  if (port < 0)
+  {
+    return;                        // all slots taken
+  }
+
+  // Astir units are 1/100 second, with latitude 0 at 90N and longitude 0 at
+  // 180W.  APRS-IS wants signed decimal degrees.
+  lat_deg =  90.0 - (double)center_latitude  / 360000.0;
+  lon_deg = (double)center_longitude / 360000.0 - 180.0;
+
+  memset(&devices[port], 0, sizeof(devices[port]));
+  devices[port].device_type = DEVICE_NET_STREAM;
+  astir_snprintf(devices[port].device_host_name,
+                 sizeof(devices[port].device_host_name), "%s",
+                 "noam.aprs2.net");
+  devices[port].sp = 14580;
+  astir_snprintf(devices[port].device_host_pswd,
+                 sizeof(devices[port].device_host_pswd), "%s", "-1");
+  astir_snprintf(devices[port].device_host_filter_string,
+                 sizeof(devices[port].device_host_filter_string),
+                 "r/%.2f/%.2f/200", lat_deg, lon_deg);
+  astir_snprintf(devices[port].comment, sizeof(devices[port].comment), "%s",
+                 "APRS-IS, receive only");
+  devices[port].connect_on_startup = 1;
+  devices[port].transmit_data      = 0;   // -1 could not transmit anyway
+  devices[port].reconnect          = 1;
+
+  save_data();
+  g_idle_add(rebuild_soon, NULL);
+}
+
+
 static void on_dialog_close(GtkButton *b, gpointer data)
 {
   iface_dialog *d = data;
@@ -704,15 +764,35 @@ static void rebuild_rows(void)
   if (shown == 0)
   {
     GtkWidget *row = gtk_list_box_row_new();
+    GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
     GtkWidget *l = gtk_label_new("No interfaces configured.\n"
                                  "Add one to connect Astir to a radio, "
                                  "a software TNC, or the APRS-IS network.");
+    GtkWidget *quick = gtk_button_new_with_label("Add APRS-IS (receive only)");
+    GtkWidget *hint = gtk_label_new(
+      "Connects to the internet side of APRS with a receive-only login, "
+      "filtered to your area.\nNo radio and no licence needed to listen.");
 
     gtk_label_set_justify(GTK_LABEL(l), GTK_JUSTIFY_CENTER);
-    gtk_widget_set_margin_top(l, 28);
-    gtk_widget_set_margin_bottom(l, 28);
     gtk_widget_add_css_class(l, "dim-label");
-    gtk_list_box_row_set_child(GTK_LIST_BOX_ROW(row), l);
+
+    gtk_label_set_justify(GTK_LABEL(hint), GTK_JUSTIFY_CENTER);
+    gtk_widget_add_css_class(hint, "dim-label");
+    gtk_label_set_wrap(GTK_LABEL(hint), TRUE);
+
+    gtk_widget_set_halign(quick, GTK_ALIGN_CENTER);
+    gtk_widget_add_css_class(quick, "suggested-action");
+    g_signal_connect(quick, "clicked", G_CALLBACK(on_add_aprsis), NULL);
+
+    gtk_box_append(GTK_BOX(box), l);
+    gtk_box_append(GTK_BOX(box), quick);
+    gtk_box_append(GTK_BOX(box), hint);
+    gtk_widget_set_margin_top(box, 24);
+    gtk_widget_set_margin_bottom(box, 24);
+    gtk_widget_set_margin_start(box, 12);
+    gtk_widget_set_margin_end(box, 12);
+
+    gtk_list_box_row_set_child(GTK_LIST_BOX_ROW(row), box);
     gtk_list_box_row_set_activatable(GTK_LIST_BOX_ROW(row), FALSE);
     gtk_list_box_append(GTK_LIST_BOX(iface_list), row);
   }
