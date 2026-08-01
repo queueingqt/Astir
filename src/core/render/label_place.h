@@ -40,6 +40,19 @@
  * backwards.
  */
 #define LABEL_PRIO_STATION   1000
+/*
+ * The lines under a callsign: speed, course, weather, distance, age.
+ *
+ * Below the callsign and above everything on the map.  Which matters when a net
+ * or an event puts a dozen stations in one block: the callsigns still win their
+ * space, and the detail beside them is dropped rather than drawn through them.
+ * Zoom in and there is room, so it comes back.
+ *
+ * Before this they did not compete at all -- only the callsign went through the
+ * placer and every other line was drawn straight to the canvas, so a crowd of
+ * weather stations produced a solid block of overlapping text.
+ */
+#define LABEL_PRIO_STATION_DETAIL 950
 #define LABEL_PRIO_PLACE_MAX  900   /* a continent or country */
 #define LABEL_PRIO_MAP        500   /* shapefile feature names */
 #define LABEL_PRIO_MIN          0

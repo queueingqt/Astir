@@ -2869,7 +2869,11 @@ void draw_symbol(char symbol_table, char symbol_id, char symbol_overlay,
       {
         x_offset=((x_long-NW_corner_longitude)/scale_x)+13;
         y_offset=((y_lat -NW_corner_latitude) /scale_y)+posyr;
-        draw_nice_string(where,letter_style,x_offset,y_offset,alt_text,0x08,0x48,length);
+        label_submit_styled(x_offset, y_offset, 0, alt_text,
+                            rotated_label_fontname[FONT_STATION],
+                            0x48, 0x08, FONT_STATION,
+                            LABEL_PRIO_STATION_DETAIL, LABEL_STYLE_OUTLINED,
+                            letter_style);
         posyr += font_height;
       }
 
@@ -2901,7 +2905,11 @@ void draw_symbol(char symbol_table, char symbol_id, char symbol_overlay,
       {
         x_offset=((x_long-NW_corner_longitude)/scale_x)+13;
         y_offset=((y_lat -NW_corner_latitude) /scale_y)+posyr;
-        draw_nice_string(where,letter_style,x_offset,y_offset,speed_text,0x08,0x4a,length);
+        label_submit_styled(x_offset, y_offset, 0, speed_text,
+                            rotated_label_fontname[FONT_STATION],
+                            0x4a, 0x08, FONT_STATION,
+                            LABEL_PRIO_STATION_DETAIL, LABEL_STYLE_OUTLINED,
+                            letter_style);
         posyr += font_height;
       }
 
@@ -2910,7 +2918,11 @@ void draw_symbol(char symbol_table, char symbol_id, char symbol_overlay,
       {
         x_offset=((x_long-NW_corner_longitude)/scale_x)+13;
         y_offset=((y_lat -NW_corner_latitude) /scale_y)+posyr;
-        draw_nice_string(where,letter_style,x_offset,y_offset,course_text,0x08,0x52,length);
+        label_submit_styled(x_offset, y_offset, 0, course_text,
+                            rotated_label_fontname[FONT_STATION],
+                            0x52, 0x08, FONT_STATION,
+                            LABEL_PRIO_STATION_DETAIL, LABEL_STYLE_OUTLINED,
+                            letter_style);
         posyr += font_height;
       }
 
@@ -2919,7 +2931,11 @@ void draw_symbol(char symbol_table, char symbol_id, char symbol_overlay,
       {
         x_offset=((x_long-NW_corner_longitude)/scale_x)+13;
         y_offset=((y_lat -NW_corner_latitude) /scale_y)+posyr;
-        draw_nice_string(where,letter_style,x_offset,y_offset,signpost,0x08,0x0f,length);
+        label_submit_styled(x_offset, y_offset, 0, signpost,
+                            rotated_label_fontname[FONT_STATION],
+                            0x0f, 0x08, FONT_STATION,
+                            LABEL_PRIO_STATION_DETAIL, LABEL_STYLE_OUTLINED,
+                            letter_style);
         posyr += font_height;
       }
 
@@ -2944,7 +2960,11 @@ void draw_symbol(char symbol_table, char symbol_id, char symbol_overlay,
       {
         x_offset=(((x_long-NW_corner_longitude)/scale_x)-(txt_width+9));
         y_offset=((y_lat  -NW_corner_latitude) /scale_y)+posyl;
-        draw_nice_string(where,letter_style,x_offset,y_offset,my_distance,0x08,0x0f,length);
+        label_submit_styled(x_offset, y_offset, 0, my_distance,
+                            rotated_label_fontname[FONT_STATION],
+                            0x0f, 0x08, FONT_STATION,
+                            LABEL_PRIO_STATION_DETAIL, LABEL_STYLE_OUTLINED,
+                            letter_style);
         posyl += font_height;
       }
       length=(int)strlen(my_course);
@@ -2953,7 +2973,11 @@ void draw_symbol(char symbol_table, char symbol_id, char symbol_overlay,
       {
         x_offset=(((x_long-NW_corner_longitude)/scale_x)-(txt_width+9));
         y_offset=((y_lat  -NW_corner_latitude) /scale_y)+posyl;
-        draw_nice_string(where,letter_style,x_offset,y_offset,my_course,0x08,0x0f,length);
+        label_submit_styled(x_offset, y_offset, 0, my_course,
+                            rotated_label_fontname[FONT_STATION],
+                            0x0f, 0x08, FONT_STATION,
+                            LABEL_PRIO_STATION_DETAIL, LABEL_STYLE_OUTLINED,
+                            letter_style);
         posyl += font_height;
       }
       if ( (!ghost || Select_.old_data) && temp_show_last_heard)
@@ -3020,7 +3044,11 @@ void draw_symbol(char symbol_table, char symbol_id, char symbol_overlay,
         txt_width = get_text_width(age);
         x_offset=(((x_long-NW_corner_longitude)/scale_x)-(txt_width)-9);
         y_offset=((y_lat  -NW_corner_latitude) /scale_y)+posyl;
-        draw_nice_string(where,letter_style,x_offset,y_offset,age,0x08,fgcolor,length);
+        label_submit_styled(x_offset, y_offset, 0, age,
+                            rotated_label_fontname[FONT_STATION],
+                            fgcolor, 0x08, FONT_STATION,
+                            LABEL_PRIO_STATION_DETAIL, LABEL_STYLE_OUTLINED,
+                            letter_style);
         posyl += font_height;
       }
 
@@ -3042,7 +3070,11 @@ void draw_symbol(char symbol_table, char symbol_id, char symbol_overlay,
       {
         x_offset=((x_long-NW_corner_longitude)/scale_x)-(txt_width/2);
         y_offset=((y_lat -NW_corner_latitude) /scale_y)+posyr;
-        draw_nice_string(where,letter_style,x_offset,y_offset,wx_temp,0x08,0x40,length);
+        label_submit_styled(x_offset, y_offset, 0, wx_temp,
+                            rotated_label_fontname[FONT_STATION],
+                            0x40, 0x08, FONT_STATION,
+                            LABEL_PRIO_STATION_DETAIL, LABEL_STYLE_OUTLINED,
+                            letter_style);
         posyr += font_height;
       }
 
@@ -3052,7 +3084,14 @@ void draw_symbol(char symbol_table, char symbol_id, char symbol_overlay,
       {
         x_offset=((x_long-NW_corner_longitude)/scale_x)-(txt_width/2);
         y_offset=((y_lat -NW_corner_latitude) /scale_y)+posyr;
-        draw_nice_string(where,letter_style,x_offset,y_offset,wx_wind,0x08,0x40,length);
+        // The long one: "S:12km/h G:19km/h C:270" beside every weather
+        // station, and they cluster.  This is the line that turned a busy
+        // screen into a block of overlapping yellow.
+        label_submit_styled(x_offset, y_offset, 0, wx_wind,
+                            rotated_label_fontname[FONT_STATION],
+                            0x40, 0x08, FONT_STATION,
+                            LABEL_PRIO_STATION_DETAIL, LABEL_STYLE_OUTLINED,
+                            letter_style);
       }
 
       if (gauge_data != NULL)
@@ -3074,7 +3113,11 @@ void draw_symbol(char symbol_table, char symbol_id, char symbol_overlay,
         {
           x_offset=((x_long-NW_corner_longitude)/scale_x)-(txt_width/2);
           y_offset=((y_lat -NW_corner_latitude) /scale_y)+posyr;
-          draw_nice_string(where,letter_style,x_offset,y_offset,gauge_data,0x08,0x0f,length);
+          label_submit_styled(x_offset, y_offset, 0, gauge_data,
+                              rotated_label_fontname[FONT_STATION],
+                              0x0f, 0x08, FONT_STATION,
+                              LABEL_PRIO_STATION_DETAIL, LABEL_STYLE_OUTLINED,
+                              letter_style);
         }
       }
     }
