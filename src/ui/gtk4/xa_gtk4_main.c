@@ -47,6 +47,8 @@
 #include "ui/gtk4/xa_gtk4_interfaces.h"
 #include "ui/gtk4/xa_gtk4_station.h"
 #include "ui/gtk4/xa_gtk4_maps.h"
+#include "ui/gtk4/xa_gtk4_stationlist.h"
+#include "ui/gtk4/xa_gtk4_view.h"
 #include "core/xa_ui.h"
 #include "core/map/maps.h"
 #include "core/util/lang.h"
@@ -780,6 +782,27 @@ static void xa_rescale(void)
 }
 
 
+/*
+ * Centre the map somewhere, for a window that is not the map.
+ *
+ * The view belongs to this file, so moving it does too -- the station list
+ * should not have to know that moving the centre also means rescaling the
+ * corners before anything can be drawn from them.
+ */
+void xa_gtk4_centre_on(long latitude, long longitude)
+{
+  center_latitude = latitude;
+  center_longitude = longitude;
+  xa_rescale();
+  render_soon();
+  xa_render_markers();
+  if (xa_area != NULL)
+  {
+    gtk_widget_queue_draw(xa_area);
+  }
+}
+
+
 
 
 /*
@@ -1028,6 +1051,15 @@ static void act_choose_maps(GSimpleAction *a, GVariant *p, gpointer u)
 {
   (void)a; (void)p;
   xa_gtk4_maps_show(GTK_WINDOW(u));
+}
+
+
+// Everything heard, as a list.  The map answers "what is near here"; it cannot
+// answer "where is K6ABC", and this is that other half.
+static void act_stations(GSimpleAction *a, GVariant *p, gpointer u)
+{
+  (void)a; (void)p;
+  xa_gtk4_stationlist_show(GTK_WINDOW(u));
 }
 
 
@@ -1544,6 +1576,15 @@ static gboolean reconnect_once(gpointer unused)
 
 // The core announces this from inside interface.c's locks, so the actual work
 // is deferred rather than run here.
+// Two windows want this, so it fans out here rather than either of them
+// knowing about the other.
+static void ui_station_changed(const char *call_sign)
+{
+  xa_gtk4_station_changed(call_sign);
+  xa_gtk4_stationlist_changed(call_sign);
+}
+
+
 static void ui_interfaces_changed(void)
 {
   int i;
@@ -1607,7 +1648,7 @@ static void install_ui_callbacks(void)
    * anything had changed or not.  Registering them is what lets those timers go.
    */
   cb.interfaces_changed = ui_interfaces_changed;
-  cb.station_changed = xa_gtk4_station_changed;
+  cb.station_changed = ui_station_changed;
   xa_ui_set_callbacks(&cb);
 }
 
@@ -1951,6 +1992,13 @@ static gboolean show_station_once(gpointer win)
 }
 
 
+static gboolean show_stations_once(gpointer win)
+{
+  xa_gtk4_stationlist_show(GTK_WINDOW(win));
+  return G_SOURCE_REMOVE;
+}
+
+
 static gboolean show_maps_once(gpointer win)
 {
   xa_gtk4_maps_show(GTK_WINDOW(win));
@@ -2050,6 +2098,7 @@ static void on_activate(GtkApplication *app, gpointer user_data)
     { "reindex",     act_reindex,  NULL, NULL,    NULL, {0} },
     { "interfaces",  act_interfaces, NULL, NULL,  NULL, {0} },
     { "choose-maps", act_choose_maps, NULL, NULL, NULL, {0} },
+    { "stations",    act_stations, NULL, NULL,   NULL, {0} },
     { "grid",        NULL, NULL, "false", act_toggle, {0} },
     { "map-labels",  NULL, NULL, "false", act_toggle, {0} },
     { "filled-maps", NULL, NULL, "false", act_toggle, {0} },
@@ -2076,6 +2125,7 @@ static void on_activate(GtkApplication *app, gpointer user_data)
   menu = g_menu_new();
 
   view = g_menu_new();
+  g_menu_append(view, "Stations\xe2\x80\xa6", "win.stations");
   g_menu_append(view, "Zoom In", "win.zoom-in");
   g_menu_append(view, "Zoom Out", "win.zoom-out");
   g_menu_append(view, "Redraw", "win.redraw");
@@ -2169,6 +2219,8 @@ static void on_activate(GtkApplication *app, gpointer user_data)
                                         (const char *[]){ "<Control>i", NULL });
   gtk_application_set_accels_for_action(app, "win.choose-maps",
                                         (const char *[]){ "<Control>m", NULL });
+  gtk_application_set_accels_for_action(app, "win.stations",
+                                        (const char *[]){ "<Control>l", NULL });
 
   // Same reason as the menu hook below: this is a Wayland session with no input
   // automation, so a window reached through a menu cannot be got on screen for
@@ -2183,6 +2235,11 @@ static void on_activate(GtkApplication *app, gpointer user_data)
   if (getenv("ASTIR_GTK4_SHOW_MAPS") != NULL)
   {
     g_timeout_add_seconds(3, (GSourceFunc)show_maps_once, win);
+  }
+
+  if (getenv("ASTIR_GTK4_SHOW_STATIONS") != NULL)
+  {
+    g_timeout_add_seconds(25, (GSourceFunc)show_stations_once, win);
   }
 
   // ASTIR_GTK4_SHOW_STATION=CALL opens that station's window, so what a click

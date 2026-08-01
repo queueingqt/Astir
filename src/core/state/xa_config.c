@@ -1922,6 +1922,10 @@ void load_data_or_default(void)
 
 
   english_units = get_int ("DISPLAY_UNITS_ENGLISH", 0, 1, 0);
+
+  // Fill in the conversion factors that go with it, before anything can be
+  // displayed using them.
+  update_units();
   do_dbstatus = get_int ("DISPLAY_DIST_BEAR_STATUS", 0, 1, 0);
 
 

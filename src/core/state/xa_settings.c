@@ -9,6 +9,7 @@
 #include <time.h>
 
 #include "core/state/xa_settings.h"
+#include "core/util/snprintf.h"
 
 
 int my_trail_diff_color = 0;
@@ -278,3 +279,61 @@ int   print_invert = 0;                 // Reverses black/white
 char printer_program[MAX_FILENAME+1];
 char previewer_program[MAX_FILENAME+1];
 int snapshot_interval = 0;
+
+
+/*
+ * Set the unit conversions and their labels from the units preference.
+ *
+ * These are the factors every altitude, distance and speed in the program is
+ * multiplied by, and the strings printed after them.  They lived in the Motif
+ * main() as a menu callback, so when the front end changed they stopped being
+ * set at all -- and a conversion factor that is never assigned is zero.
+ *
+ * Multiplying by zero does not look like a missing call.  It looks like a
+ * distance of "0.0 km" to every station on the map, a wind speed of zero on
+ * every weather station, and an altitude with no unit after it because the
+ * label string was empty too.  Each of those reads as a decoding problem, which
+ * is a long way from a units table nobody filled in.
+ *
+ * Pure arithmetic and three strings, so it belongs in the core: it is not a
+ * menu handler that happens to compute something, it is a computation that
+ * happened to be reachable only from a menu.
+ */
+void update_units(void)
+{
+  switch (english_units)
+  {
+    case 1:     // English
+      astir_snprintf(un_alt, sizeof(un_alt), "ft");
+      astir_snprintf(un_dst, sizeof(un_dst), "mi");
+      astir_snprintf(un_spd, sizeof(un_spd), "mph");
+      cvt_m2len  = 3.28084;   // m to ft
+      cvt_dm2len = 0.328084;  // dm to ft
+      cvt_hm2len = 0.0621504; // hm to mi
+      cvt_kn2len = 1.1508;    // knots to mph
+      cvt_mi2len = 1.0;       // mph to mph
+      break;
+
+    case 2:     // Nautical
+      astir_snprintf(un_alt, sizeof(un_alt), "ft");
+      astir_snprintf(un_dst, sizeof(un_dst), "nm");
+      astir_snprintf(un_spd, sizeof(un_spd), "kn");
+      cvt_m2len  = 3.28084;   // m to ft
+      cvt_dm2len = 0.328084;  // dm to ft
+      cvt_hm2len = 0.0539957; // hm to nm
+      cvt_kn2len = 1.0;       // knots to knots
+      cvt_mi2len = 0.8689607; // mph to knots / mi to nm
+      break;
+
+    default:    // Metric
+      astir_snprintf(un_alt, sizeof(un_alt), "m");
+      astir_snprintf(un_dst, sizeof(un_dst), "km");
+      astir_snprintf(un_spd, sizeof(un_spd), "km/h");
+      cvt_m2len  = 1.0;       // m to m
+      cvt_dm2len = 0.1;       // dm to m
+      cvt_hm2len = 0.1;       // hm to km
+      cvt_kn2len = 1.852;     // knots to km/h
+      cvt_mi2len = 1.609;     // mph to km/h
+      break;
+  }
+}

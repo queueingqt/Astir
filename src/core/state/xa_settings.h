@@ -49,6 +49,15 @@ extern int enable_server_port;
 extern int english_units;
 extern double cvt_kn2len;  // from knots
 extern double cvt_mi2len;  // from miles
+
+/*
+ * Fill in the conversion factors and unit labels above from english_units.
+ *
+ * Must be called whenever english_units changes, and once at startup before
+ * anything is displayed.  Nothing called it after the front end changed, which
+ * left every factor at zero -- see the note on the implementation.
+ */
+void update_units(void);
 extern int do_dbstatus;
 extern int coordinate_system;  // Default, used for most APRS systems
 extern int ATV_screen_ID;
