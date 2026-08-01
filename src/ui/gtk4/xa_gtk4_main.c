@@ -46,6 +46,7 @@
 #include "core/io/interface.h"
 #include "ui/gtk4/xa_gtk4_interfaces.h"
 #include "ui/gtk4/xa_gtk4_station.h"
+#include "ui/gtk4/xa_gtk4_maps.h"
 #include "core/xa_ui.h"
 #include "core/map/maps.h"
 #include "core/util/lang.h"
@@ -1021,6 +1022,15 @@ static void act_interfaces(GSimpleAction *a, GVariant *p, gpointer u)
 }
 
 
+// Which maps are drawn.  Its own window: the index can hold hundreds of files
+// and that is a list to search, not a submenu to scroll.
+static void act_choose_maps(GSimpleAction *a, GVariant *p, gpointer u)
+{
+  (void)a; (void)p;
+  xa_gtk4_maps_show(GTK_WINDOW(u));
+}
+
+
 /*
  * A click on the map: open whichever station is under it.
  *
@@ -1941,6 +1951,26 @@ static gboolean show_station_once(gpointer win)
 }
 
 
+static gboolean show_maps_once(gpointer win)
+{
+  xa_gtk4_maps_show(GTK_WINDOW(win));
+
+  /*
+   * Prove the selection survives a round trip.
+   *
+   * Opening the chooser reads selected_maps.sys into the index; writing it back
+   * unchanged must produce the same file.  If it does not, the chooser silently
+   * loses maps the moment anybody presses Apply -- which is the failure that
+   * would be hardest to notice and worst to suffer.
+   */
+  if (getenv("ASTIR_MAPS_ROUNDTRIP") != NULL)
+  {
+    g_print("roundtrip: wrote %d maps\n", map_selection_save());
+  }
+  return G_SOURCE_REMOVE;
+}
+
+
 static gboolean show_interfaces_once(gpointer win)
 {
   const char *what = getenv("ASTIR_GTK4_SHOW_INTERFACES");
@@ -2019,6 +2049,7 @@ static void on_activate(GtkApplication *app, gpointer user_data)
     { "about",       act_about,    NULL, NULL,    NULL, {0} },
     { "reindex",     act_reindex,  NULL, NULL,    NULL, {0} },
     { "interfaces",  act_interfaces, NULL, NULL,  NULL, {0} },
+    { "choose-maps", act_choose_maps, NULL, NULL, NULL, {0} },
     { "grid",        NULL, NULL, "false", act_toggle, {0} },
     { "map-labels",  NULL, NULL, "false", act_toggle, {0} },
     { "filled-maps", NULL, NULL, "false", act_toggle, {0} },
@@ -2052,6 +2083,7 @@ static void on_activate(GtkApplication *app, gpointer user_data)
   g_object_unref(view);
 
   maps = g_menu_new();
+  g_menu_append(maps, "Choose Maps\xe2\x80\xa6", "win.choose-maps");
   g_menu_append(maps, "Lat/Long Grid", "win.grid");
   g_menu_append(maps, "Map Labels", "win.map-labels");
   g_menu_append(maps, "Filled Maps", "win.filled-maps");
@@ -2135,6 +2167,8 @@ static void on_activate(GtkApplication *app, gpointer user_data)
                                         (const char *[]){ "F5", NULL });
   gtk_application_set_accels_for_action(app, "win.interfaces",
                                         (const char *[]){ "<Control>i", NULL });
+  gtk_application_set_accels_for_action(app, "win.choose-maps",
+                                        (const char *[]){ "<Control>m", NULL });
 
   // Same reason as the menu hook below: this is a Wayland session with no input
   // automation, so a window reached through a menu cannot be got on screen for
@@ -2142,6 +2176,13 @@ static void on_activate(GtkApplication *app, gpointer user_data)
   if (getenv("ASTIR_GTK4_SHOW_INTERFACES") != NULL)
   {
     g_timeout_add_seconds(2, (GSourceFunc)show_interfaces_once, win);
+  }
+
+  // Same reason as the others: a window reached from a menu cannot be got on
+  // screen for a screenshot without a pointer.
+  if (getenv("ASTIR_GTK4_SHOW_MAPS") != NULL)
+  {
+    g_timeout_add_seconds(3, (GSourceFunc)show_maps_once, win);
   }
 
   // ASTIR_GTK4_SHOW_STATION=CALL opens that station's window, so what a click

@@ -287,6 +287,22 @@ void xa_dirty_clear(void);
  */
 xa_color map_background_apply(void);
 
+/*
+ * Which maps are shown, as a property of the index rather than a file.
+ *
+ * selected_maps.sys is a list of paths, and load_maps() has always read it
+ * straight through and drawn as it went -- so nothing ever knew which of the
+ * indexed maps were on, only which ones to draw next.  That is enough to render
+ * and not enough to offer a choice, which is why choosing a map has meant
+ * editing the file by hand.
+ *
+ * map_selection_load() marks the index from the file; map_selection_save()
+ * writes the file from the index.  The core keeps the format, a front end keeps
+ * the presentation, and neither needs to know the other's business.
+ */
+void map_selection_load(void);
+int  map_selection_save(void);
+
 #endif /* __ASTIR_MAPS_H */
 
 

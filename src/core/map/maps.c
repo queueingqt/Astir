@@ -7854,3 +7854,117 @@ void load_maps (void)
 }
 
 
+
+
+/*
+ * Mark the index from selected_maps.sys.  See maps.h.
+ */
+void map_selection_load(void)
+{
+  char path[MAX_VALUE];
+  char line[MAX_FILENAME];
+  map_index_record *r;
+  FILE *f;
+
+  for (r = map_index_head; r != NULL; r = r->next)
+  {
+    r->selected = 0;
+  }
+
+  get_user_base_dir(SELECTED_MAP_DATA, path, sizeof(path));
+  f = fopen(path, "r");
+  if (f == NULL)
+  {
+    return;                      // no selection yet is not an error
+  }
+
+  while (fgets(line, sizeof(line), f) != NULL)
+  {
+    char *p = line + strlen(line);
+
+    while (p > line && (p[-1] == '\n' || p[-1] == '\r' || p[-1] == ' '))
+    {
+      *--p = '\0';
+    }
+    if (line[0] == '\0')
+    {
+      continue;
+    }
+
+    for (r = map_index_head; r != NULL; r = r->next)
+    {
+      if (strcmp(r->filename, line) == 0)
+      {
+        r->selected = 1;
+        break;
+      }
+    }
+    /*
+     * A path in the file with no index entry is left alone deliberately.
+     * It means a map that has been moved or deleted since it was chosen, and
+     * silently dropping it here would make the next save discard it -- so a
+     * missing disk turns into a lost selection.  It simply does not draw.
+     */
+  }
+  (void)fclose(f);
+}
+
+
+/*
+ * Write selected_maps.sys from the index.  See maps.h.
+ *
+ * Returns the number of maps written, or -1 if the file could not be written.
+ */
+int map_selection_save(void)
+{
+  char path[MAX_VALUE];
+  char tmp[MAX_VALUE];
+  map_index_record *r;
+  FILE *f;
+  int n = 0;
+
+  get_user_base_dir(SELECTED_MAP_DATA, path, sizeof(path));
+
+  /*
+   * Written to a temporary file and renamed.
+   *
+   * This is the file that says what the program draws.  Truncating it and
+   * failing partway through would leave somebody with half a map set and no way
+   * to tell that was what had happened; a rename is atomic, so the old
+   * selection survives anything that goes wrong here.
+   */
+  astir_snprintf(tmp, sizeof(tmp), "%s.new", path);
+  f = fopen(tmp, "w");
+  if (f == NULL)
+  {
+    fprintf(stderr, "astir: cannot write %s: %s\n", tmp, strerror(errno));
+    return -1;
+  }
+
+  for (r = map_index_head; r != NULL; r = r->next)
+  {
+    size_t len = strlen(r->filename);
+
+    // Directory entries are in the index too, with a trailing slash.  They are
+    // not maps and must never be written as if they were.
+    if (!r->selected || len == 0 || r->filename[len - 1] == '/')
+    {
+      continue;
+    }
+    fprintf(f, "%s\n", r->filename);
+    n++;
+  }
+
+  if (fclose(f) != 0)
+  {
+    (void)unlink(tmp);
+    return -1;
+  }
+  if (rename(tmp, path) != 0)
+  {
+    fprintf(stderr, "astir: cannot replace %s: %s\n", path, strerror(errno));
+    (void)unlink(tmp);
+    return -1;
+  }
+  return n;
+}
