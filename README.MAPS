@@ -1,20 +1,119 @@
-All of the information that used to be in this file is now on the
-Astir wiki on Github.
+Maps
+====
 
-This file is no longer maintained as a user documentation file.
+Astir draws vector maps well and raster maps adequately, which is the reverse
+of the usual priority and is deliberate: a vector map stays sharp at any zoom,
+costs kilobytes rather than megabytes, and does not need a tile server standing
+by.  For a program somebody carries to a place with no network, that matters
+more than photographic detail.
 
-Please see the Mapping Overview at
-https://github.com/Xastir/Xastir/wiki/Astir-Mapping-Overview
-for the information that is most likely valuable to the average user.
 
-For links to sites that have good mapping data for use in Astir, please see
-https://github.com/Xastir/Xastir/wiki/Mapping-Links
+What Astir can read
+-------------------
 
-For links related to useful map conversions see
-https://github.com/Xastir/Xastir/wiki/Map-Converters
+  ESRI shapefiles       The main event.  Styled per feature by dbfawk rules
+                        (below), drawn as real lines and fills.
+  PMTiles               A whole region's vector tiles in one file, with no
+                        server.  Read directly.
+  Mapbox Vector Tiles   The tile format inside PMTiles, also readable loose.
+  GeoTIFF               Georeferenced TIFF, such as USGS topographic sheets.
+                        Needs libgeotiff and libproj.
+  .geo images           Any raster image plus a .geo file giving its corners.
+                        Needs GraphicsMagick or ImageMagick.
+  OSM tile servers      Slippy-map tiles fetched over HTTP and cached.  Needs
+                        libcurl.  Templates ship in maps/Online.
+  WMS                   Web Map Service layers, also over HTTP.
+  GNIS                  US place-name gazetteer files, drawn as labels.
+  DOS-era formats       Astir's inherited .map format and APRSdos maps.
 
-For advanced mapping topics such as converting maps from one datum to
-another, georeferencing scanned map images, using GIS tools for
-exploring or creating maps, and interesting advanced reading, please
-see https://github.com/Xastir/Xastir/wiki/Map-Converters
+Which of these you get depends on what was compiled in.  `./configure` prints a
+summary; read it rather than guessing.  See INSTALL.md.
 
+
+What ships with it
+------------------
+
+A Natural Earth basemap -- coastlines, countries, lakes and rivers -- installed
+under `maps/NaturalEarth` and selected automatically on first run, so Astir
+draws a real map on a machine that has never been online.
+
+It is the 1:50,000,000 world set.  At a city zoom it can offer you a coastline
+and very little else; that is what it is for, not a defect.  For street-level
+detail you need to add maps.
+
+
+Where maps live
+---------------
+
+Installed maps go under the data directory, normally
+`/usr/local/share/astir/maps`.  Anything you add goes in the same place, or in
+a subdirectory of it -- Astir walks the tree, so organising by region or by
+source is fine and is a good idea once you have more than a handful.
+
+The map index is built on first run and cached in
+`~/.astir/config/map_index.sys`.  After adding or removing map files, rebuild it
+from **Menu -> Maps -> Rebuild Map Index**, or delete that file and restart.
+
+Which maps are drawn is chosen in **Menu -> Maps -> Choose Maps** (`Ctrl+M`) and
+remembered in `~/.astir/config/selected_maps.sys`.  A map being present is not
+the same as a map being selected; if something you installed does not appear,
+check the chooser before suspecting the file.
+
+
+Getting map data
+----------------
+
+**OpenStreetMap, converted to shapefiles.**  `tools/osm_import.sh` turns an OSM
+extract into shapefiles Astir already knows how to draw, split into layers whose
+DBF field signatures match the shipped dbfawk rules.  This is the best route to
+street-level detail that works offline.  Extracts by region are available from
+Geofabrik and others.
+
+**US Census TIGER/Line.**  Roads, boundaries, water and place names for the
+United States, as shapefiles, free.  The dbfawk rules in `config/` were written
+against these, so they style correctly with no work.
+
+**Natural Earth.**  Larger scales than the bundled 1:50m set are available and
+drop in the same way.
+
+**USGS topographic maps** as GeoTIFF, if you want raster topos.
+
+Downloaded map collections are yours, not the project's -- keep them outside
+the source tree.  A checkout is not a place to store hundreds of megabytes of
+map data, and `.gitignore` is set up on that assumption.
+
+
+dbfawk: how a shapefile gets its appearance
+-------------------------------------------
+
+A shapefile says where the features are.  It does not say that a highway should
+be a thick orange line and a stream a thin blue one.  dbfawk rules do that.
+
+Each rule file matches a DBF field signature -- the colon-joined list of field
+names in the shapefile's attribute table -- and then, per record, sets colour,
+line width, fill, label text, label font and the zoom range over which the
+feature is drawn at all.  75 rule files ship in `config/`, mostly written for
+TIGER and Natural Earth.
+
+To style a shapefile Astir does not recognise, copy the closest existing rule,
+change the signature line to match your file's fields, and adjust from there.
+`astir_testdbfawk -f rule.dbfawk -d map.dbf` runs a rule against a shapefile's
+attribute table and prints the values it decided on, which is much faster than
+restarting the program to look at the map.  `-D <dir>` instead of `-f` makes it
+pick the rule the way Astir would, which is how you find out that a different
+file is matching your signature.
+
+The same rules are used by Xastir, so rule files are portable between the two.
+The files themselves are not shared -- Astir reads only its own copy under its
+own data directory, and refuses to read another program's.
+
+
+Levels of detail
+----------------
+
+Maps carry a zoom range, so a map is skipped entirely when the view is far
+enough out that it would be an unreadable smear, or far enough in that it has
+nothing to add.  This is set per feature by the dbfawk rules for shapefiles, and
+per map in the chooser otherwise.  It is the main lever if drawing feels slow:
+a world view trying to draw every street in a county is doing work no one can
+see.

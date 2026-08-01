@@ -27,7 +27,7 @@
 # local part of upstream's address into "astir@xastir.org", which is nobody --
 # reports sent there would vanish, and any that arrived would land on a project
 # that did not write this code.
-AC_INIT([astir], [2.2.5], [https://github.com/queueingqt/Xastir/issues])
+AC_INIT([astir], [2.2.5], [https://github.com/queueingqt/Astir/issues])
 #########################################################################
 
 
