@@ -189,6 +189,8 @@ astir_SOURCES = \
     ui/gtk4/xa_gtk4_interfaces.h \
     ui/gtk4/xa_gtk4_mystation.c \
     ui/gtk4/xa_gtk4_mystation.h \
+    ui/gtk4/xa_gtk4_messages.c \
+    ui/gtk4/xa_gtk4_messages.h \
     ui/gtk4/xa_gtk4_palette.c
 
 astir_CPPFLAGS = $(AM_CPPFLAGS) $(GTK4_CFLAGS)

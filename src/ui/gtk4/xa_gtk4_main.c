@@ -50,6 +50,7 @@
 #include "ui/gtk4/xa_gtk4_stationlist.h"
 #include "ui/gtk4/xa_gtk4_view.h"
 #include "ui/gtk4/xa_gtk4_mystation.h"
+#include "ui/gtk4/xa_gtk4_messages.h"
 #include "core/xa_ui.h"
 #include "core/map/maps.h"
 #include "core/util/lang.h"
@@ -1075,6 +1076,63 @@ static void act_stations(GSimpleAction *a, GVariant *p, gpointer u)
 
 
 /*
+ * The message sidebar, and the unread count on the button that opens it.
+ *
+ * A toggle rather than a window, so it is stateful like the map options and
+ * GTK keeps the button, the menu item and the sidebar in step instead of the
+ * three of them drifting.  Not folded into act_toggle(): every branch there
+ * ends in render_soon(), and showing a sidebar changes no map setting.
+ */
+static GtkWidget *msg_toggle_count;
+
+static void update_msg_toggle(void)
+{
+  int n = xa_gtk4_messages_unread();
+  char buf[32];
+
+  if (msg_toggle_count == NULL)
+  {
+    return;
+  }
+  astir_snprintf(buf, sizeof(buf), "%d", n);
+  gtk_label_set_text(GTK_LABEL(msg_toggle_count), buf);
+  gtk_widget_set_visible(msg_toggle_count, n > 0);
+}
+
+
+/*
+ * The paned the sidebar lives in, and how wide to open it.
+ *
+ * Held so the toggle can put the divider somewhere: a GtkPaned laid out with
+ * its start child hidden keeps a position of zero, and making the child
+ * visible again does not move the divider.  The sidebar therefore appeared at
+ * no width at all, which is indistinguishable from a toggle that does nothing
+ * -- the state was right, the widget was visible, and the map still had every
+ * pixel.
+ */
+static GtkWidget *msg_paned;
+
+#define MSG_SIDEBAR_WIDTH 340
+
+static void act_messages(GSimpleAction *a, GVariant *state, gpointer u)
+{
+  gboolean on = g_variant_get_boolean(state);
+
+  (void)u;
+  xa_gtk4_messages_set_visible(on);
+
+  // Only when the divider is sitting at nothing, so one that has been dragged
+  // somewhere deliberate is left where it was put.
+  if (on && msg_paned != NULL
+      && gtk_paned_get_position(GTK_PANED(msg_paned)) < 100)
+  {
+    gtk_paned_set_position(GTK_PANED(msg_paned), MSG_SIDEBAR_WIDTH);
+  }
+  g_simple_action_set_state(a, state);
+}
+
+
+/*
  * A click on the map: open whichever station is under it.
  *
  * The press position is remembered so the release can tell a click from a pan.
@@ -1692,6 +1750,27 @@ static void install_ui_callbacks(void)
    */
   cb.interfaces_changed = ui_interfaces_changed;
   cb.station_changed = ui_station_changed;
+
+  /*
+   * The message windows, which nothing has implemented until now.
+   *
+   * All of this has been in the contract since the core was extracted, with
+   * update_messages() dutifully clearing and rebuilding windows that did not
+   * exist -- so every message Astir received was decoded, filed and thrown
+   * away.  The sidebar is what these now draw into; the core still decides
+   * which conversations there are and what belongs in one.
+   */
+  cb.open_message_window  = xa_gtk4_messages_open_window;
+  cb.message_logged       = xa_gtk4_messages_logged;
+  cb.msg_window_is_open   = xa_gtk4_msg_window_is_open;
+  cb.msg_window_is_group  = xa_gtk4_msg_window_is_group;
+  cb.msg_window_callsign  = xa_gtk4_msg_window_callsign;
+  cb.msg_window_raise     = xa_gtk4_msg_window_raise;
+  cb.msg_window_close_all = xa_gtk4_msg_window_close_all;
+  cb.msg_window_clear     = xa_gtk4_msg_window_clear;
+  cb.msg_window_append    = xa_gtk4_msg_window_append;
+  cb.msg_window_show      = xa_gtk4_msg_window_show;
+
   xa_ui_set_callbacks(&cb);
 }
 
@@ -1856,6 +1935,18 @@ static int init_core(void)
   load_pixmap_symbol_file("symbols.dat", 0);
 
   init_station_data();
+
+  /*
+   * The message store, which nothing had been initialising.
+   *
+   * Its comment says "called at start of main", and main.c did; this front end
+   * never picked it up, so the message subsystem started with a lock that had
+   * never been initialised and a removal timestamp of zero.  It did not matter
+   * while no front end drew a message.  It does now.
+   *
+   * Before the replay below, which decodes packets and can file messages.
+   */
+  init_message_data();
 
   // Packets, without an interface.  main.c does this from its event loop for
   // File > Open Log File; here it runs to completion before the first render,
@@ -2042,6 +2133,27 @@ static gboolean show_stations_once(gpointer win)
 }
 
 
+/*
+ * Open the message sidebar, and one conversation in it when asked for by name.
+ *
+ * Through the action rather than the sidebar's own call, so the toggle and the
+ * menu item come up checked -- setting the state by hand is how the two get out
+ * of step, and it would be this hook that hid the fault.
+ */
+static gboolean show_messages_once(gpointer win)
+{
+  const char *call = getenv("ASTIR_GTK4_SHOW_MESSAGE_CALL");
+
+  g_action_group_change_action_state(G_ACTION_GROUP(win), "messages",
+                                     g_variant_new_boolean(TRUE));
+  if (call != NULL && call[0] != '\0')
+  {
+    xa_gtk4_messages_show_call(call);
+  }
+  return G_SOURCE_REMOVE;
+}
+
+
 // The About dialog carries the version, so it is the one window a bug reporter
 // is told to open.  Same hook as the others, for the same reason: without input
 // automation there is no other way to get it on screen to check.
@@ -2169,6 +2281,7 @@ static void on_activate(GtkApplication *app, gpointer user_data)
     { "mystation",   act_mystation, NULL, NULL,   NULL, {0} },
     { "choose-maps", act_choose_maps, NULL, NULL, NULL, {0} },
     { "stations",    act_stations, NULL, NULL,   NULL, {0} },
+    { "messages",    NULL, NULL, "false", act_messages, {0} },
     { "grid",        NULL, NULL, "false", act_toggle, {0} },
     { "map-labels",  NULL, NULL, "false", act_toggle, {0} },
     { "filled-maps", NULL, NULL, "false", act_toggle, {0} },
@@ -2189,12 +2302,38 @@ static void on_activate(GtkApplication *app, gpointer user_data)
     gtk_header_bar_pack_start(GTK_HEADER_BAR(header), zi);
     gtk_header_bar_pack_start(GTK_HEADER_BAR(header), zo);
   }
+  /*
+   * The messages toggle, carrying its own unread count.
+   *
+   * The count is the reason this is a button with a box in it rather than a
+   * plain icon button: a collapsed sidebar has no other way to say that
+   * something arrived, and a message that arrives unannounced may as well not
+   * have.
+   */
+  {
+    GtkWidget *tb = gtk_toggle_button_new();
+    GtkWidget *inner = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
+
+    gtk_box_append(GTK_BOX(inner),
+                   gtk_image_new_from_icon_name("mail-unread-symbolic"));
+
+    msg_toggle_count = gtk_label_new("");
+    gtk_widget_add_css_class(msg_toggle_count, "astir-badge");
+    gtk_widget_set_visible(msg_toggle_count, FALSE);
+    gtk_box_append(GTK_BOX(inner), msg_toggle_count);
+
+    gtk_button_set_child(GTK_BUTTON(tb), inner);
+    gtk_widget_set_tooltip_text(tb, "Messages");
+    gtk_actionable_set_action_name(GTK_ACTIONABLE(tb), "win.messages");
+    gtk_header_bar_pack_start(GTK_HEADER_BAR(header), tb);
+  }
   // A GMenu rather than a menu bar: one model, described once, and GTK builds
   // the popover from it.  The Motif build spends several hundred lines on
   // XmCreatePulldownMenu calls to say less than this.
   menu = g_menu_new();
 
   view = g_menu_new();
+  g_menu_append(view, "Messages", "win.messages");
   g_menu_append(view, "Stations\xe2\x80\xa6", "win.stations");
   g_menu_append(view, "Zoom In", "win.zoom-in");
   g_menu_append(view, "Zoom Out", "win.zoom-out");
@@ -2299,6 +2438,9 @@ static void on_activate(GtkApplication *app, gpointer user_data)
                                         (const char *[]){ "<Control>m", NULL });
   gtk_application_set_accels_for_action(app, "win.stations",
                                         (const char *[]){ "<Control>l", NULL });
+  // Ctrl+B, as every other program with a sidebar uses.
+  gtk_application_set_accels_for_action(app, "win.messages",
+                                        (const char *[]){ "<Control>b", NULL });
   // Ctrl+comma is the desktop convention for preferences, and this is the only
   // settings window there is to give it to.
   gtk_application_set_accels_for_action(app, "win.mystation",
@@ -2327,6 +2469,19 @@ static void on_activate(GtkApplication *app, gpointer user_data)
   if (getenv("ASTIR_GTK4_SHOW_ABOUT") != NULL)
   {
     g_timeout_add_seconds(2, (GSourceFunc)show_about_once, win);
+  }
+
+  /*
+   * Early, unlike the station hooks.
+   *
+   * Those wait because the station list is built from traffic that has to
+   * arrive first.  The sidebar is built from the message store, which a replay
+   * has already filled before the window exists, and which it re-reads on
+   * every message afterwards -- so there is nothing to wait for.
+   */
+  if (getenv("ASTIR_GTK4_SHOW_MESSAGES") != NULL)
+  {
+    g_timeout_add_seconds(3, (GSourceFunc)show_messages_once, win);
   }
 
   /*
@@ -2439,7 +2594,53 @@ static void on_activate(GtkApplication *app, gpointer user_data)
     }
     gtk_widget_set_hexpand(overlay, TRUE);
     gtk_widget_set_vexpand(overlay, TRUE);
-    gtk_box_append(GTK_BOX(box), overlay);
+
+    /*
+     * The map, with the message sidebar beside it.
+     *
+     * A GtkPaned rather than the sidebar floating over the map: a conversation
+     * is read alongside the map, not instead of it, and an overlay would cover
+     * the stations being talked about.  The divider is draggable because the
+     * core formats a transcript line to a fixed width and the useful width is
+     * therefore the reader's business, not this file's.
+     *
+     * The sidebar starts hidden; a hidden start child gives all of the space
+     * back to the map, so a collapsed sidebar costs the map nothing.
+     */
+    {
+      GtkWidget *paned = msg_paned = gtk_paned_new(GTK_ORIENTATION_HORIZONTAL);
+
+      gtk_paned_set_start_child(GTK_PANED(paned),
+                                xa_gtk4_messages_pane(GTK_WINDOW(win)));
+      gtk_paned_set_resize_start_child(GTK_PANED(paned), FALSE);
+      gtk_paned_set_shrink_start_child(GTK_PANED(paned), FALSE);
+      gtk_paned_set_end_child(GTK_PANED(paned), overlay);
+      gtk_paned_set_resize_end_child(GTK_PANED(paned), TRUE);
+      /*
+       * No set_position() here, deliberately.
+       *
+       * The sidebar starts hidden, and a position set against a hidden start
+       * child is clamped to zero and stays there when it is shown again -- so
+       * the sidebar became visible at no width at all, which looks exactly
+       * like a toggle that does nothing.  It also put a scrollbar in an
+       * allocation of nothing, which is what "slider reported min width -2"
+       * was complaining about.
+       *
+       * With resize_start_child off the sidebar takes its natural width, which
+       * is the size request it asks for, and the divider stays draggable.
+       */
+      gtk_widget_set_hexpand(paned, TRUE);
+      gtk_widget_set_vexpand(paned, TRUE);
+
+      // Registered after the pane is built, so the count it already worked out
+      // from the store has to be asked for once by hand.  Without this the
+      // badge stays blank until the next message, which on a quiet band is a
+      // long time to look like there is no traffic.
+      xa_gtk4_messages_set_unread_notify(update_msg_toggle);
+      update_msg_toggle();
+
+      gtk_box_append(GTK_BOX(box), paned);
+    }
   }
   gtk_window_set_child(GTK_WINDOW(win), box);
 

@@ -607,6 +607,19 @@ char *get_most_recent_ack(char *callsign)
 
 void init_message_data(void)    // called at start of main
 {
+  /*
+   * The lock update_messages() takes, initialised where the rest of the
+   * message store is.
+   *
+   * It used to be initialised by messages_gui_init(), which was Motif's and is
+   * gone.  Nothing took over, so the mutex was left as the zero a global starts
+   * as -- which glibc happens to accept, because a zeroed pthread_mutex_t is
+   * bit-identical to PTHREAD_MUTEX_INITIALIZER there.  That is luck, not a
+   * guarantee, and it held only while nothing called update_messages(): with no
+   * front end implementing the message windows there was nothing for it to
+   * draw, so the path was never taken.  There is now.
+   */
+  init_critical_section(&send_message_dialog_lock);
 
   new_message_data = 0;
   last_message_remove = sec_now();
