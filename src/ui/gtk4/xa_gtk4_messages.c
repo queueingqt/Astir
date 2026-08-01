@@ -138,26 +138,33 @@ static void set_read_mark(const char *call, time_t when)
 
 
 /*
- * A conversation is every message with that callsign at either end.
+ * A conversation is what was said between this station and one other.
  *
- * The core's "group" flag means "render all of it, not just the half involving
- * us", and every conversation here is opened with it set.  That is a decision,
- * not an oversight:
+ * Nothing else.  Not the whole channel for that callsign, which is what this
+ * did first and was wrong -- badly wrong, and only on a real feed.
  *
- * A thread and the list row above it have to agree.  The row previews the
- * newest message in the conversation, so if the thread filtered to this
- * station's half of it the row would advertise a line the thread then refused
- * to show -- and the message would be nowhere, because a conversation is filed
- * under the far end and an overheard one has no other place to go.  Filtering
- * loses traffic; not filtering does not.
+ * The reasoning for showing everything was that a thread and the row above it
+ * must agree, and that filtering loses traffic while not filtering does not.
+ * Both halves of that were argued against a replay file holding six messages
+ * between four stations, where "every message with this callsign at either
+ * end" and "the conversation" are the same set.
  *
- * The cost is that a station Astir has really exchanged messages with also
- * shows what it said to everybody else.  For a receive-only program that is
- * close to the point: this is a log of a callsign's message traffic, which is
- * what "history per callsign" means.  Should Astir ever transmit, a real QSO
- * would want its own half separated out, and this is the line to revisit.
+ * On APRS-IS they are not remotely the same set.  The feed carries every
+ * message on the network, most of it between strangers and a great deal of it
+ * not conversation at all -- telemetry definitions (PARM., UNIT., EQNS., BITS.)
+ * are message-format packets a station addresses to ITSELF, and they arrive
+ * constantly.  The inbox filled with correspondents this operator has never
+ * spoken to, saying things that read as gibberish because they were never
+ * meant for a person.  Four unread within half a minute of connecting.
+ *
+ * An inbox is what was addressed to you.  That is the whole definition, and
+ * the core has held the same idea all along in Read_messages_mine_only.
  */
-#define CONVERSATION_IS_WHOLE_CHANNEL 1
+static int message_is_mine(const Message *m)
+{
+  return is_my_call((char *)m->from_call_sign, 1)
+         || is_my_call((char *)m->call_sign, 1);
+}
 
 
 /* ---- reading the message store -------------------------------------------- */
@@ -221,9 +228,9 @@ static void scan_one(Message *m)
   // Bulletins and NWS traffic are broadcasts, not conversations: they have no
   // second end to file them under.  They belong in a view of their own and are
   // left out of this one rather than being filed under whoever sent them.
-  if (m->type != MESSAGE_MESSAGE)
+  if (m->type != MESSAGE_MESSAGE || !message_is_mine(m))
   {
-    return;
+    return;                      // somebody else's conversation
   }
 
   from_me = is_my_call(m->from_call_sign, 1);
@@ -348,7 +355,10 @@ static int slot_for(const char *call)
   }
 
   conv[chosen].in_use = 1;
-  conv[chosen].is_group = CONVERSATION_IS_WHOLE_CHANNEL;
+  // Not a group: this station's own half of the conversation is all that is
+  // shown.  Only matters if the core ever renders a window itself, which it no
+  // longer does here, but a flag that says something untrue is a trap.
+  conv[chosen].is_group = 0;
   conv[chosen].touched = sec_now();
   astir_snprintf(conv[chosen].call, sizeof(conv[chosen].call), "%s", call);
   return chosen;
@@ -401,12 +411,12 @@ static void thread_collect(Message *m)
 {
   thread_line *t;
 
-  if (m->type != MESSAGE_MESSAGE)
+  if (m->type != MESSAGE_MESSAGE || !message_is_mine(m))
   {
     return;
   }
-  // Every message with this callsign at either end -- the whole channel, as
-  // CONVERSATION_IS_WHOLE_CHANNEL says and as the list preview assumes.
+  // Between this station and that one, in either direction.  The same test the
+  // list uses, so a row and the thread it opens can never disagree.
   if (strcasecmp(m->from_call_sign, thread_call) != 0
       && strcasecmp(m->call_sign, thread_call) != 0)
   {
@@ -1431,8 +1441,10 @@ static GtkWidget *build_list_page(void)
    * rare enough that empty is the ordinary state on a quiet band.
    */
   msg_empty = gtk_label_new("No messages yet.\n\n"
-                            "Messages addressed to this station, and traffic "
-                            "between others that Astir hears, appear here.");
+                            "Messages addressed to this station appear here, "
+                            "with whatever is sent back. Traffic between other "
+                            "stations does not \xe2\x80\x94 the network carries "
+                            "a great deal of it, and none of it is yours.");
   gtk_label_set_wrap(GTK_LABEL(msg_empty), TRUE);
   gtk_label_set_justify(GTK_LABEL(msg_empty), GTK_JUSTIFY_CENTER);
   gtk_widget_set_valign(msg_empty, GTK_ALIGN_CENTER);
