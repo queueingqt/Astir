@@ -12,11 +12,11 @@
  * that stays where it is put, one transcript at a time, collapsed out of the
  * way when the map is what matters.
  *
- * The core still drives it.  Every one of the msg_window_* callbacks in
- * xa_ui.h is implemented here, so update_messages() clears and rebuilds a
- * conversation exactly as it always did, and this file decides only what that
- * looks like.  Which conversations exist, what belongs in one and in what
- * order remain the core's answers, not this file's.
+ * The core still says which conversations exist and which messages are in one.
+ * It no longer says what they look like: the transcript is built here, out of
+ * the message store, because a chat layout -- own messages to the right, the
+ * heading on its own line above the words -- needs the pieces of a message and
+ * the core hands over a line it has already laid out.
  */
 #ifndef ASTIR_GTK4_MESSAGES_H
 #define ASTIR_GTK4_MESSAGES_H
@@ -99,18 +99,25 @@ void xa_gtk4_messages_open_window(const char *to_call);
 /* ---- the core's message-window contract, implemented over the sidebar ------
  *
  * Windows are addressed by index because that is how the core tracks them.
- * Here an index is a conversation slot: it holds a callsign and a transcript,
- * and at most one slot's transcript is on screen at a time.  The rest stay
- * current in the background, which is what makes switching between them free.
+ * Here an index is a conversation slot, which holds a callsign and nothing
+ * else -- the messages are read from the store when one is drawn.
  */
 int  xa_gtk4_msg_window_is_open(int i);
 int  xa_gtk4_msg_window_is_group(int i);
 int  xa_gtk4_msg_window_callsign(int i, char *out, int n);
 void xa_gtk4_msg_window_raise(int i);
 void xa_gtk4_msg_window_close_all(void);
-void xa_gtk4_msg_window_clear(int i);
-int  xa_gtk4_msg_window_append(int i, long pos, const char *text,
-                               long hl_from, long hl_to, int hl_selected);
-void xa_gtk4_msg_window_show(int i, long pos);
+
+/*
+ * The core's msg_window_clear, msg_window_append and msg_window_show are NOT
+ * implemented, and are deliberately left unregistered.
+ *
+ * They exist for a front end that lets update_messages() render a conversation
+ * into a text widget one preformatted line at a time.  This one builds the
+ * transcript from the message store instead -- own messages to the right, the
+ * heading on its own line above the words -- and none of that can be recovered
+ * from a line the core has already laid out.  Unregistered, each call is a
+ * no-op at the xa_ui boundary, so the core may go on making them.
+ */
 
 #endif /* ASTIR_GTK4_MESSAGES_H */

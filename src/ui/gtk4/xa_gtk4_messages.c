@@ -31,18 +31,25 @@
  * A conversation slot.
  *
  * One per index in the core's message-window space, because the core addresses
- * windows by index and something has to map an index to a thing.  Every slot
- * that is in use keeps its transcript current whether or not it is the one on
- * screen -- that is the point of giving each its own buffer rather than sharing
- * one and rebuilding it on every switch.  A GtkTextBuffer nothing displays
- * costs its text and nothing else.
+ * windows by index and something has to map an index to a thing.
+ *
+ * A slot holds no transcript.  It used to hold a GtkTextBuffer that the core
+ * filled through msg_window_append(), and that could not survive wanting a chat
+ * layout: the core hands over one preformatted line -- date, time, callsign and
+ * message run together, laid out for a Motif text widget -- and a line already
+ * laid out one way cannot be laid out another.  Own messages on the right, with
+ * the heading above the words rather than in front of them, needs the pieces
+ * separately, so the transcript is built from the message store instead, the
+ * same store the correspondent list is built from.
+ *
+ * The core still decides which conversations exist and which messages are in
+ * one.  It no longer decides what they look like.
  */
 typedef struct
 {
   int             in_use;
   int             is_group;
   char            call[MAX_CALLSIGN+1];
-  GtkTextBuffer  *buf;
   time_t          touched;       /* when this slot was last selected */
 } conversation;
 
@@ -52,10 +59,12 @@ static GtkWidget *msg_pane;      /* the whole sidebar */
 static GtkWidget *msg_stack;     /* list <-> one conversation */
 static GtkWidget *msg_list;      /* correspondents */
 static GtkWidget *msg_scroll;    /* what holds that list */
-static GtkWidget *msg_view;      /* the transcript on screen */
+static GtkWidget *msg_thread;    /* the messages of one conversation */
+static GtkWidget *msg_thread_sw; /* what scrolls them */
 static GtkWidget *msg_title;     /* whose conversation that is */
 static GtkWidget *msg_empty;     /* shown instead of the list when it is empty */
 static GtkWidget *msg_entry;     /* the reply box under the transcript */
+static GtkWidget *msg_count;     /* how much room is left in it */
 static GtkWidget *msg_newcall;   /* who a new message is to */
 static GtkWindow *msg_parent;
 
@@ -338,30 +347,319 @@ static int slot_for(const char *call)
     return -1;
   }
 
-  if (conv[chosen].buf != NULL)
-  {
-    g_object_unref(conv[chosen].buf);
-  }
-
   conv[chosen].in_use = 1;
   conv[chosen].is_group = CONVERSATION_IS_WHOLE_CHANNEL;
   conv[chosen].touched = sec_now();
   astir_snprintf(conv[chosen].call, sizeof(conv[chosen].call), "%s", call);
-
-  conv[chosen].buf = gtk_text_buffer_new(NULL);
-  /*
-   * A message of ours that has not been acked yet.
-   *
-   * The core asks for reverse video, which is what a Motif text widget had to
-   * use to make something stand out.  The thing being said is "this has not
-   * arrived yet", and dimmed italics say that where reverse video says only
-   * "look here".
-   */
-  gtk_text_buffer_create_tag(conv[chosen].buf, "pending",
-                             "style", PANGO_STYLE_ITALIC,
-                             "foreground", "#888888",
-                             NULL);
   return chosen;
+}
+
+
+/* ---- one conversation, read out of the store ------------------------------ */
+
+/*
+ * The messages of the conversation being shown.
+ *
+ * Gathered by the same means as the correspondent list and for the same reason:
+ * the store is the one copy of the traffic, and a transcript kept alongside it
+ * would be a second copy to get out of step.  Each message is kept in pieces --
+ * who, when, what, and how it went -- because that is what a chat layout needs
+ * and what the core's rendered line cannot be taken apart into.
+ */
+typedef struct
+{
+  char   who[MAX_CALLSIGN+1];    /* whoever sent it */
+  char   text[MAX_MESSAGE_LENGTH+1];
+  time_t when;
+  int    mine;                   /* this station sent it */
+  char   acked;
+  int    tries;
+  time_t interval;
+  char   raw[512];               /* the record behind it, for the raw view */
+} thread_line;
+
+/*
+ * Whether the raw record is shown under each message.
+ *
+ * Off by default and remembered while the sidebar lives, because it is a
+ * debugging view: the reason to want it is a message that did not behave, and
+ * that is answered by the sequence number, the ack state and how it was heard
+ * -- none of which belong in a conversation being read.
+ */
+static int msg_raw;
+
+static thread_line *thread_lines;
+static int thread_n;
+static int thread_max;
+
+// Whose conversation thread_collect() is gathering.  Same reason scan_list is
+// a file static: mscan_file() carries no user data.
+static char thread_call[MAX_CALLSIGN+1];
+
+
+static void thread_collect(Message *m)
+{
+  thread_line *t;
+
+  if (m->type != MESSAGE_MESSAGE)
+  {
+    return;
+  }
+  // Every message with this callsign at either end -- the whole channel, as
+  // CONVERSATION_IS_WHOLE_CHANNEL says and as the list preview assumes.
+  if (strcasecmp(m->from_call_sign, thread_call) != 0
+      && strcasecmp(m->call_sign, thread_call) != 0)
+  {
+    return;
+  }
+
+  if (thread_n == thread_max)
+  {
+    thread_max = thread_max ? thread_max * 2 : 32;
+    thread_lines = g_realloc(thread_lines,
+                             (gsize)thread_max * sizeof(thread_line));
+  }
+  t = &thread_lines[thread_n++];
+  memset(t, 0, sizeof(*t));
+  astir_snprintf(t->who, sizeof(t->who), "%s", m->from_call_sign);
+  astir_snprintf(t->text, sizeof(t->text), "%s", m->message_line);
+  t->when = m->sec_heard;
+  t->mine = is_my_call(m->from_call_sign, 1);
+  t->acked = m->acked;
+  t->tries = m->tries;
+  t->interval = m->interval;
+
+  /*
+   * The record as the store holds it, built here while the Message is in hand.
+   *
+   * Every field is printed as it is rather than interpreted -- `acked` as its
+   * number, `type` as its letter -- because the point of a raw view is to see
+   * what is actually there.  Anything translated into friendlier words would
+   * be the friendly view again, one line further down.
+   *
+   * The message itself is part of the record and is quoted, so that leading or
+   * trailing spaces -- which are invisible in the read view and are exactly
+   * the sort of thing a raw view is opened to find -- can be seen.
+   */
+  astir_snprintf(t->raw, sizeof(t->raw),
+                 "%s\n\n"
+                 "from=%s to=%s seq=%s type=%c acked=%d tries=%d interval=%lds\n"
+                 "heard=%s via=%c tnc=%c pos=%d sec=%ld\n"
+                 "msg=\"%s\"",
+                 // The packet itself, first, because it is the thing being
+                 // asked for; the decoded fields under it are what Astir made
+                 // of it.  A message this station sent never came off the air,
+                 // and says so rather than showing a packet that is not its.
+                 (m->raw_packet[0] != '\0') ? m->raw_packet
+                                            : "(sent by this station -- no received packet)",
+                 m->from_call_sign,
+                 m->call_sign,
+                 (m->seq[0] != '\0') ? m->seq : "-",
+                 (m->type != '\0') ? m->type : '?',
+                 (int)m->acked,
+                 m->tries,
+                 (long)m->interval,
+                 (m->packet_time[0] != '\0') ? m->packet_time : "-",
+                 (m->data_via != '\0') ? m->data_via : '?',
+                 // A character, not a count: it holds 'T'/'N', and printing it
+                 // as a number showed "tnc=78" for what is plainly an 'N'.
+                 (m->heard_via_tnc != '\0') ? m->heard_via_tnc : '?',
+                 (int)m->position_known,
+                 (long)m->sec_heard,
+                 m->message_line);
+}
+
+
+static int by_when(const void *a, const void *b)
+{
+  const thread_line *ta = a;
+  const thread_line *tb = b;
+
+  if (ta->when < tb->when) { return -1; }       /* oldest first, as a chat is */
+  if (ta->when > tb->when) { return 1; }
+  return 0;
+}
+
+
+/*
+ * What became of a message of ours, in as few words as will do.
+ *
+ * Only for our own: a message somebody else sent has already arrived by
+ * definition, and saying so on every one of them would be noise.  Empty means
+ * there is nothing worth saying.
+ */
+static void delivery_state(const thread_line *t, char *out, size_t n)
+{
+  out[0] = '\0';
+  if (!t->mine)
+  {
+    return;
+  }
+  switch (t->acked)
+  {
+    case 0:
+      // Sent, no ack yet.  Astir does not retry, so this is where it stays
+      // until the ack arrives or the operator sends it again.
+      astir_snprintf(out, n, "%s", "sent, no ack");
+      break;
+    case 2:  astir_snprintf(out, n, "%s", "timed out"); break;
+    case 3:  astir_snprintf(out, n, "%s", "cancelled"); break;
+    case 4:  astir_snprintf(out, n, "%s", "rejected");  break;
+    default: astir_snprintf(out, n, "%s", "delivered"); break;
+  }
+}
+
+
+static GtkWidget *make_bubble(const thread_line *t)
+{
+  GtkWidget *bubble = gtk_box_new(GTK_ORIENTATION_VERTICAL, 1);
+  GtkWidget *info, *body;
+  struct tm *lt;
+  char heading[128];
+  char stamp[16];
+  char state[32];
+
+  /*
+   * The heading on its own line, above the words.
+   *
+   * The core put them on one line, in fixed columns, which is a table -- and a
+   * table of two-word messages spends most of a narrow sidebar on the same
+   * callsign repeated down the left.  Above it, the heading can be small and
+   * dim and the message can have the width.
+   */
+  /*
+   * Raw replaces the message; it does not annotate it.
+   *
+   * Shown as a flat full-width block rather than in a bubble on one side: the
+   * bubble and the side it is on are the prettified view, and leaving them
+   * around a raw record gives two answers to "what is this message" at once.
+   * Everything the read view shows is in the record anyway -- the text, who
+   * sent it, when -- so nothing is lost by standing in for it.
+   */
+  if (msg_raw)
+  {
+    GtkWidget *raw = gtk_label_new(t->raw);
+
+    gtk_label_set_xalign(GTK_LABEL(raw), 0.0);
+    gtk_label_set_wrap(GTK_LABEL(raw), TRUE);
+    gtk_label_set_wrap_mode(GTK_LABEL(raw), PANGO_WRAP_WORD_CHAR);
+    gtk_label_set_selectable(GTK_LABEL(raw), TRUE);
+    gtk_widget_add_css_class(raw, "monospace");
+    gtk_widget_add_css_class(raw, "astir-raw");
+    gtk_widget_set_halign(raw, GTK_ALIGN_FILL);
+    gtk_box_append(GTK_BOX(bubble), raw);
+
+    gtk_widget_set_halign(bubble, GTK_ALIGN_FILL);
+    gtk_widget_set_margin_start(bubble, 8);
+    gtk_widget_set_margin_end(bubble, 8);
+    gtk_widget_set_margin_top(bubble, 4);
+    gtk_widget_set_margin_bottom(bubble, 4);
+    return bubble;
+  }
+
+  lt = localtime(&t->when);
+  if (lt != NULL)
+  {
+    strftime(stamp, sizeof(stamp), "%H:%M", lt);
+  }
+  else
+  {
+    stamp[0] = '\0';
+  }
+
+  delivery_state(t, state, sizeof(state));
+  if (state[0] != '\0')
+  {
+    astir_snprintf(heading, sizeof(heading), "%s \xc2\xb7 %s", stamp, state);
+  }
+  else
+  {
+    astir_snprintf(heading, sizeof(heading), "%s \xc2\xb7 %s", stamp, t->who);
+  }
+
+  info = gtk_label_new(heading);
+  gtk_label_set_xalign(GTK_LABEL(info), t->mine ? 1.0 : 0.0);
+  gtk_widget_add_css_class(info, "dim-label");
+  gtk_widget_add_css_class(info, "astir-bubble-info");
+  gtk_box_append(GTK_BOX(bubble), info);
+
+  body = gtk_label_new(t->text);
+  gtk_label_set_xalign(GTK_LABEL(body), 0.0);
+  gtk_label_set_wrap(GTK_LABEL(body), TRUE);
+  gtk_label_set_wrap_mode(GTK_LABEL(body), PANGO_WRAP_WORD_CHAR);
+  // A bubble that spans the whole sidebar is not a bubble; the side it is on
+  // is only legible while there is space left on the other.
+  gtk_label_set_max_width_chars(GTK_LABEL(body), 28);
+  gtk_label_set_selectable(GTK_LABEL(body), TRUE);
+  gtk_widget_add_css_class(body, "astir-bubble");
+  gtk_widget_add_css_class(body, t->mine ? "astir-bubble-mine"
+                                         : "astir-bubble-theirs");
+  gtk_widget_set_halign(body, t->mine ? GTK_ALIGN_END : GTK_ALIGN_START);
+  gtk_box_append(GTK_BOX(bubble), body);
+
+  // Ours to the right, theirs to the left, which is the whole convention.
+  gtk_widget_set_halign(bubble, t->mine ? GTK_ALIGN_END : GTK_ALIGN_START);
+  gtk_widget_set_margin_start(bubble, 8);
+  gtk_widget_set_margin_end(bubble, 8);
+  gtk_widget_set_margin_top(bubble, 3);
+  gtk_widget_set_margin_bottom(bubble, 3);
+  return bubble;
+}
+
+
+// Put the newest message in view.  Deferred to an idle: the bubbles have just
+// been added and have no height yet, so scrolling now would scroll to where the
+// bottom used to be.
+static gboolean scroll_to_newest(gpointer unused)
+{
+  GtkAdjustment *v;
+
+  (void)unused;
+  if (msg_thread_sw == NULL)
+  {
+    return G_SOURCE_REMOVE;
+  }
+  v = gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(msg_thread_sw));
+  if (v != NULL)
+  {
+    gtk_adjustment_set_value(v, gtk_adjustment_get_upper(v)
+                                - gtk_adjustment_get_page_size(v));
+  }
+  return G_SOURCE_REMOVE;
+}
+
+
+static void render_thread(void)
+{
+  GtkWidget *child;
+  conversation *c = slot(msg_shown);
+  int i;
+
+  if (msg_thread == NULL)
+  {
+    return;
+  }
+
+  while ((child = gtk_widget_get_first_child(msg_thread)) != NULL)
+  {
+    gtk_box_remove(GTK_BOX(msg_thread), child);
+  }
+  if (c == NULL)
+  {
+    return;
+  }
+
+  astir_snprintf(thread_call, sizeof(thread_call), "%s", c->call);
+  thread_n = 0;
+  mscan_file('\0', thread_collect);
+  qsort(thread_lines, (size_t)thread_n, sizeof(thread_line), by_when);
+
+  for (i = 0; i < thread_n; i++)
+  {
+    gtk_box_append(GTK_BOX(msg_thread), make_bubble(&thread_lines[i]));
+  }
+
+  g_idle_add(scroll_to_newest, NULL);
 }
 
 
@@ -479,14 +777,13 @@ static void show_slot(int i)
 {
   conversation *c = slot(i);
 
-  if (c == NULL || msg_view == NULL)
+  if (c == NULL || msg_thread == NULL)
   {
     return;
   }
 
   msg_shown = i;
   c->touched = sec_now();
-  gtk_text_view_set_buffer(GTK_TEXT_VIEW(msg_view), c->buf);
   gtk_label_set_text(GTK_LABEL(msg_title), c->call);
 
   // Opening it is reading it.  Marked from now rather than from the newest
@@ -507,9 +804,7 @@ static void show_slot(int i)
     gtk_widget_grab_focus(msg_entry);
   }
 
-  // Ask the core to fill it.  It rebuilds every open window, this one included,
-  // and does not otherwise run for traffic this station is not part of.
-  update_messages(1);
+  render_thread();
 }
 
 
@@ -607,15 +902,91 @@ static void send_now(const char *to, const char *text)
     return;
   }
 
+  /*
+   * Refused rather than trimmed.
+   *
+   * The entry caps at 67 CHARACTERS and this buffer holds 67 BYTES, so a
+   * message with anything above ASCII in it can pass the first and not fit the
+   * second -- and astir_snprintf() would then cut it at 67 bytes, which lands
+   * mid-character and puts a mangled tail on the air.  Better to say so.
+   */
+  if (strlen(text) > MAX_MESSAGE_OUTPUT_LENGTH)
+  {
+    char msg[160];
+
+    astir_snprintf(msg, sizeof(msg),
+                   "An APRS message carries at most %d bytes and this one is "
+                   "%d.\n\nCharacters outside plain ASCII take more than one "
+                   "byte each, so it is longer than it looks.",
+                   MAX_MESSAGE_OUTPUT_LENGTH, (int)strlen(text));
+    xa_ui_popup("This message was not sent", msg);
+    return;
+  }
+
   astir_snprintf(body, sizeof(body), "%s", text);
 
+  /*
+   * The lock is taken around output_message() because output_message expects
+   * to be holding it.
+   *
+   * Partway through, it releases this lock and retakes it around its call to
+   * msg_data_add() -- see the comment there.  Called without the lock held,
+   * that release unlocks something never locked (which the mutex layer warns
+   * about and ignores) and the retake then leaves it locked for good.  The
+   * Motif Send button held it; this one has to as well.
+   */
+  begin_critical_section(&send_message_dialog_lock,
+                         "xa_gtk4_messages.c:send_now");
   output_message(my_callsign, call, body, "");
+  end_critical_section(&send_message_dialog_lock,
+                       "xa_gtk4_messages.c:send_now");
+
   kick_outgoing_timer(call);
   check_and_transmit_messages(sec_now());
 
   // It is in the store now, so both views can be told to re-read it.
-  update_messages(1);
+  render_thread();
   refresh_list();
+}
+
+
+/*
+ * Count what is left, in BYTES.
+ *
+ * Not characters, though the entry's own cap is in characters: APRS counts
+ * bytes, output_message() splits on strlen(), and send_now() copies into a
+ * 67-byte buffer.  A message of accented or non-Latin characters therefore
+ * runs out of room well before it runs out of the 67 characters GTK would
+ * allow, and counting characters would promise room that is not there.
+ */
+static void on_text_changed(GtkEditable *e, gpointer u)
+{
+  const char *text = gtk_editable_get_text(e);
+  int left;
+  char buf[16];
+
+  (void)u;
+  if (msg_count == NULL)
+  {
+    return;
+  }
+  left = MAX_MESSAGE_OUTPUT_LENGTH - (int)strlen((text != NULL) ? text : "");
+
+  astir_snprintf(buf, sizeof(buf), "%d", left);
+  gtk_label_set_text(GTK_LABEL(msg_count), buf);
+
+  // Nothing subtle at the boundary: at or past it the next character will not
+  // fit, and send_now() will refuse rather than cut a character in half.
+  if (left <= 0)
+  {
+    gtk_widget_remove_css_class(msg_count, "dim-label");
+    gtk_widget_add_css_class(msg_count, "astir-count-full");
+  }
+  else
+  {
+    gtk_widget_remove_css_class(msg_count, "astir-count-full");
+    gtk_widget_add_css_class(msg_count, "dim-label");
+  }
 }
 
 
@@ -722,6 +1093,14 @@ static void on_back(GtkButton *b, gpointer u)
 }
 
 
+static void on_toggle_raw(GtkToggleButton *b, gpointer u)
+{
+  (void)u;
+  msg_raw = gtk_toggle_button_get_active(b) ? 1 : 0;
+  render_thread();
+}
+
+
 // Through to the station window for whoever is on the other end.
 static void on_open_station(GtkButton *b, gpointer u)
 {
@@ -752,18 +1131,11 @@ void xa_gtk4_messages_logged(char from, const char *call_sign,
 
   refresh_list();
 
-  /*
-   * And the transcript, if one is open.
-   *
-   * The core refreshes its message windows by itself only when the message was
-   * addressed to or sent by this station -- see the is_my_call() guard around
-   * update_messages() in decode_message().  A conversation between two other
-   * stations is most of what a receive-only program sees and gets no such
-   * refresh, so it is asked for here.
-   */
+  // And the conversation on screen, which is read from the same store and so
+  // is stale for exactly as long as it is not re-read.
   if (slot(msg_shown) != NULL)
   {
-    update_messages(1);
+    render_thread();
   }
 }
 
@@ -834,13 +1206,10 @@ void xa_gtk4_msg_window_close_all(void)
 
   for (i = 0; i < MAX_MESSAGE_WINDOWS; i++)
   {
-    if (conv[i].buf != NULL)
-    {
-      g_object_unref(conv[i].buf);
-    }
     memset(&conv[i], 0, sizeof(conv[i]));
   }
   msg_shown = -1;
+  render_thread();               // nothing is open, so it empties
   if (msg_stack != NULL)
   {
     gtk_stack_set_visible_child_name(GTK_STACK(msg_stack), "list");
@@ -848,110 +1217,22 @@ void xa_gtk4_msg_window_close_all(void)
 }
 
 
-void xa_gtk4_msg_window_clear(int i)
-{
-  conversation *c = slot(i);
-  GtkTextIter a, b;
-
-  if (c == NULL)
-  {
-    return;
-  }
-  gtk_text_buffer_get_bounds(c->buf, &a, &b);
-  gtk_text_buffer_delete(c->buf, &a, &b);
-}
-
-
 /*
- * Append one message line to a conversation.
+ * The core's clear/append/show are no longer implemented, deliberately.
  *
- * The core passes absolute positions -- it has been counting bytes since the
- * clear -- and this appends at the end instead, which is the same place: the
- * core clears and then appends in order, so the end of the buffer is always
- * `pos`.  Working from the end rather than from the number matters because a
- * GtkTextBuffer counts characters where the core counts bytes, and the two
- * agree only until a message arrives with something above ASCII in it.
+ * They exist to let update_messages() render a conversation into a text
+ * widget, one preformatted line at a time.  The transcript is now built from
+ * the store instead -- see the conversation struct for why a chat layout
+ * cannot be made out of a line that is already laid out -- so there is nothing
+ * for them to render into.  Leaving them unregistered makes each call a no-op
+ * at the xa_ui boundary, which is exactly right: the core may keep calling
+ * them, and nothing happens.
  *
- * The highlight range is turned into an offset within THIS line, which is
- * where that difference cannot bite: hl_from - pos and hl_to - pos are byte
- * offsets into `text` itself, and `text` is right here to measure.
+ * is_open, is_group, callsign, raise and close_all stay.  Those are not about
+ * drawing: the core uses them to find a free window for a new conversation and
+ * to decide which messages belong in one, and it is still the core that
+ * decides both.
  */
-int xa_gtk4_msg_window_append(int i, long pos, const char *text,
-                              long hl_from, long hl_to, int hl_selected)
-{
-  conversation *c = slot(i);
-  GtkTextIter end;
-  long start_offset, lo, hi;
-  size_t len;
-
-  if (c == NULL || text == NULL)
-  {
-    return 0;                    // no transcript: the core must not advance pos
-  }
-
-  len = strlen(text);
-  gtk_text_buffer_get_end_iter(c->buf, &end);
-  start_offset = gtk_text_iter_get_offset(&end);
-  gtk_text_buffer_insert(c->buf, &end, text, -1);
-
-  if (!hl_selected)
-  {
-    return 1;
-  }
-
-  lo = hl_from - pos;
-  hi = hl_to - pos;
-  if (lo < 0)         { lo = 0; }
-  if (hi > (long)len) { hi = (long)len; }
-  if (lo >= hi)
-  {
-    return 1;
-  }
-
-  /*
-   * Byte offsets to character offsets, and only when the line really is UTF-8.
-   *
-   * It may not be: the core runs utf8_to_latin1_inplace() over a message when
-   * traffic_utf8_enabled is set, which leaves bytes that are not valid UTF-8 at
-   * all.  GTK inserts those as replacement characters, so the count shifts and
-   * the offsets no longer point where the core meant.  Highlighting is dropped
-   * in that case rather than applied to the wrong span -- the text is still
-   * there and still readable, which is the part that matters.
-   */
-  if (g_utf8_validate(text, (gssize)len, NULL))
-  {
-    GtkTextIter a, b;
-
-    lo = g_utf8_pointer_to_offset(text, text + lo);
-    hi = g_utf8_pointer_to_offset(text, text + hi);
-    gtk_text_buffer_get_iter_at_offset(c->buf, &a, (int)(start_offset + lo));
-    gtk_text_buffer_get_iter_at_offset(c->buf, &b, (int)(start_offset + hi));
-    gtk_text_buffer_apply_tag_by_name(c->buf, "pending", &a, &b);
-  }
-  return 1;
-}
-
-
-void xa_gtk4_msg_window_show(int i, long pos)
-{
-  conversation *c = slot(i);
-  GtkTextIter end;
-
-  (void)pos;
-  if (c == NULL)
-  {
-    return;
-  }
-  // The newest message, which is what `pos` is by the time the core asks: it
-  // has just finished appending in time order.
-  gtk_text_buffer_get_end_iter(c->buf, &end);
-  gtk_text_buffer_place_cursor(c->buf, &end);
-  if (i == msg_shown && msg_view != NULL)
-  {
-    gtk_text_view_scroll_to_iter(GTK_TEXT_VIEW(msg_view), &end,
-                                 0.0, FALSE, 0.0, 0.0);
-  }
-}
 
 
 /* ---- the sidebar ---------------------------------------------------------- */
@@ -1091,6 +1372,20 @@ static GtkWidget *build_thread_page(void)
   gtk_widget_add_css_class(msg_title, "heading");
   gtk_box_append(GTK_BOX(bar), msg_title);
 
+  // The record behind each message: sequence number, ack state, how it was
+  // heard.  A toggle rather than a separate window, so it can be turned on
+  // while looking at the message that prompted the question.
+  {
+    GtkWidget *raw = gtk_toggle_button_new();
+
+    gtk_button_set_icon_name(GTK_BUTTON(raw), "dialog-information-symbolic");
+    gtk_button_set_has_frame(GTK_BUTTON(raw), FALSE);
+    gtk_widget_set_tooltip_text(raw, "Show the raw message record");
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(raw), msg_raw != 0);
+    g_signal_connect(raw, "toggled", G_CALLBACK(on_toggle_raw), NULL);
+    gtk_box_append(GTK_BOX(bar), raw);
+  }
+
   station = gtk_button_new_from_icon_name("find-location-symbolic");
   gtk_button_set_has_frame(GTK_BUTTON(station), FALSE);
   gtk_widget_set_tooltip_text(station, "Open this station");
@@ -1099,43 +1394,20 @@ static GtkWidget *build_thread_page(void)
 
   gtk_box_append(GTK_BOX(page), bar);
 
-  scroll = gtk_scrolled_window_new();
-  // Never sideways.  The transcript wraps, so a horizontal scrollbar would
-  // only ever be a way to lose text off the edge.
+  scroll = msg_thread_sw = gtk_scrolled_window_new();
+  // Never sideways.  Bubbles wrap, so a horizontal scrollbar could only ever
+  // be a way to lose text off the edge.
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll),
                                  GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
   gtk_scrolled_window_set_min_content_width(GTK_SCROLLED_WINDOW(scroll), 240);
   gtk_widget_set_vexpand(scroll, TRUE);
 
-  /*
-   * Monospace, and wrapped.
-   *
-   * The core formats a transcript line as a fixed-width prefix -- date, time,
-   * callsign, retry count -- and then the message, which is a table and reads
-   * as one only while the columns line up.  This first kept the columns and
-   * scrolled sideways for the rest, and that was wrong: GTK's scrollbars are
-   * overlays that stay hidden until the pointer is over them, so there was
-   * nothing on screen to say the line continued.  A message simply stopped at
-   * the edge of the sidebar, mid-word, and looked like text escaping its box.
-   *
-   * Text that cannot be seen is worse than a column that does not line up, so
-   * it wraps.  The prefix still aligns down the left of every message, because
-   * every prefix is the same width; only an over-long message breaks, and the
-   * hanging indent is what says the second line is a continuation and not a
-   * new message.
-   */
-  msg_view = gtk_text_view_new();
-  gtk_text_view_set_editable(GTK_TEXT_VIEW(msg_view), FALSE);
-  gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(msg_view), FALSE);
-  gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(msg_view), GTK_WRAP_WORD_CHAR);
-  // Hanging indent: every line is indented, and the first line of each message
-  // is pulled back out to the margin again.
-  gtk_text_view_set_left_margin(GTK_TEXT_VIEW(msg_view), 8 + 18);
-  gtk_text_view_set_indent(GTK_TEXT_VIEW(msg_view), -18);
-  gtk_text_view_set_right_margin(GTK_TEXT_VIEW(msg_view), 8);
-  gtk_text_view_set_top_margin(GTK_TEXT_VIEW(msg_view), 4);
-  gtk_widget_add_css_class(msg_view, "monospace");
-  gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scroll), msg_view);
+  // One widget per message rather than one text widget for all of them, which
+  // is what lets a message sit on its own side of the sidebar.
+  msg_thread = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  gtk_widget_set_margin_top(msg_thread, 4);
+  gtk_widget_set_margin_bottom(msg_thread, 4);
+  gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scroll), msg_thread);
   gtk_box_append(GTK_BOX(page), scroll);
 
   /* ---- the compose box ---- */
@@ -1161,7 +1433,20 @@ static GtkWidget *build_thread_page(void)
     gtk_entry_set_max_length(GTK_ENTRY(msg_entry), MAX_MESSAGE_OUTPUT_LENGTH);
     gtk_widget_set_hexpand(msg_entry, TRUE);
     g_signal_connect(msg_entry, "activate", G_CALLBACK(on_send), NULL);
+    g_signal_connect(msg_entry, "changed", G_CALLBACK(on_text_changed), NULL);
     gtk_box_append(GTK_BOX(row), msg_entry);
+
+    /*
+     * What is left, counted down.
+     *
+     * Without it the entry simply stops accepting characters at the limit,
+     * which reads as a broken keyboard rather than as a full message.  The
+     * count says which it is before you get there.
+     */
+    msg_count = gtk_label_new("");
+    gtk_widget_add_css_class(msg_count, "dim-label");
+    gtk_label_set_width_chars(GTK_LABEL(msg_count), 3);
+    gtk_box_append(GTK_BOX(row), msg_count);
 
     send = gtk_button_new_from_icon_name("document-send-symbolic");
     gtk_widget_set_tooltip_text(send, "Send this message");
@@ -1169,6 +1454,10 @@ static GtkWidget *build_thread_page(void)
     gtk_box_append(GTK_BOX(row), send);
 
     gtk_box_append(GTK_BOX(page), row);
+
+    // So the count reads 67 before a key is pressed, rather than being blank
+    // until the first one.
+    on_text_changed(GTK_EDITABLE(msg_entry), NULL);
   }
 
   return page;
@@ -1186,6 +1475,35 @@ static void install_css(void)
     "  padding: 0px 7px;"
     "  font-size: 0.8em;"
     "  font-weight: bold;"
+    "}"
+    /*
+     * The bubbles.
+     *
+     * Both are alpha over whatever is behind them rather than fixed colours,
+     * so the sidebar follows a light or dark theme instead of insisting on
+     * the one it was written under.
+     */
+    ".astir-bubble {"
+    "  border-radius: 12px;"
+    "  padding: 6px 10px;"
+    "}"
+    ".astir-bubble-mine {"
+    "  background-color: alpha(#3584e4, 0.30);"
+    "}"
+    ".astir-bubble-theirs {"
+    "  background-color: alpha(currentColor, 0.10);"
+    "}"
+    ".astir-bubble-info {"
+    "  font-size: 0.78em;"
+    "  padding: 0px 4px;"
+    "}"
+    ".astir-raw {"
+    "  font-size: 0.72em;"
+    "  padding: 1px 4px;"
+    "}"
+    ".astir-count-full {"
+    "  color: #e01b24;"
+    "  font-weight: bold;"
     "}");
   gtk_style_context_add_provider_for_display(
     gdk_display_get_default(), GTK_STYLE_PROVIDER(css),
@@ -1200,6 +1518,11 @@ GtkWidget *xa_gtk4_messages_pane(GtkWindow *parent)
 
   msg_pane = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_widget_set_size_request(msg_pane, 320, -1);
+
+  // ASTIR_GTK4_MESSAGE_RAW starts with the raw records showing.  Same reason as
+  // the other hooks: a toggle in a window nothing can click cannot otherwise be
+  // got into its other state to look at.
+  msg_raw = (getenv("ASTIR_GTK4_MESSAGE_RAW") != NULL);
 
   msg_stack = gtk_stack_new();
   gtk_stack_set_transition_type(GTK_STACK(msg_stack),

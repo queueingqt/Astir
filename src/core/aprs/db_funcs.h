@@ -114,6 +114,9 @@ extern int  redraw_on_new_packet_data;
 extern char packet_data_string[MAX_PACKET_DATA_DISPLAY][MAX_LINE_SIZE+1];
 extern int  first_line, next_line, ncharsdel, nlinesadd;
 extern int  new_message_data;
+
+// The packet being decoded right now, as it arrived off the wire.  See db.c.
+extern char last_raw_packet[MAX_LINE_SIZE+1];
 extern CADRow *CAD_list_head;
 extern int station_data_auto_update;
 extern int fcc_lookup_pushed;

@@ -908,6 +908,12 @@ void output_message(char *from, char *to, char *message, char *path)
 // this lock.
         end_critical_section(&send_message_dialog_lock, "db.c:update_messages" );
 
+        // This station wrote this message; it did not arrive in a packet, and
+        // whatever was last decoded has nothing to do with it.  Cleared so
+        // msg_data_add() files it with no raw packet rather than with somebody
+        // else's.
+        last_raw_packet[0] = '\0';
+
         (void)msg_data_add(to,
                            from,
                            message_out,

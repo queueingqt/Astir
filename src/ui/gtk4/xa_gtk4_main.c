@@ -1776,10 +1776,16 @@ static void install_ui_callbacks(void)
   cb.msg_window_callsign  = xa_gtk4_msg_window_callsign;
   cb.msg_window_raise     = xa_gtk4_msg_window_raise;
   cb.msg_window_close_all = xa_gtk4_msg_window_close_all;
-  cb.msg_window_clear     = xa_gtk4_msg_window_clear;
-  cb.msg_window_append    = xa_gtk4_msg_window_append;
-  cb.msg_window_show      = xa_gtk4_msg_window_show;
 
+  /*
+   * clear, append and show are left unregistered on purpose.
+   *
+   * They render a conversation into a text widget one preformatted line at a
+   * time, and the sidebar builds its transcript from the message store instead
+   * so that a message can sit on its own side of the pane.  Unregistered, the
+   * calls are no-ops at the xa_ui boundary and update_messages() may go on
+   * making them.
+   */
   xa_ui_set_callbacks(&cb);
 }
 

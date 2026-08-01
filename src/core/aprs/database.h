@@ -165,6 +165,17 @@ typedef struct
   char position_known;
   time_t interval;
   int tries;
+  /*
+   * The packet this message was decoded from, exactly as it arrived.
+   *
+   * Everything else here is the result of decoding; none of it can be put back
+   * together into what was actually on the air, because the path, the
+   * digipeater marks and the third-party wrapping are all consumed on the way
+   * in.  A view that wants to show the packet has to be given the packet.
+   *
+   * Empty for a message this station originated: there was no received packet.
+   */
+  char raw_packet[MAX_LINE_SIZE+1];
 } Message;
 
 

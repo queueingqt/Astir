@@ -129,6 +129,16 @@ int  tracked_stations = 0;       // A count variable used in debug code only
 void track_station(char *call_tracked, DataRow *p_station);
 
 int  new_message_data;
+
+/*
+ * The packet currently being decoded, as it arrived.
+ *
+ * Set at the top of decode_ax25_line() and read by msg_data_add(), which
+ * copies it into the message it files.  Empty means the message did not come
+ * from a packet at all -- one this station originated -- and whoever files
+ * such a message is responsible for saying so by clearing this first.
+ */
+char last_raw_packet[MAX_LINE_SIZE+1];
 time_t last_message_remove;     // last time we did a check for message removing
 
 ////////////////////////////////////
@@ -1491,6 +1501,11 @@ time_t msg_data_add(char *call_sign, char *from_call, char *data,
   {
     //fprintf(stderr,"Position not known: %s\n",from_call);
   }
+
+  // The packet this came out of, if it came out of one.  Cleared by whoever
+  // files a message this station originated, which has no received packet.
+  astir_snprintf(m_fill.raw_packet, sizeof(m_fill.raw_packet), "%s",
+                 last_raw_packet);
 
   substr(m_fill.call_sign,call_sign,MAX_CALLSIGN);
   (void)remove_trailing_asterisk(m_fill.call_sign);
@@ -16430,6 +16445,21 @@ int decode_ax25_line(char *line, char from, int port, int dbadd)
                   sizeof(backup),
                   "%s",
                   line);
+
+  /*
+   * The packet as it arrived, kept for whatever this line turns out to be.
+   *
+   * Decoding is destructive -- the path, the digipeater marks and any
+   * third-party wrapping are consumed on the way through -- so anything that
+   * wants to show what was actually on the air has to be handed it here, at
+   * the one point where it still exists.  msg_data_add() copies it into the
+   * message it files.
+   *
+   * A global rather than a parameter because the decode path between here and
+   * there is a dozen functions deep and none of the ones in between have any
+   * business carrying it.
+   */
+  astir_snprintf(last_raw_packet, sizeof(last_raw_packet), "%s", line);
 
   // This is a good one to enable for debugging without getting too
   // many other types of messages to the xterm.  It will enable the
