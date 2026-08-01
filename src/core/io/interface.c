@@ -8173,6 +8173,27 @@ int beacon_if_due(int force)
   // forced beacon so a held-down button cannot become a carrier.
   posit_next_time = posit_last_time
                     + ((POSIT_rate > 0) ? POSIT_rate : (time_t)1800);
+
+  /*
+   * Corner-pegging measures the turn taken SINCE THE LAST BEACON, so the
+   * heading it measures from has to be re-read when one goes out.  That was
+   * UpdateTime()'s job -- compute_smart_beacon() still ends with a comment
+   * saying so -- and it went with the Motif front end, leaving
+   * xa_sb.last_heading holding the first course ever seen and
+   * xa_sb.current_heading a store that nothing read.
+   *
+   * The symptom is not a missing beacon but a flood of them.  A parked GPS
+   * still reports a course, and it wanders across the whole compass; measured
+   * against a heading frozen at startup that difference clears the turn
+   * threshold again and again, so fix after fix looks like a corner and each
+   * one forces a posit.  Measured against the last beacon it is what it claims
+   * to be.
+   */
+  if (xa_sb.enabled && xa_sb.current_heading != -1)
+  {
+    xa_sb.last_heading = xa_sb.current_heading;
+  }
+
   return 1;
 }
 
