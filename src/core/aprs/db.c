@@ -4768,7 +4768,8 @@ void exp_trailpos(FILE *f,long lat,long lon,time_t sec,long speed,int course,lon
 
       if (course >= 0)                    // DK7IN: is 0 undefined ?? 1..360 ?
       {
-        fprintf(f," %3d\xB0\n",course);
+        // UTF-8 degree sign; this file is read back as text.
+        fprintf(f," %3d\302\260\n",course);
       }
       else        // undefined
       {

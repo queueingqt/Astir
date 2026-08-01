@@ -1769,7 +1769,31 @@ static PangoFontDescription *desc_from_name(const char *name)
     return d;
   }
 
-  return pango_font_description_from_string(name);
+  /*
+   * A bare name, such as the X11 core font "fixed".
+   *
+   * pango_font_description_from_string() takes the family and leaves the size
+   * UNSET, which Pango reports as zero -- so xa_text_height() returned 0 for
+   * anything named this way.  The two branches above both default a missing
+   * size to 12; this one did not, and STATION_FONT is "fixed" by default.
+   *
+   * A zero font height does not look like a font problem.  Station text is
+   * stacked by advancing a line height per line, so with a height of zero every
+   * line landed on the same pixel row -- and once those lines went through the
+   * label placer, each one collided with the line above it and was dropped.
+   * What reached the screen was a callsign and nothing else: no speed, no
+   * heading, no weather, at any zoom, with any amount of empty map around it.
+   *
+   * The text still DREW, because Pango substitutes a usable size when it
+   * actually renders.  Only the measurement was zero, so the fault was
+   * invisible in the one place it would have been obvious.
+   */
+  d = pango_font_description_from_string(name);
+  if (pango_font_description_get_size(d) <= 0)
+  {
+    pango_font_description_set_absolute_size(d, 12 * PANGO_SCALE);
+  }
+  return d;
 }
 
 
@@ -1835,6 +1859,10 @@ void xa_font_metrics_get(xa_font f, xa_font_metrics *m)
 }
 
 
+// Defined below, beside the explanation of why it exists.
+static void layout_set_text(PangoLayout *lay, const char *text, int length);
+
+
 static void extents_of(PangoFontDescription *d, const char *text, int length,
                        int *width, int *ascent, int *descent)
 {
@@ -1848,13 +1876,67 @@ static void extents_of(PangoFontDescription *d, const char *text, int length,
 
   lay = pango_layout_new(measure_ctx());
   pango_layout_set_font_description(lay, d);
-  pango_layout_set_text(lay, text, length);
+  layout_set_text(lay, text, length);
   pango_layout_get_pixel_extents(lay, &ink, NULL);
   if (width)   { *width   = ink.width; }
   if (ascent)  { *ascent  = -ink.y; }
   if (descent) { *descent = ink.height + ink.y; }
   g_object_unref(lay);
 }
+
+
+
+/*
+ * Hand text to Pango, and never let a bad byte make it disappear.
+ *
+ * pango_layout_set_text() requires UTF-8.  Given anything else it logs a
+ * warning and lays out NOTHING, so the string is silently absent from the
+ * screen.  That is the worst available failure: a missing wind speed beside a
+ * weather station reads as "no data received", a missing course beside a moving
+ * station reads as "not reported", and neither sends anybody looking for an
+ * encoding fault.  It cost most of an evening -- twice, because the second time
+ * it was a hex escape that had swallowed the letter after it.
+ *
+ * So invalid input is repaired rather than dropped.  Whatever is valid still
+ * draws, the bad bytes become U+FFFD, and something visibly wrong appears
+ * exactly where the problem is.  The warning names the string, once per unique
+ * text, so a log does not fill up with one label repeating every frame.
+ */
+static void layout_set_text(PangoLayout *lay, const char *text, int length)
+{
+  const char *end = NULL;
+
+  if (length < 0)
+  {
+    length = (int)strlen(text);
+  }
+
+  if (g_utf8_validate(text, length, &end))
+  {
+    pango_layout_set_text(lay, text, length);
+    return;
+  }
+
+  {
+    static GHashTable *seen;
+    char *fixed = g_utf8_make_valid(text, length);
+
+    if (seen == NULL)
+    {
+      seen = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
+    }
+    if (!g_hash_table_contains(seen, text))
+    {
+      g_warning("astir: text is not UTF-8 and was repaired for display: \"%s\" "
+                "(first bad byte at offset %ld)",
+                fixed, (long)(end - text));
+      g_hash_table_add(seen, g_strdup(text));
+    }
+    pango_layout_set_text(lay, fixed, -1);
+    g_free(fixed);
+  }
+}
+
 
 
 void xa_font_text_extents(xa_font f, const char *text, int length,
@@ -1918,7 +2000,7 @@ void xa_draw_string(xa_surface_id dst, xa_pen pen, int x, int y,
 
   lay = pango_cairo_create_layout(cr);
   pango_layout_set_font_description(lay, p->font);
-  pango_layout_set_text(lay, text, length);
+  layout_set_text(lay, text, length);
   // X's y is the baseline; Pango lays out from the top of the line.
   baseline = pango_layout_get_baseline(lay) / PANGO_SCALE;
   cairo_move_to(cr, x, y - baseline);
@@ -1949,7 +2031,7 @@ static void draw_rotated(cairo_t *cr, PangoFontDescription *d, int x, int y,
 
   lay = pango_cairo_create_layout(cr);
   pango_layout_set_font_description(lay, d);
-  pango_layout_set_text(lay, text, -1);
+  layout_set_text(lay, text, -1);
   pango_layout_get_pixel_size(lay, &w, &h);
   align_offsets(align, w, h, &dx, &dy);
 

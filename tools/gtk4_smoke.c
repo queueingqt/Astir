@@ -18,6 +18,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <cairo.h>
+#include <glib.h>
 
 #include "draw/xa_draw.h"
 
@@ -51,6 +52,26 @@ static unsigned pixel_at(cairo_surface_t *s, int x, int y)
   }
   return ((unsigned *)(d + (size_t)y * stride))[x] & 0x00ffffff;
 }
+
+/*
+ * Count the backend's own "repaired" warnings, and let everything else through.
+ *
+ * The point is to tell the backend's message apart from Pango's: one means the
+ * text was fixed and drawn, the other means it was refused and lost.
+ */
+static int saw_repair_warning;
+
+static void count_repair_warnings(const gchar *domain, GLogLevelFlags level,
+                                  const gchar *message, gpointer user_data)
+{
+  if (message != NULL && strstr(message, "was repaired for display") != NULL)
+  {
+    saw_repair_warning++;
+    return;                      /* expected here; do not print it */
+  }
+  g_log_default_handler(domain, level, message, user_data);
+}
+
 
 int main(void)
 {
@@ -156,6 +177,42 @@ int main(void)
   check("xa_text_width() by fontspec", xa_text_width("mmmm", "Sans:size=13") > 0);
   check("xa_text_height() by fontspec", xa_text_height("Sans:size=13") > 0);
 
+  /*
+   * Text that is not UTF-8 must be repaired, not dropped.
+   *
+   * Pango requires UTF-8 and, given anything else, lays out NOTHING -- so a
+   * string with one bad byte silently vanishes from the screen.  That is how a
+   * wind speed beside every weather station and a heading beside every moving
+   * station disappeared, and it reads as missing data rather than as a bad
+   * byte, which is why it survived so long.
+   *
+   * Tested by the warning, not by the width.  Measuring proves nothing here:
+   * pango_layout_get_pixel_extents() returns the SAME number whether the text
+   * was accepted or rejected, so a width assertion passes with the repair
+   * removed -- which is a test that cannot fail, and this file had three of
+   * them for about ten minutes.
+   *
+   * The backend says "was repaired for display" when it fixes something.  With
+   * the repair taken out, Pango says "Invalid UTF-8 string passed to
+   * pango_layout_set_text()" instead, so the two cases are told apart by which
+   * warning arrives.
+   */
+  {
+    const char *latin1_degree = "270\xb0 at 12";      /* Latin-1 degree sign */
+    const char *truncated_utf8 = "temp \xc2";         /* a lead byte, alone */
+
+    saw_repair_warning = 0;
+    g_log_set_default_handler(count_repair_warnings, NULL);
+
+    (void)xa_text_width(latin1_degree, "Sans:size=13");
+    (void)xa_text_width(truncated_utf8, "Sans:size=13");
+
+    g_log_set_default_handler(g_log_default_handler, NULL);
+
+    check("bad UTF-8 is repaired rather than dropped", saw_repair_warning >= 2);
+    check("repaired text still measures",
+          xa_text_width(latin1_degree, "Sans:size=13") > 0);
+  }
   // A stipple, exercising the fill-style path.
   {
     static const char bits[] = { 0x05, 0x0a, 0x05, 0x0a };

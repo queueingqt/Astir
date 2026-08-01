@@ -396,6 +396,75 @@ static void info_fill(void)
     set_field("Path", p->node_path_ptr);
   }
 
+  /*
+   * Weather, for a station that reports it.
+   *
+   * The map draws a condensed version beside the symbol and drops it whenever
+   * there is no room, which is right for a map and no use when you want the
+   * actual reading.  Here there is room, so the numbers are shown with their
+   * units spelt out.
+   *
+   * It also answers a question the map cannot: whether a station has weather
+   * data at all.  A missing line beside a symbol could be no data, a rejected
+   * label, or a string the renderer refused -- all three have happened -- and
+   * this distinguishes them.
+   */
+  if (p->weather_data != NULL)
+  {
+    WeatherRow *w = p->weather_data;
+
+    if (w->wx_temp[0] != '\0')
+    {
+      /*
+       * Octal, not hex, because an F follows.
+       *
+       * A hex escape in C consumes every hex digit after it, so "\xc2\xb0F" is
+       * not a degree sign and an F -- it is one escape "\xb0F", which overflows
+       * a char and produces a replacement glyph.  It renders as a "?" beside the
+       * temperature, which reads as an encoding problem in the DATA rather than
+       * a mistake in this line.
+       *
+       * Octal escapes take at most three digits and stop, so \302\260 is
+       * unambiguous whatever follows it.
+       */
+      astir_snprintf(buf, sizeof(buf), "%s \302\260F", w->wx_temp);
+      set_field("Temperature", buf);
+    }
+    if (w->wx_speed[0] != '\0' || w->wx_gust[0] != '\0'
+        || w->wx_course[0] != '\0')
+    {
+      astir_snprintf(buf, sizeof(buf), "%s%s%s%s%s",
+                     w->wx_speed[0] ? w->wx_speed : "0",
+                     " mph",
+                     w->wx_gust[0] ? ", gusting " : "",
+                     w->wx_gust[0] ? w->wx_gust : "",
+                     w->wx_gust[0] ? " mph" : "");
+      set_field("Wind", buf);
+
+      if (w->wx_course[0] != '\0')
+      {
+        astir_snprintf(buf, sizeof(buf), "%s \302\260", w->wx_course);
+        set_field("Wind from", buf);
+      }
+    }
+    if (w->wx_hum[0] != '\0')
+    {
+      astir_snprintf(buf, sizeof(buf), "%s%%", w->wx_hum);
+      set_field("Humidity", buf);
+    }
+    if (w->wx_baro[0] != '\0')
+    {
+      astir_snprintf(buf, sizeof(buf), "%s hPa", w->wx_baro);
+      set_field("Pressure", buf);
+    }
+    if (w->wx_rain[0] != '\0')
+    {
+      astir_snprintf(buf, sizeof(buf), "%s hundredths of an inch per hour",
+                     w->wx_rain);
+      set_field("Rain", buf);
+    }
+  }
+
   // Comments and status, newest first, as one block.  A station that keeps
   // changing its comment has a history worth seeing at a glance.
   {

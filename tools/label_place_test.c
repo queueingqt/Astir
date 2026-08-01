@@ -26,6 +26,13 @@ static void ok(int cond, const char *what)
 
 /* ---- the stubs the placer draws and measures through ------------------- */
 
+/*
+ * The placer reports placements and rejections under ASTIR_DEBUG bit 16, so it
+ * references debug_level.  Zero here: this harness checks outcomes, and a
+ * running commentary of every box would bury them.
+ */
+int debug_level = 0;
+
 #define GLYPH_W 8
 #define LINE_H  14
 

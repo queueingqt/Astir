@@ -3052,9 +3052,20 @@ void draw_symbol(char symbol_table, char symbol_id, char symbol_overlay,
         posyl += font_height;
       }
 
-      // weather goes to the bottom, centered horizontally.
-      // Start off making sure it's below the symbol
-      posyr += 10;
+      /*
+       * Weather goes at the bottom, centred horizontally.
+       *
+       * A font height, not the 10 pixels this used to advance by.  Ten was
+       * fine when every line was drawn wherever it was told and overlap simply
+       * happened; now that stacked lines go through the placer, an advance
+       * smaller than the text is tall means each line overlaps the one above by
+       * the difference -- so the weather line collided with the callsign and was
+       * dropped, at every zoom, however much empty map surrounded the station.
+       *
+       * The line spacing has to be at least the line height.  That is not a
+       * tuning choice, it is what "below" means.
+       */
+      posyr += font_height;
       if (posyr < posyl)
       {
         posyr = posyl;

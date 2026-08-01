@@ -472,7 +472,24 @@ void display_station(DataRow *p_station, int single)
     if ( (strlen(p_station->course)>0) && (atof(p_station->course) > 0) )
     {
       course_ok++;
-      astir_snprintf(temp_course, sizeof(temp_course), "%.0f\xB0",
+      /*
+       * \302\260 is the degree sign in UTF-8.  It was \xB0 -- the degree sign in
+       * Latin-1, and a lone high byte that is not valid UTF-8 at all.
+       *
+       * Octal rather than hex: a hex escape swallows every hex digit that
+       * follows it, so "\xc2\xb0F" is one escape and not a degree sign before an
+       * F.  These happen to be followed by a % or the end of the string, so hex
+       * would work here -- and would break the moment somebody appended a
+       * letter.  Octal stops after three digits and cannot.
+       *
+       * It went unnoticed until these strings started going through the label
+       * placer, which hands them to Pango, which rejects them:
+       *   Pango-WARNING: Invalid UTF-8 string passed to pango_layout_set_text()
+       * and draws nothing.  So a course reading was silently dropped rather
+       * than shown wrong, which is the kind of failure that looks like missing
+       * data rather than a bad byte.
+       */
+      astir_snprintf(temp_course, sizeof(temp_course), "%.0f\302\260",
                       atof(p_station->course));
     }
     // Else check whether the previous position had a course
@@ -485,7 +502,7 @@ void display_station(DataRow *p_station, int single)
       if( p_station->newest_trackpoint->prev->course > 0 )
       {
         course_ok++;
-        astir_snprintf(temp_course, sizeof(temp_course), "%.0f\xB0",
+        astir_snprintf(temp_course, sizeof(temp_course), "%.0f\302\260",
                         (float)p_station->newest_trackpoint->prev->course);
       }
     }
@@ -529,7 +546,7 @@ void display_station(DataRow *p_station, int single)
       sprintf(temp_my_distance,"%0.0f%s",value,un_dst);
     }
 
-    astir_snprintf(temp_my_course, sizeof(temp_my_course), "%.0f\xB0",
+    astir_snprintf(temp_my_course, sizeof(temp_my_course), "%.0f\302\260",
                     atof(temp1_my_course));
   }
 
@@ -560,10 +577,10 @@ void display_station(DataRow *p_station, int single)
       }
 
       if (english_units)
-        astir_snprintf(temp_wx_temp, sizeof(temp_wx_temp), "%s%.0f\xB0%s",
+        astir_snprintf(temp_wx_temp, sizeof(temp_wx_temp), "%s%.0f\302\260%s",
                         tmp, atof(weather->wx_temp),"F ");
       else
-        astir_snprintf(temp_wx_temp, sizeof(temp_wx_temp), "%s%.0f\xB0%s",
+        astir_snprintf(temp_wx_temp, sizeof(temp_wx_temp), "%s%.0f\302\260%s",
                         tmp,((atof(weather->wx_temp)-32.0)*5.0)/9.0,"C ");
     }
 
@@ -594,7 +611,7 @@ void display_station(DataRow *p_station, int single)
 
       if (strlen(weather->wx_course) > 0)
       {
-        astir_snprintf(wx_tm, sizeof(wx_tm), "C:%.0f\xB0", atof(weather->wx_course));
+        astir_snprintf(wx_tm, sizeof(wx_tm), "C:%.0f\302\260", atof(weather->wx_course));
         strncat(temp_wx_wind,
                 wx_tm,
                 sizeof(temp_wx_wind) - 1 - strlen(temp_wx_wind));

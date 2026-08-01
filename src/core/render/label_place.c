@@ -30,8 +30,25 @@
 #define LABEL_TEXT_MAX 96
 
 /*
- * Labels are allowed to touch but not to overlap, and a pixel of clear space
- * either side is what makes two names read as two names.
+ * Labels are allowed to touch but not to overlap, and a little clear space is
+ * what makes two names read as two names.
+ *
+ * HORIZONTAL ONLY, and that is not a detail.
+ *
+ * A station's annotation is several lines stacked one font-height apart:
+ * callsign, then speed, then weather, and so on.  Padding the box vertically
+ * made each line four pixels taller than the gap between them, so every line
+ * after the first overlapped the one above -- its OWN station's -- and was
+ * rejected.  What reached the screen was a callsign and nothing else, for every
+ * station, however much empty map surrounded it.
+ *
+ * That is why the weather and heading lines vanished even at close zoom with
+ * room to spare, and it is a different fault from the two that were also hiding
+ * them: text that was not valid UTF-8, and text that never went through the
+ * placer at all.  Three causes, one symptom.
+ *
+ * Stacked lines are meant to be adjacent, so vertically they are allowed to be.
+ * Side by side is where a gap is needed, and that is where it is applied.
  */
 #define LABEL_PAD 2
 
@@ -182,8 +199,22 @@ static int collides(int x0, int y0, int x1, int y1)
       {
         int i = grid[cy][cx].idx[k];
 
-        if (x0 <= placed_x1[i] && x1 >= placed_x0[i]
-            && y0 <= placed_y1[i] && y1 >= placed_y0[i])
+        /*
+         * Strictly less-than, so boxes that merely TOUCH do not collide.
+         *
+         * The header says labels are allowed to touch but not to overlap, and
+         * this said otherwise: with <= and >=, two boxes sharing an edge were
+         * a collision.  Stacked lines of one station share an edge exactly --
+         * each is a font-height below the last and exactly a font-height tall
+         * -- so the second line of every station was rejected by the first.
+         *
+         * That is the last of three separate reasons the weather and heading
+         * lines were invisible.  The others were text that was not valid UTF-8,
+         * which Pango silently refused to lay out, and text that never went
+         * through the placer at all.
+         */
+        if (x0 < placed_x1[i] && x1 > placed_x0[i]
+            && y0 < placed_y1[i] && y1 > placed_y0[i])
         {
           return 1;
         }
@@ -256,9 +287,9 @@ int label_flush(xa_surface_id where, int *submitted)
      * each other.
      */
     x0 = (int)l->x - LABEL_PAD;
-    y0 = (int)l->y - l->h - LABEL_PAD;
+    y0 = (int)l->y - l->h;
     x1 = (int)l->x + l->w + LABEL_PAD;
-    y1 = (int)l->y + LABEL_PAD;
+    y1 = (int)l->y;
 
     // Wholly off screen: not a collision, just nothing to draw.
     if (x1 < 0 || y1 < 0 || x0 > (int)screen_width || y0 > (int)screen_height)
@@ -267,9 +298,29 @@ int label_flush(xa_surface_id where, int *submitted)
     }
     if (collides(x0, y0, x1, y1))
     {
+      // ASTIR_DEBUG bit 16: which labels lost, and to what.  A label that is
+      // simply absent from the screen gives no clue whether it was rejected,
+      // never submitted, or refused by the renderer.
+      if (debug_level & 16)
+      {
+        fprintf(stderr, "  label rejected: \"%s\" box %d,%d..%d,%d\n",
+                l->text, x0, y0, x1, y1);
+      }
       continue;
     }
     occupy(x0, y0, x1, y1);
+    /*
+     * ASTIR_DEBUG bit 16 reports every placement and every rejection, with
+     * boxes.  A label that is not on screen gives no clue whether it was
+     * rejected, never submitted, or refused by the renderer, and all three have
+     * happened here.  Printing the boxes is what finally showed that a
+     * station's own lines were landing on the same pixel row.
+     */
+    if (debug_level & 16)
+    {
+      fprintf(stderr, "  label PLACED:   \"%s\" box %d,%d..%d,%d\n",
+              l->text, x0, y0, x1, y1);
+    }
 
     if (l->style == LABEL_STYLE_OUTLINED)
     {
