@@ -5674,6 +5674,20 @@ void delete_station_memory(DataRow *p_del)
 
   if (p_new != NULL)                  // we really got the memory
   {
+    /*
+     * "No area object" is 0xF, not 0.
+     *
+     * calloc gives a zeroed record, and zero is AREA_OPEN_CIRCLE -- a perfectly
+     * valid area type.  So a station that never reported an area object still
+     * satisfied "type != AREA_NONE" and had one drawn: a stray shape anchored
+     * to the symbol and dragged along behind it as the station moved.
+     *
+     * Two other places set this explicitly, which is why only stations created
+     * through THIS path showed it.  Setting it where the memory is allocated
+     * means every path is covered, including any added later.
+     */
+    p_new->aprs_symbol.area_object.type = AREA_NONE;
+
     insert_name(p_new,p_name);      // insert element into name ordered list
     insert_time(p_new,p_time);      // insert element into time ordered list
   }
