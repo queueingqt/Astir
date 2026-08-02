@@ -75,6 +75,8 @@ libastircore_a_SOURCES = \
     core/io/festival.c \
     core/io/festival.h \
     core/io/fetch_remote.c \
+    core/io/device_scan.c \
+    core/io/device_scan.h \
     core/io/fetch_remote.h \
     core/io/forked_getaddrinfo.c \
     core/io/forked_getaddrinfo.h \

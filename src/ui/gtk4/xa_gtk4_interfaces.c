@@ -12,6 +12,7 @@
 #include <gtk/gtk.h>
 
 #include "core/astir.h"
+#include "core/io/device_scan.h"
 #include "core/io/interface.h"
 #include "core/state/xa_config.h"
 #include "core/state/xa_settings.h"
@@ -59,7 +60,8 @@ static const iface_kind kinds[] =
   },
   {
     DEVICE_SERIAL_KISS_TNC, "Serial KISS TNC",
-    "A hardware TNC in KISS mode on a serial port, such as /dev/ttyUSB0.",
+    "A hardware TNC in KISS mode on a serial port. Pick it from Detected "
+    "above; the box below can be typed into if it is not listed.",
     0, 9600
   },
   {
@@ -67,6 +69,26 @@ static const iface_kind kinds[] =
     "An older TNC driven with command strings rather than KISS framing.",
     0, 9600
   },
+#ifdef HAVE_LIBAX25
+  /*
+   * The kernel's own AX.25 stack, reached by port name out of /etc/ax25/axports
+   * rather than by device path.
+   *
+   * Missing from this list until now, which was not a small omission: a station
+   * whose radio is attached with kissattach has no other correct answer, and an
+   * operator who cannot find the right type here will pick the nearest-looking
+   * one.  "Serial KISS TNC" pointed at the tty that kissattach already owns is
+   * exactly that mistake, and it produces an interface that opens, reports
+   * itself up, and never receives a packet.
+   */
+  {
+    DEVICE_AX25_TNC, "Kernel AX.25 port",
+    "A port from /etc/ax25/axports, attached with kissattach. Use this rather "
+    "than the serial device when the radio is already on the kernel AX.25 "
+    "stack \xe2\x80\x94 the port name is the one in axports, not a path in /dev.",
+    0, 0
+  },
+#endif  // HAVE_LIBAX25
 };
 
 #define NKINDS ((int)(sizeof(kinds) / sizeof(kinds[0])))
@@ -267,6 +289,17 @@ typedef struct
   GtkWidget *port_label;
   GtkWidget *hint;
   GtkWidget *tx_note;            /* why transmit is unavailable, when it is */
+
+  GtkWidget *detected;           /* GtkDropDown over what is plugged in */
+  GtkWidget *detected_row;       /* hidden entirely for network interfaces */
+  device_candidate cands[DEVICE_SCAN_MAX];
+  int        ncands;
+  /*
+   * Set while the detected list is being rebuilt.  Filling a GtkDropDown's
+   * model moves its selection, which would otherwise be indistinguishable from
+   * the operator choosing something and would overwrite what they had typed.
+   */
+  int        loading_detected;
 } iface_dialog;
 
 
@@ -332,6 +365,105 @@ static void on_passcode_changed(GtkEditable *e, gpointer data)
 }
 
 
+/* ---- what is actually plugged in ---------------------------------------- */
+
+/*
+ * Rescan, and rebuild the list of detected devices for the selected type.
+ *
+ * Called on open, whenever the type changes, and from the rescan button --
+ * a device plugged in after the dialog opened should turn up without the
+ * operator having to close and reopen it, because "plug it in and it appears"
+ * is the entire behaviour being asked for here.
+ *
+ * The entry underneath stays editable and stays the value that gets saved.  The
+ * dropdown fills it in; it does not replace it.  Anything this cannot enumerate
+ * -- a udev symlink somebody made, a port that is not plugged in yet -- must
+ * still be typeable, and a dropdown that was the only way to answer would make
+ * those unreachable.
+ */
+static void refresh_detected(iface_dialog *d)
+{
+  GtkStringList *items;
+  const iface_kind *k;
+  guint sel = gtk_drop_down_get_selected(GTK_DROP_DOWN(d->kind));
+  const char *current;
+  int match = -1;
+  int i;
+
+  if (sel >= (guint)NKINDS)
+  {
+    return;
+  }
+  k = &kinds[sel];
+
+  d->ncands = device_scan(k->type, d->cands, DEVICE_SCAN_MAX);
+
+  // Nothing to enumerate for a network interface, and an empty dropdown saying
+  // so is worse than no dropdown: hide the row rather than show a dead control.
+  gtk_widget_set_visible(d->detected_row, d->ncands > 0);
+  if (d->ncands <= 0)
+  {
+    return;
+  }
+
+  current = gtk_editable_get_text(GTK_EDITABLE(d->target));
+
+  d->loading_detected = 1;
+  items = gtk_string_list_new(NULL);
+  gtk_string_list_append(items, "\xe2\x80\x94  choose a detected device");
+  for (i = 0; i < d->ncands; i++)
+  {
+    char row[224];
+
+    // An entry that is configured but not usable is listed, because leaving it
+    // out would look like it does not exist -- but it is marked, because
+    // picking it is how a station ends up silently deaf.
+    astir_snprintf(row, sizeof(row), "%s%s",
+                   d->cands[i].attached ? "" : "\xe2\x9a\xa0  ",
+                   d->cands[i].label);
+    gtk_string_list_append(items, row);
+
+    if (current != NULL && strcmp(current, d->cands[i].value) == 0)
+    {
+      match = i;
+    }
+  }
+
+  gtk_drop_down_set_model(GTK_DROP_DOWN(d->detected), G_LIST_MODEL(items));
+  g_object_unref(items);
+  // Show what is already configured as the selected one when it is a device
+  // this scan found; otherwise leave the list on its placeholder rather than
+  // implying the first thing found is what is set.
+  gtk_drop_down_set_selected(GTK_DROP_DOWN(d->detected),
+                             (match >= 0) ? (guint)(match + 1) : 0);
+  d->loading_detected = 0;
+}
+
+
+static void on_detected_changed(GtkDropDown *dd, GParamSpec *ps, gpointer data)
+{
+  iface_dialog *d = data;
+  guint sel = gtk_drop_down_get_selected(dd);
+
+  (void)ps;
+  if (d->loading_detected || sel == 0 || sel == GTK_INVALID_LIST_POSITION)
+  {
+    return;                        // the placeholder, or our own rebuild
+  }
+  if ((int)sel - 1 < d->ncands)
+  {
+    gtk_editable_set_text(GTK_EDITABLE(d->target), d->cands[sel - 1].value);
+  }
+}
+
+
+static void on_rescan(GtkButton *b, gpointer data)
+{
+  (void)b;
+  refresh_detected(data);
+}
+
+
 // Follow the type selection: the same two entry boxes mean different things for
 // a network interface and a serial one, and a box whose label is wrong is worse
 // than no box.
@@ -349,16 +481,21 @@ static void on_kind_changed(GtkDropDown *dd, GParamSpec *ps, gpointer data)
   }
   k = &kinds[sel];
 
-  gtk_label_set_text(GTK_LABEL(d->target_label), k->is_network ? "Host"
-                                                               : "Device");
+  gtk_label_set_text(GTK_LABEL(d->target_label),
+                     k->is_network            ? "Host"
+                     : k->type == DEVICE_AX25_TNC ? "AX.25 port"
+                                              : "Device");
   gtk_label_set_text(GTK_LABEL(d->port_label), k->is_network ? "TCP port"
                                                              : "Speed");
   gtk_label_set_text(GTK_LABEL(d->hint), k->hint);
 
   if (d->port == -1)             // only prefill a NEW interface
   {
+    // No guessed device path here any more.  "/dev/ttyUSB0" was a plausible
+    // string rather than a fact, and a prefilled box that happens to be wrong
+    // is harder to notice than an empty one -- it looks like it was detected.
     gtk_editable_set_text(GTK_EDITABLE(d->target),
-                          k->is_network ? "localhost" : "/dev/ttyUSB0");
+                          k->is_network ? "localhost" : "");
     astir_snprintf(buf, sizeof(buf), "%d", k->default_port);
     gtk_editable_set_text(GTK_EDITABLE(d->port_num), buf);
   }
@@ -368,6 +505,32 @@ static void on_kind_changed(GtkDropDown *dd, GParamSpec *ps, gpointer data)
                          k->type == DEVICE_NET_STREAM);
   gtk_widget_set_visible(gtk_widget_get_parent(d->filter),
                          k->type == DEVICE_NET_STREAM);
+  // A kernel AX.25 port was given its speed in axports; asking again here would
+  // be asking for a number that is written down somewhere else and ignored.
+  gtk_widget_set_visible(gtk_widget_get_parent(d->port_num),
+                         k->type != DEVICE_AX25_TNC);
+
+  refresh_detected(d);
+
+  // Having scanned, offer the first thing that is actually usable.  A new
+  // interface on a station with one radio plugged in should need no typing at
+  // all: the point is to plug it in, open this, and press Add.
+  if (d->port == -1 && !k->is_network && d->ncands > 0)
+  {
+    int i;
+
+    for (i = 0; i < d->ncands; i++)
+    {
+      if (d->cands[i].attached)
+      {
+        gtk_editable_set_text(GTK_EDITABLE(d->target), d->cands[i].value);
+        d->loading_detected = 1;
+        gtk_drop_down_set_selected(GTK_DROP_DOWN(d->detected), (guint)(i + 1));
+        d->loading_detected = 0;
+        break;
+      }
+    }
+  }
 
   refresh_transmit_availability(d);
 }
@@ -562,6 +725,31 @@ static void show_dialog(GtkWindow *parent, int port)
       sel = i;
     }
   }
+  /*
+   * Open on a given type, for a screenshot.
+   *
+   * The detected-device list is the part of this dialog that differs most
+   * between types -- it is hidden for a network interface, tty nodes for a
+   * serial one, axports entries for AX.25 -- and on a session with no input
+   * automation there is otherwise no way to get any but the first of those on
+   * screen to be looked at.  Same reason the window has a hook at all.
+   */
+  {
+    const char *want = getenv("ASTIR_GTK4_IFACE_TYPE");
+
+    if (want != NULL && port < 0)
+    {
+      for (i = 0; i < NKINDS; i++)
+      {
+        if (kinds[i].type == atoi(want))
+        {
+          sel = i;
+          break;
+        }
+      }
+    }
+  }
+
   d->kind = gtk_drop_down_new(G_LIST_MODEL(names), NULL);
   gtk_drop_down_set_selected(GTK_DROP_DOWN(d->kind), sel);
 
@@ -570,24 +758,46 @@ static void show_dialog(GtkWindow *parent, int port)
 
   field_row(grid, 0, "Type", d->kind, NULL);
 
+  /*
+   * What is plugged in, above the box that names it.
+   *
+   * Above rather than below because it is meant to be read first: the list is
+   * the answer, and the entry under it is where the answer lands so it can
+   * still be corrected or typed from scratch.
+   */
+  {
+    GtkWidget *dbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 6);
+    GtkWidget *rescan = gtk_button_new_from_icon_name("view-refresh-symbolic");
+
+    d->detected = gtk_drop_down_new(NULL, NULL);
+    gtk_widget_set_hexpand(d->detected, TRUE);
+    gtk_widget_set_tooltip_text(rescan, "Look again for attached devices");
+    gtk_box_append(GTK_BOX(dbox), d->detected);
+    gtk_box_append(GTK_BOX(dbox), rescan);
+    d->detected_row = field_row(grid, 1, "Detected", dbox, NULL);
+    g_signal_connect(rescan, "clicked", G_CALLBACK(on_rescan), d);
+    g_signal_connect(d->detected, "notify::selected",
+                     G_CALLBACK(on_detected_changed), d);
+  }
+
   d->target = gtk_entry_new();
-  field_row(grid, 1, "Host", d->target, &d->target_label);
+  field_row(grid, 2, "Host", d->target, &d->target_label);
 
   d->port_num = gtk_entry_new();
-  field_row(grid, 2, "TCP port", d->port_num, &d->port_label);
+  field_row(grid, 3, "TCP port", d->port_num, &d->port_label);
 
   d->passcode = gtk_entry_new();
   gtk_entry_set_placeholder_text(GTK_ENTRY(d->passcode),
                                  "-1 for receive only");
-  field_row(grid, 3, "Passcode", d->passcode, NULL);
+  field_row(grid, 4, "Passcode", d->passcode, NULL);
 
   d->filter = gtk_entry_new();
   gtk_entry_set_placeholder_text(GTK_ENTRY(d->filter), "m/100");
-  field_row(grid, 4, "Server filter", d->filter, NULL);
+  field_row(grid, 5, "Server filter", d->filter, NULL);
 
   d->comment = gtk_entry_new();
   gtk_entry_set_placeholder_text(GTK_ENTRY(d->comment), "a name for this port");
-  field_row(grid, 5, "Label", d->comment, NULL);
+  field_row(grid, 6, "Label", d->comment, NULL);
 
   gtk_box_append(GTK_BOX(box), grid);
 
