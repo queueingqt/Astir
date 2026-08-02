@@ -7258,6 +7258,35 @@ unsigned char *select_unproto_path(int port)
 
 
 
+/*
+ * True only for the duration of a beacon the operator asked for by hand.
+ *
+ * posit_tx_disable is the AUTOMATIC beaconing switch: it decides whether this
+ * station announces itself on a schedule, unattended, for as long as the
+ * program is left running.  Pressing "beacon now" is not that.  It is a person
+ * deciding, once, to transmit -- and refusing it because unattended beaconing
+ * is off answers a question that was not asked.
+ *
+ * The two were the same flag, so a station that sensibly did not want to
+ * beacon every half hour also could not send a single posit, which is the
+ * ordinary way to check that a transmit path works at all.
+ *
+ * What this does NOT bypass is anything to do with permission: the callsign
+ * must be real, the interface must be up, transmit must be enabled on it, and
+ * transmit_disable must be off.  Those are the checks that decide whether this
+ * station may key a transmitter; this one only decided how often.
+ */
+static int posit_forced_now = 0;
+
+// Whether a posit is barred from going out right now.  Beside the switch it
+// reads, rather than five copies of the same two-term test scattered through
+// the function below -- a copy is a place for the two to drift apart.
+static int posit_tx_blocked(void)
+{
+  return posit_tx_disable && !posit_forced_now;
+}
+
+
 //***********************************************************
 // output_my_aprs_data
 // This is the function responsible for sending out my own
@@ -7475,7 +7504,7 @@ void output_my_aprs_data(void)
              && (port_data[port].status == DEVICE_UP)
              && (devices[port].transmit_data == 1)
              && !transmit_disable
-             && !posit_tx_disable)
+             && !posit_tx_blocked())
         {
           port_write_string(port,header_txt);
         }
@@ -7513,7 +7542,7 @@ void output_my_aprs_data(void)
              && (port_data[port].status == DEVICE_UP)
              && (devices[port].transmit_data == 1)
              && !transmit_disable
-             && !posit_tx_disable)
+             && !posit_tx_blocked())
         {
           port_write_string(port,header_txt);
         }
@@ -7528,7 +7557,7 @@ void output_my_aprs_data(void)
              && (port_data[port].status == DEVICE_UP)
              && (devices[port].transmit_data == 1)
              && !transmit_disable
-             && !posit_tx_disable)
+             && !posit_tx_blocked())
         {
           port_write_string(port,header_txt);
         }
@@ -7868,7 +7897,7 @@ void output_my_aprs_data(void)
       if ( (port_data[port].status == DEVICE_UP)
            && (devices[port].transmit_data == 1)
            && !transmit_disable
-           && !posit_tx_disable)
+           && !posit_tx_blocked())
       {
 
         interfaces_ok_for_transmit++;
@@ -8025,7 +8054,7 @@ void output_my_aprs_data(void)
   }
 
 
-  if (enable_server_port && !transmit_disable && !posit_tx_disable)
+  if (enable_server_port && !transmit_disable && !posit_tx_blocked())
   {
     // Send data to the x_spider server
 
@@ -8129,13 +8158,22 @@ int beacon_if_due(int force)
   int i;
 
   /*
-   * The operator's switch, and it governs the forced beacon too.
+   * The automatic beaconing switch, and it governs the schedule only.
    *
-   * Off means off.  A "beacon now" that still transmits while beaconing is
-   * turned off is the same fault as a transmit tick box on a receiver: a
-   * setting that says one thing while the program does another.
+   * It used to govern the forced beacon too, on the reasoning that off should
+   * mean off.  That conflated two different questions: whether this station
+   * announces itself unattended on a timer, and whether the operator may send
+   * one posit now.  Answering the second with the first makes the ordinary way
+   * of testing a transmit path -- press it once, see whether the radio keys --
+   * impossible without first turning on something you did not want on, and
+   * leaves it on afterwards if you forget.
+   *
+   * What still governs the forced beacon is every check below: a real
+   * callsign, an interface that is up, transmit enabled on it, and
+   * transmit_disable off.  Those decide whether this station may transmit at
+   * all, which is the question that matters.  This one only decided how often.
    */
-  if (posit_tx_disable)
+  if (!force && posit_tx_disable)
   {
     return 0;
   }
@@ -8165,7 +8203,13 @@ int beacon_if_due(int force)
     return 0;                            // nothing up that could carry it
   }
 
+  // The forced-beacon window, opened around this call and closed straight
+  // after it.  Narrow on purpose: the flag exists so output_my_aprs_data()'s
+  // gates can tell this posit from a scheduled one, and a flag left set is a
+  // station that has quietly stopped honouring its own switch.
+  posit_forced_now = force ? 1 : 0;
   output_my_aprs_data();
+  posit_forced_now = 0;
 
   posit_last_time = sec_now();
   // SmartBeaconing owns the interval when it is on and recomputes it from the

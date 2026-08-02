@@ -2417,6 +2417,16 @@ static gboolean show_about_once(gpointer win)
 }
 
 
+// Press "beacon now" once, for the bench.  act_beacon() and not
+// beacon_if_due() directly, so the toast and the refusal path are exercised
+// too -- those are the half of this that a person actually sees.
+static gboolean beacon_now_once(gpointer win)
+{
+  act_beacon(NULL, NULL, win);
+  return G_SOURCE_REMOVE;
+}
+
+
 static gboolean show_mystation_once(gpointer win)
 {
   xa_gtk4_mystation_show(GTK_WINDOW(win), 1);
@@ -2755,6 +2765,23 @@ static void on_activate(GtkApplication *app, gpointer user_data)
   if (getenv("ASTIR_GTK4_SHOW_ABOUT") != NULL)
   {
     g_timeout_add_seconds(2, (GSourceFunc)show_about_once, win);
+  }
+
+  /*
+   * Press "beacon now", once, for tools/beacon_bench.sh.
+   *
+   * Goes through act_beacon() and therefore through the whole real path --
+   * beacon_if_due(1), output_my_aprs_data(), the interface write -- because a
+   * transmit that is only reasoned about is a transmit that has not been
+   * tested.  The bench points the interface at a pty, which is how this can be
+   * exercised for real without a radio; see the note at the top of that script
+   * for why there is no "pretend to send" flag instead.
+   *
+   * Not reachable from the interface: nothing calls it but this hook.
+   */
+  if (getenv("ASTIR_GTK4_BEACON_NOW") != NULL)
+  {
+    g_timeout_add_seconds(4, (GSourceFunc)beacon_now_once, win);
   }
 
   /*

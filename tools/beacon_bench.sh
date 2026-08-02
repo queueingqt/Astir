@@ -37,17 +37,34 @@ SCENARIO="${BEACON_SCENARIO:-corner}"
 #   parked   The field symptom: a receiver standing still, whose reported course
 #            wanders because there is no real direction of travel to report.
 #            Closer to what a real station does and correspondingly less tidy.
+#
+#   forced   The operator pressing "beacon now" with AUTOMATIC beaconing switched
+#            off, and no GPS at all.  Not a schedule question: it asks whether the
+#            two are separate settings, which they were not.  DISABLE_POSIT_TX:1
+#            used to refuse this, so a station that did not want to announce
+#            itself every half hour could not send one posit to check its own
+#            transmit path.  No GPS on purpose -- a station with no receiver has
+#            no clock, so a forced beacon is the ONLY posit it can ever send, and
+#            it is the case most likely to be broken without anyone noticing.
 case "$SCENARIO" in
   corner)
     FEED_ARGS="--knots 20 --course 0 --drift 0 --turn-at 30 --turn-to 90"
     EXPECT="one corner-pegged posit, then one about every 97s (POSIT_rate at 20kn)"
+    USE_GPS=1; POSIT_TX_DISABLE=0; FORCE_BEACON=""
     ;;
   parked)
     FEED_ARGS="--knots 1.69 --course 282 --drift 18"
     EXPECT="one or two: standing still, SB_POSIT_SLOW is 30 minutes"
+    USE_GPS=1; POSIT_TX_DISABLE=0; FORCE_BEACON=""
+    ;;
+  forced)
+    FEED_ARGS=""
+    EXPECT="exactly 1 -- one press, one posit, with automatic beaconing off"
+    USE_GPS=0; POSIT_TX_DISABLE=1; FORCE_BEACON=1
+    SECONDS_TO_RUN="${BEACON_SECONDS:-25}"   # one press at 4s; no schedule to wait for
     ;;
   *)
-    echo "unknown BEACON_SCENARIO: $SCENARIO (want 'corner' or 'parked')" >&2
+    echo "unknown BEACON_SCENARIO: $SCENARIO (want 'corner', 'parked' or 'forced')" >&2
     exit 2
     ;;
 esac
@@ -74,9 +91,11 @@ CAP="$BENCH/keyed.txt"
 # that never transmitted.  It cost one wrong answer already.
 socat -u pty,raw,echo=0,link="$BENCH/tnc" OPEN:"$CAP",creat,append &
 SOCAT_TNC=$!
-socat -u EXEC:"$PWD/tools/nmea_feed.py --seconds $((SECONDS_TO_RUN + 30)) $FEED_ARGS" \
-         pty,raw,echo=0,link="$BENCH/gps" &
-SOCAT_GPS=$!
+if [ "$USE_GPS" = 1 ]; then
+  socat -u EXEC:"$PWD/tools/nmea_feed.py --seconds $((SECONDS_TO_RUN + 30)) $FEED_ARGS" \
+           pty,raw,echo=0,link="$BENCH/gps" &
+  SOCAT_GPS=$!
+fi
 sleep 1
 
 # SmartBeaconing settings and units are the ones that showed the fault on a
@@ -92,7 +111,7 @@ STATION_SYMBOL:l
 STATION_MESSAGE_TYPE:=
 STATION_COMMENTS:Astir beacon bench
 DISABLE_TRANSMIT:0
-DISABLE_POSIT_TX:0
+DISABLE_POSIT_TX:$POSIT_TX_DISABLE
 DISPLAY_UNITS_ENGLISH:0
 POSIT_RATE:1800
 SMART_BEACONING:1
@@ -111,6 +130,12 @@ DEVICE0_TXMT:1
 DEVICE0_ONSTARTUP:1
 DEVICE0_RECONN:0
 DEVICE0_INTERFACE_COMMENT:bench pty, goes nowhere
+EOF
+
+# The GPS is a second interface, and only the scheduled scenarios have one.
+# 'forced' deliberately runs without: see the note on it above.
+if [ "$USE_GPS" = 1 ]; then
+  cat >> "$BENCH/home/.astir/config/astir.cnf" <<EOF
 DEVICE1_TYPE:3
 DEVICE1_NAME:$BENCH/gps
 DEVICE1_SPEED:9600
@@ -119,6 +144,7 @@ DEVICE1_ONSTARTUP:1
 DEVICE1_RECONN:0
 DEVICE1_INTERFACE_COMMENT:bench GPS, standing still
 EOF
+fi
 
 echo "=============================================================="
 echo " binary   : $BIN ($($BIN -V 2>&1 | head -1))"
@@ -139,9 +165,14 @@ echo "=============================================================="
 #
 # It also stops the bench from reaching into a station that is on the air:
 # without this, running this script pokes the interfaces of the real Astir.
+# env, not a bare assignment prefix: bash decides what is an assignment before
+# it expands anything, so a ${...:+VAR=1} in that position is run as a command
+# and the bench reports zero posits for a reason that has nothing to do with
+# beaconing.  env takes them as ordinary arguments and gets it right.
 set +e
-ASTIR_DATA_BASE="$PWD/artifacts/datadir" \
-ASTIR_USER_BASE="$BENCH/home" \
+env ASTIR_DATA_BASE="$PWD/artifacts/datadir" \
+    ASTIR_USER_BASE="$BENCH/home" \
+    ${FORCE_BEACON:+ASTIR_GTK4_BEACON_NOW=1} \
   timeout --signal=TERM "$SECONDS_TO_RUN" \
     dbus-run-session -- "$BIN" >"$BENCH/astir.log" 2>&1
 set -e
