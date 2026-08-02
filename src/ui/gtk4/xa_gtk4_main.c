@@ -1756,11 +1756,52 @@ static void ui_warn(const char *text)
   g_warning("%s", text ? text : "(null)");
 }
 
+/*
+ * What the core wants to say when something did not happen, as a toast.
+ *
+ * Not a dialog.  These are all refusals -- a beacon that did not go, a message
+ * that was not sent -- and a refusal is information, not an emergency: a modal
+ * window in the middle of the map to say "beaconing is switched off" costs a
+ * click to dismiss and interrupts whatever was being done.  The toast already
+ * is the place the program says what just happened, and it does not time out,
+ * so it stays there until something else happens.
+ *
+ * This was a stub that called g_message() and nothing else, which meant every
+ * refusal in the program was written to the journal and never seen.  The
+ * program is careful to explain itself -- act_beacon() and both message-send
+ * paths compose a full explanation of what to switch on -- and all of it went
+ * somewhere nobody running the application would look.  Silence that looks
+ * like success is the exact fault those messages exist to prevent.
+ *
+ * The banner goes on the toast because it is the part that reads at a glance;
+ * the explanation goes into the history behind it, which is what clicking the
+ * toast opens.  Splitting them that way keeps a five-line remedy from becoming
+ * a five-line label across the map.
+ */
 static void ui_popup(const char *banner, const char *message)
 {
-  // No dialogs yet.  Said on stderr rather than swallowed, which is what a
-  // build without popups has always done.
+  if (banner == NULL && message == NULL)
+  {
+    return;
+  }
+
+  /*
+   * Logged as well as shown, not instead of.
+   *
+   * The toast is for the person at the screen; this is for the bench and for a
+   * bug report, where there is no screen and a refusal that leaves no trace is
+   * a run nobody can explain afterwards.  Dropping it cost one wrong diagnosis
+   * on tools/beacon_bench.sh within a minute of being written.
+   */
   g_message("%s: %s", banner ? banner : "", message ? message : "");
+
+  // Remembered first, so the history is already right when the toast that
+  // points at it appears.
+  if (message != NULL)
+  {
+    xa_gtk4_station_note(message, NULL);
+  }
+  ui_status((banner != NULL) ? banner : message);
 }
 
 /*
